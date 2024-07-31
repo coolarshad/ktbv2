@@ -1,0 +1,13 @@
+.nav-container{
+    background-color: rgb(67, 67, 67);
+    padding: 0.25rem;
+    display: grid;
+    grid-template-columns: 5rem auto auto;
+    grid-template-rows: auto;
+    color: white;
+}
+.nav-container .title p {
+    padding: 0.25rem;
+    text-align: center;
+    margin: 0;
+}
