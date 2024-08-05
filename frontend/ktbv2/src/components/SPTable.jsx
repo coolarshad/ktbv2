@@ -1,7 +1,13 @@
 // src/components/TradeTable.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const SPTable = ({ data }) => {
+const SPTable = ({ data,onDelete }) => {
+  const navigate = useNavigate(); 
+
+  const handleEdit = (id) => {
+    navigate(`/sales-purchase-form/${id}`);  // Navigate to TradeForm with tradeId
+  };
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
@@ -21,25 +27,25 @@ const SPTable = ({ data }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((trade, index) => (
+          {data.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.tradeType}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.company}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.invoiceDate}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.invoiceNumber}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.buyerSellerName}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.tradeType}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.company}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_number}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.logistic_supplier}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.reviewed} onChange={() => {}} />
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />
               </td>
              
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
                  
-                  <button className="bg-blue-500 text-white px-2 py-1 rounded">View</button>
-                  <button className="bg-green-500 text-white px-2 py-1 rounded">Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                  <button className="bg-green-500 text-white px-2 py-1 rounded">Approve</button>
+                  <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                 </div>
               </td>
             </tr>

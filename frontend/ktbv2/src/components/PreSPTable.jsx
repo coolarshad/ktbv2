@@ -1,7 +1,14 @@
 // src/components/TradeTable.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const PreSPTable = ({ data }) => {
+const PreSPTable = ({ data, onDelete }) => {
+  const navigate = useNavigate();  
+  
+  const handleEdit = (id) => {
+    navigate(`/pre-sale-purchase-form/${id}`);  // Navigate to TradeForm with tradeId
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
@@ -21,24 +28,25 @@ const PreSPTable = ({ data }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((trade, index) => (
+          {data.map((presp, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.tradeType}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.company}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.buyerSellerName}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.doc_issuance_date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.payment_term}</td>
              
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.orderNumber}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.orderDate}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.lc_due_date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.remarks}</td>
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.reviewed} onChange={() => {}} />
               </td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                 
-                  <button className="bg-blue-500 text-white px-2 py-1 rounded">View</button>
+              <div className="space-x-2">
+                  <button className="bg-green-500 text-white px-2 py-1 rounded">Approve</button>
+                  <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
                 </div>
               </td>
             </tr>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../axiosConfig';
 
 const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   const [formData, setFormData] = useState({
@@ -14,7 +14,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   useEffect(() => {
     if (mode === 'update' && paymentTermId) {
       // Fetch the existing payment term data from the API
-      axios.get(`/api/payment-terms/${paymentTermId}`)
+      axios.get(`/trademgt/payment-terms/${paymentTermId}`)
         .then(response => {
           setFormData(response.data);
         })
@@ -24,7 +24,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
     }
 
     // Fetch all payment terms
-    axios.get('/api/payment-terms')
+    axios.get('/trademgt/payment-terms')
       .then(response => {
         const terms = response.data;
         if (Array.isArray(terms)) {
@@ -50,7 +50,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
     e.preventDefault();
     if (mode === 'add') {
       // Post new payment term data to API
-      axios.post('/api/payment-terms', formData)
+      axios.post('/trademgt/payment-terms/', formData)
         .then(response => {
           console.log('Payment term added successfully!', response.data);
           setPaymentTerms(prevTerms => [...prevTerms, response.data]);
@@ -60,7 +60,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
         });
     } else if (mode === 'update') {
       // Put updated payment term data to API
-      axios.put(`/api/payment-terms/${paymentTermId}`, formData)
+      axios.put(`/trademgt/payment-terms/${paymentTermId}`, formData)
         .then(response => {
           console.log('Payment term updated successfully!', response.data);
           setPaymentTerms(prevTerms => prevTerms.map(term => term.id === response.data.id ? response.data : term));
@@ -72,7 +72,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   };
 
   const handleDelete = (id) => {
-    axios.delete(`/api/payment-terms/${id}`)
+    axios.delete(`/trademgt/payment-terms/${id}`)
       .then(() => {
         console.log('Payment term deleted successfully!');
         setPaymentTerms(prevTerms => prevTerms.filter(term => term.id !== id));

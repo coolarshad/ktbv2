@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from '../axiosConfig';
 
-const PrePaymentForm = () => {
+const PrePaymentForm = ({ mode = 'add' }) => {
+    const { id } = useParams();
     // Sample options for TRN dropdown
     const trnOptions = [
         { value: 'trn1', label: 'TRN 1' },
@@ -23,6 +26,34 @@ const PrePaymentForm = () => {
         lcAmmendments: [{ name: '', lc_ammendment: null }],
         advanceTTCopies: [{ name: '', advance_tt_copy: null }]
     });
+
+    useEffect(() => {
+        if (mode === 'update' && id) {
+            axios.get(`/trademgt/pre-payments/${id}`)
+                .then(response => {
+                    const data = response.data;
+                    setFormData(prevState => ({
+                        ...prevState,
+                        trn: data.trn,
+                        lc_number: data.lc_number,
+                        lc_opening_bank: data.lc_opening_bank,
+                        advance_received: data.advance_received,
+                        date_of_receipt: data.date_of_receipt,
+                        advance_paid: data.advance_paid,
+                        date_of_payment: data.date_of_payment,
+                        lc_expiry_date: data.lc_expiry_date,
+                        latest_shipment_date_in_lc: data.latest_shipment_date_in_lc,
+                        remarks: data.remarks,
+                        lcCopies: data.lcCopies || [{ name: '', lc_copy: null }],
+                        lcAmmendments: data.lcAmmendments  || [{ name: '', lc_ammendment: null }],
+                        advanceTTCopies: data.advanceTTCopies  || [{ name: '', advance_tt_copy: null }]
+                    }));
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the trade data!', error);
+                });
+        }
+    }, [mode, id]);
 
     const handleChange = (e, section, index) => {
         const { name, value, files } = e.target;
@@ -48,8 +79,50 @@ const PrePaymentForm = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(formData);
-        // You can send `formData` to your backend API here
+        // console.log(formData);
+        const formDataToSend = new FormData();
+
+        for (const [key, value] of Object.entries(formData)) {
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                    for (const [subKey, subValue] of Object.entries(item)) {
+                        if (subValue instanceof File) {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        } else {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        }
+                    }
+                });
+            } else {
+                formDataToSend.append(key, value);
+            }
+        }
+        // console.log(formDataToSend)
+        if (mode === 'add') {
+            axios.post('/trademgt/pre-payments/', formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => {
+                console.log('Prepayment added successfully!', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error adding the trade!', error);
+            });
+        } else if (mode === 'update') {
+            axios.put(`/trademgt/pre-payments/${id}/`, formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => {
+                console.log('Prepayment updated successfully!', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error updating the trade!', error);
+            });
+        }
     };
 
     return (

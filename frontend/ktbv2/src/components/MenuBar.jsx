@@ -48,6 +48,7 @@ const MenuBar = () => {
           <div className="flex justify-end">
             <FaTimes size={24} className="cursor-pointer" onClick={toggleMenu} />
           </div>
+          <Link to="/" className="hover:text-gray-400">Home</Link>
           <Link to="/trade-approval" className="hover:text-gray-400">Trade Approval</Link>
           <Link to="/trade-approved" className="hover:text-gray-400">Trade Approved</Link>
           <Link to="/pre-sale-purchase" className="hover:text-gray-400">Pre-Sale Purchase</Link>
@@ -55,13 +56,12 @@ const MenuBar = () => {
           <Link to="/sales-purchases" className="hover:text-gray-400">Sales Purchases</Link>
           <Link to="/payment-finance" className="hover:text-gray-400">Payment Finance</Link>
           <Link to="/pl" className="hover:text-gray-400">PL</Link>
-          <Link to="/trade-form" className="hover:text-gray-400">Trade Form</Link>
+         
           <Link to="/payment-term-form" className="hover:text-gray-400">Payment Term Form</Link>
           <Link to="/documents-required-form" className="hover:text-gray-400">Documents Required Form</Link>
-          <Link to="/pre-sale-purchase-form" className="hover:text-gray-400">Pre-Sale Purchase Form</Link>
-          <Link to="/pre-payment-form" className="hover:text-gray-400">Pre Payment Form</Link>
-          <Link to="/sales-purchase-form" className="hover:text-gray-400">Sales Purchase Form</Link>
-          <Link to="/payment-finance-form" className="hover:text-gray-400">Payment Finance Form</Link>
+        
+          
+        
         </div>
       </div>
     </div>

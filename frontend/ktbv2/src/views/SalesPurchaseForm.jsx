@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from '../axiosConfig';
 
-const SalesPurchaseForm = () => {
+const SalesPurchaseForm = ({ mode = 'add' }) => {
+    const { id } = useParams();
+
     const [formData, setFormData] = useState({
         trn: '',
         invoice_date: '',
@@ -32,6 +36,52 @@ const SalesPurchaseForm = () => {
         invoices: [{ name: '', invoice: null }],
         coas: [{ name: '', coa: null }],
     });
+
+    useEffect(() => {
+        if (mode === 'update' && id) {
+            axios.get(`/trademgt/sales-purchases/${id}`)
+                .then(response => {
+                    const data = response.data;
+                    setFormData(prevState => ({
+                        ...prevState,
+                        trn: data.trn,
+                        invoice_date: data.invoice_date,
+                        invoice_number: data.invoice_number,
+                        invoice_amount: data.invoice_amount,
+                        commission_value: data.commission_value,
+                        bl_number: data.bl_number,
+                        bl_qty: data.bl_qty,
+                        bl_fees: data.bl_fees,
+                        bl_collection_cost: data.bl_collection_cost,
+                        bl_date: data.bl_date,
+                        total_packing_cost: data.total_packing_cost,
+                        packaging_supplier: data.packaging_supplier,
+                        logistic_supplier: data.logistic_supplier,
+                        batch_number: data.batch_number,
+                        production_date: data.production_date,
+                        logistic_cost: data.logistic_cost,
+                        logistic_cost_due_date: data.logistic_cost_due_date,
+                        liner: data.liner,
+                        pod: data.pod,
+                        pol: data.pol,
+                        etd: data.etd,
+                        eta: data.eta,
+                        shipment_status: data.shipment_status,
+                        remarks: data.remarks,
+                        extraCharges: data.extraCharges || [{ name: '', charge: '' }],
+                        packingLists: data.packingLists || [{ name: '', packing_list: null }],
+                        blCopies: data.blCopies || [{ name: '', bl_copy: null }],
+                        invoices: data.invoices || [{ name: '', invoice: null }],
+                        coas: data.coas || [{ name: '', coa: null }]
+                    }));
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the trade data!', error);
+                });
+        }
+    }, [mode, id]);
+
+
 
     const handleChange = (e, arrayName, index) => {
         const { name, value, type, files } = e.target;
@@ -67,6 +117,50 @@ const SalesPurchaseForm = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(formData);
+
+        const formDataToSend = new FormData();
+
+        for (const [key, value] of Object.entries(formData)) {
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                    for (const [subKey, subValue] of Object.entries(item)) {
+                        if (subValue instanceof File) {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        } else {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        }
+                    }
+                });
+            } else {
+                formDataToSend.append(key, value);
+            }
+        }
+        console.log(formDataToSend)
+        if (mode === 'add') {
+            axios.post('/trademgt/sales-purchases/', formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => {
+                console.log('Sales/Purchase added successfully!', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error adding the trade!', error);
+            });
+        } else if (mode === 'update') {
+            axios.put(`/trademgt/sales-purchases/${id}/`, formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => {
+                console.log('Sales/Purchase updated successfully!', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error updating the trade!', error);
+            });
+        }
     };
 
     return (
@@ -244,7 +338,7 @@ const SalesPurchaseForm = () => {
                     <input
                         id="production_date"
                         name="production_date"
-                        type="text"
+                        type="date"
                         value={formData.production_date}
                         onChange={(e) => setFormData({ ...formData, production_date: e.target.value })}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"

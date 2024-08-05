@@ -63,7 +63,7 @@ class Trade(models.Model):
 
     approved=models.BooleanField(_("approved"),default=False)
 
-    approved_by=models.CharField(_("approved_by"), max_length=50)
+    approved_by=models.CharField(_("approved_by"), max_length=50, null=True, blank=True)
 
     class Meta:
         verbose_name = _("Trade")
@@ -76,7 +76,7 @@ class Trade(models.Model):
         return reverse("Trade_detail", kwargs={"pk": self.pk})
 
 class TradeProduct(models.Model):
-    trade=models.ForeignKey("Trade", verbose_name=_("trade"), on_delete=models.CASCADE)
+    trade = models.ForeignKey(Trade, related_name='trade_products', on_delete=models.CASCADE)
     product_code =  models.CharField(_("product_code"), max_length=50)
     product_name = models.CharField(_("product_name"), max_length=50)
     product_name_for_client=models.CharField(_("product_name_for_client"), max_length=50)
@@ -102,7 +102,7 @@ class TradeProduct(models.Model):
 
 
 class TradeExtraCost(models.Model):
-    trade=models.ForeignKey("Trade", verbose_name=_("trade"), on_delete=models.CASCADE)
+    trade = models.ForeignKey(Trade, related_name='trade_extra_costs', on_delete=models.CASCADE)
     extra_cost=models.FloatField(_("extra_cost"))
     extra_cost_remarks=models.CharField(_("extra_cost_remarks"), max_length=100)
 
@@ -291,7 +291,7 @@ class SalesPurchase(models.Model):
     packaging_supplier=models.CharField(_("packaging_supplier"), max_length=50)
     logistic_supplier=models.CharField(_("logistic_supplier"), max_length=50)
     batch_number=models.CharField(_("batch_number"), max_length=50)
-    production_date=models.FloatField(_("production_date"))
+    production_date=models.DateField(_("production_date"))
     logistic_cost=models.FloatField(_("logistic_cost"))
     logistic_cost_due_date=models.CharField(_("logistic_cost_due_date"), max_length=50)
     liner=models.CharField(_("liner"), max_length=50)
@@ -316,7 +316,7 @@ class SalesPurchase(models.Model):
 class SalesPurchaseExtraCharge(models.Model):
     sp=models.ForeignKey("SalesPurchase", verbose_name=_("sp"), on_delete=models.CASCADE)
     name=models.CharField(_("name"), max_length=50)
-    charge=models.FloatField(_("charge"))
+    charge=models.FloatField(_("charge"),null=True, blank=True)
     
 
     class Meta:

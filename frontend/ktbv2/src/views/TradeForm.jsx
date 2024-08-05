@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import axios from '../axiosConfig';
+import { useParams, useNavigate } from 'react-router-dom';
 
-const TradeForm = ({ mode = 'add', tradeId = null }) => {
+const TradeForm = ({ mode = 'add' }) => {
+
+    const { id } = useParams(); 
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         company: '',
         trd: '',
@@ -71,21 +77,20 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
     });
 
     useEffect(() => {
-        if (mode === 'update' && tradeId) {
-            // Fetch the existing trade data from the API
-            axios.get(`/api/trades/${tradeId}`)
-                .then(response => {
-                    setFormData(response.data);
-                })
-                .catch(error => {
-                    console.error('There was an error fetching the trade data!', error);
-                });
+        if (mode === 'update' && id) {
+          // Fetch existing trade data for update
+          axios.get(`/trademgt/trades/${id}`)
+            .then(response => {
+              setFormData(response.data);
+            })
+            .catch(error => {
+              console.error('There was an error fetching the trade data!', error);
+            });
         }
-    }, [mode, tradeId]);
+      }, [mode, id]);
 
     const handleChange = (e, index, section) => {
         const { name, value, type, files } = e.target;
-
         if (type === 'file') {
             setFormData(prevState => {
                 const updatedProducts = [...prevState.tradeProducts];
@@ -152,24 +157,52 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        const formDataToSend = new FormData();
+
+        // Append regular fields
+        for (const [key, value] of Object.entries(formData)) {
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                    for (const [subKey, subValue] of Object.entries(item)) {
+                        if (subValue instanceof File) {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        } else {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        }
+                    }
+                });
+            } else {
+                formDataToSend.append(key, value);
+            }
+        }
+
+        // Post new trade data to API
         if (mode === 'add') {
-            // Post new trade data to API
-            axios.post('/api/trades', formData)
-                .then(response => {
-                    console.log('Trade added successfully!', response.data);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the trade!', error);
-                });
+            axios.post('/trademgt/trades/', formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => {
+                console.log('Trade added successfully!', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error adding the trade!', error);
+            });
         } else if (mode === 'update') {
-            // Put updated trade data to API
-            axios.put(`/api/trades/${tradeId}`, formData)
-                .then(response => {
-                    console.log('Trade updated successfully!', response.data);
-                })
-                .catch(error => {
-                    console.error('There was an error updating the trade!', error);
-                });
+            console.log("yes")
+            axios.put(`/trademgt/trades/${id}/`, formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => {
+                console.log('Trade updated successfully!', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error updating the trade!', error);
+            });
         }
     };
 
@@ -585,7 +618,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="text"
                             name="product_code"
                             value={product.product_code}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index,'products')}
                             placeholder="Product Code"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -593,7 +626,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="text"
                             name="product_name"
                             value={product.product_name}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index,'products')}
                             placeholder="Product Name"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -601,21 +634,24 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="text"
                             name="product_name_for_client"
                             value={product.product_name_for_client}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Product Name for Client"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
-                        <input
-                            type="file"
-                            name="loi"
-                            onChange={(e) => handleChange(e, index)}
-                            className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        />
+                        <div className="col-span-1">
+                            <input
+                                type="file"
+                                name="loi"
+                                onChange={(e) => handleChange(e, index, 'products')}
+                                className="border border-gray-300 p-2 rounded w-full"
+                            />
+                            {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>}
+                        </div>
                         <input
                             type="text"
                             name="hs_code"
                             value={product.hs_code}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="HS Code"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -623,7 +659,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="number"
                             name="total_contract_qty"
                             value={product.total_contract_qty}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Total Contract Qty"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -631,7 +667,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="text"
                             name="total_contract_qty_unit"
                             value={product.total_contract_qty_unit}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Total Contract Qty Unit"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -639,7 +675,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="number"
                             name="tolerance"
                             value={product.tolerance}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Tolerance"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -647,7 +683,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="number"
                             name="contract_balance_qty"
                             value={product.contract_balance_qty}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Contract Balance Qty"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -655,7 +691,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="text"
                             name="contract_balance_qty_unit"
                             value={product.contract_balance_qty_unit}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Contract Balance Qty Unit"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -663,7 +699,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="number"
                             name="trade_qty"
                             value={product.trade_qty}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Trade Qty"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />
@@ -671,7 +707,7 @@ const TradeForm = ({ mode = 'add', tradeId = null }) => {
                             type="text"
                             name="trade_qty_unit"
                             value={product.trade_qty_unit}
-                            onChange={(e) => handleChange(e, index)}
+                            onChange={(e) => handleChange(e, index, 'products')}
                             placeholder="Trade Qty Unit"
                             className="border border-gray-300 p-2 rounded w-full col-span-1"
                         />

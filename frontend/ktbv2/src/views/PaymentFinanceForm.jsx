@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from '../axiosConfig';
 
-const PaymentFinanceForm = () => {
+const PaymentFinanceForm = ({ mode = 'add' }) => {
+    const { id } = useParams();
+
     const [formData, setFormData] = useState({
         trn: '',
         batch_number: '',
@@ -18,46 +22,106 @@ const PaymentFinanceForm = () => {
         shipment_status: '',
         release_docs: '',
         release_docs_date: '',
-        remarks: ''
+        remarks: '',
+        ttCopies: [{ name: '', tt_copy: null }],
     });
 
-    const [ttCopies, setTTCopies] = useState([{ name: '', tt_copy: null }]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
-
-    const handleTTCopyChange = (index, e) => {
-        const { name, value, type, files } = e.target;
-        const newTTCopies = [...ttCopies];
-        if (type === 'file') {
-            newTTCopies[index][name] = files[0];
-        } else {
-            newTTCopies[index][name] = value;
+    useEffect(() => {
+        if (mode === 'update' && id) {
+            axios.get(`/trademgt/payment-finances/${id}`)
+                .then(response => {
+                    const data = response.data;
+                    setFormData(prevState => ({
+                        ...prevState,
+                        trn: data.trn,
+                        batch_number: data.batch_number,
+                        production_date: data.production_date,
+                        balance_payment: data.balance_payment,
+                        balance_payment_received: data.balance_payment_received,
+                        balance_paymnet_made: data.balance_paymnet_made,
+                        net_due_in_this_trade: data.net_due_in_this_trade,
+                        payment_mode: data.payment_mode,
+                        status_of_payment: data.status_of_payment,
+                        logistic_cost: data.logistic_cost,
+                        commission_agent_value: data.commission_agent_value,
+                        bl_fee: data.bl_fee,
+                        bl_collection_cost: data.bl_collection_cost,
+                        shipment_status: data.shipment_status,
+                        release_docs: data.release_docs,
+                        release_docs_date: data.release_docs_date,
+                        remarks: data.remarks,
+                        ttCopies: data.ttCopies || [{ name: '', tt_copy: null }]
+                    }));
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the finance data!', error);
+                });
         }
-        setTTCopies(newTTCopies);
+    }, [mode, id]);
+
+    const handleChange = (e, section, index) => {
+        const { name, value, files } = e.target;
+        if (section) {
+            const updatedSection = formData[section].map((item, i) =>
+                i === index ? { ...item, [name]: files ? files[0] : value } : item
+            );
+            setFormData({ ...formData, [section]: updatedSection });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
-    const addTTCopy = () => {
-        setTTCopies([...ttCopies, { name: '', tt_copy: null }]);
+    const handleAddRow = (section) => {
+        const newRow = { name: '', tt_copy: null };
+        setFormData({ ...formData, [section]: [...formData[section], newRow] });
     };
 
-    const removeTTCopy = (index) => {
-        const newTTCopies = ttCopies.filter((_, i) => i !== index);
-        setTTCopies(newTTCopies);
+    const handleRemoveRow = (section, index) => {
+        const updatedSection = formData[section].filter((_, i) => i !== index);
+        setFormData({ ...formData, [section]: updatedSection });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle form submission here
-        console.log('Form Data:', formData);
-        console.log('TTCopies:', ttCopies);
+        const formDataToSend = new FormData();
+
+        for (const [key, value] of Object.entries(formData)) {
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                    for (const [subKey, subValue] of Object.entries(item)) {
+                        formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                    }
+                });
+            } else {
+                formDataToSend.append(key, value);
+            }
+        }
+
+        const config = {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        };
+
+        if (mode === 'add') {
+            axios.post('/trademgt/payment-finances/', formDataToSend, config)
+                .then(response => {
+                    console.log('Payment/Finance added successfully!', response.data);
+                })
+                .catch(error => {
+                    console.error('There was an error adding the Payment/Finance!', error);
+                });
+        } else if (mode === 'update') {
+            axios.put(`/trademgt/payment-finances/${id}/`, formDataToSend, config)
+                .then(response => {
+                    console.log('Payment/Finance updated successfully!', response.data);
+                })
+                .catch(error => {
+                    console.error('There was an error updating the Payment/Finance!', error);
+                });
+        }
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* PaymentFinance Fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
@@ -66,7 +130,7 @@ const PaymentFinanceForm = () => {
                         name="trn"
                         type="text"
                         value={formData.trn}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -77,7 +141,7 @@ const PaymentFinanceForm = () => {
                         name="batch_number"
                         type="text"
                         value={formData.batch_number}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -88,7 +152,7 @@ const PaymentFinanceForm = () => {
                         name="production_date"
                         type="date"
                         value={formData.production_date}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -102,7 +166,7 @@ const PaymentFinanceForm = () => {
                         name="balance_payment"
                         type="number"
                         value={formData.balance_payment}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -113,7 +177,7 @@ const PaymentFinanceForm = () => {
                         name="balance_payment_received"
                         type="number"
                         value={formData.balance_payment_received}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -124,7 +188,7 @@ const PaymentFinanceForm = () => {
                         name="balance_paymnet_made"
                         type="number"
                         value={formData.balance_paymnet_made}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -138,7 +202,7 @@ const PaymentFinanceForm = () => {
                         name="net_due_in_this_trade"
                         type="number"
                         value={formData.net_due_in_this_trade}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -149,7 +213,7 @@ const PaymentFinanceForm = () => {
                         name="payment_mode"
                         type="text"
                         value={formData.payment_mode}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -160,7 +224,7 @@ const PaymentFinanceForm = () => {
                         name="status_of_payment"
                         type="text"
                         value={formData.status_of_payment}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -174,7 +238,7 @@ const PaymentFinanceForm = () => {
                         name="logistic_cost"
                         type="number"
                         value={formData.logistic_cost}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -185,7 +249,7 @@ const PaymentFinanceForm = () => {
                         name="commission_agent_value"
                         type="number"
                         value={formData.commission_agent_value}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -196,7 +260,7 @@ const PaymentFinanceForm = () => {
                         name="bl_fee"
                         type="number"
                         value={formData.bl_fee}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -210,7 +274,7 @@ const PaymentFinanceForm = () => {
                         name="bl_collection_cost"
                         type="number"
                         value={formData.bl_collection_cost}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -221,7 +285,7 @@ const PaymentFinanceForm = () => {
                         name="shipment_status"
                         type="text"
                         value={formData.shipment_status}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -232,7 +296,7 @@ const PaymentFinanceForm = () => {
                         name="release_docs"
                         type="text"
                         value={formData.release_docs}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
@@ -244,32 +308,28 @@ const PaymentFinanceForm = () => {
                     <input
                         id="release_docs_date"
                         name="release_docs_date"
-                        type="text"
+                        type="date"
                         value={formData.release_docs_date}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
-                <div className="md:col-span-3">
+                <div>
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
                     <input
                         id="remarks"
                         name="remarks"
                         type="text"
                         value={formData.remarks}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                 </div>
             </div>
 
-            {/* Horizontal Separator */}
-            <hr className="my-6 border-gray-300" />
-
-            {/* TTCopy Fields */}
             <div>
                 <h3 className="text-lg font-medium text-gray-900">TTCopy</h3>
-                {ttCopies.map((ttCopy, index) => (
+                {formData.ttCopies.map((ttCopy, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label htmlFor={`ttcopy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
@@ -278,7 +338,7 @@ const PaymentFinanceForm = () => {
                                 name="name"
                                 type="text"
                                 value={ttCopy.name}
-                                onChange={(e) => handleTTCopyChange(index, e)}
+                                onChange={(e) => handleChange(e, 'ttCopies', index)}
                                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             />
                         </div>
@@ -288,14 +348,14 @@ const PaymentFinanceForm = () => {
                                 id={`ttcopy_tt_copy_${index}`}
                                 name="tt_copy"
                                 type="file"
-                                onChange={(e) => handleTTCopyChange(index, e)}
+                                onChange={(e) => handleChange(e, 'ttCopies', index)}
                                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             />
                         </div>
                         <div className="flex items-end">
                             <button
                                 type="button"
-                                onClick={() => removeTTCopy(index)}
+                                onClick={() => handleRemoveRow('ttCopies', index)}
                                 className="text-red-600 hover:text-red-800"
                             >
                                 Remove
@@ -305,14 +365,13 @@ const PaymentFinanceForm = () => {
                 ))}
                 <button
                     type="button"
-                    onClick={addTTCopy}
+                    onClick={() => handleAddRow('ttCopies')}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                     Add TTCopy
                 </button>
             </div>
 
-            {/* Submit Button */}
             <button
                 type="submit"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

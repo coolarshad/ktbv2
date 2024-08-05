@@ -1,23 +1,22 @@
 # serializers.py
 from rest_framework import serializers
+from drf_writable_nested import WritableNestedModelSerializer
 from .models import *
-
-class TradeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Trade
-        fields = '__all__'
 
 class TradeProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = TradeProduct
         fields = '__all__'
 
-
 class TradeExtraCostSerializer(serializers.ModelSerializer):
     class Meta:
         model = TradeExtraCost
         fields = '__all__'
 
+class TradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trade
+        fields = '__all__'
 
 class PaymentTermSerializer(serializers.ModelSerializer):
     class Meta:
