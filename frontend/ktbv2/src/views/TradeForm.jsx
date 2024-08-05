@@ -645,7 +645,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, index, 'products')}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
-                            {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>}
+                            {/* {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>} */}
                         </div>
                         <input
                             type="text"

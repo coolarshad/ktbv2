@@ -7,12 +7,51 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 from .models import *
 from .serializers import *
-
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
 import logging
 logger = logging.getLogger(__name__)
 
 class TradeView(APIView):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TradeFilter
+
+    def get(self, request, *args, **kwargs):
+        trade_id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if trade_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                trade = Trade.objects.get(id=trade_id)
+            except Trade.DoesNotExist:
+                return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            trade_serializer = TradeSerializer(trade)
+            trade_products = TradeProduct.objects.filter(trade=trade)
+            trade_extra_costs = TradeExtraCost.objects.filter(trade=trade)
+
+            trade_products_serializer = TradeProductSerializer(trade_products, many=True)
+            trade_extra_costs_serializer = TradeExtraCostSerializer(trade_extra_costs, many=True)
+
+            response_data = trade_serializer.data
+            response_data['tradeProducts'] = trade_products_serializer.data
+            response_data['tradeExtraCosts'] = trade_extra_costs_serializer.data
+
+            return Response(response_data)
+
+        else:  # If `pk` is not provided, list all trades
+            # trades = Trade.objects.all()
+            # serializer = TradeSerializer(trades, many=True)
+            # return Response(serializer.data)
+            queryset = Trade.objects.all()
+            filterset = TradeFilter(request.GET, queryset=queryset)
+
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = TradeSerializer(filterset.qs, many=True)
+            return Response(serializer.data)
+
     def post(self, request, *args, **kwargs):
         data = request.data
         # Prepare trade data separately
@@ -118,32 +157,7 @@ class TradeView(APIView):
 
         return Response(trade_serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, request, *args, **kwargs):
-        trade_id = kwargs.get('pk')  # URL parameter for trade ID
-        
-        if trade_id:  # If `pk` is provided, retrieve a specific trade
-            try:
-                trade = Trade.objects.get(id=trade_id)
-            except Trade.DoesNotExist:
-                return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            trade_serializer = TradeSerializer(trade)
-            trade_products = TradeProduct.objects.filter(trade=trade)
-            trade_extra_costs = TradeExtraCost.objects.filter(trade=trade)
-
-            trade_products_serializer = TradeProductSerializer(trade_products, many=True)
-            trade_extra_costs_serializer = TradeExtraCostSerializer(trade_extra_costs, many=True)
-
-            response_data = trade_serializer.data
-            response_data['tradeProducts'] = trade_products_serializer.data
-            response_data['tradeExtraCosts'] = trade_extra_costs_serializer.data
-
-            return Response(response_data)
-
-        else:  # If `pk` is not provided, list all trades
-            trades = Trade.objects.all()
-            serializer = TradeSerializer(trades, many=True)
-            return Response(serializer.data)
+    
     
     def put(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -289,6 +303,45 @@ class PaymentTermViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentTermSerializer
 
 class PreSalePurchaseView(APIView):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PreSalePurchaseFilter
+
+    def get(self, request, *args, **kwargs):
+
+        pre_sp_id = kwargs.get('pk')  
+        
+        if pre_sp_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                pre_sp = PreSalePurchase.objects.get(id=pre_sp_id)
+            except PreSalePurchase.DoesNotExist:
+                return Response({'detail': 'PreSalePurchase not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            pre_sp_serializer = PreSalePurchaseSerializer(pre_sp)
+            ack_pis = AcknowledgedPI.objects.filter(presalepurchase=pre_sp)
+            ack_pos = AcknowledgedPO.objects.filter(presalepurchase=pre_sp)
+
+            ack_pis_serializer = AcknowledgedPISerializer(ack_pis, many=True)
+            ack_pos_serializer = AcknowledgedPOSerializer(ack_pos, many=True)
+
+            response_data = pre_sp_serializer.data
+            response_data['acknowledgedPI'] = ack_pis_serializer.data
+            response_data['acknowledgedPO'] = ack_pos_serializer.data
+
+            return Response(response_data)
+
+        else:  # If `pk` is not provided, list all trades
+            # pre_sps = PreSalePurchase.objects.all()
+            # serializer = PreSalePurchaseSerializer(pre_sps, many=True)
+            # return Response(serializer.data)
+            queryset = PreSalePurchase.objects.all()
+            filterset = PreSalePurchaseFilter(request.GET, queryset=queryset)
+
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = PreSalePurchaseSerializer(filterset.qs, many=True)
+            return Response(serializer.data)
+
     def post(self, request, *args, **kwargs):
         data = request.data
         # Prepare trade data separately
@@ -347,32 +400,7 @@ class PreSalePurchaseView(APIView):
 
         return Response(pre_sp_serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, request, *args, **kwargs):
-        pre_sp_id = kwargs.get('pk')  # URL parameter for trade ID
-        
-        if pre_sp_id:  # If `pk` is provided, retrieve a specific trade
-            try:
-                pre_sp = PreSalePurchase.objects.get(id=pre_sp_id)
-            except PreSalePurchase.DoesNotExist:
-                return Response({'detail': 'PreSalePurchase not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            pre_sp_serializer = PreSalePurchaseSerializer(pre_sp)
-            ack_pis = AcknowledgedPI.objects.filter(presalepurchase=pre_sp)
-            ack_pos = AcknowledgedPO.objects.filter(presalepurchase=pre_sp)
-
-            ack_pis_serializer = AcknowledgedPISerializer(ack_pis, many=True)
-            ack_pos_serializer = AcknowledgedPOSerializer(ack_pos, many=True)
-
-            response_data = pre_sp_serializer.data
-            response_data['acknowledgedPI'] = ack_pis_serializer.data
-            response_data['acknowledgedPO'] = ack_pos_serializer.data
-
-            return Response(response_data)
-
-        else:  # If `pk` is not provided, list all trades
-            pre_sps = PreSalePurchase.objects.all()
-            serializer = PreSalePurchaseSerializer(pre_sps, many=True)
-            return Response(serializer.data)
+    
 
     def put(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -472,6 +500,9 @@ class DocumentsRequiredViewSet(viewsets.ModelViewSet):
     serializer_class = DocumentsRequiredSerializer
 
 class PrePaymentView(APIView):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PrePaymentFilter
+
     def get(self, request, *args, **kwargs):
         prepayment_id = kwargs.get('pk')  # URL parameter for trade ID
         
@@ -498,8 +529,13 @@ class PrePaymentView(APIView):
             return Response(response_data)
 
         else:  # If `pk` is not provided, list all trades
-            prepayments = PrePayment.objects.all()
-            serializer = PrePaymentSerializer(prepayments, many=True)
+            queryset = PrePayment.objects.all()
+            filterset = PrePaymentFilter(request.GET, queryset=queryset)
+
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = PrePaymentSerializer(filterset.qs, many=True)
             return Response(serializer.data)
     
     def post(self, request, *args, **kwargs):
@@ -701,6 +737,9 @@ class AdvanceTTCopyViewSet(viewsets.ModelViewSet):
     serializer_class = AdvanceTTCopySerializer
 
 class SalesPurchaseView(APIView):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = SalesPurchaseFilter
+
     def get(self, request, *args, **kwargs):
         sp_id = kwargs.get('pk')  # URL parameter for trade ID
         
@@ -733,8 +772,13 @@ class SalesPurchaseView(APIView):
             return Response(response_data)
 
         else:  # If `pk` is not provided, list all trades
-            sps = SalesPurchase.objects.all()
-            serializer = SalesPurchaseSerializer(sps, many=True)
+            queryset = SalesPurchase.objects.all()
+            filterset = SalesPurchaseFilter(request.GET, queryset=queryset)
+
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = SalesPurchaseSerializer(filterset.qs, many=True)
             return Response(serializer.data)
     
     def post(self, request, *args, **kwargs):
@@ -1046,6 +1090,9 @@ class COAViewSet(viewsets.ModelViewSet):
     serializer_class = COASerializer
 
 class PaymentFinanceView(APIView):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PaymentFinanceFilter
+
     def get(self, request, *args, **kwargs):
         pf_id = kwargs.get('pk')  # URL parameter for trade ID
         
@@ -1067,8 +1114,13 @@ class PaymentFinanceView(APIView):
             return Response(response_data)
 
         else:  # If `pk` is not provided, list all trades
-            pfs = PaymentFinance.objects.all()
-            serializer = PaymentFinanceSerializer(pfs, many=True)
+            queryset = PaymentFinance.objects.all()
+            filterset = PaymentFinanceFilter(request.GET, queryset=queryset)
+
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = PaymentFinanceSerializer(filterset.qs, many=True)
             return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):

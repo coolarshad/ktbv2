@@ -14,6 +14,9 @@ class TradeExtraCostSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TradeSerializer(serializers.ModelSerializer):
+    trade_products = TradeProductSerializer(many=True, read_only=True)
+    trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
+
     class Meta:
         model = Trade
         fields = '__all__'
