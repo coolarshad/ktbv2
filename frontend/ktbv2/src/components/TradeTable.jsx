@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const TradeTable = ({ data, onDelete }) => {
+const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
   const navigate = useNavigate();  
 
   const handleEdit = (tradeId) => {
@@ -27,7 +27,7 @@ const TradeTable = ({ data, onDelete }) => {
         </thead>
         <tbody>
           {data.map((trade, index) => (
-            <tr key={index}>
+            <tr key={index} onClick={() => onRowClick(trade.id)}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.company}</td>
@@ -41,7 +41,12 @@ const TradeTable = ({ data, onDelete }) => {
               </td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
-                  <button className="bg-green-500 text-white px-2 py-1 rounded">Approve</button>
+                <button
+                    className="bg-green-500 text-white px-2 py-1 rounded"
+                    onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
+                  >
+                    View
+                  </button>
                   <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(trade.id)}>Edit</button>
                   <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(trade.id)}>Delete</button>
                 </div>

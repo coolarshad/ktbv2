@@ -1105,10 +1105,8 @@ class PaymentFinanceView(APIView):
             pf_serializer = PaymentFinanceSerializer(pf)
             tt_copies = TTCopy.objects.filter(payment_finance=pf)
            
-
             tt_copies_serializer = TTCopySerializer(tt_copies, many=True)
             
-
             response_data = pf_serializer.data
             response_data['ttCopies'] = tt_copies_serializer.data
             return Response(response_data)
