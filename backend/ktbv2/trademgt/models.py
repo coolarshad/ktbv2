@@ -65,6 +65,9 @@ class Trade(models.Model):
 
     approved_by=models.CharField(_("approved_by"), max_length=50, null=True, blank=True)
 
+    # Self-referential many-to-many relationship (symmetrical)
+    related_trades = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='related_trades')
+
     class Meta:
         verbose_name = _("Trade")
         verbose_name_plural = _("Trades")

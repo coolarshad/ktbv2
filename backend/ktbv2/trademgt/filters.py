@@ -5,9 +5,9 @@ from .models import *
 class TradeFilter(django_filters.FilterSet):
     date_from = django_filters.DateFilter(field_name='trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
     date_to = django_filters.DateFilter(field_name='trd', lookup_expr='lte')    # Replace `date_field` with the actual field name
-    sales = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-    purchase = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-    cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
+    # sales = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
+    # purchase = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
+    # cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
 
     class Meta:
         model = Trade

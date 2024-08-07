@@ -16,10 +16,30 @@ class TradeExtraCostSerializer(serializers.ModelSerializer):
 class TradeSerializer(serializers.ModelSerializer):
     trade_products = TradeProductSerializer(many=True, read_only=True)
     trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
+    related_trades = serializers.PrimaryKeyRelatedField(
+        queryset=Trade.objects.all(),
+        many=True,
+        required=False,
+        
+    )
 
     class Meta:
         model = Trade
         fields = '__all__'
+    
+    def create(self, validated_data):
+        related_trades_data = validated_data.pop('related_trades', [])
+        trade = super().create(validated_data)
+        if related_trades_data:
+            trade.related_trades.set(related_trades_data)
+        return trade
+    
+    def update(self, instance, validated_data):
+        related_trades_data = validated_data.pop('related_trades', [])
+        trade = super().update(instance, validated_data)
+        if related_trades_data:
+            trade.related_trades.set(related_trades_data)
+        return trade
 
 class PaymentTermSerializer(serializers.ModelSerializer):
     class Meta:

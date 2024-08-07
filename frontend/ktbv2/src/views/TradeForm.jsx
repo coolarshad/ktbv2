@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
+import Select from 'react-select';
 
 const TradeForm = ({ mode = 'add' }) => {
 
@@ -73,21 +74,46 @@ const TradeForm = ({ mode = 'add' }) => {
                 extra_cost: '',
                 extra_cost_remarks: ''
             }
-        ]
+        ],
+        relatedTrades: []
     });
+
+    const [tradeOptions, setTradeOptions] = useState([]);
+    useEffect(() => {
+        // Fetch all trades to populate the relatedTrades options
+        axios.get('/trademgt/trades/')
+            .then(response => {
+                const options = response.data.map(trade => ({
+                    value: trade.id,
+                    label: trade.trn, // Use trade.trn or any other field you want to display
+                }));
+                setTradeOptions(options);
+            })
+            .catch(error => {
+                console.error('Error fetching trades', error);
+            });
+    }, []);
 
     useEffect(() => {
         if (mode === 'update' && id) {
-          // Fetch existing trade data for update
-          axios.get(`/trademgt/trades/${id}`)
-            .then(response => {
-              setFormData(response.data);
-            })
-            .catch(error => {
-              console.error('There was an error fetching the trade data!', error);
-            });
+            // Fetch existing trade data for update
+            axios.get(`/trademgt/trades/${id}`)
+                .then(response => {
+                    const data = response.data;
+    
+                    // Ensure that formData has the necessary structure
+                    setFormData(prevData => ({
+                        ...prevData,
+                        ...data,
+                        // Example: Ensure relatedTrades is an array if it's expected
+                        relatedTrades: Array.isArray(data.related_trades) ? data.related_trades : []
+                    }));
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the trade data!', error);
+                });
         }
-      }, [mode, id]);
+    }, [mode, id]);
 
     const handleChange = (e, index, section) => {
         const { name, value, type, files } = e.target;
@@ -177,6 +203,13 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         }
 
+        // Append related trades (array of IDs)
+        if (Array.isArray(formData.relatedTrades)) {
+            formData.relatedTrades.forEach((tradeId, index) => {
+                formDataToSend.append(`relatedTrades[${index}]`, tradeId);
+            });
+        }
+
         // Post new trade data to API
         if (mode === 'add') {
             axios.post('/trademgt/trades/', formDataToSend, {
@@ -191,7 +224,6 @@ const TradeForm = ({ mode = 'add' }) => {
                 console.error('There was an error adding the trade!', error);
             });
         } else if (mode === 'update') {
-            console.log("yes")
             axios.put(`/trademgt/trades/${id}/`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -208,14 +240,31 @@ const TradeForm = ({ mode = 'add' }) => {
 
     // Sample options for the dropdown fields
     const companyOptions = ['Company A', 'Company B', 'Company C'];
-    const tradeTypeOptions = ['Type 1', 'Type 2', 'Type 3'];
+    const tradeTypeOptions = ['sales', 'purchase', 'cancel'];
     const tradeCategoryOptions = ['Category 1', 'Category 2', 'Category 3'];
     const customerCompanyOptions = ['Customer A', 'Customer B', 'Customer C'];
     const paymentTermOptions = ['Term 1', 'Term 2', 'Term 3'];
     const bankNameOptions = ['Bank A', 'Bank B', 'Bank C'];
 
+    const handleSelectChange = (selectedOptions) => {
+        setFormData({
+            ...formData,
+            relatedTrades: selectedOptions ? selectedOptions.map(option => option.value) : [],
+        });
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+                <label>Related Trades</label>
+                <Select
+                    isMulti
+                    name="relatedTrades"
+                    options={tradeOptions}
+                    value={tradeOptions.filter(option => formData.relatedTrades.includes(option.value))}
+                    onChange={handleSelectChange}
+                />
+            </div>
             <div className="grid grid-cols-3 gap-4 p-4">
                 <select
                     name="company"

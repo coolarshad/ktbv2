@@ -104,6 +104,8 @@ class TradeView(APIView):
 
         trade_products_data = []
         trade_extra_costs_data = []
+        related_trades_data = []
+       
 
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
@@ -133,10 +135,22 @@ class TradeView(APIView):
             trade_extra_costs_data.append(cost_data)
             j += 1
         
+        k = 0
+        while f'relatedTrades[{k}]' in data:
+            related_data = data.get(f'relatedTrades[{k}]')
+            if related_data is not None:
+                # Convert related_data to integer
+                related_trades_data.append(int(related_data))
+            k += 1
+
+        print("-----", related_trades_data)
+        
         with transaction.atomic():
             trade_serializer = TradeSerializer(data=trade_data)
             if trade_serializer.is_valid():
                 trade = trade_serializer.save()
+                if related_trades_data:
+                    trade.related_trades.set(related_trades_data)
             else:
                 return Response(trade_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
@@ -218,6 +232,8 @@ class TradeView(APIView):
 
         trade_products_data = []
         trade_extra_costs_data = []
+        related_trades_data = []
+        
 
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
@@ -246,11 +262,21 @@ class TradeView(APIView):
             }
             trade_extra_costs_data.append(cost_data)
             j += 1
+        
+        k = 0
+        while f'relatedTrades[{k}]' in data:
+            related_data = data.get(f'relatedTrades[{k}]')
+            if related_data is not None:
+                # Convert related_data to integer
+                related_trades_data.append(int(related_data))
+            k += 1
 
         with transaction.atomic():
             trade_serializer = TradeSerializer(trade, data=trade_data, partial=True)
             if trade_serializer.is_valid():
                 trade = trade_serializer.save()
+                if related_trades_data:
+                    trade.related_trades.set(related_trades_data)
             else:
                 return Response(trade_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

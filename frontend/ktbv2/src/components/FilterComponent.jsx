@@ -13,24 +13,59 @@ const FilterComponent = ({ onFilter }) => {
 
  
 
+  // const handleSearch = async () => {
+  //   try {
+  //     const response = await axios.get('/trademgt/trades', {
+  //       params: {
+  //         [`${field}`]: searchText,
+  //         date_from: dateFrom,
+  //         date_to: dateTo,
+  //         sales: salesChecked,
+  //         purchase: purchaseChecked,
+  //         cancel: cancelChecked,
+  //       },
+  //     });
+  //     console.log("------",response.data)
+  //     onFilter(response.data); // Pass the filtered data to the parent component
+  //   } catch (error) {
+  //     console.error('Error fetching filtered trades:', error);
+  //   }
+  // };
   const handleSearch = async () => {
     try {
-      const response = await axios.get('/trademgt/trades', {
-        params: {
-          [`${field}`]: searchText,
-          date_from: dateFrom,
-          date_to: dateTo,
-          sales: salesChecked,
-          purchase: purchaseChecked,
-          cancel: cancelChecked,
-        },
-      });
-      console.log("------",response.data)
+      const params = {
+        [`${field}__icontains`]: searchText,
+      };
+  
+      // Add date fields only if they are provided
+      if (dateFrom) params.date_from = dateFrom;
+      if (dateTo) params.date_to = dateTo;
+  
+      // Create an array for trade_category using icontains
+      const tradeTypes = [];
+      if (salesChecked) tradeTypes.push('sales');
+      if (purchaseChecked) tradeTypes.push('purchase');
+      if (cancelChecked) tradeTypes.push('cancel');
+  
+      // Add trade_category to params if there are selected values
+      if (tradeTypes.length > 0) {
+        params.trade_type__icontains = tradeTypes.join('|'); // Using regex OR for multiple values
+      }
+  
+      const response = await axios.get('/trademgt/trades', { params });
+      console.log("------", response.data);
       onFilter(response.data); // Pass the filtered data to the parent component
     } catch (error) {
       console.error('Error fetching filtered trades:', error);
+      // Provide user feedback for the error
+      alert('There was an error fetching the filtered trades. Please try again.');
     }
   };
+  
+  
+  
+  
+  
   return (
     <div className="px-3 py-1 bg-white shadow-md rounded-md">
       <div className="flex flex-col gap-2">
@@ -45,7 +80,7 @@ const FilterComponent = ({ onFilter }) => {
             >
               <option value="">Select Field</option>
               <option value="trn">TRN</option>
-              <option value="field2">Field 2</option>
+              <option value="company">company</option>
               {/* Add more options as needed */}
             </select>
           </div>
