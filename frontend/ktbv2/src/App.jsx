@@ -16,37 +16,37 @@ import PrePaymentForm from './views/PrePaymentForm'
 import SalesPurchaseForm from './views/SalesPurchaseForm'
 import PaymentFinanceForm from './views/PaymentFinanceForm'
 import MenuBar from './components/MenuBar'
-import Invoice from './views/Invoice';
+import SalesInvoice from './views/SalesInvoice';
+import PurchaseInvoice from './views/PurchaseInvoice';
 function App() {
  
   return (
-    <Invoice />
-    // <Router>
-    //   <MenuBar />
-    //   <div className="p-0">
-    //     <Routes>
-    //       <Route path="/trade-approval" element={<TradeApproval />} />
-    //       <Route path="/trade-approved" element={<TradeApproved />} />
-    //       <Route path="/pre-sale-purchase" element={<PreSalePurchase />} />
-    //       <Route path="/pre-payment" element={<PrePayment />} />
-    //       <Route path="/sales-purchases" element={<SalesPurchases />} />
-    //       <Route path="/payment-finance" element={<PaymentFinance />} />
-    //       <Route path="/pl" element={<PL />} />
-    //       <Route path="/trade-form" element={<TradeForm />} />
-    //       <Route path="/trade-form/:id" element={<TradeForm mode="update" />} />
-    //       <Route path="/payment-term-form" element={<PaymentTermForm />} />
-    //       <Route path="/documents-required-form" element={<DocumentsRequiredForm />} />
-    //       <Route path="/pre-sale-purchase-form" element={<PreSalePurchaseForm />} />
-    //       <Route path="/pre-sale-purchase-form/:id" element={<PreSalePurchaseForm mode="update" />} />
-    //       <Route path="/pre-payment-form" element={<PrePaymentForm />} />
-    //       <Route path="/pre-payment-form/:id" element={<PrePaymentForm mode="update" />} />
-    //       <Route path="/sales-purchase-form" element={<SalesPurchaseForm />} />
-    //       <Route path="/sales-purchase-form/:id" element={<SalesPurchaseForm mode="update" />} />
-    //       <Route path="/payment-finance-form" element={<PaymentFinanceForm />} />
-    //       <Route path="/payment-finance-form/:id" element={<PaymentFinanceForm mode="update" />} />
-    //     </Routes>
-    //   </div>
-    // </Router>
+    <Router>
+      <MenuBar />
+      <div className="p-0">
+        <Routes>
+          <Route path="/trade-approval" element={<TradeApproval />} />
+          <Route path="/trade-approved" element={<TradeApproved />} />
+          <Route path="/pre-sale-purchase" element={<PreSalePurchase />} />
+          <Route path="/pre-payment" element={<PrePayment />} />
+          <Route path="/sales-purchases" element={<SalesPurchases />} />
+          <Route path="/payment-finance" element={<PaymentFinance />} />
+          <Route path="/pl" element={<PL />} />
+          <Route path="/trade-form" element={<TradeForm />} />
+          <Route path="/trade-form/:id" element={<TradeForm mode="update" />} />
+          <Route path="/payment-term-form" element={<PaymentTermForm />} />
+          <Route path="/documents-required-form" element={<DocumentsRequiredForm />} />
+          <Route path="/pre-sale-purchase-form" element={<PreSalePurchaseForm />} />
+          <Route path="/pre-sale-purchase-form/:id" element={<PreSalePurchaseForm mode="update" />} />
+          <Route path="/pre-payment-form" element={<PrePaymentForm />} />
+          <Route path="/pre-payment-form/:id" element={<PrePaymentForm mode="update" />} />
+          <Route path="/sales-purchase-form" element={<SalesPurchaseForm />} />
+          <Route path="/sales-purchase-form/:id" element={<SalesPurchaseForm mode="update" />} />
+          <Route path="/payment-finance-form" element={<PaymentFinanceForm />} />
+          <Route path="/payment-finance-form/:id" element={<PaymentFinanceForm mode="update" />} />
+        </Routes>
+      </div>
+    </Router>
   )
 }
 

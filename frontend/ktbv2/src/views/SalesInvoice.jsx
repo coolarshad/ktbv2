@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Invoice = () => {
+const SalesInvoice = () => {
   return (
     <div className="p-4 max-w-6xl mx-auto">
       
@@ -262,4 +262,4 @@ const Invoice = () => {
   );
 };
 
-export default Invoice;
+export default SalesInvoice;

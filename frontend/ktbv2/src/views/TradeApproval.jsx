@@ -73,9 +73,9 @@ function TradeApproval() {
   };
 
   const handleFilter = (filters) => {
-    console.log(filters)
+    setTradeData(filters)
   };
-
+  
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
   return (

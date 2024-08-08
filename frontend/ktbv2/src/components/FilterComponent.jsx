@@ -11,26 +11,6 @@ const FilterComponent = ({ onFilter }) => {
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
 
- 
-
-  // const handleSearch = async () => {
-  //   try {
-  //     const response = await axios.get('/trademgt/trades', {
-  //       params: {
-  //         [`${field}`]: searchText,
-  //         date_from: dateFrom,
-  //         date_to: dateTo,
-  //         sales: salesChecked,
-  //         purchase: purchaseChecked,
-  //         cancel: cancelChecked,
-  //       },
-  //     });
-  //     console.log("------",response.data)
-  //     onFilter(response.data); // Pass the filtered data to the parent component
-  //   } catch (error) {
-  //     console.error('Error fetching filtered trades:', error);
-  //   }
-  // };
   const handleSearch = async () => {
     try {
       const params = {
@@ -51,9 +31,7 @@ const FilterComponent = ({ onFilter }) => {
       if (tradeTypes.length > 0) {
         params.trade_type__icontains = tradeTypes.join('|'); // Using regex OR for multiple values
       }
-  
       const response = await axios.get('/trademgt/trades', { params });
-      console.log("------", response.data);
       onFilter(response.data); // Pass the filtered data to the parent component
     } catch (error) {
       console.error('Error fetching filtered trades:', error);
@@ -61,10 +39,6 @@ const FilterComponent = ({ onFilter }) => {
       alert('There was an error fetching the filtered trades. Please try again.');
     }
   };
-  
-  
-  
-  
   
   return (
     <div className="px-3 py-1 bg-white shadow-md rounded-md">
