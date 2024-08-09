@@ -57,6 +57,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://148.72.247.191:5173"
 ]
 ROOT_URLCONF = 'ktbv2.urls'
 
