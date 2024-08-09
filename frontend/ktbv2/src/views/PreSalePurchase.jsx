@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import PreSPTable from "../components/PreSPTable"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
+import FilterComponent from "../components/FilterComponent";
 
 function PreSalePurchase() {
   const navigate = useNavigate();
@@ -44,13 +45,28 @@ function PreSalePurchase() {
     }
   };
 
+  const handleFilter = (filters) => {
+    setPreSPData(filters)
+  };
+
+  const fieldOptions = [
+    { value: 'trn__trn', label: 'TRN' },  // Trade TRN field in PreSalePurchase filter
+    { value: 'trn__company', label: 'Company' },
+    { value: 'trn__trade_type', label: 'Trade Type' },
+    { value: 'date', label: 'Date' },
+    { value: 'doc_issuance_date', label: 'Document Issuance Date' },
+    { value: 'payment_term', label: 'Payment Term' },
+    { value: 'advance_due_date', label: 'Advance Due Date' },
+    { value: 'lc_due_date', label: 'LC Due Date' },
+    { value: 'remarks', label: 'Remarks' },
+  ];
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
+  
   return (
     <>
-      <NavBar />
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Pre Sales/Purchase</p>
         <button
@@ -59,7 +75,13 @@ function PreSalePurchase() {
         >
           +
         </button>
+        <div>
+        <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-sales-purchases'} 
+        fieldOptions={fieldOptions}
+        />
+        </div>
         <div className=" rounded p-2">
+
         <PreSPTable data={preSPData} onDelete={handleDelete} />
         </div>
       </div>

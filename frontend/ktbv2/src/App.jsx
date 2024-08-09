@@ -18,6 +18,8 @@ import PaymentFinanceForm from './views/PaymentFinanceForm'
 import MenuBar from './components/MenuBar'
 import SalesInvoice from './views/SalesInvoice';
 import PurchaseInvoice from './views/PurchaseInvoice';
+import Dashboard from './views/Dashboard';
+
 function App() {
  
   return (
@@ -25,6 +27,7 @@ function App() {
       <MenuBar />
       <div className="p-0">
         <Routes>
+          <Route path="/" element={<Dashboard />} />
           <Route path="/trade-approval" element={<TradeApproval />} />
           <Route path="/trade-approved" element={<TradeApproved />} />
           <Route path="/pre-sale-purchase" element={<PreSalePurchase />} />

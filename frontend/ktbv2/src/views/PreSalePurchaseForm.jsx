@@ -136,7 +136,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             {/* PreSalePurchase Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
                     <select
@@ -144,7 +144,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         name="trn"
                         value={formData.trn}
                         onChange={e => setFormData({ ...formData, trn: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     >
                         <option value="">Select TRN</option>
                         {trnOptions.map(option => (
@@ -162,7 +162,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.date}
                         onChange={e => setFormData({ ...formData, date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -173,7 +173,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.doc_issuance_date}
                         onChange={e => setFormData({ ...formData, doc_issuance_date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -183,7 +183,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         name="payment_term"
                         value={formData.payment_term}
                         onChange={e => setFormData({ ...formData, payment_term: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     >
                         <option value="">Select Payment Term</option>
                         {paymentTermOptions.map(option => (
@@ -201,7 +201,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.advance_due_date}
                         onChange={e => setFormData({ ...formData, advance_due_date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -212,7 +212,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.lc_due_date}
                         onChange={e => setFormData({ ...formData, lc_due_date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -222,15 +222,15 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         name="remarks"
                         value={formData.remarks}
                         onChange={e => setFormData({ ...formData, remarks: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
             {/* Acknowledged PI Section */}
-            <div className="mt-4">
+            <div className="mt-0 p-4">
                 <h3 className="text-lg font-medium text-gray-900">Acknowledged PI</h3>
                 {formData.acknowledgedPI.map((ackPi, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 ">
                         <div>
                             <label htmlFor={`ackn_pi_${index}`} className="block text-sm font-medium text-gray-700">Acknowledged PI</label>
                             <input
@@ -238,7 +238,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 name="ackn_pi"
                                 type="file"
                                 onChange={e => handleChange(e, index, 'acknowledgedPI')}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                             {ackPi.ackn_pi && (
                                 <span className="block mt-2 text-gray-600">
@@ -254,7 +254,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={ackPi.ackn_pi_name || ''}
                                 onChange={e => handleChange(e, index, 'acknowledgedPI')}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -273,16 +273,16 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 <button
                     type="button"
                     onClick={() => handleAddRow('acknowledgedPI')}
-                    className="mt-2 px-3 py-1 bg-indigo-600 text-white rounded-md"
+                    className="mt-2 px-3 py-1 bg-green-600 text-white rounded-md"
                 >
                     Add PI
                 </button>
             </div>
             {/* Acknowledged PO Section */}
-            <div className="mt-4">
+            <div className="mt-0 p-4">
                 <h3 className="text-lg font-medium text-gray-900">Acknowledged PO</h3>
                 {formData.acknowledgedPO.map((ackPo, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 p-4">
                         <div>
                             <label htmlFor={`ackn_po_${index}`} className="block text-sm font-medium text-gray-700">Acknowledged PO</label>
                             <input
@@ -290,7 +290,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 name="ackn_po"
                                 type="file"
                                 onChange={e => handleChange(e, index, 'acknowledgedPO')}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                             {/* {ackPo.ackn_po && <span className="block mt-2 text-gray-600">{ackPo.ackn_po}</span>} */}
                         </div>
@@ -302,7 +302,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={ackPo.ackn_po_name || ''}
                                 onChange={e => handleChange(e, index, 'acknowledgedPO')}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -321,14 +321,14 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 <button
                     type="button"
                     onClick={() => handleAddRow('acknowledgedPO')}
-                    className="mt-2 px-3 py-1 bg-indigo-600 text-white rounded-md"
+                    className="mt-2 px-3 py-1 bg-green-600 text-white rounded-md"
                 >
                     Add PO
                 </button>
             </div>
             <button
                 type="submit"
-                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md"
+                className="mx-10 my-0 px-4 py-2 bg-indigo-600 text-white rounded-md"
             >
                 {mode === 'add' ? 'Add' : 'Update'} PreSalePurchase
             </button>

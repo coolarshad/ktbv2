@@ -14,15 +14,15 @@ const SPTable = ({ data,onDelete }) => {
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Number</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
-
-            
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Number</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Date</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Logistic Supplier</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch Number</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
         </thead>
@@ -30,12 +30,16 @@ const SPTable = ({ data,onDelete }) => {
           {data.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.tradeType}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.company}</td>
+      
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_number}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_number}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packaging_supplier}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.logistic_supplier}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_number}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.production_date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />
               </td>

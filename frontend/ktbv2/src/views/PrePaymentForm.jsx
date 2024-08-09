@@ -127,7 +127,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
                     <select
@@ -135,7 +135,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         name="trn"
                         value={formData.trn}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     >
                         <option value="">Select TRN</option>
                         {trnOptions.map(option => (
@@ -153,7 +153,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.lc_number}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -164,7 +164,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.lc_opening_bank}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -175,7 +175,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.advance_received}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -186,7 +186,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.date_of_receipt}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -197,7 +197,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.advance_paid}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -208,7 +208,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.date_of_payment}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -219,7 +219,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.lc_expiry_date}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -230,7 +230,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.latest_shipment_date_in_lc}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 {/* Remarks field spanning across all columns */}
@@ -242,7 +242,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.remarks}
                         onChange={handleChange}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -251,7 +251,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             <hr className="my-6 border-t-2 border-gray-300" />
 
             {/* LcCopy Section */}
-            <div className="space-y-4">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">LC Copies</h3>
                 {formData.lcCopies.map((lcCopy, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -263,7 +263,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={lcCopy.name}
                                 onChange={(e) => handleChange(e, 'lcCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -273,7 +273,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 name="lc_copy"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'lcCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -289,7 +289,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             </div>
 
             {/* LcAmmendment Section */}
-            <div className="space-y-4 mt-6">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">LC Ammendments</h3>
                 {formData.lcAmmendments.map((lcAmmendment, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -301,7 +301,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={lcAmmendment.name}
                                 onChange={(e) => handleChange(e, 'lcAmmendments', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -311,7 +311,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 name="lc_ammendment"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'lcAmmendments', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -327,7 +327,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             </div>
 
             {/* AdvanceTTCopy Section */}
-            <div className="space-y-4 mt-6">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">Advance TT Copies</h3>
                 {formData.advanceTTCopies.map((advanceTTCopy, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -339,7 +339,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={advanceTTCopy.name}
                                 onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -349,7 +349,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 name="advance_tt_copy"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">

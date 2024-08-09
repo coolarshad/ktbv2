@@ -17,12 +17,12 @@ const MenuBar = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between p-2 bg-gray-800 text-white">
+      <div className="flex items-center justify-between p-2 bg-red-700	 text-white">
         <div className="flex items-center space-x-4">
           <div className="cursor-pointer" onClick={toggleMenu}>
             <FaBars size={24} />
           </div>
-          <span className="text-lg font-bold">MyApp</span>
+          <span className="text-lg font-bold">KTB V2</span>
         </div>
         <div className="flex items-center space-x-8">
           <FaBell size={24} className="cursor-pointer" />
@@ -34,7 +34,7 @@ const MenuBar = () => {
               <FaCaretDown size={16} />
             </div>
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg">
+              <div className="absolute right-0 mt-2 w-48 bg-red-700 text-white border border-gray-700 rounded-lg shadow-lg">
                 <Link to="#" className="block px-4 py-2 hover:bg-gray-700">Profile</Link>
                 <Link to="#" className="block px-4 py-2 hover:bg-gray-700">Settings</Link>
                 <Link to="#" className="block px-4 py-2 hover:bg-gray-700">Logout</Link>
@@ -43,12 +43,12 @@ const MenuBar = () => {
           </div>
         </div>
       </div>
-      <div className={`fixed top-0 left-0 h-full bg-gray-800 text-white p-4 transition-transform duration-300 ${isOpen ? 'transform translate-x-0' : 'transform -translate-x-full'} w-1/5 z-50`}>
+      <div className={`fixed top-0 left-0 h-full bg-red-700 text-white p-4 transition-transform duration-300 ${isOpen ? 'transform translate-x-0' : 'transform -translate-x-full'} w-1/7 z-50`}>
         <div className="flex flex-col space-y-4">
           <div className="flex justify-end">
             <FaTimes size={24} className="cursor-pointer" onClick={toggleMenu} />
           </div>
-          <Link to="/" className="hover:text-gray-400">Home</Link>
+          <Link to="/" className="hover:text-gray-400">Dashboard</Link>
           <Link to="/trade-approval" className="hover:text-gray-400">Trade Approval</Link>
           <Link to="/trade-approved" className="hover:text-gray-400">Trade Approved</Link>
           <Link to="/pre-sale-purchase" className="hover:text-gray-400">Pre-Sale Purchase</Link>

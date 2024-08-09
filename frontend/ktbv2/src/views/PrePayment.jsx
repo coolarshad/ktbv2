@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import React, { useEffect, useState } from 'react';
 import PrePaymentTable from "../components/PrePaymentTable"
+import FilterComponent from "../components/FilterComponent";
 
 
 function PrePayment() {
@@ -39,16 +40,34 @@ function PrePayment() {
       }
     }
   };
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
-  
 
   const handleAddPreSPClick = () => {
     navigate('/pre-payment-form');
   };
+
+  const handleFilter = (filters) => {
+    setPrePaymentData(filters)
+  };
+
+  const fieldOptions = [
+    { value: 'trn__trn', label: 'TRN' },  // Trade TRN field in PreSalePurchase filter
+    { value: 'trn__company', label: 'Company' },
+    { value: 'trn__trade_type', label: 'Trade Type' },
+    { value: 'lc_number', label: 'LC Number' },
+    { value: 'lc_opening_bank', label: 'LC Opening Bank' },
+    { value: 'advance_received', label: 'Advance Received' },
+    { value: 'date_of_receipt', label: 'Date Of Receipt' },
+    { value: 'advance_paid', label: 'Advance Paid' },
+    { value: 'date_of_payment', label: 'Date Of Payment' },
+    { value: 'lc_expiry_date', label: 'LC Expiry Date' },
+    { value: 'latest_shipment_date_in_lc', label: 'Latest Shipment Date In LC' },
+    { value: 'remarks', label: 'Remarks' },
+  ];
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
   return (
     <>
-      <NavBar />
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Pre-Payments/ LC's Details</p>
         <button
@@ -57,6 +76,11 @@ function PrePayment() {
         >
           +
         </button>
+        <div>
+        <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-payments'} 
+        fieldOptions={fieldOptions}
+        />
+        </div>
         <div className=" rounded p-2">
         <PrePaymentTable data={prePaymentData} onDelete={handleDelete} />
         </div>

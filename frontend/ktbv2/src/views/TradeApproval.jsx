@@ -89,7 +89,10 @@ function TradeApproval() {
           +
         </button>
         <div>
-        <FilterComponent onFilter={handleFilter} />
+        <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades'} fieldOptions={[
+        { value: 'trn', label: 'TRN' },
+        { value: 'company', label: 'Company' },
+      ]} />
         </div>
         <div className=" rounded py-2">
         <TradeTable data={tradeData} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} />

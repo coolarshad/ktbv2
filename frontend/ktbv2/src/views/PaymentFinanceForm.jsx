@@ -121,7 +121,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
@@ -131,7 +131,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.trn}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -142,7 +142,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.batch_number}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -153,7 +153,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.production_date}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -167,7 +167,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.balance_payment}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -178,7 +178,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.balance_payment_received}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -189,7 +189,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.balance_paymnet_made}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -203,7 +203,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.net_due_in_this_trade}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -214,7 +214,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.payment_mode}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -225,7 +225,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.status_of_payment}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -239,7 +239,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.logistic_cost}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -250,7 +250,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.commission_agent_value}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -261,7 +261,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.bl_fee}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -275,7 +275,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.bl_collection_cost}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -286,7 +286,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.shipment_status}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -297,7 +297,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.release_docs}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -311,7 +311,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.release_docs_date}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -322,13 +322,13 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.remarks}
                         onChange={(e) => handleChange(e)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
 
-            <div>
-                <h3 className="text-lg font-medium text-gray-900">TTCopy</h3>
+            <div className='p-4'>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">TTCopy</h3>
                 {formData.ttCopies.map((ttCopy, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
@@ -339,7 +339,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={ttCopy.name}
                                 onChange={(e) => handleChange(e, 'ttCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -349,7 +349,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 name="tt_copy"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'ttCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">

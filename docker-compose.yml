@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  react:
+    build:
+      context: ./frontend/ktbv2
+      dockerfile: Dockerfile
+    container_name: react_container
+    ports:
+      - "5173:80"  # Port mapping for Vite React
+    # volumes:
+    #   - ./frontend/ktbv2:/app
+
+  web:
+    build:
+      context: ./backend/ktbv2
+      dockerfile: Dockerfile
+    container_name: web_container
+    ports:
+      - "8000:8000"  # Port mapping for Django
+    volumes:
+      - ./backend/ktbv2:/backend

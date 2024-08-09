@@ -14,16 +14,16 @@ const PrePaymentTable = ({ data, onDelete }) => {
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Due Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Due Amount</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Received/Paid Amount</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Received Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Paid Date</th>
-            
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Number</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Opening Bank</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Advance Received</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date Of Receipt</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Advance Paid</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date Of Payment</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Expiry Date</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Latest Shipment Date In LC</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
         </thead>
@@ -31,6 +31,7 @@ const PrePaymentTable = ({ data, onDelete }) => {
           {data.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_number}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_received}</td>
@@ -38,7 +39,6 @@ const PrePaymentTable = ({ data, onDelete }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_paid}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date_of_payment}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_expiry_date}</td>
-             
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.latest_shipment_date_in_lc}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
              

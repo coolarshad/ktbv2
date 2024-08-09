@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import React, { useEffect, useState } from 'react';
 import PFTable from "../components/PFTable"
+import FilterComponent from "../components/FilterComponent";
 
 function PaymentFinance() {
   const navigate = useNavigate();
@@ -38,45 +39,37 @@ function PaymentFinance() {
       }
     }
   };
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
-
-  const tradeData = [
-    {
-      tradeType: 'Buy',
-      company: 'Company A',
-      trn: 'TRN001',
-      balancePayment: 10000,
-      paymentDueDate: '2024-07-29',
-      paymentReceivedSent: 5000,
-      paymentDate: '2024-07-29',
-      balanceDue: 5000,
-      buyerSellerName: 'Seller A',
-      reviewed: true,  // updated field
-      status: 'Approved',
-    },
-    {
-      tradeType: 'Sell',
-      company: 'Company B',
-      trn: 'TRN002',
-      paymentDueDate: '2024-07-29',
-      paymentReceivedSent: 10000,
-      paymentDate: '2024-07-29',
-      balanceDue: 0,
-      buyerSellerName: 'Seller B',
-      reviewed: false,  // updated field
-      status: 'Pending',
-    },
-    // Add more trade objects here
-  ];
 
   const handleAddPreSPClick = () => {
     navigate('/payment-finance-form');
   };
 
+
+  const handleFilter = (filters) => {
+    setPFData(filters)
+  };
+
+  const fieldOptions = [
+    { value: 'trn__trn', label: 'TRN' },  // Trade TRN field in PreSalePurchase filter
+    { value: 'trn__company', label: 'Company' },
+    { value: 'trn__trade_type', label: 'Trade Type' },
+    { value: 'batch_number', label: 'Batch Number' },
+    { value: 'payment_mode', label: 'Payment Mode' },
+    { value: 'status_of_payment', label: 'Status Of Payment' },
+    { value: 'shipment_status', label: 'Shipment Status' },
+    { value: 'production_date', label: 'Production Date' },
+    { value: 'remarks', label: 'Remarks' },
+  ];
+
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+
+
+
+
   return (
     <>
-      <NavBar />
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Payment and Finance Details</p>
         <button
@@ -85,6 +78,11 @@ function PaymentFinance() {
         >
           +
         </button>
+        <div>
+        <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/payment-finances/'} 
+        fieldOptions={fieldOptions}
+        />
+        </div>
         <div className=" rounded p-2">
         <PFTable data={pfData} onDelete={handleDelete} />
         </div>

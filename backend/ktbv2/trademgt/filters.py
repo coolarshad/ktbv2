@@ -8,6 +8,7 @@ class TradeFilter(django_filters.FilterSet):
     # sales = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
     # purchase = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
     # cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
+   
 
     class Meta:
         model = Trade
@@ -44,10 +45,14 @@ class TradeExtraCostFilter(django_filters.FilterSet):
         }
 
 class PreSalePurchaseFilter(django_filters.FilterSet):
+    date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
     class Meta:
         model = PreSalePurchase
         fields = {
             'trn__trn': ['exact', 'icontains'],  # Filter by Trade TRN
+            'trn__trade_type': ['exact', 'icontains'],
+            'trn__company': ['exact', 'icontains'],
             'date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
             'doc_issuance_date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
             'payment_term': ['exact', 'icontains'],
@@ -57,10 +62,14 @@ class PreSalePurchaseFilter(django_filters.FilterSet):
         }
 
 class PrePaymentFilter(django_filters.FilterSet):
+    date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
     class Meta:
         model = PrePayment
         fields = {
             'trn__trn': ['exact', 'icontains'],  # Filter by Trade TRN
+            'trn__trade_type': ['exact', 'icontains'],
+            'trn__company': ['exact', 'icontains'],
             'lc_number': ['exact', 'icontains'],
             'lc_opening_bank': ['exact', 'icontains'],
             'advance_received': ['exact', 'gte', 'lte'],
@@ -73,11 +82,14 @@ class PrePaymentFilter(django_filters.FilterSet):
         }
 
 class SalesPurchaseFilter(django_filters.FilterSet):
-    
+    date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
     class Meta:
         model = SalesPurchase
         fields = {
             'trn__trn': ['exact', 'icontains'],
+            'trn__trade_type': ['exact', 'icontains'],
+            'trn__company': ['exact', 'icontains'],
             'invoice_date': ['exact', 'gte', 'lte'],
             'invoice_number': ['exact', 'icontains'],
             'invoice_amount': ['exact', 'gte', 'lte'],
@@ -104,11 +116,14 @@ class SalesPurchaseFilter(django_filters.FilterSet):
         }
 
 class PaymentFinanceFilter(django_filters.FilterSet):
-    
+    date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
     class Meta:
         model = PaymentFinance
         fields = {
             'trn__trn': ['exact', 'icontains'],
+            'trn__trade_type': ['exact', 'icontains'],
+            'trn__company': ['exact', 'icontains'],
             'production_date': ['exact', 'gte', 'lte'],
             'balance_payment': ['exact', 'gte', 'lte'],
             'balance_payment_received': ['exact', 'gte', 'lte'],

@@ -164,9 +164,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 p-4">
             {/* SalesPurchase Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
                     <input
@@ -175,7 +175,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.trn}
                         onChange={(e) => setFormData({ ...formData, trn: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -186,7 +186,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.invoice_date}
                         onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -197,7 +197,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.invoice_number}
                         onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -211,7 +211,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.invoice_amount}
                         onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -222,7 +222,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.commission_value}
                         onChange={(e) => setFormData({ ...formData, commission_value: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -233,7 +233,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.bl_number}
                         onChange={(e) => setFormData({ ...formData, bl_number: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -247,7 +247,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.bl_qty}
                         onChange={(e) => setFormData({ ...formData, bl_qty: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -258,7 +258,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.bl_fees}
                         onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -269,7 +269,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.bl_collection_cost}
                         onChange={(e) => setFormData({ ...formData, bl_collection_cost: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -283,7 +283,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.bl_date}
                         onChange={(e) => setFormData({ ...formData, bl_date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -294,7 +294,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.total_packing_cost}
                         onChange={(e) => setFormData({ ...formData, total_packing_cost: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -305,7 +305,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.packaging_supplier}
                         onChange={(e) => setFormData({ ...formData, packaging_supplier: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -319,7 +319,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.logistic_supplier}
                         onChange={(e) => setFormData({ ...formData, logistic_supplier: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -330,7 +330,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.batch_number}
                         onChange={(e) => setFormData({ ...formData, batch_number: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -341,7 +341,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.production_date}
                         onChange={(e) => setFormData({ ...formData, production_date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -355,7 +355,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="number"
                         value={formData.logistic_cost}
                         onChange={(e) => setFormData({ ...formData, logistic_cost: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -366,7 +366,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.logistic_cost_due_date}
                         onChange={(e) => setFormData({ ...formData, logistic_cost_due_date: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -377,7 +377,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.liner}
                         onChange={(e) => setFormData({ ...formData, liner: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -391,7 +391,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.pod}
                         onChange={(e) => setFormData({ ...formData, pod: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -402,7 +402,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.pol}
                         onChange={(e) => setFormData({ ...formData, pol: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -413,7 +413,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.etd}
                         onChange={(e) => setFormData({ ...formData, etd: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -427,7 +427,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.eta}
                         onChange={(e) => setFormData({ ...formData, eta: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -438,7 +438,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.shipment_status}
                         onChange={(e) => setFormData({ ...formData, shipment_status: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
@@ -449,7 +449,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.remarks}
                         onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
             </div>
@@ -459,7 +459,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             <hr className="my-6" />
 
             {/* SalesPurchaseExtraCharge Section */}
-            <div className="space-y-4">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">Extra Charges</h3>
                 {formData.extraCharges.map((extraCharge, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -471,7 +471,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={extraCharge.name}
                                 onChange={(e) => handleChange(e, 'extraCharges', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -482,7 +482,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 type="number"
                                 value={extraCharge.charge}
                                 onChange={(e) => handleChange(e, 'extraCharges', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -498,7 +498,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             </div>
 
             {/* PackingList Section */}
-            <div className="space-y-4 mt-6">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">Packing Lists</h3>
                 {formData.packingLists.map((packingList, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -510,7 +510,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={packingList.name}
                                 onChange={(e) => handleChange(e, 'packingLists', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -520,7 +520,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 name="packing_list"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'packingLists', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -536,7 +536,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             </div>
 
             {/* BL_Copy Section */}
-            <div className="space-y-4 mt-6">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">BL Copies</h3>
                 {formData.blCopies.map((blCopy, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -548,7 +548,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={blCopy.name}
                                 onChange={(e) => handleChange(e, 'blCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -558,7 +558,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 name="bl_copy"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'blCopies', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -574,7 +574,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             </div>
 
             {/* Invoice Section */}
-            <div className="space-y-4 mt-6">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">Invoices</h3>
                 {formData.invoices.map((invoice, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -586,7 +586,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={invoice.name}
                                 onChange={(e) => handleChange(e, 'invoices', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -596,7 +596,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 name="invoice"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'invoices', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">
@@ -612,7 +612,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             </div>
 
             {/* COA Section */}
-            <div className="space-y-4 mt-6">
+            <div className="space-y-4 p-4">
                 <h3 className="text-lg font-medium text-gray-900">COAs</h3>
                 {formData.coas.map((coa, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -624,7 +624,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={coa.name}
                                 onChange={(e) => handleChange(e, 'coas', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div>
@@ -634,7 +634,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 name="coa"
                                 type="file"
                                 onChange={(e) => handleChange(e, 'coas', index)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                         </div>
                         <div className="flex items-end">

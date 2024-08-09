@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaDownload } from 'react-icons/fa'; // Importing a download icon
 import axios from '../axiosConfig';
 
-const FilterComponent = ({ onFilter }) => {
+const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams }) => {
   const [field, setField] = useState('');
   const [searchText, setSearchText] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -14,6 +14,7 @@ const FilterComponent = ({ onFilter }) => {
   const handleSearch = async () => {
     try {
       const params = {
+        ...extraParams,
         [`${field}__icontains`]: searchText,
       };
   
@@ -28,14 +29,22 @@ const FilterComponent = ({ onFilter }) => {
       if (cancelChecked) tradeTypes.push('cancel');
   
       // Add trade_category to params if there are selected values
-      if (tradeTypes.length > 0) {
-        params.trade_type__icontains = tradeTypes.join('|'); // Using regex OR for multiple values
+      if(flag){
+        if (tradeTypes.length > 0) {
+          params.trade_type__icontains = tradeTypes.join('|'); // Using regex OR for multiple values
+        }
       }
-      const response = await axios.get('/trademgt/trades', { params });
+      else{
+        if (tradeTypes.length > 0) {
+          params.trn__trade_type__icontains = tradeTypes.join('|'); // Using regex OR for multiple values
+        }
+      }
+      
+      const finalParams = { ...params };
+      const response = await axios.get(`${apiEndpoint}`, { params });
       onFilter(response.data); // Pass the filtered data to the parent component
     } catch (error) {
       console.error('Error fetching filtered trades:', error);
-      // Provide user feedback for the error
       alert('There was an error fetching the filtered trades. Please try again.');
     }
   };
@@ -53,9 +62,11 @@ const FilterComponent = ({ onFilter }) => {
               className="border p-1 rounded-md"
             >
               <option value="">Select Field</option>
-              <option value="trn">TRN</option>
-              <option value="company">company</option>
-              {/* Add more options as needed */}
+              {fieldOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex flex-col flex-1 min-w-[150px]">
