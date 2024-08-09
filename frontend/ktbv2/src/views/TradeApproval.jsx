@@ -17,7 +17,7 @@ function TradeApproval() {
   useEffect(() => {
     const fetchTradeData = async () => {
       try {
-        const response = await axios.get('/trademgt/trades'); // Replace with your API endpoint
+        const response = await axios.get('/trademgt/trades/'); // Replace with your API endpoint
         setTradeData(response.data);
       } catch (error) {
         setError('Failed to fetch trade data');
@@ -89,7 +89,7 @@ function TradeApproval() {
           +
         </button>
         <div>
-        <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades'} fieldOptions={[
+        <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades/'} fieldOptions={[
         { value: 'trn', label: 'TRN' },
         { value: 'company', label: 'Company' },
       ]} />
