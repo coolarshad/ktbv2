@@ -103,7 +103,7 @@ function TradeApproval() {
       ]} />
         </div>
         <div className=" rounded py-2">
-        <TradeTable data={tradeData} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} />
+        {/* <TradeTable data={tradeData} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} /> */}
         </div>
       </div>
       {/* <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} trade={selectedTrade} /> */}
