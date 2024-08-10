@@ -18,7 +18,7 @@ function TradeApproval() {
     const fetchTradeData = async () => {
       try {
         console.log('starting fetch')
-        const response = await axios.get('/trademgt/trades/'); // Replace with your API endpoint
+        const response = await axios.get('http://148.72.247.191:8000/trademgt/trades/'); // Replace with your API endpoint
         console.log('fetched')
         setTradeData(response.data);
         console.log('data set')
