@@ -1,9 +1,10 @@
 import NavBar from "../components/NavBar"
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PreSPTable from "../components/PreSPTable"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from "../components/FilterComponent";
+
 
 function PreSalePurchase() {
   const navigate = useNavigate();
@@ -11,6 +12,9 @@ function PreSalePurchase() {
   const [preSPData, setPreSPData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  
+ 
 
   useEffect(() => {
     const fetchPreSPData = async () => {
@@ -67,6 +71,7 @@ function PreSalePurchase() {
   
   return (
     <>
+    
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Pre Sales/Purchase</p>
         <button
