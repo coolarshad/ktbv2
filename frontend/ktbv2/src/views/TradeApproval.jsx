@@ -2,7 +2,7 @@ import NavBar from "../components/NavBar"
 import React, { useEffect, useState } from 'react';
 import TradeTable from "../components/TradeTable"
 import { useNavigate } from 'react-router-dom';
-import instance from '../axiosConfig';
+import axios from '../axiosConfig';
 import Modal from '../components/Modal';
 import FilterComponent from "../components/FilterComponent";
 
@@ -17,16 +17,8 @@ function TradeApproval() {
   useEffect(() => {
     const fetchTradeData = async () => {
       try {
-        console.log('starting fetch')
-        const response = await instance.get('/trademgt/trades/'); 
-        // const response = await fetch('http://148.72.247.191:8000/trademgt/trades/');
-        // if (!response.ok) {
-        //   throw new Error('Network response was not ok');
-        // }
-        // const data = await response.json();
-        console.log('fetched')
+        const response = await axios.get('/trademgt/trades/'); 
         setTradeData(response.data);
-        console.log('data set')
       } catch (error) {
         setError('Failed to fetch trade data');
       } finally {

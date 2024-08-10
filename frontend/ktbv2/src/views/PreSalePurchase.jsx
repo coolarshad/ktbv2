@@ -2,8 +2,7 @@ import NavBar from "../components/NavBar"
 import React, { useEffect, useState, useRef } from 'react';
 import PreSPTable from "../components/PreSPTable"
 import { useNavigate } from 'react-router-dom';
-// import axios from '../axiosConfig';
-import axios from "axios";
+import axios from '../axiosConfig';
 import FilterComponent from "../components/FilterComponent";
 
 
@@ -20,7 +19,7 @@ function PreSalePurchase() {
   useEffect(() => {
     const fetchPreSPData = async () => {
       try {
-        const response = await axios.get('http://148.72.247.191:8000/trademgt/pre-sales-purchases/'); // Replace with your API endpoint
+        const response = await axios.get('/trademgt/pre-sales-purchases/',{}); // Replace with your API endpoint
         setPreSPData(response.data);
       } catch (error) {
         setError('Failed to fetch trade data');
