@@ -3,8 +3,8 @@ import axios from 'axios';
 
 const instance = axios.create({
     baseURL: 'http://148.72.247.191:8000', // Replace with your API base URL
-    timeout: 1000,
-    headers: { 'Content-Type': 'application/json' }
+    // timeout: 1000,
+    // headers: { 'Content-Type': 'application/json' }
 });
 
 // You can set up interceptors here if needed
