@@ -26,7 +26,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((trade, index) => (
+          {data?.map((trade, index) => (
             <tr key={index} onClick={() => onRowClick(trade.id)}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
