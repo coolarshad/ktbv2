@@ -20,6 +20,10 @@ function TradeApproval() {
         console.log('starting fetch')
         // const response = await axios.get('/trademgt/trades/'); 
         const response = await fetch('http://148.72.247.191:8000/trademgt/trades/');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
         console.log('fetched')
         setTradeData(response.data);
         console.log('data set')
