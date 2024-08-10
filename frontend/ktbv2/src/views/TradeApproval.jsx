@@ -17,8 +17,11 @@ function TradeApproval() {
   useEffect(() => {
     const fetchTradeData = async () => {
       try {
+        console.log('starting fetch')
         const response = await axios.get('/trademgt/trades/'); // Replace with your API endpoint
+        console.log('fetched')
         setTradeData(response.data);
+        console.log('data set')
       } catch (error) {
         setError('Failed to fetch trade data');
       } finally {
