@@ -84,7 +84,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
@@ -130,7 +130,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
       <hr className="my-6" />
 
       {/* List of Existing Payment Terms */}
-      <div>
+      <div className='space-y-4 w-full lg:w-2/3 mx-auto'>
         <h2 className="text-xl font-semibold mb-4">Existing Payment Terms</h2>
         <ul className="space-y-4">
           {paymentTerms.map(term => (

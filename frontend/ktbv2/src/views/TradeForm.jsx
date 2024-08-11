@@ -268,9 +268,9 @@ const TradeForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6  w-full lg:w-2/3 mx-auto">
 
-            <div className="grid grid-cols-3 gap-4 p-4">
+            <div className="grid grid-cols-3 gap-4 p-4 ">
                 <div>
                     <label>Related Trades</label>
                     <Select
@@ -809,212 +809,217 @@ const TradeForm = ({ mode = 'add' }) => {
             <hr className="my-6" />
 
             {/* Trade Products Section */}
-            <div>
+            <div >
                 {formData.tradeProducts.map((product, index) => (
                     <>
-                    <div key={index} className="grid grid-cols-5 gap-4 mb-4 justify-between items-end px-5 py-2">
-                        <div>
-                            <label htmlFor="product_code" className="block text-sm font-medium text-gray-700">Product Code</label>
-                            <input
-                                type="text"
-                                name="product_code"
-                                value={product.product_code}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Product Code"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                            <input
-                                type="text"
-                                name="product_name"
-                                value={product.product_name}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Product Name"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="product_name_for_client" className="block text-sm font-medium text-gray-700">Product Name for Client</label>
-                            <input
-                                type="text"
-                                name="product_name_for_client"
-                                value={product.product_name_for_client}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Product Name for Client"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
+                        <div key={index} className="grid grid-cols-5 gap-4 mb-4 justify-between items-end px-4 py-2">
+                            <div>
+                                <label htmlFor="product_code" className="block text-sm font-medium text-gray-700">Product Code</label>
+                                <input
+                                    type="text"
+                                    name="product_code"
+                                    value={product.product_code}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Product Code"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
+                                <input
+                                    type="text"
+                                    name="product_name"
+                                    value={product.product_name}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Product Name"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="product_name_for_client" className="block text-sm font-medium text-gray-700">Product Name for Client</label>
+                                <input
+                                    type="text"
+                                    name="product_name_for_client"
+                                    value={product.product_name_for_client}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Product Name for Client"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
 
-                        <div className="col-span-1">
-                            <label htmlFor="file" className="block text-sm font-medium text-gray-700">LOI</label>
-                            <input
-                                type="file"
-                                name="loi"
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                className="border border-gray-300 p-2 rounded w-full"
-                            />
-                            {/* {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>} */}
-                        </div>
-                        <div>
-                            <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
-                            <input
-                                type="text"
-                                name="hs_code"
-                                value={product.hs_code}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="HS Code"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="total_contract_qty" className="block text-sm font-medium text-gray-700">Total Contract Qty</label>
-                            <input
-                                type="number"
-                                name="total_contract_qty"
-                                value={product.total_contract_qty}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Total Contract Qty"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">Total Contract Qty Unit</label>
-                            <input
-                                type="text"
-                                name="total_contract_qty_unit"
-                                value={product.total_contract_qty_unit}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Total Contract Qty Unit"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
-                            <input
-                                type="number"
-                                name="tolerance"
-                                value={product.tolerance}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Tolerance"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Contract Balance Qty</label>
-                            <input
-                                type="number"
-                                name="contract_balance_qty"
-                                value={product.contract_balance_qty}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Contract Balance Qty"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">Contract Balance Qty Unit</label>
-                            <input
-                                type="text"
-                                name="contract_balance_qty_unit"
-                                value={product.contract_balance_qty_unit}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Contract Balance Qty Unit"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="trade_qty" className="block text-sm font-medium text-gray-700">Trade Qty</label>
-                            <input
-                                type="number"
-                                name="trade_qty"
-                                value={product.trade_qty}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Trade Qty"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
-                            <input
-                                type="text"
-                                name="trade_qty_unit"
-                                value={product.trade_qty_unit}
-                                onChange={(e) => handleChange(e, index, 'products')}
-                                placeholder="Trade Qty Unit"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveProduct(index)}
-                                className=" bg-red-500 text-white p-2 rounded"
-                            >
-                                Remove
-                            </button>
-                        </div>
+                            <div className="col-span-1">
+                                <label htmlFor="file" className="block text-sm font-medium text-gray-700">LOI</label>
+                                <input
+                                    type="file"
+                                    name="loi"
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                                {/* {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>} */}
+                            </div>
+                            <div>
+                                <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
+                                <input
+                                    type="text"
+                                    name="hs_code"
+                                    value={product.hs_code}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="HS Code"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="total_contract_qty" className="block text-sm font-medium text-gray-700">Total Contract Qty</label>
+                                <input
+                                    type="number"
+                                    name="total_contract_qty"
+                                    value={product.total_contract_qty}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Total Contract Qty"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">Total Contract Qty Unit</label>
+                                <input
+                                    type="text"
+                                    name="total_contract_qty_unit"
+                                    value={product.total_contract_qty_unit}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Total Contract Qty Unit"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
+                                <input
+                                    type="number"
+                                    name="tolerance"
+                                    value={product.tolerance}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Tolerance"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Contract Balance Qty</label>
+                                <input
+                                    type="number"
+                                    name="contract_balance_qty"
+                                    value={product.contract_balance_qty}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Contract Balance Qty"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">Contract Balance Qty Unit</label>
+                                <input
+                                    type="text"
+                                    name="contract_balance_qty_unit"
+                                    value={product.contract_balance_qty_unit}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Contract Balance Qty Unit"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="trade_qty" className="block text-sm font-medium text-gray-700">Trade Qty</label>
+                                <input
+                                    type="number"
+                                    name="trade_qty"
+                                    value={product.trade_qty}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Trade Qty"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
+                                <input
+                                    type="text"
+                                    name="trade_qty_unit"
+                                    value={product.trade_qty_unit}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Trade Qty Unit"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveProduct(index)}
+                                    className=" bg-red-500 text-white p-2 rounded"
+                                >
+                                    Remove
+                                </button>
+                            </div>
 
-                    </div>
-                    <hr />
+                        </div>
+                        <hr />
                     </>
                 ))}
-                <button
-                    type="button"
-                    onClick={handleAddProduct}
-                    className="bg-green-500 text-white p-2 rounded mt-2"
-                >
-                    +Add
-                </button>
+                <div className="text-right">
+                    <button
+                        type="button"
+                        onClick={handleAddProduct}
+                        className="bg-green-500 text-white p-2 rounded mt-2"
+                    >
+                        Add Product
+                    </button>
+                </div>
+
             </div>
             <hr className="my-6" />
-            <div>
+            <div className=''>
                 {formData.tradeExtraCosts.map((extraCost, index) => (
                     <>
-                    <div key={index} className="grid grid-cols-3 gap-4 mb-4 justify-between items-end">
-                        <div>
-                            <label htmlFor="extra_cost" className="block text-sm font-medium text-gray-700">Extra Cost</label>
-                            <input
-                                type="number"
-                                name="extra_cost"
-                                value={extraCost.extra_cost}
-                                onChange={(e) => handleChange(e, index, 'extraCosts')}
-                                placeholder="Extra Cost"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="extra_cost_remarks" className="block text-sm font-medium text-gray-700">Extra Cost Remarks</label>
-                            <input
-                                type="text"
-                                name="extra_cost_remarks"
-                                value={extraCost.extra_cost_remarks}
-                                onChange={(e) => handleChange(e, index, 'extraCosts')}
-                                placeholder="Extra Cost Remarks"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveExtraCost(index)}
-                                className=" bg-red-500 text-white p-2 rounded "
-                            >
-                                Remove
-                            </button>
-                        </div>
+                        <div key={index} className="grid grid-cols-3 gap-4 mb-4 justify-between items-end px-4">
+                            <div>
+                                <label htmlFor="extra_cost" className="block text-sm font-medium text-gray-700">Extra Cost</label>
+                                <input
+                                    type="number"
+                                    name="extra_cost"
+                                    value={extraCost.extra_cost}
+                                    onChange={(e) => handleChange(e, index, 'extraCosts')}
+                                    placeholder="Extra Cost"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="extra_cost_remarks" className="block text-sm font-medium text-gray-700">Extra Cost Remarks</label>
+                                <input
+                                    type="text"
+                                    name="extra_cost_remarks"
+                                    value={extraCost.extra_cost_remarks}
+                                    onChange={(e) => handleChange(e, index, 'extraCosts')}
+                                    placeholder="Extra Cost Remarks"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveExtraCost(index)}
+                                    className=" bg-red-500 text-white p-2 rounded "
+                                >
+                                    Remove
+                                </button>
+                            </div>
 
-                    </div>
-                    <hr />
+                        </div>
+                        <hr />
                     </>
                 ))}
-                <button
-                    type="button"
-                    onClick={handleAddExtraCost}
-                    className="bg-green-500 text-white p-2 rounded mt-2"
-                >
-                    Add Another Extra Cost
-                </button>
+                <div className="text-right">
+                    <button
+                        type="button"
+                        onClick={handleAddExtraCost}
+                        className="bg-green-500 text-white p-2 rounded mt-2"
+                    >
+                        Add Another Extra Cost
+                    </button>
+                </div>
             </div>
             <div className='grid grid-cols-3 gap-4 mb-4'>
                 <button

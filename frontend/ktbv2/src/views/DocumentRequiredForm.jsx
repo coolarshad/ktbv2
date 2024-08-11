@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../axiosConfig'
 
 const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
   const [formData, setFormData] = useState({
@@ -11,7 +11,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
   useEffect(() => {
     if (mode === 'update' && documentId) {
       // Fetch the existing document data from the API
-      axios.get(`/api/documents-required/${documentId}`)
+      axios.get(`/trademgt/documents/${documentId}`)
         .then(response => {
           setFormData(response.data);
         })
@@ -21,7 +21,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
     }
 
     // Fetch all documents
-    axios.get('/api/documents-required')
+    axios.get('/trademgt/documents/')
       .then(response => {
         const docs = response.data;
         if (Array.isArray(docs)) {
@@ -47,7 +47,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
     e.preventDefault();
     if (mode === 'add') {
       // Post new document data to API
-      axios.post('/api/documents-required', formData)
+      axios.post('/trademgt/documents/', formData)
         .then(response => {
           console.log('Document added successfully!', response.data);
           setDocuments(prevDocs => [...prevDocs, response.data]);
@@ -69,7 +69,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
   };
 
   const handleDelete = (id) => {
-    axios.delete(`/api/documents-required/${id}`)
+    axios.delete(`/trademgt/documents/${id}`)
       .then(() => {
         console.log('Document deleted successfully!');
         setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== id));
@@ -81,7 +81,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
@@ -103,7 +103,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
       <hr className="my-6" />
 
       {/* List of Existing Documents */}
-      <div>
+      <div className="space-y-4 w-full lg:w-2/3 mx-auto">
         <h2 className="text-xl font-semibold mb-4">Existing Documents</h2>
         <ul className="space-y-4">
           {documents.map(doc => (

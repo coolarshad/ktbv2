@@ -121,8 +121,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
                     <input
@@ -326,8 +326,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     />
                 </div>
             </div>
-
-            <div className='p-4'>
+            <hr className="my-6" />
+            <div className=''>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">TTCopy</h3>
                 {formData.ttCopies.map((ttCopy, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -363,6 +363,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button
                     type="button"
                     onClick={() => handleAddRow('ttCopies')}
@@ -370,14 +371,19 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 >
                     Add TTCopy
                 </button>
+                </div>
+                
             </div>
-
+            <hr className="my-6" />
+            <div className='grid grid-cols-3 gap-4 mb-4'>
             <button
                 type="submit"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="bg-blue-500 text-white p-2 rounded col-span-3"
             >
                 Submit
             </button>
+            </div>
+            
         </form>
     );
 };

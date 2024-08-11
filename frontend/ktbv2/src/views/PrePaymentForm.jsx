@@ -126,7 +126,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
@@ -283,9 +283,12 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button type="button" onClick={() => handleAddRow('lcCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add LC Copy
                 </button>
+                </div>
+                
             </div>
 
             {/* LcAmmendment Section */}
@@ -321,9 +324,12 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
-                <button type="button" onClick={() => handleAddRow('lcAmmendments')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                 <div className="text-right">
+                 <button type="button" onClick={() => handleAddRow('lcAmmendments')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add LC Ammendment
                 </button>
+                 </div>
+                
             </div>
 
             {/* AdvanceTTCopy Section */}
@@ -359,13 +365,16 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
-                <button type="button" onClick={() => handleAddRow('advanceTTCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                 <div className="text-right">
+                 <button type="button" onClick={() => handleAddRow('advanceTTCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add Advance TT Copy
                 </button>
+                 </div>
+                
             </div>
 
-            <div className="mt-6">
-                <button type="submit" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <div className="grid grid-cols-3 gap-4 mb-4">
+                <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
                     Submit
                 </button>
             </div>

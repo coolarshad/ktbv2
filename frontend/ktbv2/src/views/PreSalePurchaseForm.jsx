@@ -134,7 +134,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
             {/* PreSalePurchase Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
@@ -270,6 +270,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button
                     type="button"
                     onClick={() => handleAddRow('acknowledgedPI')}
@@ -277,6 +278,8 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 >
                     Add PI
                 </button>
+                </div>
+                
             </div>
             {/* Acknowledged PO Section */}
             <div className="mt-0 p-4">
@@ -318,6 +321,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button
                     type="button"
                     onClick={() => handleAddRow('acknowledgedPO')}
@@ -325,13 +329,18 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 >
                     Add PO
                 </button>
+                </div>
+                
             </div>
+            <div className='grid grid-cols-3 gap-4 mb-4'>
             <button
                 type="submit"
-                className="mx-10 my-0 px-4 py-2 bg-indigo-600 text-white rounded-md"
+                className="bg-blue-500 text-white p-2 rounded col-span-3"
             >
                 {mode === 'add' ? 'Add' : 'Update'} PreSalePurchase
             </button>
+            </div>
+           
         </form>
     );
 };

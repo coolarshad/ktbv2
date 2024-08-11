@@ -164,9 +164,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 p-4">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
             {/* SalesPurchase Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 ">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
                     <input
@@ -459,7 +459,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             <hr className="my-6" />
 
             {/* SalesPurchaseExtraCharge Section */}
-            <div className="space-y-4 p-4">
+            <div className="space-y-4 px-4">
                 <h3 className="text-lg font-medium text-gray-900">Extra Charges</h3>
                 {formData.extraCharges.map((extraCharge, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -492,13 +492,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button type="button" onClick={() => handleAddRow('extraCharges')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add Extra Charge
                 </button>
+                </div>
+               
             </div>
-
+            <hr className="my-6" />
             {/* PackingList Section */}
-            <div className="space-y-4 p-4">
+            <div className="space-y-4 px-4">
                 <h3 className="text-lg font-medium text-gray-900">Packing Lists</h3>
                 {formData.packingLists.map((packingList, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -530,13 +533,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button type="button" onClick={() => handleAddRow('packingLists')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add Packing List
                 </button>
+                </div>
+               
             </div>
-
+            <hr className="my-6" />
             {/* BL_Copy Section */}
-            <div className="space-y-4 p-4">
+            <div className="space-y-4 px-4">
                 <h3 className="text-lg font-medium text-gray-900">BL Copies</h3>
                 {formData.blCopies.map((blCopy, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -568,13 +574,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button type="button" onClick={() => handleAddRow('blCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add BL Copy
                 </button>
+                </div>
+                
             </div>
-
+            <hr className="my-6" />
             {/* Invoice Section */}
-            <div className="space-y-4 p-4">
+            <div className="space-y-4 px-4">
                 <h3 className="text-lg font-medium text-gray-900">Invoices</h3>
                 {formData.invoices.map((invoice, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -606,13 +615,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button type="button" onClick={() => handleAddRow('invoices')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add Invoice
                 </button>
+                </div>
+                
             </div>
-
+            <hr className="my-6" />
             {/* COA Section */}
-            <div className="space-y-4 p-4">
+            <div className="space-y-4 px-4">
                 <h3 className="text-lg font-medium text-gray-900">COAs</h3>
                 {formData.coas.map((coa, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -644,14 +656,19 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     </div>
                 ))}
+                <div className="text-right">
                 <button type="button" onClick={() => handleAddRow('coas')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Add COA
                 </button>
+                </div>
+                
             </div>
-
-            <button type="submit" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <hr className="my-6" />
+            <div className='grid grid-cols-3 gap-4 mb-4'>
+            <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
                 Submit
             </button>
+            </div>
         </form>
     );
 };
