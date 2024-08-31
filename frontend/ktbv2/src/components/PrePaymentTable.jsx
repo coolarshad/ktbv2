@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const PrePaymentTable = ({ data, onDelete }) => {
+const PrePaymentTable = ({ data, onDelete, onView }) => {
   const navigate = useNavigate();  
   
   const handleEdit = (id) => {
@@ -22,7 +22,7 @@ const PrePaymentTable = ({ data, onDelete }) => {
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Advance Paid</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date Of Payment</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Expiry Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Latest Shipment Date In LC</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Shipment Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -45,7 +45,12 @@ const PrePaymentTable = ({ data, onDelete }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
                  
-                <button className="bg-green-500 text-white px-2 py-1 rounded">Approve</button>
+                <button
+                    className="bg-green-500 text-white px-2 py-1 rounded"
+                    onClick={(e) => { e.stopPropagation(); onView(item.id); }}
+                  >
+                    View
+                  </button>
                   <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                   <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                 </div>

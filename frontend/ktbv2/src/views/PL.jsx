@@ -29,7 +29,6 @@ function PL() {
   ];
   return (
     <>
-      <NavBar />
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">P&L Account Details</p>
         <div className=" rounded p-2">

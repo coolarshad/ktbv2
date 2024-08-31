@@ -141,3 +141,30 @@ class PaymentFinanceFilter(django_filters.FilterSet):
             'release_docs_date': ['exact', 'icontains'],
             'remarks': ['exact', 'icontains'],
         }
+
+
+class KycFilter(django_filters.FilterSet):
+    date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte') 
+    class Meta:
+        model = Kyc
+        fields = {
+            'name': ['exact', 'icontains'],
+            'companyRegNo': ['exact', 'icontains'],
+            'regAddress': ['exact', 'icontains'],
+            'mailingAddress': ['exact', 'gte', 'lte'],
+            'telephone': ['exact', 'gte', 'lte'],
+            'fax': ['exact', 'gte', 'lte'],
+            'person1': ['exact', 'gte', 'lte'],
+            'designation1': ['exact', 'gte', 'lte'],
+            'mobile1': ['exact', 'gte', 'lte'],
+            'email1': ['exact', 'gte', 'lte'],
+            'person2': ['exact', 'gte', 'lte'],
+            'designation2': ['exact', 'gte', 'lte'],
+            'mobile2': ['exact', 'icontains'],
+            'email2': ['exact', 'icontains'],
+            'banker': ['exact', 'icontains'],
+            'address': ['exact', 'icontains'],
+            'swiftCode': ['exact', 'icontains'],
+            'accountNumber': ['exact', 'icontains']
+        }

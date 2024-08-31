@@ -441,3 +441,196 @@ class TTCopy(models.Model):
         return reverse("TTCopy_detail", kwargs={"pk": self.pk})
 
 
+
+class Kyc(models.Model):
+    date=models.CharField(max_length=255)
+    name=models.CharField(max_length=255)
+    companyRegNo=models.CharField(max_length=255)
+    regAddress=models.CharField(max_length=255)
+    mailingAddress=models.CharField(max_length=255)
+    telephone=models.CharField(max_length=255)
+    fax=models.CharField(max_length=255)
+    person1=models.CharField(max_length=255)
+    designation1=models.CharField(max_length=255)
+    mobile1=models.CharField(max_length=255)
+    email1=models.CharField(max_length=255)
+    person2=models.CharField(max_length=255)
+    designation2=models.CharField(max_length=255)
+    mobile2=models.CharField(max_length=255)
+    email2=models.CharField(max_length=255)
+    banker=models.CharField(max_length=255, null=True,blank=True)
+    address=models.CharField(max_length=255, null=True,blank=True)
+    swiftCode=models.CharField(max_length=255, null=True,blank=True)
+    accountNumber=models.CharField(max_length=255, null=True,blank=True)
+    approve1=models.BooleanField(default=False)
+    approve2=models.BooleanField(default=False)
+    
+
+    class Meta:
+        verbose_name = _("Kyc")
+        verbose_name_plural = _("Kycs")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("Kyc_detail", kwargs={"pk": self.pk})
+
+
+
+class PurchaseProductTrace(models.Model):
+    product_code=models.CharField(max_length=100)
+    total_contract_qty=models.FloatField(null=True)
+    trade_qty=models.FloatField(null=True)
+    contract_balance_qty=models.FloatField(null=True)
+    first_trn=models.CharField(max_length=15,null=True,blank=True)
+    
+
+    class Meta:
+        verbose_name = _("PurchaseProductTrace")
+        verbose_name_plural = _("PurchaseProductTraces")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("PurchaseProductTrace_detail", kwargs={"pk": self.pk})
+
+
+class SalesProductTrace(models.Model):
+    product_code=models.CharField(max_length=100)
+    total_contract_qty=models.FloatField(null=True)
+    trade_qty=models.FloatField(null=True)
+    contract_balance_qty=models.FloatField(null=True)
+    first_trn=models.CharField(max_length=15,null=True,blank=True)
+    
+
+    class Meta:
+        verbose_name = _("SalesProductTrace")
+        verbose_name_plural = _("SalesProductTraces")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("SalesProductTrace_detail", kwargs={"pk": self.pk})
+
+
+class PurchasePending(models.Model):
+    trn=models.CharField(_("trn"), max_length=50)
+    trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
+    company=models.CharField(_("company"), max_length=50)
+    payment_term=models.CharField(_("company"), max_length=50)
+    product_code=models.CharField(_("product_code"), max_length=50)
+    product_name=models.CharField(_("product_code"), max_length=50)
+    hs_code=models.CharField(_("product_code"), max_length=50)
+    total_contract_qty=models.FloatField(_("total_contract_qty"))
+    total_contract_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+    contract_balance_qty=models.FloatField(_("contract_balance_qty"))
+    contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=15)
+    trade_qty=models.FloatField(_("total_contract_qty"))
+    trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+    
+    
+
+    class Meta:
+        verbose_name = _("PurchasePending")
+        verbose_name_plural = _("PurchasePendings")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("PurchasePending_detail", kwargs={"pk": self.pk})
+
+
+class SalesPending(models.Model):
+    trn=models.CharField(_("trn"), max_length=50)
+    trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
+    company=models.CharField(_("company"), max_length=50)
+    payment_term=models.CharField(_("company"), max_length=50)
+    product_code=models.CharField(_("product_code"), max_length=50)
+    product_name=models.CharField(_("product_code"), max_length=50)
+    hs_code=models.CharField(_("product_code"), max_length=50)
+    total_contract_qty=models.FloatField(_("total_contract_qty"))
+    total_contract_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+    contract_balance_qty=models.FloatField(_("contract_balance_qty"))
+    contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=15)
+    trade_qty=models.FloatField(_("total_contract_qty"))
+    trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+
+    class Meta:
+        verbose_name = _("SalesPending")
+        verbose_name_plural = _("SalesPendings")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("SalesPending_detail", kwargs={"pk": self.pk})
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=100)
+    initial = models.CharField(max_length=10)  # e.g., "KP", "SP", etc.
+    counter = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+    
+    def get_absolute_url(self):
+        return reverse("Company_detail", kwargs={"pk": self.pk})
+
+    def get_next_counter(self):
+        """Returns the next counter value in the proper format without saving."""
+        next_counter = self.counter + 1
+        return f"{self.initial}-{next_counter:07d}"
+
+    def save_counter(self, formatted_string):
+        """Saves the counter based on the formatted string provided."""
+        # Extract the counter from the formatted string
+        try:
+            prefix, counter_str = formatted_string.split('-')
+            if prefix == self.initial:
+                # Convert counter string to integer
+                counter_value = int(counter_str)
+                # Update the counter only if the provided counter is greater than the current one
+                if counter_value > self.counter:
+                    self.counter = counter_value
+                    self.save()
+                else:
+                    raise ValueError("Provided counter is not greater than the current counter.")
+            else:
+                raise ValueError("Initials do not match.")
+        except ValueError as e:
+            raise ValueError(f"Invalid formatted string: {e}")
+
+class Bank(models.Model):
+    name=models.CharField(max_length=100)
+    account_number=models.CharField(max_length=50)
+    swift_code=models.CharField(max_length=100)
+    
+
+    class Meta:
+        verbose_name = _("Bank")
+        verbose_name_plural = _("Banks")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("Bank_detail", kwargs={"pk": self.pk})
+
+class Unit(models.Model):
+    name=models.CharField(max_length=50)
+    
+
+    class Meta:
+        verbose_name = _("Unit")
+        verbose_name_plural = _("Units")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("Unit_detail", kwargs={"pk": self.pk})

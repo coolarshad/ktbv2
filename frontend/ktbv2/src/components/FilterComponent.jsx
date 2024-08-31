@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaDownload } from 'react-icons/fa'; // Importing a download icon
 import axios from '../axiosConfig';
 
-const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams }) => {
+const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, checkBtn=true }) => {
   const [field, setField] = useState('');
   const [searchText, setSearchText] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -106,8 +106,12 @@ const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams })
         </div>
 
         {/* Second Row */}
+       
         <div className="flex items-center justify-between">
+       
           <div className="flex gap-4">
+          {checkBtn && 
+          <>
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -135,7 +139,10 @@ const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams })
               />
               Cancel
             </label>
+            </>
+             }
           </div>
+       
           <button
             onClick={() => {/* Add download functionality here */}}
             className="flex items-center bg-green-500 text-white px-2 py-1 text-xs rounded-md gap-2"
@@ -144,6 +151,7 @@ const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams })
             Download
           </button>
         </div>
+        
       </div>
     </div>
   );

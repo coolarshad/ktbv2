@@ -19,6 +19,14 @@ import MenuBar from './components/MenuBar'
 import SalesInvoice from './views/SalesInvoice';
 import PurchaseInvoice from './views/PurchaseInvoice';
 import Dashboard from './views/Dashboard';
+import Kyc from './views/Kyc';
+import KycForm from './views/KycForm';
+import Company from './views/Company';
+import Bank from './views/Bank';
+import Units from './views/Units';
+import SalesPending from './views/SalesPending';
+import PurchasePending from './views/PurchasePending';
+import SalesProductTrace from './views/SalesProductTrace';
 
 function App() {
  
@@ -47,6 +55,15 @@ function App() {
           <Route path="/sales-purchase-form/:id" element={<SalesPurchaseForm mode="update" />} />
           <Route path="/payment-finance-form" element={<PaymentFinanceForm />} />
           <Route path="/payment-finance-form/:id" element={<PaymentFinanceForm mode="update" />} />
+          <Route path="/kyc" element={<Kyc />} />
+          <Route path="/kyc-form" element={<KycForm />} />
+          <Route path="/kyc-form/:id" element={<KycForm mode="update" />} />
+          <Route path="/company" element={<Company />} />
+          <Route path="/bank" element={<Bank />} />
+          <Route path="/units" element={<Units />} />
+          <Route path="/sales-pending" element={<SalesPending />} />
+          <Route path="/purchase-pending" element={<PurchasePending />} />
+          <Route path="/sales-product-trace" element={<SalesProductTrace />} />
         </Routes>
       </div>
     </Router>

@@ -39,8 +39,8 @@ const PLTable = ({ data }) => {
                 <div className="space-x-2">
                  
                   <button className="bg-blue-500 text-white px-2 py-1 rounded">View</button>
-                  <button className="bg-green-500 text-white px-2 py-1 rounded">Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                  {/* <button className="bg-green-500 text-white px-2 py-1 rounded">Edit</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded">Delete</button> */}
                 </div>
               </td>
             </tr>

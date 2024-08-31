@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import React, { useEffect, useState } from 'react';
 import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
+import Modal from '../components/Modal';
 
 
 function PrePayment() {
@@ -11,6 +12,8 @@ function PrePayment() {
   const [prePaymentData, setPrePaymentData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPrePayment, setSelectedPrePayment] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +29,21 @@ function PrePayment() {
 
     fetchData();
   }, []);
+
+  const handleViewClick = async (tradeId) => {
+    try {
+      const response = await axios.get(`/trademgt/pre-payments/${tradeId}/`);
+      setSelectedPrePayment(response.data);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching trade details:', error);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedPrePayment(null);
+  };
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this Pre Sale/Purchase?');
@@ -82,10 +100,132 @@ function PrePayment() {
         />
         </div>
         <div className=" rounded p-2">
-        <PrePaymentTable data={prePaymentData} onDelete={handleDelete} />
+        <PrePaymentTable data={prePaymentData} onDelete={handleDelete} onView={handleViewClick} />
         </div>
       </div>
-
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        {selectedPrePayment && (
+           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+           <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
+             <button onClick={closeModal} className="float-right text-red-500">Close</button>
+             <h2 className="text-2xl mb-2 text-center">Trade Details</h2>
+             <hr className='mb-2' />
+             <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                <thead className="bg-gray-100 border-b border-gray-200">
+                  <tr>
+                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                  </tr>
+                </thead>
+             
+                <tbody>
+                  
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">PO Date/PI Date</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Buyer/Seller Name </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Value of Contract </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Receive/Pay </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">As Per PI Cash/TT/Advance </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Number </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.lc_number}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Opening Bank </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_received}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Received </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_receipt}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Receipt </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_paid}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Paid </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_payment}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Payment </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.lc_expiry_date}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Expiry Date</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.latest_shipment_date_in_lc}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Latest Shipment Date in LC </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurrance Policy Number</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Copy</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Ammendment</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance TT Copy</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                  </tr>
+                </tbody>
+                </table>
+             </div>
+             
+     
+           
+     
+            
+            
+           </div>
+         </div>
+        )}
+      </Modal>
     </>
 
   )

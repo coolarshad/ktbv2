@@ -128,3 +128,45 @@ class TTCopySerializer(serializers.ModelSerializer):
     class Meta:
         model = TTCopy
         fields = '__all__'
+
+
+class KycSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kyc
+        fields = '__all__'
+
+
+class PurchaseProductTraceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PurchaseProductTrace
+        fields = '__all__'
+    
+class SalesProductTraceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesProductTrace
+        fields = '__all__'
+
+class PurchasePendingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PurchasePending
+        fields = '__all__'
+
+class SalesPendingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesPending
+        fields = '__all__'
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = '__all__'
+
+class BankSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bank
+        fields = '__all__'
+
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = '__all__'

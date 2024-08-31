@@ -72,6 +72,22 @@ function TradeApproval() {
     setSelectedTrade(null);
   };
 
+  const approveTrade = async () => {
+    console.log('Approving trade with ID:', selectedTrade.id);
+  
+    try {
+      const response = await axios.get(`/trademgt/tradeapprove/${selectedTrade.id}/`);
+      console.log('Trade approved:', response.data);
+      
+      setIsModalOpen(false);
+      setSelectedTrade(null);
+
+    } catch (error) {
+      console.error('Error approving trade:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
+
   const handleFilter = (filters) => {
     setTradeData(filters)
   };
@@ -104,55 +120,201 @@ function TradeApproval() {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <h2 className="text-2xl mb-4">Trade Details</h2>
-             <div className="grid grid-cols-3 gap-4">
-               <div><strong>Company:</strong> {selectedTrade.company}</div>
-               <div><strong>TRN:</strong> {selectedTrade.trn}</div>
-               <div><strong>Trade Type:</strong> {selectedTrade.trade_type}</div>
-               <div><strong>Trade Category:</strong> {selectedTrade.trade_category}</div>
-               <div><strong>Country of Origin:</strong> {selectedTrade.country_of_origin}</div>
-               <div><strong>Customer Company Name:</strong> {selectedTrade.customer_company_name}</div>
-               <div><strong>Address:</strong> {selectedTrade.address}</div>
-               <div><strong>Packing:</strong> {selectedTrade.packing}</div>
-               <div><strong>Cost of Packing per Each:</strong> {selectedTrade.cost_of_packing_per_each}</div>
-               <div><strong>Total Packing Cost:</strong> {selectedTrade.total_packing_cost}</div>
-               <div><strong>Packaging Supplier:</strong> {selectedTrade.packaging_supplier}</div>
-               <div><strong>Selected Currency Rate:</strong> {selectedTrade.selected_currency_rate}</div>
-               <div><strong>Currency Selection:</strong> {selectedTrade.currency_selection}</div>
-               <div><strong>Exchange Rate:</strong> {selectedTrade.exchange_rate}</div>
-               <div><strong>Rate in USD:</strong> {selectedTrade.rate_in_usd}</div>
-               <div><strong>Commission:</strong> {selectedTrade.commission}</div>
-               <div><strong>Contract Value:</strong> {selectedTrade.contract_value}</div>
-               <div><strong>Payment Term:</strong> {selectedTrade.payment_term}</div>
-               <div><strong>Advance Value to Receive:</strong> {selectedTrade.advance_value_to_receive}</div>
-               <div><strong>Commission Rate:</strong> {selectedTrade.commission_rate}</div>
-               <div><strong>Logistic Provider:</strong> {selectedTrade.logistic_provider}</div>
-               <div><strong>Estimated Logistic Cost:</strong> {selectedTrade.estimated_logistic_cost}</div>
-               <div><strong>Logistic Cost Tolerance:</strong> {selectedTrade.logistic_cost_tolerance}</div>
-               <div><strong>Logistic Cost Remarks:</strong> {selectedTrade.logistic_cost_remarks}</div>
-               <div><strong>Bank Name Address:</strong> {selectedTrade.bank_name_address}</div>
-               <div><strong>Account Number:</strong> {selectedTrade.account_number}</div>
-               <div><strong>SWIFT Code:</strong> {selectedTrade.swift_code}</div>
-               <div><strong>Incoterm:</strong> {selectedTrade.incoterm}</div>
-               <div><strong>POD:</strong> {selectedTrade.pod}</div>
-               <div><strong>POL:</strong> {selectedTrade.pol}</div>
-               <div><strong>ETA:</strong> {selectedTrade.eta}</div>
-               <div><strong>ETD:</strong> {selectedTrade.etd}</div>
-               <div><strong>Remarks:</strong> {selectedTrade.remarks}</div>
-               <div><strong>Trader Name:</strong> {selectedTrade.trader_name}</div>
-               <div><strong>Insurance Policy Number:</strong> {selectedTrade.insurance_policy_number}</div>
-               <div><strong>BL Declaration:</strong> {selectedTrade.bl_declaration}</div>
-               <div><strong>Shipper in BL:</strong> {selectedTrade.shipper_in_bl}</div>
-               <div><strong>Consignee in BL:</strong> {selectedTrade.consignee_in_bl}</div>
-               <div><strong>Notify Party in BL:</strong> {selectedTrade.notify_party_in_bl}</div>
-               <div><strong>Markings in Packaging:</strong> {selectedTrade.markings_in_packaging}</div>
-               <div><strong>Container Shipment Size:</strong> {selectedTrade.container_shipment_size}</div>
-               <div><strong>BL Fee:</strong> {selectedTrade.bl_fee}</div>
-               <div><strong>BL Fee Remarks:</strong> {selectedTrade.bl_fee_remarks}</div>
-               <div><strong>Approved:</strong> {selectedTrade.approved ? 'Yes' : 'No'}</div>
+             <h2 className="text-2xl mb-2 text-center">Trade Details</h2>
+             <hr className='mb-2' />
+             <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                <thead className="bg-gray-100 border-b border-gray-200">
+                  <tr>
+                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                  </tr>
+                </thead>
+             
+                <tbody>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Company </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.company}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trn}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trade_type}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Category </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trade_category}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Country of Origin </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.country_of_origin}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Customer Company Name </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.customer_company_name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Address </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.address}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packing}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost of Packing per Each </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.cost_of_packing_per_each}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Packing Cost </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.total_packing_cost}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packaging Supplier </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packaging_supplier}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Selected Currency Rate </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.selected_currency_rate}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Currency Selection </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.currency_selection}</td>
+                  </tr>
+
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Exchange Rate </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.exchange_rate}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Rate in USD </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.rate_in_usd}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Contract Value</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.contract_value}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.payment_term}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Value to Receive</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.advance_value_to_receive}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Rate</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_rate}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_provider}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Estimated Logistic Cost</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.estimated_logistic_cost}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Tolerance</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_cost_tolerence}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Remarks</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_cost_remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bank_name_address}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.account_number}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">SWIFT Code</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.swift_code}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Incoterm</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.incoterm}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">POD</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.pod}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">POL</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.pol}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETA</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.eta}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETD</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.etd}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trader_name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurance Policy Number</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.insurance_policy_number}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Declaration</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_declaration}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Shipper in BL</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.shipper_in_bl}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Consignee in BL</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.consignee_in_bl}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Notify Party in BL</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.notify_party_in_bl}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Markings in Packaging</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.markings_in_packaging}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.container_shipment_size}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fee</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_fee}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fee Remarks</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_fee_remarks}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.approved ? 'Yes' : 'No'}</td>
+                  </tr>
+                </tbody>
+                </table>
              </div>
+             
      
-             <h3 className="text-xl mt-4">Trade Products</h3>
+             <h3 className="text-lg mt-4 text-center">Trade Products</h3>
              <table className="min-w-full bg-white">
                <thead>
                  <tr>
@@ -190,7 +352,7 @@ function TradeApproval() {
                </tbody>
              </table>
      
-             <h3 className="text-xl mt-4">Trade Extra Costs</h3>
+             <h3 className="text-lg mt-4 text-center">Trade Extra Costs</h3>
              <table className="min-w-full bg-white">
                <thead>
                  <tr>
@@ -207,6 +369,11 @@ function TradeApproval() {
                  ))}
                </tbody>
              </table>
+             {selectedTrade.approved ? '' : 
+             <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+             <button onClick={approveTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+             </div>
+             }
            </div>
          </div>
         )}

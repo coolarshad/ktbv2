@@ -23,12 +23,22 @@ router.register(r'invoices', InvoiceViewSet)
 router.register(r'coas', COAViewSet)
 # router.register(r'payment-finances', PaymentFinanceViewSet)
 router.register(r'tt-copies', TTCopyViewSet)
+router.register(r'kyc', KycViewSet)
+router.register(r'purchase-product-trace', PurchaseProductTraceViewSet)
+router.register(r'sales-product-trace', SalesProductTraceViewSet)
+router.register(r'purchase-pending', PurchasePendingViewSet)
+router.register(r'sales-pending', SalesPendingViewSet)
+router.register(r'company', CompanyViewSet)
+router.register(r'bank', BankViewSet)
+router.register(r'unit', UnitViewSet)
+
 
 
 urlpatterns = [
     path('', include(router.urls)),
     path('trades/', TradeView.as_view(), name='trades'),
     path('trades/<int:pk>/', TradeView.as_view(), name='trade-detail'),
+    path('tradeapprove/<int:pk>/', TradeApproveView.as_view(), name='trade-approve'),
 
     path('pre-sales-purchases/', PreSalePurchaseView.as_view(), name='pre-sales-purchases'),
     path('pre-sales-purchases/<int:pk>/', PreSalePurchaseView.as_view(), name='pre-sales-purchases-detail'),
@@ -41,6 +51,8 @@ urlpatterns = [
 
     path('payment-finances/', PaymentFinanceView.as_view(), name='payment-finances'),
     path('payment-finances/<int:pk>/', PaymentFinanceView.as_view(), name='payment-finances-detail'),
+
+    path('companies/<int:company_id>/next-counter/', NextCounterView.as_view(), name='next-counter'),
 ]+ router.urls
 
 # urlpatterns = [

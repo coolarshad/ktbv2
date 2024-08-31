@@ -101,11 +101,9 @@ class TradeView(APIView):
             'bl_fee': data.get('bl_fee'),
             'bl_fee_remarks': data.get('bl_fee_remarks'),
         }
-
         trade_products_data = []
         trade_extra_costs_data = []
         related_trades_data = []
-       
 
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
@@ -143,8 +141,6 @@ class TradeView(APIView):
                 related_trades_data.append(int(related_data))
             k += 1
 
-        print("-----", related_trades_data)
-        
         with transaction.atomic():
             trade_serializer = TradeSerializer(data=trade_data)
             if trade_serializer.is_valid():
@@ -160,19 +156,75 @@ class TradeView(APIView):
                     trade_products = [TradeProduct(**item, trade=trade) for item in trade_products_data]
                     TradeProduct.objects.bulk_create(trade_products)
                 except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': f"Trade Products: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
                 
             if trade_extra_costs_data:
                 try:
                     trade_extra_costs = [TradeExtraCost(**item, trade=trade) for item in trade_extra_costs_data]
                     TradeExtraCost.objects.bulk_create(trade_extra_costs)
                 except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+                    return Response({'error': f"Trade Extra Costs: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                company = Company.objects.get(id=data.get('company'))
+                company.save_counter(data.get('trn'))
+            except Company.DoesNotExist:
+                return Response({'error': 'Company not found.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+           
+            
+            if trade.trade_type.lower() == "sales":
+                for product in trade_products:
+                    try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_trace = SalesProductTrace.objects.filter(product_code=product.product_code).first()
+            
+                        if existing_trace:
+                            # If it exists, update only the fields you want to update
+                            existing_trace.trade_qty = product.trade_qty
+                            existing_trace.contract_balance_qty = product.contract_balance_qty
+                            existing_trace.save()
+                        else:
+                            # If it doesn't exist, create a new record with all fields
+                            SalesProductTrace.objects.create(
+                            product_code=product.product_code,
+                            total_contract_qty=product.total_contract_qty,
+                            trade_qty=product.trade_qty,
+                            contract_balance_qty=product.contract_balance_qty,
+                            first_trn=trade.trn
+                            )
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating SalesProductTrace: {e}")
+                        raise
+            
+            if trade.trade_type.lower() == "purchase":
+                for product in trade_products:
+                    try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code).first()
+            
+                        if existing_trace:
+                            # If it exists, update only the fields you want to update
+                            existing_trace.trade_qty = product.trade_qty
+                            existing_trace.contract_balance_qty = product.contract_balance_qty
+                            existing_trace.save()
+                        else:
+                            # If it doesn't exist, create a new record with all fields
+                            PurchaseProductTrace.objects.create(
+                            product_code=product.product_code,
+                            total_contract_qty=product.total_contract_qty,
+                            trade_qty=product.trade_qty,
+                            contract_balance_qty=product.contract_balance_qty,
+                            first_trn=trade.trn
+                            )
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating PurchaseProductTrace: {e}")
+                        raise
+            
         return Response(trade_serializer.data, status=status.HTTP_201_CREATED)
-
-    
-    
+   
     def put(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         data = request.data
@@ -315,6 +367,91 @@ class TradeView(APIView):
             trade.delete()
 
         return Response({'message': 'Trade deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+class TradeApproveView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_id = kwargs.get('pk')
+
+        # Check if trade_id is provided
+        if not trade_id:
+            return Response({'detail': 'Trade ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Use atomic block for the approval process
+            with transaction.atomic():
+                # Retrieve the trade object
+                trade = Trade.objects.get(id=trade_id)
+
+                # Update trade approval status
+                trade.approved = True
+                trade.save()
+
+                # Check if trade_type is "sales" and create SalesPending instances
+                if trade.trade_type.lower() == "sales":
+                    trade_products = TradeProduct.objects.filter(trade=trade)
+                    sales_pending_instances = []
+
+                    for product in trade_products:
+                        # Create SalesPending instance using data from TradeProduct
+                        sales_pending = SalesPending(
+                            trn=trade.trn,
+                            trd=trade.trd,
+                            company=trade.company,
+                            payment_term=trade.payment_term,
+                            product_code=product.product_code,
+                            product_name=product.product_name,
+                            hs_code=product.hs_code,
+                            total_contract_qty=product.total_contract_qty,
+                            total_contract_qty_unit=product.total_contract_qty_unit,
+                            contract_balance_qty=product.contract_balance_qty,
+                            contract_balance_qty_unit=product.contract_balance_qty_unit,
+                            trade_qty=product.trade_qty,
+                            trade_qty_unit=product.trade_qty_unit
+                        )
+                        sales_pending_instances.append(sales_pending)
+
+                    # Bulk create all SalesPending instances at once
+                    SalesPending.objects.bulk_create(sales_pending_instances)
+
+                # Check if trade_type is "purchase" and create PurchasePending instances
+                elif trade.trade_type.lower() == "purchase":
+                    trade_products = TradeProduct.objects.filter(trade=trade)
+                    purchase_pending_instances = []
+
+                    for product in trade_products:
+                        # Create PurchasePending instance using data from TradeProduct
+                        purchase_pending = PurchasePending(
+                            trn=trade.trn,
+                            trd=trade.trd,
+                            company=trade.company,
+                            payment_term=trade.payment_term,
+                            product_code=product.product_code,
+                            product_name=product.product_name,
+                            hs_code=product.hs_code,
+                            total_contract_qty=product.total_contract_qty,
+                            total_contract_qty_unit=product.total_contract_qty_unit,
+                            contract_balance_qty=product.contract_balance_qty,
+                            contract_balance_qty_unit=product.contract_balance_qty_unit,
+                            trade_qty=product.trade_qty,
+                            trade_qty_unit=product.trade_qty_unit
+                        )
+                        purchase_pending_instances.append(purchase_pending)
+
+                    # Bulk create all PurchasePending instances at once
+                    PurchasePending.objects.bulk_create(purchase_pending_instances)
+
+                # Serialize and return the approved trade
+                serializer = TradeSerializer(trade)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Trade.DoesNotExist:
+            return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            # Log the error or handle it appropriately in a real-world application
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 
 class TradeProductViewSet(viewsets.ModelViewSet):
     queryset = TradeProduct.objects.all()
@@ -1276,3 +1413,53 @@ class PaymentFinanceView(APIView):
 class TTCopyViewSet(viewsets.ModelViewSet):
     queryset = TTCopy.objects.all()
     serializer_class = TTCopySerializer
+
+
+class KycViewSet(viewsets.ModelViewSet):
+    queryset = Kyc.objects.all()
+    serializer_class = KycSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = KycFilter
+
+
+class PurchaseProductTraceViewSet(viewsets.ModelViewSet):
+    queryset = PurchaseProductTrace.objects.all()
+    serializer_class = PurchaseProductTraceSerializer
+
+
+class SalesProductTraceViewSet(viewsets.ModelViewSet):
+    queryset = SalesProductTrace.objects.all()
+    serializer_class = SalesProductTraceSerializer
+
+class PurchasePendingViewSet(viewsets.ModelViewSet):
+    queryset = PurchasePending.objects.all()
+    serializer_class = PurchasePendingSerializer
+
+class SalesPendingViewSet(viewsets.ModelViewSet):
+    queryset = SalesPending.objects.all()
+    serializer_class = SalesPendingSerializer
+
+class CompanyViewSet(viewsets.ModelViewSet):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+
+class BankViewSet(viewsets.ModelViewSet):
+    queryset = Bank.objects.all()
+    serializer_class = BankSerializer
+
+class UnitViewSet(viewsets.ModelViewSet):
+    queryset = Unit.objects.all()
+    serializer_class = UnitSerializer
+
+class NextCounterView(APIView):
+    def get(self, request, company_id):
+        try:
+            # Fetch the company by ID
+            company = Company.objects.get(pk=company_id)
+            # Get the next counter value
+            next_counter = company.get_next_counter()
+            return Response({'next_counter': next_counter}, status=status.HTTP_200_OK)
+        except Company.DoesNotExist:
+            return Response({'error': 'Company not found'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)

@@ -7,7 +7,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
     const { id } = useParams();
     const navigate = useNavigate();
-
+    
     const [formData, setFormData] = useState({
         company: '',
         trd: '',
@@ -78,6 +78,41 @@ const TradeForm = ({ mode = 'add' }) => {
         relatedTrades: []
     });
 
+    const tradeTypeOptions = ['Sales', 'Purchase'];
+    const tradeCategoryOptions = ['Sales', 'Sales Cancel', 'Purchase', 'Purchase Cancel'];
+
+    const [companyOptions, setCompanyOptions] = useState([]); 
+    const [customerOptions, setCustomerOptions] = useState([]); 
+    const [paymentTermOptions, setPaymentTermOptions] = useState([]); 
+    const [bankNameOptions, setBankNameOptions] = useState([]); 
+    const [unitOptions, setUnitOptions] = useState([]);
+    
+    // const customerCompanyOptions = ['Customer A', 'Customer B', 'Customer C'];
+    // const paymentTermOptions = ['Term 1', 'Term 2', 'Term 3'];
+    // const bankNameOptions = ['Bank A', 'Bank B', 'Bank C'];
+     // Fetch data when the component mounts
+
+    // Function to fetch data
+    const fetchData = async (url, setStateFunction) => {
+        try {
+            const response = await axios.get(url);
+            setStateFunction(response.data);
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+        }
+    };
+
+    // Combined useEffect for all API calls
+    useEffect(() => {
+        fetchData('/trademgt/kyc', setCustomerOptions);
+        fetchData('/trademgt/company', setCompanyOptions);
+        fetchData('/trademgt/payment-terms', setPaymentTermOptions);
+        fetchData('/trademgt/bank', setBankNameOptions);
+        fetchData('/trademgt/unit', setUnitOptions);
+    }, []);
+
+
+
     const [tradeOptions, setTradeOptions] = useState([]);
     useEffect(() => {
         // Fetch all trades to populate the relatedTrades options
@@ -115,35 +150,85 @@ const TradeForm = ({ mode = 'add' }) => {
         }
     }, [mode, id]);
 
-    const handleChange = (e, index, section) => {
+    const handleChange = async (e, index, section) => {
         const { name, value, type, files } = e.target;
+    
         if (type === 'file') {
-            setFormData(prevState => {
+            setFormData((prevState) => {
                 const updatedProducts = [...prevState.tradeProducts];
                 updatedProducts[index][name] = files[0];
                 return { ...prevState, tradeProducts: updatedProducts };
             });
         } else {
-            if (section === 'products') {
-                setFormData(prevState => {
+            if (name === 'company') {
+                // When a company is selected, fetch the next counter value
+                setFormData((prevState) => ({
+                    ...prevState,
+                    [name]: value,
+                }));
+    
+                try {
+                    const selectedCompany = companyOptions.find((company) => company.name === value);
+                    if (selectedCompany) {
+                        try {
+                            const response = await axios.get(`/trademgt/companies/${selectedCompany.id}/next-counter/`);
+                            
+                            // Check if the request was successful
+                            if (response.status === 200) {
+                              const data = response.data; // axios handles JSON parsing
+                              setFormData((prevState) => ({
+                                ...prevState,
+                                trn: data.next_counter, // Auto-fill the TRN field with the next counter
+                              }));
+                            } else {
+                              console.error('Error fetching the next counter:', response.statusText);
+                            }
+                          } catch (error) {
+                            console.error('Error:', error.message);
+                          }
+                    }
+                } catch (error) {
+                    console.error('Error fetching next counter:', error);
+                }
+            } else if (name === 'customer_company_name') {
+                const selectedCustomer = customerOptions.find((customer) => customer.name === value);
+    
+                setFormData((prevState) => ({
+                    ...prevState,
+                    [name]: value,
+                    address: selectedCustomer?.address || '',
+                }));
+            }
+             else if (name === 'bank_name_address') {
+                const selectedBank = bankNameOptions.find((bank) => bank.name === value);
+    
+                setFormData((prevState) => ({
+                    ...prevState,
+                    [name]: value,
+                    swift_code: selectedBank?.swift_code || '',
+                    account_number: selectedBank?.account_number || '',
+                }));
+            } else if (section === 'products') {
+                setFormData((prevState) => {
                     const updatedProducts = [...prevState.tradeProducts];
                     updatedProducts[index][name] = value;
                     return { ...prevState, tradeProducts: updatedProducts };
                 });
             } else if (section === 'extraCosts') {
-                setFormData(prevState => {
+                setFormData((prevState) => {
                     const updatedExtraCosts = [...prevState.tradeExtraCosts];
                     updatedExtraCosts[index][name] = value;
                     return { ...prevState, tradeExtraCosts: updatedExtraCosts };
                 });
             } else {
-                setFormData(prevState => ({
+                setFormData((prevState) => ({
                     ...prevState,
-                    [name]: value
+                    [name]: value,
                 }));
             }
         }
     };
+      
 
     const handleAddProduct = () => {
         setFormData(prevState => ({
@@ -233,6 +318,7 @@ const TradeForm = ({ mode = 'add' }) => {
             })
                 .then(response => {
                     console.log('Trade added successfully!', response.data);
+                    navigate(`/trade-approval`);
                 })
                 .catch(error => {
                     console.error('There was an error adding the trade!', error);
@@ -245,6 +331,7 @@ const TradeForm = ({ mode = 'add' }) => {
             })
                 .then(response => {
                     console.log('Trade updated successfully!', response.data);
+                    navigate(`/trade-approval`);
                 })
                 .catch(error => {
                     console.error('There was an error updating the trade!', error);
@@ -252,13 +339,8 @@ const TradeForm = ({ mode = 'add' }) => {
         }
     };
 
-    // Sample options for the dropdown fields
-    const companyOptions = ['Company A', 'Company B', 'Company C'];
-    const tradeTypeOptions = ['sales', 'purchase', 'cancel'];
-    const tradeCategoryOptions = ['Category 1', 'Category 2', 'Category 3'];
-    const customerCompanyOptions = ['Customer A', 'Customer B', 'Customer C'];
-    const paymentTermOptions = ['Term 1', 'Term 2', 'Term 3'];
-    const bankNameOptions = ['Bank A', 'Bank B', 'Bank C'];
+   
+   
 
     const handleSelectChange = (selectedOptions) => {
         setFormData({
@@ -272,17 +354,24 @@ const TradeForm = ({ mode = 'add' }) => {
 
             <div className="grid grid-cols-3 gap-4 p-4 ">
                 <div>
-                    <label>Related Trades</label>
-                    <Select
-                        isMulti
-                        name="relatedTrades"
-                        options={tradeOptions}
-                        value={tradeOptions.filter(option => formData.relatedTrades.includes(option.value))}
-                        onChange={handleSelectChange}
-                    />
+                    <label htmlFor="trade_type" className="block text-sm font-medium text-gray-700">Select Trade Type</label>
+                    <select
+                        name="trade_type"
+                        value={formData.trade_type}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    >
+                        <option value="">Select Trade Type</option>
+                        {tradeTypeOptions.map((option) => (
+                            <option key={option} value={option}>
+                                {option}
+                            </option>
+                        ))}
+                    </select>
                 </div>
+                
                 <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700">Date</label>
+                    <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company</label>
                     <select
                         name="company"
                         value={formData.company}
@@ -291,11 +380,21 @@ const TradeForm = ({ mode = 'add' }) => {
                     >
                         <option value="">Select Company</option>
                         {companyOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
+                            <option key={option.id} value={option.id}>
+                                {option.name}
                             </option>
                         ))}
                     </select>
+                </div>
+                <div>
+                    <label>Related Trades</label>
+                    <Select
+                        isMulti
+                        name="relatedTrades"
+                        options={tradeOptions}
+                        value={tradeOptions.filter(option => formData.relatedTrades.includes(option.value))}
+                        onChange={handleSelectChange}
+                    />
                 </div>
                 <div>
                     <label htmlFor="trd" className="block text-sm font-medium text-gray-700">Trade Date</label>
@@ -321,22 +420,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 </div>
 
                 {/* Add other fields similarly */}
-                <div>
-                    <label htmlFor="trade_type" className="block text-sm font-medium text-gray-700">Select Trade Type</label>
-                    <select
-                        name="trade_type"
-                        value={formData.trade_type}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select Trade Type</option>
-                        {tradeTypeOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                
                 <div>
                     <label htmlFor="trade_category" className="block text-sm font-medium text-gray-700">Select Trade Category</label>
                     <select
@@ -373,9 +457,9 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     >
                         <option value="">Select Customer Company</option>
-                        {customerCompanyOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
+                        {customerOptions.map((option) => (
+                            <option key={option.id} value={option.name}>
+                                {option.name}
                             </option>
                         ))}
                     </select>
@@ -511,8 +595,8 @@ const TradeForm = ({ mode = 'add' }) => {
                     >
                         <option value="">Select Payment Term</option>
                         {paymentTermOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
+                            <option key={option.id} value={option.name}>
+                                {option.name}
                             </option>
                         ))}
                     </select>
@@ -593,8 +677,8 @@ const TradeForm = ({ mode = 'add' }) => {
                     >
                         <option value="">Select Bank Name & Address</option>
                         {bankNameOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
+                            <option key={option.id} value={option.name}>
+                                {option.name}
                             </option>
                         ))}
                     </select>
@@ -854,6 +938,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     name="loi"
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    disabled={!product.product_name_for_client}
                                 />
                                 {/* {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>} */}
                             </div>
@@ -879,7 +964,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>
-                            <div>
+                            {/* <div>
                                 <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">Total Contract Qty Unit</label>
                                 <input
                                     type="text"
@@ -889,6 +974,24 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Total Contract Qty Unit"
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
+                            </div> */}
+                            <div>
+                                <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">
+                                    Total Contract Qty Unit
+                                </label>
+                                <select
+                                    name="total_contract_qty_unit"
+                                    value={product.total_contract_qty_unit}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                >
+                                    <option value="">Select Contract Unit</option>
+                                    {unitOptions.map((option) => (
+                                        <option key={option.id} value={option.name}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
@@ -912,7 +1015,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>
-                            <div>
+                            {/* <div>
                                 <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">Contract Balance Qty Unit</label>
                                 <input
                                     type="text"
@@ -922,6 +1025,24 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Contract Balance Qty Unit"
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
+                            </div> */}
+                            <div>
+                                <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">
+                                    Contract Balance Qty Unit
+                                </label>
+                                <select
+                                    name="contract_balance_qty_unit"
+                                    value={product.contract_balance_qty_unit}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                >
+                                    <option value="">Select Balance Unit</option>
+                                    {unitOptions.map((option) => (
+                                        <option key={option.id} value={option.name}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label htmlFor="trade_qty" className="block text-sm font-medium text-gray-700">Trade Qty</label>
@@ -934,7 +1055,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>
-                            <div>
+                            {/* <div>
                                 <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
                                 <input
                                     type="text"
@@ -944,6 +1065,24 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Trade Qty Unit"
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
+                            </div> */}
+                            <div>
+                                <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">
+                                    Trade Qty Unit
+                                </label>
+                                <select
+                                    name="trade_qty_unit"
+                                    value={product.trade_qty_unit}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                >
+                                    <option value="">Select Balance Unit</option>
+                                    {unitOptions.map((option) => (
+                                        <option key={option.id} value={option.name}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <button
