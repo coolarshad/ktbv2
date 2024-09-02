@@ -53,6 +53,11 @@ urlpatterns = [
     path('payment-finances/<int:pk>/', PaymentFinanceView.as_view(), name='payment-finances-detail'),
 
     path('companies/<int:company_id>/next-counter/', NextCounterView.as_view(), name='next-counter'),
+
+    path('print/<int:pk>/', PrintView.as_view(), name='trades'),
+    path('prepay/<int:pk>/', PrePayView.as_view(), name='prepay'),
+    path('sp/<int:pk>/', SPView.as_view(), name='sp'),
+    path('pf/<int:pk>/', PFView.as_view(), name='pf'),
 ]+ router.urls
 
 # urlpatterns = [

@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
+    const [trnOptions, setTrnOptions] = useState([]); 
+    
+    const [data, setData] = useState(null); 
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         trn: '',
@@ -19,8 +23,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         total_packing_cost: '',
         packaging_supplier: '',
         logistic_supplier: '',
-        batch_number: '',
-        production_date: '',
+        
         logistic_cost: '',
         logistic_cost_due_date: '',
         liner: '',
@@ -30,12 +33,25 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         eta: '',
         shipment_status: '',
         remarks: '',
+        salesPurchaseProducts: [
+            {
+                product_name: '',
+                hs_code: '',
+                tolerance: '',
+                batch_number: '',
+                production_date: '',
+                trade_qty: '',
+                trade_qty_unit: '',
+            }
+        ],
         extraCharges: [{ name: '', charge: '' }],
         packingLists: [{ name: '', packing_list: null }],
         blCopies: [{ name: '', bl_copy: null }],
         invoices: [{ name: '', invoice: null }],
         coas: [{ name: '', coa: null }],
     });
+
+   
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -44,7 +60,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     const data = response.data;
                     setFormData(prevState => ({
                         ...prevState,
-                        trn: data.trn,
+                        trn: data.trn.id,
                         invoice_date: data.invoice_date,
                         invoice_number: data.invoice_number,
                         invoice_amount: data.invoice_amount,
@@ -57,8 +73,6 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         total_packing_cost: data.total_packing_cost,
                         packaging_supplier: data.packaging_supplier,
                         logistic_supplier: data.logistic_supplier,
-                        batch_number: data.batch_number,
-                        production_date: data.production_date,
                         logistic_cost: data.logistic_cost,
                         logistic_cost_due_date: data.logistic_cost_due_date,
                         liner: data.liner,
@@ -68,37 +82,122 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         eta: data.eta,
                         shipment_status: data.shipment_status,
                         remarks: data.remarks,
+                        salesPurchaseProducts: data.salesPurchaseProducts || [
+                            {
+                                product_name: '',
+                                hs_code: '',
+                                tolerance: '',
+                                batch_number: '',
+                                production_date: '',
+                                trade_qty: '',
+                                trade_qty_unit: '',
+                            }
+                        ],
                         extraCharges: data.extraCharges || [{ name: '', charge: '' }],
                         packingLists: data.packingLists || [{ name: '', packing_list: null }],
                         blCopies: data.blCopies || [{ name: '', bl_copy: null }],
                         invoices: data.invoices || [{ name: '', invoice: null }],
                         coas: data.coas || [{ name: '', coa: null }]
                     }));
-                })
-                .catch(error => {
-                    console.error('There was an error fetching the trade data!', error);
-                });
+                // Call the second API after the first one is complete
+              return axios.get(`/trademgt/sp/${data.trn.id}`);
+            })
+            .then(response => {
+                setData(response.data)
+            })
+            .catch(error => {
+              console.error('There was an error fetching the data!', error);
+            });
         }
-    }, [mode, id]);
+      }, [mode, id]);
 
-
-
-    const handleChange = (e, arrayName, index) => {
-        const { name, value, type, files } = e.target;
-        if (type === 'file') {
-            setFormData(prev => {
-                const updatedArray = [...prev[arrayName]];
-                updatedArray[index][name] = files[0];
-                return { ...prev, [arrayName]: updatedArray };
-            });
-        } else {
-            setFormData(prev => {
-                const updatedArray = [...prev[arrayName]];
-                updatedArray[index][name] = value;
-                return { ...prev, [arrayName]: updatedArray };
-            });
+    const [unitOptions, setUnitOptions] = useState([]);
+    const fetchData = async (url, params = {}, setStateFunction) => {
+        try {
+            const response = await axios.get(url, { params });  // Pass params to axios.get
+            setStateFunction(response.data);
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
         }
     };
+
+    // Combined useEffect for all API calls
+    useEffect(() => {
+        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
+        fetchData('/trademgt/unit',{}, setUnitOptions);
+    }, []);
+
+      const handleChange = async (e, arrayName = null, index = null) => {
+        const { name, value, type, files } = e.target;
+      
+        setFormData((prev) => {
+          // Handle file input
+          if (type === 'file' && arrayName !== null && index !== null) {
+            if (Array.isArray(prev[arrayName])) {
+              const updatedArray = [...prev[arrayName]]; // Clone the array safely
+              updatedArray[index][name] = files[0]; // Update the specific index
+              return { ...prev, [arrayName]: updatedArray }; // Return the updated state
+            } else {
+              console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
+            }
+          }
+          // Handle array input
+          else if (arrayName !== null && index !== null) {
+            if (Array.isArray(prev[arrayName])) {
+              const updatedArray = [...prev[arrayName]]; // Clone the array safely
+              updatedArray[index][name] = value; // Update the specific index
+              return { ...prev, [arrayName]: updatedArray }; // Return the updated state
+            } else {
+              console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
+            }
+          }
+          // Handle non-array input
+          else {
+            return { ...prev, [name]: value }; // Return updated state for regular input
+          }
+      
+          return prev; // Fallback if conditions are not met
+        });
+      
+        // Fetch TRN data when 'trn' changes
+        if (name === 'trn') {
+          try {
+            const response = await axios.get(`/trademgt/sp/${value}`);
+            setData(response.data);
+          } catch (error) {
+            console.error('Error fetching TRN data:', error);
+          }
+        }
+      };
+    
+      // Handle adding a new product to the salesPurchaseProducts array
+      const handleAddProduct = () => {
+        setFormData((prevState) => ({
+          ...prevState,
+          salesPurchaseProducts: [
+            ...prevState.salesPurchaseProducts,
+            {
+              product_name: '',
+              hs_code: '',
+              tolerance: '',
+              batch_number: '',
+              production_date: '',
+              trade_qty: '',
+              trade_qty_unit: '',
+            },
+          ],
+        }));
+      };
+    
+      // Handle removing a product from the salesPurchaseProducts array
+      const handleRemoveProduct = (index) => {
+        setFormData((prevState) => {
+          const updatedProducts = prevState.salesPurchaseProducts.filter(
+            (_, i) => i !== index
+          );
+          return { ...prevState, salesPurchaseProducts: updatedProducts };
+        });
+      };
 
     const handleAddRow = (arrayName) => {
         setFormData(prev => ({
@@ -135,7 +234,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 formDataToSend.append(key, value);
             }
         }
-        console.log(formDataToSend)
+
         if (mode === 'add') {
             axios.post('/trademgt/sales-purchases/', formDataToSend, {
                 headers: {
@@ -144,6 +243,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             })
             .then(response => {
                 console.log('Sales/Purchase added successfully!', response.data);
+                navigate(`/sales-purchases`);
             })
             .catch(error => {
                 console.error('There was an error adding the trade!', error);
@@ -156,6 +256,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             })
             .then(response => {
                 console.log('Sales/Purchase updated successfully!', response.data);
+                navigate(`/sales-purchases`);
             })
             .catch(error => {
                 console.error('There was an error updating the trade!', error);
@@ -163,20 +264,53 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         }
     };
 
+    const tradeData = data
+    ? [
+        { label: 'Trade Type', text: data.trade_type || '' },
+        { label: 'Markings', text: data.markings_in_packaging || '' },
+        
+        { label: 'Customer Company Name', text: data.prepayment.kyc?.name || '' },
+        { label: 'LC Details', text: data.prepayment.lc_number || '' },
+        { label: 'Commission Agent', text: data.commission_agent || '' },
+      
+        { label: 'Trader Name', text: data.trader_name || '' },
+        { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
+        
+        
+      ]
+    : [];
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+            {data && (
+
+                <div className="grid grid-cols-4 gap-1 py-2">
+                    {tradeData.map((item, index) => (
+                        <div key={index} className="p-2 border rounded shadow-sm">
+                            <div className="font-semibold">{item.label}</div>
+                            <div>{item.text}</div>
+                        </div>
+                    ))}
+                </div>
+            )}
             {/* SalesPurchase Fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 ">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
-                    <input
+                    <select
                         id="trn"
                         name="trn"
-                        type="text"
                         value={formData.trn}
-                        onChange={(e) => setFormData({ ...formData, trn: e.target.value })}
+                        onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
+                    >
+                        <option value="">Select TRN</option>
+                        {trnOptions.map(option => (
+                            <option key={option.id} value={option.id}>
+                                {option.trn}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div>
                     <label htmlFor="invoice_date" className="block text-sm font-medium text-gray-700">Invoice Date</label>
@@ -200,119 +334,109 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
+           
+            <div>
+                <label htmlFor="invoice_amount" className="block text-sm font-medium text-gray-700">Invoice Amount</label>
+                <input
+                    id="invoice_amount"
+                    name="invoice_amount"
+                    type="number"
+                    value={formData.invoice_amount}
+                    onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="invoice_amount" className="block text-sm font-medium text-gray-700">Invoice Amount</label>
-                    <input
-                        id="invoice_amount"
-                        name="invoice_amount"
-                        type="number"
-                        value={formData.invoice_amount}
-                        onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
-                    <input
-                        id="commission_value"
-                        name="commission_value"
-                        type="number"
-                        value={formData.commission_value}
-                        onChange={(e) => setFormData({ ...formData, commission_value: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="bl_number" className="block text-sm font-medium text-gray-700">BL Number</label>
-                    <input
-                        id="bl_number"
-                        name="bl_number"
-                        type="text"
-                        value={formData.bl_number}
-                        onChange={(e) => setFormData({ ...formData, bl_number: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+            <div>
+                <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
+                <input
+                    id="commission_value"
+                    name="commission_value"
+                    type="number"
+                    value={formData.commission_value}
+                    onChange={(e) => setFormData({ ...formData, commission_value: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="bl_qty" className="block text-sm font-medium text-gray-700">BL Quantity</label>
-                    <input
-                        id="bl_qty"
-                        name="bl_qty"
-                        type="number"
-                        value={formData.bl_qty}
-                        onChange={(e) => setFormData({ ...formData, bl_qty: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="bl_fees" className="block text-sm font-medium text-gray-700">BL Fees</label>
-                    <input
-                        id="bl_fees"
-                        name="bl_fees"
-                        type="number"
-                        value={formData.bl_fees}
-                        onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="bl_collection_cost" className="block text-sm font-medium text-gray-700">BL Collection Cost</label>
-                    <input
-                        id="bl_collection_cost"
-                        name="bl_collection_cost"
-                        type="number"
-                        value={formData.bl_collection_cost}
-                        onChange={(e) => setFormData({ ...formData, bl_collection_cost: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+            <div>
+                <label htmlFor="bl_number" className="block text-sm font-medium text-gray-700">BL Number</label>
+                <input
+                    id="bl_number"
+                    name="bl_number"
+                    type="text"
+                    value={formData.bl_number}
+                    onChange={(e) => setFormData({ ...formData, bl_number: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="bl_date" className="block text-sm font-medium text-gray-700">BL Date</label>
-                    <input
-                        id="bl_date"
-                        name="bl_date"
-                        type="date"
-                        value={formData.bl_date}
-                        onChange={(e) => setFormData({ ...formData, bl_date: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="total_packing_cost" className="block text-sm font-medium text-gray-700">Total Packing Cost</label>
-                    <input
-                        id="total_packing_cost"
-                        name="total_packing_cost"
-                        type="number"
-                        value={formData.total_packing_cost}
-                        onChange={(e) => setFormData({ ...formData, total_packing_cost: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
-                    <input
-                        id="packaging_supplier"
-                        name="packaging_supplier"
-                        type="text"
-                        value={formData.packaging_supplier}
-                        onChange={(e) => setFormData({ ...formData, packaging_supplier: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+            <div>
+                <label htmlFor="bl_qty" className="block text-sm font-medium text-gray-700">BL Quantity</label>
+                <input
+                    id="bl_qty"
+                    name="bl_qty"
+                    type="number"
+                    value={formData.bl_qty}
+                    onChange={(e) => setFormData({ ...formData, bl_qty: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label htmlFor="bl_fees" className="block text-sm font-medium text-gray-700">BL Fees</label>
+                <input
+                    id="bl_fees"
+                    name="bl_fees"
+                    type="number"
+                    value={formData.bl_fees}
+                    onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="bl_collection_cost" className="block text-sm font-medium text-gray-700">BL Collection Cost</label>
+                <input
+                    id="bl_collection_cost"
+                    name="bl_collection_cost"
+                    type="number"
+                    value={formData.bl_collection_cost}
+                    onChange={(e) => setFormData({ ...formData, bl_collection_cost: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="bl_date" className="block text-sm font-medium text-gray-700">BL Date</label>
+                <input
+                    id="bl_date"
+                    name="bl_date"
+                    type="date"
+                    value={formData.bl_date}
+                    onChange={(e) => setFormData({ ...formData, bl_date: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="total_packing_cost" className="block text-sm font-medium text-gray-700">Total Packing Cost</label>
+                <input
+                    id="total_packing_cost"
+                    name="total_packing_cost"
+                    type="number"
+                    value={formData.total_packing_cost}
+                    onChange={(e) => setFormData({ ...formData, total_packing_cost: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
+                <input
+                    id="packaging_supplier"
+                    name="packaging_supplier"
+                    type="text"
+                    value={formData.packaging_supplier}
+                    onChange={(e) => setFormData({ ...formData, packaging_supplier: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+           
                 <div>
-                    <label htmlFor="logistic_supplier" className="block text-sm font-medium text-gray-700">Logistic Supplier</label>
+                    <label htmlFor="logistic_supplier" className="block text-sm font-medium text-gray-700">Logistic Provider</label>
                     <input
                         id="logistic_supplier"
                         name="logistic_supplier"
@@ -322,145 +446,229 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="batch_number" className="block text-sm font-medium text-gray-700">Batch Number</label>
-                    <input
-                        id="batch_number"
-                        name="batch_number"
-                        type="text"
-                        value={formData.batch_number}
-                        onChange={(e) => setFormData({ ...formData, batch_number: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
-                    <input
-                        id="production_date"
-                        name="production_date"
-                        type="date"
-                        value={formData.production_date}
-                        onChange={(e) => setFormData({ ...formData, production_date: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+           
+            <div>
+                <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
+                <input
+                    id="logistic_cost"
+                    name="logistic_cost"
+                    type="number"
+                    value={formData.logistic_cost}
+                    onChange={(e) => setFormData({ ...formData, logistic_cost: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="logistic_cost_due_date" className="block text-sm font-medium text-gray-700">Logistic Cost Due Date</label>
+                <input
+                    id="logistic_cost_due_date"
+                    name="logistic_cost_due_date"
+                    type="text"
+                    value={formData.logistic_cost_due_date}
+                    onChange={(e) => setFormData({ ...formData, logistic_cost_due_date: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="liner" className="block text-sm font-medium text-gray-700">Liner</label>
+                <input
+                    id="liner"
+                    name="liner"
+                    type="text"
+                    value={formData.liner}
+                    onChange={(e) => setFormData({ ...formData, liner: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
-                    <input
-                        id="logistic_cost"
-                        name="logistic_cost"
-                        type="number"
-                        value={formData.logistic_cost}
-                        onChange={(e) => setFormData({ ...formData, logistic_cost: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="logistic_cost_due_date" className="block text-sm font-medium text-gray-700">Logistic Cost Due Date</label>
-                    <input
-                        id="logistic_cost_due_date"
-                        name="logistic_cost_due_date"
-                        type="text"
-                        value={formData.logistic_cost_due_date}
-                        onChange={(e) => setFormData({ ...formData, logistic_cost_due_date: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="liner" className="block text-sm font-medium text-gray-700">Liner</label>
-                    <input
-                        id="liner"
-                        name="liner"
-                        type="text"
-                        value={formData.liner}
-                        onChange={(e) => setFormData({ ...formData, liner: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+            <div>
+                <label htmlFor="pod" className="block text-sm font-medium text-gray-700">POD</label>
+                <input
+                    id="pod"
+                    name="pod"
+                    type="text"
+                    value={formData.pod}
+                    onChange={(e) => setFormData({ ...formData, pod: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="pol" className="block text-sm font-medium text-gray-700">POL</label>
+                <input
+                    id="pol"
+                    name="pol"
+                    type="text"
+                    value={formData.pol}
+                    onChange={(e) => setFormData({ ...formData, pol: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="etd" className="block text-sm font-medium text-gray-700">ETD</label>
+                <input
+                    id="etd"
+                    name="etd"
+                    type="date"
+                    value={formData.etd}
+                    onChange={(e) => setFormData({ ...formData, etd: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="pod" className="block text-sm font-medium text-gray-700">POD</label>
-                    <input
-                        id="pod"
-                        name="pod"
-                        type="text"
-                        value={formData.pod}
-                        onChange={(e) => setFormData({ ...formData, pod: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="pol" className="block text-sm font-medium text-gray-700">POL</label>
-                    <input
-                        id="pol"
-                        name="pol"
-                        type="text"
-                        value={formData.pol}
-                        onChange={(e) => setFormData({ ...formData, pol: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="etd" className="block text-sm font-medium text-gray-700">ETD</label>
-                    <input
-                        id="etd"
-                        name="etd"
-                        type="date"
-                        value={formData.etd}
-                        onChange={(e) => setFormData({ ...formData, etd: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="eta" className="block text-sm font-medium text-gray-700">ETA</label>
-                    <input
-                        id="eta"
-                        name="eta"
-                        type="date"
-                        value={formData.eta}
-                        onChange={(e) => setFormData({ ...formData, eta: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
-                    <input
-                        id="shipment_status"
-                        name="shipment_status"
-                        type="text"
-                        value={formData.shipment_status}
-                        onChange={(e) => setFormData({ ...formData, shipment_status: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                    <input
-                        id="remarks"
-                        name="remarks"
-                        type="text"
-                        value={formData.remarks}
-                        onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+
+            <div>
+                <label htmlFor="eta" className="block text-sm font-medium text-gray-700">ETA</label>
+                <input
+                    id="eta"
+                    name="eta"
+                    type="date"
+                    value={formData.eta}
+                    onChange={(e) => setFormData({ ...formData, eta: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
+                <input
+                    id="shipment_status"
+                    name="shipment_status"
+                    type="text"
+                    value={formData.shipment_status}
+                    onChange={(e) => setFormData({ ...formData, shipment_status: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
+            <div>
+                <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
+                <input
+                    id="remarks"
+                    name="remarks"
+                    type="text"
+                    value={formData.remarks}
+                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                />
+            </div>
             </div>
 
             {/* Add more SalesPurchase fields as needed */}
 
             <hr className="my-6" />
-
+            <div>
+            <h3 className="text-lg font-medium text-gray-900">Products</h3>
+            {formData.salesPurchaseProducts.map((product, index) => (
+                <>
+                    <div key={index} className="grid grid-cols-4 gap-4 mb-4 justify-between items-end px-4 py-2">
+                        <div>
+                            <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
+                            <input
+                                type="text"
+                                name="product_name"
+                                value={product.product_name}
+                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                placeholder="Product Name"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
+                            <input
+                                type="text"
+                                name="hs_code"
+                                value={product.hs_code}
+                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                placeholder="HS Code"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
+                            <input
+                                type="number"
+                                name="tolerance"
+                                value={product.tolerance}
+                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                placeholder="Tolerance"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="batch_number" className="block text-sm font-medium text-gray-700">Batch Number</label>
+                            <input
+                                type="text"
+                                name="batch_number"
+                                value={product.batch_number}
+                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                placeholder="Batch Number"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
+                            <input
+                                type="date"
+                                name="production_date"
+                                value={product.production_date}
+                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="trade_qty" className="block text-sm font-medium text-gray-700">Trade Quantity</label>
+                            <input
+                                type="number"
+                                name="trade_qty"
+                                value={product.trade_qty}
+                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                placeholder="Trade Quantity"
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
+                            <select
+                                    name="trade_qty_unit"
+                                    value={product.trade_qty_unit}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                >
+                                    <option value="">Select Trade Unit</option>
+                                    {unitOptions?.map((option) => (
+                                        <option key={option.id} value={option.name}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
+                        </div>
+                        <div>
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveProduct(index)}
+                                className="bg-red-500 text-white p-2 rounded"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                    <hr />
+                </>
+            ))}
+            <div className="text-right">
+                <button
+                    type="button"
+                    onClick={handleAddProduct}
+                    className="bg-green-500 text-white p-2 rounded mt-2"
+                >
+                    Add Product
+                </button>
+            </div>
+        </div>
+            <hr className="my-6" />
+                        
             {/* SalesPurchaseExtraCharge Section */}
             <div className="space-y-4 px-4">
-                <h3 className="text-lg font-medium text-gray-900">Extra Charges</h3>
+                <h3 className="text-lg font-medium text-gray-900">Other Charges</h3>
                 {formData.extraCharges.map((extraCharge, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>

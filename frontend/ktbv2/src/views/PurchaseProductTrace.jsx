@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
-import SalesTraceTable from '../components/SalesTraceTable';
+import PurchaseTraceTable from '../components/PurchaseTraceTable';
 
-const SalesProductTrace = () => {
+const PurchaseProductTrace = () => {
 
 
     const navigate = useNavigate();
@@ -16,10 +16,10 @@ const SalesProductTrace = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get('/trademgt/sales-product-trace/'); 
+          const response = await axios.get('/trademgt/purchase-product-trace/'); 
           setPendingData(response.data);
         } catch (error) {
-          setError('Failed to fetch sales pending data');
+          setError('Failed to fetch purchase pending data');
         } finally {
           setLoading(false);
         }
@@ -31,15 +31,15 @@ const SalesProductTrace = () => {
   
 
     const handleDelete = async (id) => {
-      const confirmed = window.confirm('Are you sure you want to clear this sales product trace?');
+      const confirmed = window.confirm('Are you sure you want to clear this purchase product trace?');
       if (confirmed) {
         try {
-          await axios.delete(`/trademgt/sales-product-trace/${id}/`);
+          await axios.delete(`/trademgt/purchase-product-trace/${id}/`);
           setPendingData(pendingData.filter(data => data.id !== id));
-          alert('Sales product trace deleted successfully.');
+          alert('Purchase product trace deleted successfully.');
         } catch (error) {
-          console.error('Error deleting sales product trace:', error);
-          alert('Failed to delete sales product trace.');
+          console.error('Error deleting purchase product trace:', error);
+          alert('Failed to delete purchase product trace.');
         }
       }
     };
@@ -61,13 +61,13 @@ const SalesProductTrace = () => {
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">Sales Product Tracing</p>
+        <p className="text-xl">Purchase Product Tracing</p>
        
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/sales-product-trace'} fieldOptions={fieldOptions} />
+        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/purchase-product-trace'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
-        <SalesTraceTable data={pendingData} onDelete={handleDelete} />
+        <PurchaseTraceTable data={pendingData} onDelete={handleDelete} />
         </div>
       </div>
      
@@ -75,4 +75,4 @@ const SalesProductTrace = () => {
     );
 };
 
-export default SalesProductTrace;
+export default PurchaseProductTrace;

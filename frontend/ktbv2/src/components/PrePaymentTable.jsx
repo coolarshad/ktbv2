@@ -31,7 +31,7 @@ const PrePaymentTable = ({ data, onDelete, onView }) => {
           {data.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_number}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_received}</td>

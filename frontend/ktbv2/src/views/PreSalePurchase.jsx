@@ -19,7 +19,7 @@ function PreSalePurchase() {
   useEffect(() => {
     const fetchPreSPData = async () => {
       try {
-        const response = await axios.get('/trademgt/pre-sales-purchases/',{}); // Replace with your API endpoint
+        const response = await axios.get('/trademgt/pre-sales-purchases/'); // Replace with your API endpoint
         setPreSPData(response.data);
       } catch (error) {
         setError('Failed to fetch trade data');

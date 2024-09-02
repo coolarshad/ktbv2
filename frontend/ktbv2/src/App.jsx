@@ -27,6 +27,7 @@ import Units from './views/Units';
 import SalesPending from './views/SalesPending';
 import PurchasePending from './views/PurchasePending';
 import SalesProductTrace from './views/SalesProductTrace';
+import PurchaseProductTrace from './views/PurchaseProductTrace';
 
 function App() {
  
@@ -64,6 +65,7 @@ function App() {
           <Route path="/sales-pending" element={<SalesPending />} />
           <Route path="/purchase-pending" element={<PurchasePending />} />
           <Route path="/sales-product-trace" element={<SalesProductTrace />} />
+          <Route path="/purchase-product-trace" element={<PurchaseProductTrace />} />
         </Routes>
       </div>
     </Router>

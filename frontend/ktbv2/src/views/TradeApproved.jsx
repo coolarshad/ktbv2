@@ -147,10 +147,7 @@ function TradeApproved() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packaging Supplier </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.packaging_supplier}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Selected Currency Rate </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.selected_currency_rate}</td>
-                  </tr>
+                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Currency Selection </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.currency_selection}</td>
@@ -165,8 +162,8 @@ function TradeApproved() {
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.rate_in_usd}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission}</td>
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_agent}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Contract Value</td>
@@ -301,6 +298,7 @@ function TradeApproved() {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Balance Qty Unit</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
                  </tr>
                </thead>
                <tbody>
@@ -318,6 +316,8 @@ function TradeApproved() {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.contract_balance_qty_unit}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     
                    </tr>
                  ))}
                </tbody>

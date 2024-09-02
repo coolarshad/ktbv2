@@ -21,11 +21,11 @@ const TradeForm = ({ mode = 'add' }) => {
         cost_of_packing_per_each: '',
         total_packing_cost: '',
         packaging_supplier: '',
-        selected_currency_rate: '',
+        
         currency_selection: '',
         exchange_rate: '',
         rate_in_usd: '',
-        commission: '',
+        commission_agent: '',
         contract_value: '',
         payment_term: '',
         advance_value_to_receive: '',
@@ -66,7 +66,8 @@ const TradeForm = ({ mode = 'add' }) => {
                 contract_balance_qty: '',
                 contract_balance_qty_unit: '',
                 trade_qty: '',
-                trade_qty_unit: ''
+                trade_qty_unit: '',
+                selected_currency_rate: '',
             }
         ],
         tradeExtraCosts: [
@@ -87,11 +88,6 @@ const TradeForm = ({ mode = 'add' }) => {
     const [bankNameOptions, setBankNameOptions] = useState([]); 
     const [unitOptions, setUnitOptions] = useState([]);
     
-    // const customerCompanyOptions = ['Customer A', 'Customer B', 'Customer C'];
-    // const paymentTermOptions = ['Term 1', 'Term 2', 'Term 3'];
-    // const bankNameOptions = ['Bank A', 'Bank B', 'Bank C'];
-     // Fetch data when the component mounts
-
     // Function to fetch data
     const fetchData = async (url, setStateFunction) => {
         try {
@@ -200,7 +196,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 }));
             }
              else if (name === 'bank_name_address') {
-                const selectedBank = bankNameOptions.find((bank) => bank.name === value);
+                const selectedBank = bankNameOptions.find((bank) => bank.id == value);
     
                 setFormData((prevState) => ({
                     ...prevState,
@@ -247,7 +243,8 @@ const TradeForm = ({ mode = 'add' }) => {
                     contract_balance_qty: '',
                     contract_balance_qty_unit: '',
                     trade_qty: '',
-                    trade_qty_unit: ''
+                    trade_qty_unit: '',
+                    selected_currency_rate: '',
                 }
             ]
         }));
@@ -458,7 +455,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     >
                         <option value="">Select Customer Company</option>
                         {customerOptions.map((option) => (
-                            <option key={option.id} value={option.name}>
+                            <option key={option.id} value={option.id}>
                                 {option.name}
                             </option>
                         ))}
@@ -519,7 +516,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
+                {/* <div>
                     <label htmlFor="selected_currency_rate" className="block text-sm font-medium text-gray-700">Selected Currency Rate</label>
                     <input
                         type="number"
@@ -529,7 +526,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         placeholder="Selected Currency Rate"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                </div>
+                </div> */}
                 <div>
                     <label htmlFor="currency_selection" className="block text-sm font-medium text-gray-700">Currency Selection</label>
                     <input
@@ -564,13 +561,13 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                 </div>
                 <div>
-                    <label htmlFor="commission" className="block text-sm font-medium text-gray-700">Commission</label>
+                    <label htmlFor="commission" className="block text-sm font-medium text-gray-700">Commission Agent</label>
                     <input
-                        type="number"
-                        name="commission"
-                        value={formData.commission}
+                        type="text"
+                        name="commission_agent"
+                        value={formData.commission_agent}
                         onChange={handleChange}
-                        placeholder="Commission"
+                        placeholder="Commission Agent"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
@@ -677,7 +674,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     >
                         <option value="">Select Bank Name & Address</option>
                         {bankNameOptions.map((option) => (
-                            <option key={option.id} value={option.name}>
+                            <option key={option.id} value={option.id}>
                                 {option.name}
                             </option>
                         ))}
@@ -964,17 +961,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>
-                            {/* <div>
-                                <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">Total Contract Qty Unit</label>
-                                <input
-                                    type="text"
-                                    name="total_contract_qty_unit"
-                                    value={product.total_contract_qty_unit}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    placeholder="Total Contract Qty Unit"
-                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                />
-                            </div> */}
+                            
                             <div>
                                 <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Total Contract Qty Unit
@@ -1015,17 +1002,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>
-                            {/* <div>
-                                <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">Contract Balance Qty Unit</label>
-                                <input
-                                    type="text"
-                                    name="contract_balance_qty_unit"
-                                    value={product.contract_balance_qty_unit}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    placeholder="Contract Balance Qty Unit"
-                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                />
-                            </div> */}
+                           
                             <div>
                                 <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Contract Balance Qty Unit
@@ -1055,17 +1032,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>
-                            {/* <div>
-                                <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
-                                <input
-                                    type="text"
-                                    name="trade_qty_unit"
-                                    value={product.trade_qty_unit}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    placeholder="Trade Qty Unit"
-                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                />
-                            </div> */}
+                            
                             <div>
                                 <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Trade Qty Unit
@@ -1083,6 +1050,17 @@ const TradeForm = ({ mode = 'add' }) => {
                                         </option>
                                     ))}
                                 </select>
+                            </div>
+                            <div>
+                                <label htmlFor="selected_currency_rate" className="block text-sm font-medium text-gray-700">Selected Currency Rate</label>
+                                <input
+                                    type="number"
+                                    name="selected_currency_rate"
+                                    value={product.selected_currency_rate}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Selected Currency Rate"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
                             </div>
                             <div>
                                 <button

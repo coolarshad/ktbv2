@@ -92,6 +92,7 @@ const MenuBar = () => {
           <Link to="/sales-pending" className="hover:text-gray-400">Sales Pending</Link>
           <Link to="/purchase-pending" className="hover:text-gray-400">Purchase Pending</Link>
           <Link to="/sales-product-trace" className="hover:text-gray-400">Sales Product Trace</Link>
+          <Link to="/purchase-product-trace" className="hover:text-gray-400">Purchase Product Trace</Link>
         </div>
       </div>
     </div>

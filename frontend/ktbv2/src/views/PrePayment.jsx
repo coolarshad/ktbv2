@@ -30,9 +30,9 @@ function PrePayment() {
     fetchData();
   }, []);
 
-  const handleViewClick = async (tradeId) => {
+  const handleViewClick = async (id) => {
     try {
-      const response = await axios.get(`/trademgt/pre-payments/${tradeId}/`);
+      const response = await axios.get(`/trademgt/pre-payments/${id}/`);
       setSelectedPrePayment(response.data);
       setIsModalOpen(true);
     } catch (error) {
@@ -123,39 +123,39 @@ function PrePayment() {
                   
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trn}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">PO Date/PI Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp.date}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trade_type}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.payment_term.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Buyer/Seller Name </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.kyc.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Value of Contract </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.contract_value}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Receive/Pay </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.advance_value_to_receive}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.adv_due_date}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">As Per PI Cash/TT/Advance </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.as_per_pi_advance}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Number </td>
@@ -163,59 +163,72 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Opening Bank </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_received}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.lc_opening_bank}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Received </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_receipt}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_received}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Receipt </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_paid}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_receipt}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Paid </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_payment}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_paid}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Payment </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.lc_expiry_date}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_payment}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Expiry Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.latest_shipment_date_in_lc}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.lc_expiry_date}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Latest Shipment Date in LC </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.latest_shipment_date_in_lc}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trader_name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurrance Policy Number</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.insurance_policy_number}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Copy</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Ammendment</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance TT Copy</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
-                  </tr>
+                  
                 </tbody>
                 </table>
-             </div>
+                <p className='my-2 underline'>LC Copy</p>
+                {selectedPrePayment.lcCopies && (
+                  selectedPrePayment.lcCopies.map((item, index) => (
+                    <div key={index}>
+                      <p className='text-sm'>{index + 1}. <a href={item.lc_copy}>{item.name}</a></p>
+
+                    </div>
+                  )))}
+                <p className='my-2 underline'>LC Ammendment</p>
+                {selectedPrePayment.lcAmmendments && (
+                  selectedPrePayment.lcAmmendments.map((item, index) => (
+                    <div key={index}>
+                      <p className='text-sm'>{index + 1}. <a href={item.lc_ammendment}>{item.name}</a></p>
+
+                    </div>
+                  )))}
+                <p className='my-2 underline'>Advance TT Copy</p>
+                {selectedPrePayment.advanceTTCopies && (
+                  selectedPrePayment.advanceTTCopies.map((item, index) => (
+                    <div key={index}>
+                      <p className='text-sm'>{index + 1}. <a href={item.advance_tt_copy}>{item.name}</a></p>
+
+                    </div>
+                  )))}
+              </div>
              
      
            

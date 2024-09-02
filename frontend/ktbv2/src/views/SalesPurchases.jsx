@@ -35,7 +35,7 @@ function SalesPurchases() {
     if (confirmed) {
       try {
         await axios.delete(`/trademgt/sales-purchases/${id}/`);
-        setSPData(prePaymentData.filter(data => data.id !== id));
+        setSPData(spData.filter(data => data.id !== id));
         alert('Sales/Purchase deleted successfully.');
       } catch (error) {
         console.error('Error deleting Sales/Purchase:', error);
@@ -77,7 +77,7 @@ function SalesPurchases() {
     { value: 'bl_date', label: 'BL Date' },
     { value: 'invoice_date', label: 'Invoice Date' },
     { value: 'packaging_supplier', label: 'Packaging Supplier' },
-    { value: 'logistic_supplier', label: 'Logistic Supplier' },
+    { value: 'logistic_provider', label: 'Logistic Supplier' },
     { value: 'batch_number', label: 'Batch Number' },
     { value: 'production_date', label: 'Production Date' },
     { value: 'remarks', label: 'Remarks' },
@@ -130,27 +130,20 @@ function SalesPurchases() {
                   
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn.trn}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn.trade_type}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Product Name </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">HS Code </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn}</td>
-                  </tr>
+                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Markings </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn.markings_in_packaging}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Buyer/Seller </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.prepayemnt.kyc.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Invoice Date </td>
@@ -166,11 +159,11 @@ function SalesPurchases() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Details </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.invoice_amount}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.prepayemnt.lc_number}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.invoice_amount}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn.commission_agent}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
@@ -192,10 +185,7 @@ function SalesPurchases() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Collection Cost</td>
                     <td className="py-2 px-4 text-gray-800">{selectedSP.bl_collection_cost}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Tolerence</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.bl_collection_cost}</td>
-                  </tr>
+                
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Date</td>
                     <td className="py-2 px-4 text-gray-800">{selectedSP.bl_date}</td>
@@ -211,14 +201,6 @@ function SalesPurchases() {
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
                     <td className="py-2 px-4 text-gray-800">{selectedSP.logistic_supplier}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Batch Number</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.batch_number}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Production Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.production_date}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost </td>
@@ -254,11 +236,11 @@ function SalesPurchases() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.eta}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn.trader_name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurrance Policy Number</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedSP.eta}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedSP.trn.insurance_policy_number}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Status of Shipment</td>
@@ -273,10 +255,121 @@ function SalesPurchases() {
              </div>
              
      
-           
+             <h3 className="text-lg mt-4 text-center">Products</h3>
+             <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {selectedSP.salesPurchaseProducts.map(product => (
+                   <tr key={product.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
      
-            
-            
+             <h3 className="text-lg mt-4 text-center">Other Charges</h3>
+             <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Charge</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {selectedSP.extraCharges.map(cost => (
+                   <tr key={cost.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.charge}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+     
+             <h3 className="text-lg mt-4 text-center">Packing Lists</h3>
+             <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing List</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {selectedSP.packingLists.map(item => (
+                   <tr key={item.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.packing_list}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+
+             <h3 className="text-lg mt-4 text-center">Invoices</h3>
+             <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {selectedSP.packingLists.map(item => (
+                   <tr key={item.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.invoice}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+
+             <h3 className="text-lg mt-4 text-center">BL Copies</h3>
+             <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {selectedSP.blCopies.map(item => (
+                   <tr key={item.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.bl_copy}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+
+             <h3 className="text-lg mt-4 text-center">COAs</h3>
+             <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">COA</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {selectedSP.coas.map(item => (
+                   <tr key={item.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.coa}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+
+
            </div>
          </div>
         )}

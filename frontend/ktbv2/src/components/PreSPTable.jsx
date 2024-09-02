@@ -5,32 +5,73 @@ import PurchaseInvoice from "../views/PurchaseInvoice";
 import ReactToPrint from 'react-to-print';
 import { useReactToPrint } from 'react-to-print';
 import Modal from './Modal';
+import PrintModal from './PrintModal';
 import axios from '../axiosConfig';
+import { toWords } from 'number-to-words';
 
 const PreSPTable = ({ data, onDelete }) => {
   const navigate = useNavigate();  
   const componentRef = useRef();
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
+  const [selectedPresp, setSelectedPresp] = useState(null);
+  const [totalTradeQuantity, setTotalTradeQuantity] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
+  // const [textAmount, setTextAmount] = useState(0);
 
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedTrade(null);
   };
 
-  const handleViewClick = async (tradeId) => {
+  const closePrintModal = () => {
+    setIsPrintModalOpen(false);
+    setSelectedTrade(null);
+  };
+
+  const handlePrintClick = async (presp) => {
+    setSelectedPresp(presp)
     try {
-      const response = await axios.get(`/trademgt/trades/53/`);
+      const response = await axios.get(`/trademgt/print/${presp.trn}/`);
+      
+      // Set the fetched trade data to state
+      setSelectedTrade(response.data);
+  
+      // Calculate sums directly from the fetched data
+      const totalQuantity = response.data.trade_products?.reduce((sum, product) => sum + Number(product.trade_qty), 0);
+      const totalAmountSum = response.data.trade_products?.reduce((sum, product) => sum + Number(product.trade_qty*product.selected_currency_rate), 0);
+  
+      // Update state with the calculated sums
+      setTotalTradeQuantity(totalQuantity);
+      setTotalAmount(totalAmountSum?totalAmountSum:1000);
+  
+      // Open the modal after everything is set
+      setIsPrintModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching trade details:', error);
+    }
+  };
+
+
+  const handleViewClick = async (presp) => {
+    setSelectedPresp(presp)
+    try {
+      const response = await axios.get(`/trademgt/print/${presp.trn}/`);
+      
+      // Set the fetched trade data to state
       setSelectedTrade(response.data);
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error fetching trade details:', error);
+      console.error('Error fetching Pre Sale/Purchase details:', error);
     }
   };
 
   const handleEdit = (id) => {
     navigate(`/pre-sale-purchase-form/${id}`);  // Navigate to TradeForm with tradeId
   };
+
+ 
 
   return (
     <>
@@ -68,7 +109,8 @@ const PreSPTable = ({ data, onDelete }) => {
               </td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
               <div className="space-x-2">
-                  <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp.id)}>Print</button>
+                  <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(presp)}>Print</button>
+                  <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp)}>View</button>
                   <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
                   <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
                 </div>
@@ -81,243 +123,593 @@ const PreSPTable = ({ data, onDelete }) => {
       
     </div>
 
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
+      <PrintModal isOpen={isPrintModalOpen} onClose={closePrintModal}>
         {selectedTrade && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-            <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
-            <button onClick={closeModal} className="float-right text-red-500">Close</button>
-            <ReactToPrint trigger={()=><button>Print</button>} content={()=>componentRef.current}/>
+          <div>
+            {selectedTrade.trade_type === 'Purchase' ? (
+              <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+                <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
+                  <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
+                  <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
 
-            <div className="p-4 max-w-6xl mx-auto" ref={componentRef}>
+                  <div className="p-4 max-w-6xl mx-auto" ref={componentRef}>
 
-              {/* Header Section */}
-              <div className="text-center pb-3">
-                <h1 className="text-xl font-bold">PURCHASE ORDER</h1>
-              </div>
-
-              {/* First Div with 2 Columns */}
-              <div className="grid grid-cols-2 gap-0">
-                {/* Col 1 with 3 Rows */}
-                <div className="flex flex-col  border-l border-t border-r  border-black">
-                  <div className="border-b border-black px-2 py-2">
-                    <p className='font-light text-sm'>Invoice To</p>
-                    <p className='font-bold text-sm'>KISMAT PETROLEUM TRADING PTE LTD</p>
-                    <p className='text-sm'>
-                      50 RAFFLES PLACE,
-                      SINGAPORE LAND TOWER, LEVEL # 19-00, SINGAPORE 048623
-                    </p>
-                    <p className='mt-1'>
-                      Cmp Regn No. : <span className='font-bold'>201726590K</span>
-                    </p>
-                  </div>
-                  <div className=" border-black px-2 py-3">
-                    <p className=' pb-2'>Supplier</p>
-                    <p>NAME</p>
-                    <p>ADDRESS</p>
-                    <p>REGISTRATION NO.</p>
-                  </div>
-
-                </div>
-
-                {/* Col 2 with 2 Nested Columns (Col 3 and Col 4) */}
-                <div className="grid grid-cols-2 gap-0 border-t border-r border-black">
-                  {/* Col 3 with 6 Rows */}
-                  <div className="flex flex-col justify-between border-r border-black">
-                    <div className="border-b border-black p-2 ">
-                      <p className='font-bold text-sm'>TRADE REFERANCE NO.</p>
-                      <p>XXXX</p>
-                    </div>
-                    <div className="border-b border-black p-2 ">
-                      <p className='font-bold text-sm'>Country of Origin</p>
-                      <p className='text-sm'>XXXXXXXXX</p>
-                    </div>
-                    <div className="border-b border-black p-2">
-                      <p className='font-bold text-sm'>INCOTERM</p>
-                      <p className='text-sm'>XXX</p>
-                    </div>
-                    <div className="border-b border-black p-2">
-                      <p className='font-bold text-sm'>Packing</p>
-                      <p className='text-sm'>XXXXXXX</p>
-                    </div>
-                    <div className="border-b border-black p-2">
-                      <p className='font-bold text-sm'>CONTAINER SIZE</p>
-                      <p className='text-sm'>XXXXXXX</p>
-                    </div>
-                    <div className="p-2">
-                      <p className='font-bold text-sm'>
-                        ESTIMATED TIME OF DEPARTURE
-                      </p>
-                      <p className='text-sm'>XXXXXXXXXXXX</p>
-                    </div>
-                  </div>
-
-                  {/* Col 4 with 5 Rows */}
-                  <div className="flex flex-col ">
-                    <div className="border-b border-black p-2">
-                      <p className='font-bold text-sm'>Dated</p>
-                      <p className='text-sm'>XX-XXX-XXXX</p>
-
-                    </div>
-                    <div className="border-b border-black p-2">
-                      <p className='font-bold text-sm'>Terms of Payment</p>
-                      <p className='text-sm'>XXXXXXX</p>
-                    </div>
-                    <div className="border-b border-black p-2">
-                      <p className='font-bold text-sm'>Port of Loading</p>
-                      <p className='text-sm'>XXXXXXXX</p>
-                    </div>
-                    <div className="p-2">
-                      <p className='font-bold text-sm'>Port of Discharge</p>
-                      <p className='text-sm'>XXXXX</p>
+                    {/* Header Section */}
+                    <div className="text-center pb-3">
+                      <h1 className="text-xl font-bold">PURCHASE ORDER</h1>
                     </div>
 
-                  </div>
-                </div>
-              </div>
+                    {/* First Div with 2 Columns */}
+                    <div className="grid grid-cols-2 gap-0">
+                      {/* Col 1 with 3 Rows */}
+                      <div className="flex flex-col  border-l border-t border-r  border-black">
+                        <div className="border-b border-black px-2 py-2">
+                          <p className='font-light text-sm'>Invoice To</p>
+                          <p className='font-bold text-sm uppercase'>{selectedTrade.company.name}</p>
+                          <p className='text-sm uppercase'>
+                            {selectedTrade.address}
+                          </p>
+                          <p className='mt-1'>
+                            Cmp Regn No. : <span className='font-bold'>201726590K</span>
+                          </p>
+                        </div>
+                        <div className=" border-black px-2 py-3">
+                          <p className=' pb-2'>Supplier</p>
+                          <p className='uppercase'>{selectedTrade.customer_company_name.name}</p>
+                          <p className='uppercase'>{selectedTrade.customer_company_name.address}</p>
+                          <p className='uppercase'>{selectedTrade.customer_company_name.companyRegNo}</p>
+                        </div>
 
-              {/* Table Section */}
-              <div className="">
-                <table className="table-auto w-full border-collapse border border-black">
-                  <thead>
-                    <tr>
-                      <th className="border border-black p-2 text-sm">SN</th>
-                      <th className="border border-black p-2 text-sm">Description of Goods</th>
-                      <th className="border border-black p-2 text-sm">HS CODE</th>
-                      <th className="border border-black p-2 text-sm">Trade Quantity</th>
-                      <th className="border border-black p-2 text-sm">UNIT</th>
-                      <th className="border border-black p-2 text-sm">Rate</th>
-                      <th className="border border-black p-2 text-sm">CURRENCY</th>
-                      <th className="border border-black p-2 text-sm">TOLERANE</th>
-                      <th className="border border-black p-2 text-sm">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border-l border-r border-black p-2 text-sm">1</td>
-                      <td className="border-l border-r border-black p-2 font-bold text-sm">Base Oil</td>
-                      <td className="border-l border-r border-black p-2 text-sm">XXXXXX</td>
-                      <td className="border-l border-r border-black p-2 text-sm">XXXXXX</td>
-                      <td className="border-l border-r border-black p-2 text-sm">XXXXXX</td>
-                      <td className="border-l border-r border-black p-2 text-sm">XXXXXX</td>
-                      <td className="border-l border-r border-black p-2 text-sm">XXXXXX</td>
-                      <td className="border-l border-r border-black p-2 text-sm">XXXXXX</td>
-                      <td className="border-l border-r border-black p-2 text-right text-sm">XXXXXX</td>
-                    </tr>
-                    {/* Additional rows can be added here */}
-                    <tr>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                    </tr>
-                    <tr>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                    </tr>
-                    <tr>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                    </tr>
-                    <tr>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                    </tr>
-                    <tr>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                    </tr>
-                    <tr>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                      <td className="border-l border-r border-black p-2"></td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black p-2"></td>
-                      <td className="border border-black p-2"></td>
-                      <td className="border border-black p-2 text-sm">Total</td>
-                      <td className="border border-black p-2 text-sm">XXXXX</td>
-                      <td className="border border-black p-2"></td>
-                      <td className="border border-black p-2"></td>
-                      <td className="border border-black p-2"></td>
-                      <td className="border border-black p-2"></td>
-                      <td className="border border-black p-2 text-right text-sm">XXXXX</td>
-                    </tr>
+                      </div>
 
-                  </tbody>
-                </table>
-              </div>
+                      {/* Col 2 with 2 Nested Columns (Col 3 and Col 4) */}
+                      <div className="grid grid-cols-2 gap-0 border-t border-r border-black">
+                        {/* Col 3 with 6 Rows */}
+                        <div className="flex flex-col justify-between border-r border-black">
+                          <div className="border-b border-black p-2 ">
+                            <p className='font-bold text-sm '>TRADE REFERANCE NO.</p>
+                            <p className='uppercase'>{selectedTrade.trn}</p>
+                          </div>
+                          <div className="border-b border-black p-2 ">
+                            <p className='font-bold text-sm'>Country of Origin</p>
+                            <p className='text-sm uppercase'>{selectedTrade.country_of_origin}</p>
+                          </div>
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold text-sm'>INCOTERM</p>
+                            <p className='text-sm uppercase'>{selectedTrade.incoterm}</p>
+                          </div>
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold text-sm'>Packing</p>
+                            <p className='text-sm uppercase'>{selectedTrade.packing}</p>
+                          </div>
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold text-sm'>CONTAINER SIZE</p>
+                            <p className='text-sm uppercase'>{selectedTrade.container_shipment_size}</p>
+                          </div>
+                          <div className="p-2">
+                            <p className='font-bold text-sm'>
+                              ESTIMATED TIME OF DEPARTURE
+                            </p>
+                            <p className='text-sm uppercase'>{selectedTrade.etd}</p>
+                          </div>
+                        </div>
 
-              {/* Final Div with 2 Rows */}
-              <div className="flex flex-col gap-4 border-l border-r border-b border-black">
-                {/* Row 1 */}
-                <div className=" p-2">
-                  <p className='text-sm'>Amount Chargeable (in words)</p>
-                  <p className='font-bold mb-2 text-sm'>CURRENCY XXXXXXXXXX Only</p>
-                  <p className='text-sm'>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
-                  <p className='text-sm'>1.</p>
-                  <p className='text-sm'>2.</p>
-                  <p className='text-sm'>3.</p>
-                  <p className='text-sm'>4.</p>
-                </div>
-                {/* Row 2 with 2 Columns */}
-                <div className="grid grid-cols-2">
-                  <div className=" p-2">
-                    <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
-                    <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
-                  </div>
-                  <div className="border-t border-l border-black p-2">
-                    <p className='mb-8 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
-                    <p className='text-right text-sm'>Authorised Signatory</p>
+                        {/* Col 4 with 5 Rows */}
+                        <div className="flex flex-col ">
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold text-sm'>Dated</p>
+                            <p className='text-sm uppercase'>{selectedTrade.trd}</p>
+
+                          </div>
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold text-sm'>Terms of Payment</p>
+                            <p className='text-sm uppercase'>{selectedTrade.payment_term}</p>
+                          </div>
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold text-sm'>Port of Loading</p>
+                            <p className='text-sm uppercase'>{selectedTrade.pol}</p>
+                          </div>
+                          <div className="p-2">
+                            <p className='font-bold text-sm'>Port of Discharge</p>
+                            <p className='text-sm uppercase'>{selectedTrade.pod}</p>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Table Section */}
+                    <div className="">
+                      <table className="table-auto w-full border-collapse border border-black">
+                        <thead>
+                          <tr>
+                            <th className="border border-black p-2 text-sm">SN</th>
+                            <th className="border border-black p-2 text-sm">Description of Goods</th>
+                            <th className="border border-black p-2 text-sm">HS CODE</th>
+                            <th className="border border-black p-2 text-sm">Trade Quantity</th>
+                            <th className="border border-black p-2 text-sm">UNIT</th>
+                            <th className="border border-black p-2 text-sm">Rate</th>
+                            <th className="border border-black p-2 text-sm">CURRENCY</th>
+                            <th className="border border-black p-2 text-sm">TOLERANE</th>
+                            <th className="border border-black p-2 text-sm">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedTrade.trade_products.map((product, index) => (
+                            <tr key={index}>
+                              <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
+                              <td className="border-l border-r border-black p-1 font-bold text-sm">
+                                {product.product_name_for_client ? product.product_name_for_client : product.product_name}
+                              </td>
+                              <td className="border-l border-r border-black p-1 text-sm">{product.hs_code}</td>
+                              <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty}</td>
+                              <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty_unit}</td>
+                              <td className="border-l border-r border-black p-1 text-sm">{product.selected_currency_rate}</td>
+                              <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency_selection}</td>
+                              <td className="border-l border-r border-black p-1 text-sm">{product.tolerance}</td>
+                              <td className="border-l border-r border-black p-1 text-right text-sm">
+                                {product.trade_qty * selectedTrade.rate_in_usd}
+                              </td>
+                            </tr>
+                          ))}
+                          {Array.from({ length: 18 - selectedTrade.trade_products.length }, (_, index) => (
+                            <tr key={index}>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black p-2"></td>
+                            </tr>
+                          ))}
+                          <tr>
+                            <td className="border border-black p-2"></td>
+                            <td className="border border-black p-2"></td>
+                            <td className="border border-black p-2 text-sm">Total</td>
+                            <td className="border border-black p-2 text-sm">{totalTradeQuantity}</td>
+                            <td className="border border-black p-2"></td>
+                            <td className="border border-black p-2"></td>
+                            <td className="border border-black p-2"></td>
+                            <td className="border border-black p-2"></td>
+                            <td className="border border-black p-2 text-right text-sm">{totalAmount}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Final Div with 2 Rows */}
+                    <div className="flex flex-col gap-4 border-l border-r border-b border-black">
+                      {/* Row 1 */}
+                      <div className=" p-2">
+                        <p className='text-sm'>Amount Chargeable (in words)</p>
+                        <p className='font-bold mb-2 text-sm uppercase'>{selectedTrade.currency_selection} {toWords(totalAmount)} Only</p>
+                        <p className='text-sm'>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
+                        {selectedPresp.acknowledgedPO && selectedPresp.acknowledgedPO.length > 0 ? (
+                          selectedPresp.acknowledgedPO.map((product, index) => (
+                            <div key={index}>
+                              <p className='text-sm'>{index + 1}. {product.ackn_po_name}</p> {/* Replace 'someField1' with the actual field name */}
+
+                            </div>
+                          ))
+                        ) : (
+                          <p>No acknowledged PO data available.</p>
+                        )}
+
+                      </div>
+                      {/* Row 2 with 2 Columns */}
+                      <div className="grid grid-cols-2">
+                        <div className=" p-2">
+                          <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
+                          <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
+                        </div>
+                        <div className="border-t border-l border-black p-2">
+                          <p className='mb-8 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
+                          <p className='text-right text-sm'>Authorised Signatory</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center pb-2 mt-1">
+                      <h1 className="text-sm font-md text-sm">This is a Computer Generated Invoice</h1>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="text-center pb-2 mt-1">
-                <h1 className="text-sm font-md text-sm">This is a Computer Generated Invoice</h1>
+      ):(
+              <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+                <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
+                  <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
+                  <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+
+                    <div className="py-3 px-4 max-w-6xl mx-auto" ref={componentRef}>
+
+                      {/* Header Section */}
+                      <div className="text-center pb-2">
+                        <h1 className="text-xl font-bold">PROFORMA INVOICE</h1>
+                      </div>
+
+                      {/* First Div with 2 Columns */}
+                      <div className="grid grid-cols-2 gap-0">
+                        {/* Col 1 with 3 Rows */}
+                        <div className="flex flex-col  content-startjustify-between border-l border-t border-r  border-black">
+                          <div className="border-b border-black px-2 py-3">
+                            <p className='font-bold uppercase'>{selectedTrade.company.name}</p>
+                            <p className='uppercase'>
+                            {selectedTrade.address}
+                            </p>
+                            <p>
+                              Cmp Regn No. : <span className='font-bold uppercase'>201726590K</span>
+                            </p>
+                          </div>
+                          <div className="border-b border-black px-2 py-3">
+                            <p className=' pb-2'>Buyer</p>
+                            <p className='uppercase'>{selectedTrade.customer_company_name.name}</p>
+                            <p className='uppercase'>{selectedTrade.customer_company_name.address}</p>
+                            <p className='uppercase'>{selectedTrade.customer_company_name.companyRegNo}</p>
+                          </div>
+                          <div className="px-2 py-2">
+                            <p className=' pb-2'>OUR BANK DETAILS</p>
+                            <p className='uppercase'>{selectedTrade.bank_name_address.name}</p>
+                            <p className='uppercase'>{selectedTrade.bank_name_address.account_number}</p>
+                            <p className='uppercase'>{selectedTrade.bank_name_address.swift_code}</p>
+                          </div>
+                        </div>
+
+                        {/* Col 2 with 2 Nested Columns (Col 3 and Col 4) */}
+                        <div className="grid grid-cols-2 gap-0 border-t border-r border-black">
+                          {/* Col 3 with 6 Rows */}
+                          <div className="flex flex-col justify-between border-r border-black">
+                            <div className="border-b border-black p-2 ">
+                              <p className='font-bold'>TRADE REFERANCE NO.</p>
+                              <p className='uppercase'>{selectedTrade.trn}</p>
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>Country of Origin</p>
+                              <p className='uppercase'>{selectedTrade.country_of_origin}</p>
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>INCOTERM</p>
+                              <p className='uppercase'>{selectedTrade.incoterm}</p>
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>Packing</p>
+                              <p className='uppercase'>{selectedTrade.packing}</p>
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>CONTAINER SIZE</p>
+                              <p className='uppercase'>{selectedTrade.container_shipment_size}</p>
+                            </div>
+                            <div className="p-2">
+                              <p className='font-bold'>
+                                ESTIMATED TIME OF DEPARTURE
+                              </p>
+                              <p className='uppercase'>{selectedTrade.etd}</p>
+                            </div>
+                          </div>
+
+                          {/* Col 4 with 5 Rows */}
+                          <div className="flex flex-col justify-between">
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>Dated</p>
+                              <p className='uppercase'>{selectedTrade.trd}</p>
+
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>Terms of Payment</p>
+                              <p className='uppercase'>{selectedTrade.payment_term}</p>
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>ADVANCE DUE DATE /</p>
+                              <p className='uppercase'>{selectedPresp.advance_due_date}</p>
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>LC DUE DATE</p>
+                              <p className='uppercase'>{selectedPresp.lc_due_date}</p>
+                            </div>
+                            <div className="border-b border-black p-2">
+                              <p className='font-bold'>Port of Loading</p>
+                              <p className='uppercase'>{selectedTrade.pol}</p>
+                            </div>
+                            <div className="p-2">
+                              <p className='font-bold'>Port of Discharge</p>
+                              <p className='uppercase'>{selectedTrade.pod}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Table Section */}
+                      <div className="">
+                        <table className="table-auto w-full border-collapse border border-black">
+                          <thead>
+                            <tr>
+                              <th className="border border-black p-1">SN</th>
+                              <th className="border border-black p-1">Description of Goods</th>
+                              <th className="border border-black p-1">HS CODE</th>
+                              <th className="border border-black p-1">Trade Quantity</th>
+                              <th className="border border-black p-1">UNIT</th>
+                              <th className="border border-black p-1">Rate</th>
+                              <th className="border border-black p-1">CURRENCY</th>
+                              <th className="border border-black p-1">TOLERANE</th>
+                              <th className="border border-black p-1">Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedTrade.trade_products.map((product, index) => (
+                              <tr key={index}>
+                                <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
+                                <td className="border-l border-r border-black p-1 font-bold text-sm">
+                                  {product.product_name_for_client ? product.product_name_for_client : product.product_name}
+                                </td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.hs_code}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty_unit}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.selected_currency_rate}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency_selection}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.tolerance}</td>
+                                <td className="border-l border-r border-black p-1 text-right text-sm">
+                                  {product.trade_qty * selectedTrade.rate_in_usd}
+                                </td>
+                              </tr>
+                            ))}
+                            {Array.from({ length: 8 - selectedTrade.trade_products.length }, (_, index) => (
+                              <tr key={index}>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                                <td className="border-l border-r border-black p-2"></td>
+                              </tr>
+                            ))}
+                            <tr>
+                              <td className="border border-black p-2"></td>
+                              <td className="border border-black p-2"></td>
+                              <td className="border border-black p-2 text-sm">Total</td>
+                              <td className="border border-black p-2 text-sm">{totalTradeQuantity}</td>
+                              <td className="border border-black p-2"></td>
+                              <td className="border border-black p-2"></td>
+                              <td className="border border-black p-2"></td>
+                              <td className="border border-black p-2"></td>
+                              <td className="border border-black p-2 text-right text-sm">{totalAmount}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Final Div with 2 Rows */}
+                      <div className="flex flex-col gap-4 border-l border-r border-b border-black">
+                        {/* Row 1 */}
+                        <div className=" px-2 py-1">
+                          <p>Amount Chargeable (in words)</p>
+                          <p className='font-bold uppercase'>{selectedTrade.currency_selection} {toWords(totalAmount)} Only</p>
+                          <p>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
+                          {selectedPresp.acknowledgedPI && selectedPresp.acknowledgedPI.length > 0 ? (
+                          selectedPresp.acknowledgedPI.map((product, index) => (
+                            <div key={index}>
+                              <p className='text-sm'>{index + 1}. {product.ackn_pi_name}</p> {/* Replace 'someField1' with the actual field name */}
+
+                            </div>
+                          ))
+                        ) : (
+                          <p>No acknowledged PO data available.</p>
+                        )}
+                          <p className='mt-3 underline'>Declaration</p>
+                          <p>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</p>
+                        </div>
+                        {/* Row 2 with 2 Columns */}
+                        <div className="grid grid-cols-2">
+                          <div className=" px-2 py-1">
+                            <p className='mb-8 font-bold'>Acknowledged By</p>
+                            <p className='font-bold'>Authorized Signatory with Seal</p>
+                          </div>
+                          <div className="border-t border-l border-black p-2">
+                            <p className='mb-7 font-bold'>for KISMAT PETROLEUM TRADING PTE LTD</p>
+                            <p className='text-right'>Authorised Signatory</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center pb-0 mt-1">
+                        <h1 className="text-sm font-md">This is a Computer Generated Invoice</h1>
+                      </div>
+                    </div>
+                </div>
               </div>
-            </div>
-          </div>
+            )}
           </div>
         )}
+      </PrintModal>
+
+
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+      {selectedTrade && (
+           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+           <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
+             <button onClick={closeModal} className="float-right text-red-500">Close</button>
+             <h2 className="text-2xl mb-2 text-center">Trade Details</h2>
+             <hr className='mb-2' />
+             <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                <thead className="bg-gray-100 border-b border-gray-200">
+                  <tr>
+                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                  </tr>
+                </thead>
+             
+                <tbody>
+                <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trade_type}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPresp.date}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Company </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.company.name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Document Issuance Date </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPresp.doc_issuance_date}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trn}</td>
+                  </tr>
+                  
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Country of Origin </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.country_of_origin}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Customer Company Name </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.customer_company_name.name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Address </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.address}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packing}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.payment_term}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPresp.advance_due_date}</td>
+                  </tr>
+                 
+                  
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Due Date </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPresp.lc_due_date}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bank_name_address.name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.account_number}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">SWIFT Code</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.swift_code}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Incoterm</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.incoterm}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">POD</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.pod}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">POL</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.pol}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETA</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.eta}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETD</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.etd}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trader_name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurance Policy Number</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.insurance_policy_number}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.container_shipment_size}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.remarks}</td>
+                  </tr>
+
+                </tbody>
+                </table>
+             </div>
+             
+     
+             <h3 className="text-lg mt-4 text-center">Trade Products</h3>
+             <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
+                   {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name for Client</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LOI</th> */}
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty Unit</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Balance Qty</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Balance Qty Unit</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {selectedTrade.trade_products.map(product => (
+                   <tr key={product.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name}</td>
+                     {/* <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name_for_client}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm"><a href={product.loi} target="_blank" rel="noopener noreferrer">View LOI</a></td> */}
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.contract_balance_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.contract_balance_qty_unit}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+              <p className='my-2 underline'>Acknowledged PI</p>
+              {selectedPresp.acknowledgedPI && (
+                selectedPresp.acknowledgedPI.map((product, index) => (
+                  <div key={index}>
+                    <p className='text-sm'>{index + 1}. <a href={product.ackn_pi}>{product.ackn_pi_name}</a></p>
+
+                  </div>
+                )))}
+
+              <p className='my-2 underline'>Acknowledged PO</p>
+              {selectedPresp.acknowledgedPO && (
+                selectedPresp.acknowledgedPO.map((product, index) => (
+                  <div key={index}>
+                    <p className='text-sm'>{index + 1}. <a href={product.ackn_po}>{product.ackn_po_name}</a></p>
+
+                  </div>
+                )))}
+           </div>
+         </div>
+        )}
       </Modal>
+
+
     </>
   );
 };

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
     const { id } = useParams();
+    const navigate=useNavigate()
     // Sample options for TRN dropdown
-    const trnOptions = [
-        { value: 'trn1', label: 'TRN 1' },
-        { value: 'trn2', label: 'TRN 2' },
-        { value: 'trn3', label: 'TRN 3' }
-    ];
+    const [trnOptions, setTrnOptions] = useState([]); 
+    const [data, setData] = useState(null); 
 
     const [formData, setFormData] = useState({
         trn: '',
+        adv_due_date:'',
+        as_per_pi_advance: '',
         lc_number: '',
         lc_opening_bank: '',
         advance_received: '',
@@ -34,7 +34,9 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     const data = response.data;
                     setFormData(prevState => ({
                         ...prevState,
-                        trn: data.trn,
+                        trn: data.trn.id,
+                        adv_due_date: data.adv_due_date,
+                        as_per_pi_advance: data.as_per_pi_advance,
                         lc_number: data.lc_number,
                         lc_opening_bank: data.lc_opening_bank,
                         advance_received: data.advance_received,
@@ -48,14 +50,33 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         lcAmmendments: data.lcAmmendments  || [{ name: '', lc_ammendment: null }],
                         advanceTTCopies: data.advanceTTCopies  || [{ name: '', advance_tt_copy: null }]
                     }));
-                })
-                .catch(error => {
-                    console.error('There was an error fetching the trade data!', error);
-                });
+                // Call the second API after the first one is complete
+              return axios.get(`/trademgt/prepay/${data.trn.id}`);
+            })
+            .then(response => {
+                setData(response.data)
+            })
+            .catch(error => {
+              console.error('There was an error fetching the data!', error);
+            });
         }
-    }, [mode, id]);
+      }, [mode, id]);
 
-    const handleChange = (e, section, index) => {
+    const fetchData = async (url, params = {}, setStateFunction) => {
+        try {
+          const response = await axios.get(url, { params });  // Pass params to axios.get
+          setStateFunction(response.data);
+        } catch (error) {
+          console.error(`Error fetching data from ${url}:`, error);
+        }
+      };
+    
+      // Combined useEffect for all API calls
+      useEffect(() => {
+        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
+      }, []);
+
+    const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
         if (section) {
             const updatedSection = formData[section].map((item, i) =>
@@ -64,6 +85,15 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             setFormData({ ...formData, [section]: updatedSection });
         } else {
             setFormData({ ...formData, [name]: value });
+        }
+
+        if (name === "trn") {
+            try {
+                const response = await axios.get(`/trademgt/prepay/${value}`);
+                setData(response.data)
+            } catch (error) {
+                console.error("Error fetching TRN data:", error);
+            }
         }
     };
 
@@ -106,6 +136,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             })
             .then(response => {
                 console.log('Prepayment added successfully!', response.data);
+                navigate(`/pre-payment`);
             })
             .catch(error => {
                 console.error('There was an error adding the trade!', error);
@@ -118,6 +149,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             })
             .then(response => {
                 console.log('Prepayment updated successfully!', response.data);
+                navigate(`/pre-payment`);
             })
             .catch(error => {
                 console.error('There was an error updating the trade!', error);
@@ -125,8 +157,35 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         }
     };
 
+    const tradeData = data
+    ? [
+        { label: 'PO Date/PI Date', text: data.presp.date || '' },
+        { label: 'Trade Type', text: data.trade_type || '' },
+        { label: 'Payment Term', text: data.payment_term?.name || '' },
+        { label: 'Customer Company Name', text: data.kyc?.name || '' },
+        { label: 'Value of Contract', text: data.country_of_origin || '' },
+        { label: 'Advance to Pay/Receive', text: data.address || '' },
+       
+        { label: 'Trader Name', text: data.trader_name || '' },
+        { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
+    
+        { label: 'Remarks', text: data.remarks || '' },
+      ]
+    : [];
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+            {data && (
+
+                <div className="grid grid-cols-4 gap-1 p-2">
+                    {tradeData.map((item, index) => (
+                        <div key={index} className="p-2 border rounded shadow-sm">
+                            <div className="font-semibold">{item.label}</div>
+                            <div>{item.text}</div>
+                        </div>
+                    ))}
+                </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
@@ -139,11 +198,33 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     >
                         <option value="">Select TRN</option>
                         {trnOptions.map(option => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
+                            <option key={option.id} value={option.id}>
+                                {option.trn}
                             </option>
                         ))}
                     </select>
+                </div>
+                <div>
+                    <label htmlFor='adv_due_date' className="block text-sm font-medium text-gray-700">Advance Due Date</label>
+                    <input
+                        id="adv_due_date"
+                        name="adv_due_date"
+                        type="date"
+                        value={formData.adv_due_date}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
+                <div>
+                    <label htmlFor='as_per_pi_advance' className="block text-sm font-medium text-gray-700">As Per PI Advance</label>
+                    <input
+                        id="as_per_pi_advance"
+                        name="as_per_pi_advance"
+                        type="text"
+                        value={formData.as_per_pi_advance}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
                 </div>
                 <div>
                     <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">LC Number</label>

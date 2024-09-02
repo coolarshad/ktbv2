@@ -3,6 +3,26 @@ from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
 from .models import *
 
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = '__all__'
+
+class BankSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bank
+        fields = '__all__'
+
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = '__all__'
+
+class KycSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kyc
+        fields = '__all__'
+        
 class TradeProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = TradeProduct
@@ -22,11 +42,11 @@ class TradeSerializer(serializers.ModelSerializer):
         required=False,
         
     )
-
+    
     class Meta:
         model = Trade
         fields = '__all__'
-    
+
     def create(self, validated_data):
         related_trades_data = validated_data.pop('related_trades', [])
         trade = super().create(validated_data)
@@ -40,6 +60,61 @@ class TradeSerializer(serializers.ModelSerializer):
         if related_trades_data:
             trade.related_trades.set(related_trades_data)
         return trade
+
+
+class PrintSerializer(serializers.ModelSerializer):
+    trade_products = TradeProductSerializer(many=True, read_only=True)
+    trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
+    related_trades = serializers.PrimaryKeyRelatedField(
+        queryset=Trade.objects.all(),
+        many=True,
+        required=False,
+        
+    )
+    
+    class Meta:
+        model = Trade
+        fields = '__all__'    
+    def get_company_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            company_instance = Company.objects.get(id=obj.company)  # or use another field to identify the company
+            return CompanySerializer(company_instance).data
+        except Company.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_kyc_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            kyc_instance = Kyc.objects.get(id=obj.customer_company_name)  # or use another field to identify the company
+            return KycSerializer(kyc_instance).data
+        except Kyc.DoesNotExist:
+            return None  # Or handle it as needed
+    
+    def get_bank_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = Bank.objects.get(id=obj.bank_name_address)  # or use another field to identify the company
+            return BankSerializer(instance).data
+        except Bank.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['company'] = self.get_company_details(instance)
+        ret['customer_company_name'] = self.get_kyc_details(instance)
+        ret['bank_name_address'] = self.get_bank_details(instance)
+        
+        return ret
+
+    
+
 
 class PaymentTermSerializer(serializers.ModelSerializer):
     class Meta:
@@ -72,7 +147,97 @@ class PrePaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrePayment
         fields = '__all__'
+    
+    def get_trade_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = Trade.objects.get(id=obj.trn.id)  # or use another field to identify the company
+            return TradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None  # Or handle it as needed
 
+    def get_payment_term_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PaymentTerm.objects.get(name=obj.trn.payment_term)  # or use another field to identify the company
+            return PaymentTermSerializer(instance).data
+        except PaymentTerm.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_kyc_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            kyc_instance = Kyc.objects.get(id=obj.trn.customer_company_name)  # or use another field to identify the company
+            return KycSerializer(kyc_instance).data
+        except Kyc.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_presp_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PreSalePurchase.objects.get(trn=obj.trn)  # or use another field to identify the company
+            return PreSalePurchaseSerializer(instance).data
+        except PreSalePurchase.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['trn'] = self.get_trade_details(instance)
+        ret['kyc'] = self.get_kyc_details(instance)
+        ret['presp'] = self.get_presp_details(instance)
+        ret['payment_term'] = self.get_payment_term_details(instance)
+        
+        return ret
+
+class PrePaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trade
+        fields = '__all__'    
+
+    def get_payment_term_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PaymentTerm.objects.get(name=obj.payment_term)  # or use another field to identify the company
+            return PaymentTermSerializer(instance).data
+        except PaymentTerm.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_kyc_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            kyc_instance = Kyc.objects.get(id=obj.customer_company_name)  # or use another field to identify the company
+            return KycSerializer(kyc_instance).data
+        except Kyc.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_presp_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PreSalePurchase.objects.get(trn=obj.id)  # or use another field to identify the company
+            return PreSalePurchaseSerializer(instance).data
+        except PreSalePurchase.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['kyc'] = self.get_kyc_details(instance)
+        ret['presp'] = self.get_presp_details(instance)
+        ret['payment_term'] = self.get_payment_term_details(instance)
+        
+        return ret
 
 class LcCopySerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,6 +257,39 @@ class AdvanceTTCopySerializer(serializers.ModelSerializer):
 class SalesPurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesPurchase
+        fields = '__all__'
+    
+    def get_trade_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = Trade.objects.get(id=obj.trn.id)  # or use another field to identify the company
+            return TradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_prepay_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PrePayment.objects.get(trn=obj.trn)  # or use another field to identify the company
+            return PrePaymentSerializer(instance).data
+        except PrePayment.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['trn'] = self.get_trade_details(instance)
+        ret['prepayemnt'] = self.get_prepay_details(instance)
+        
+        return ret
+        
+class SalesPurchaseProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesPurchaseProduct
         fields = '__all__'
 
 class SalesPurchaseExtraChargeSerializer(serializers.ModelSerializer):
@@ -119,21 +317,78 @@ class COASerializer(serializers.ModelSerializer):
         model = COA
         fields = '__all__'
 
+class SPSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trade
+        fields = '__all__'    
+
+    def get_prepay_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PrePayment.objects.get(trn=obj.id)  # or use another field to identify the company
+            return PrePaymentSerializer(instance).data
+        except PrePayment.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['prepayment'] = self.get_prepay_details(instance)
+        return ret
+
 class PaymentFinanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentFinance
         fields = '__all__'
+    
+    def get_sp_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = SalesPurchase.objects.get(trn=obj.trn)  # or use another field to identify the company
+            return SalesPurchaseSerializer(instance).data
+        except SalesPurchase.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['sp'] = self.get_sp_details(instance)
+        
+        return ret
 
 class TTCopySerializer(serializers.ModelSerializer):
     class Meta:
         model = TTCopy
         fields = '__all__'
 
-
-class KycSerializer(serializers.ModelSerializer):
+class PFSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Kyc
-        fields = '__all__'
+        model = Trade
+        fields = '__all__'    
+
+    def get_sp_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = SalesPurchase.objects.get(trn=obj.id)  # or use another field to identify the company
+            return SalesPurchaseSerializer(instance).data
+        except SalesPurchase.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['sp'] = self.get_sp_details(instance)
+        return ret
+
 
 
 class PurchaseProductTraceSerializer(serializers.ModelSerializer):
@@ -156,17 +411,3 @@ class SalesPendingSerializer(serializers.ModelSerializer):
         model = SalesPending
         fields = '__all__'
 
-class CompanySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Company
-        fields = '__all__'
-
-class BankSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Bank
-        fields = '__all__'
-
-class UnitSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Unit
-        fields = '__all__'

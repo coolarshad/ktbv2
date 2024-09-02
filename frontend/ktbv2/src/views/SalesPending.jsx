@@ -36,7 +36,7 @@ const SalesPending = () => {
       if (confirmed) {
         try {
           await axios.delete(`/trademgt/sales-pending/${id}/`);
-          setKycData(pendingData.filter(data => data.id !== id));
+          setPendingData(pendingData.filter(data => data.id !== id));
           alert('Sales Pending deleted successfully.');
         } catch (error) {
           console.error('Error deleting Sales Pending:', error);

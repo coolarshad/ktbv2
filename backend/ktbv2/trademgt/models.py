@@ -26,11 +26,11 @@ class Trade(models.Model):
     # contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=15)
     # trade_qty=models.FloatField(_("trade_qty"))
     # trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
-    selected_currency_rate=models.FloatField(_("selected_currency_rate"))
+    # selected_currency_rate=models.FloatField(_("selected_currency_rate"))
     currency_selection=models.CharField(_("currency_selection"), max_length=15)
     exchange_rate=models.FloatField(_("exchange_rate"))
     rate_in_usd=models.FloatField(_("rate_in_usd"))
-    commission=models.FloatField(_("commission"))
+    commission_agent=models.CharField(_("commission_agent"), max_length=50)
     contract_value=models.FloatField(_("contract_value"))
     payment_term=models.CharField(_("payment_term"), max_length=100)
     advance_value_to_receive=models.FloatField(_("advance_value_to_receive"))
@@ -92,6 +92,7 @@ class TradeProduct(models.Model):
     contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=15)
     trade_qty=models.FloatField(_("trade_qty"))
     trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
+    selected_currency_rate=models.FloatField(_("selected_currency_rate"))
     class Meta:
         verbose_name = _("TradeProduct")
         verbose_name_plural = _("TradeProducts")
@@ -206,8 +207,8 @@ class DocumentsRequired(models.Model):
 
 class PrePayment(models.Model):
     trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
-    # trn=models.CharField(_("trn"), max_length=50)
-    
+    adv_due_date=models.DateField(_("adv_due_date"), auto_now=False, auto_now_add=False,null=True)
+    as_per_pi_advance=models.CharField(_("as_per_pi_advance"), max_length=50)
     lc_number=models.CharField(_("lc_number"), max_length=50)
     lc_opening_bank=models.CharField(_("lc_opening_bank"), max_length=100)
     advance_received=models.FloatField(_("advance_received"))
@@ -293,8 +294,8 @@ class SalesPurchase(models.Model):
     total_packing_cost=models.FloatField(_("total_packing_cost"))
     packaging_supplier=models.CharField(_("packaging_supplier"), max_length=50)
     logistic_supplier=models.CharField(_("logistic_supplier"), max_length=50)
-    batch_number=models.CharField(_("batch_number"), max_length=50)
-    production_date=models.DateField(_("production_date"))
+    # batch_number=models.CharField(_("batch_number"), max_length=50)
+    # production_date=models.DateField(_("production_date"))
     logistic_cost=models.FloatField(_("logistic_cost"))
     logistic_cost_due_date=models.CharField(_("logistic_cost_due_date"), max_length=50)
     liner=models.CharField(_("liner"), max_length=50)
@@ -315,6 +316,27 @@ class SalesPurchase(models.Model):
 
     def get_absolute_url(self):
         return reverse("SalePurchase_detail", kwargs={"pk": self.pk})
+
+class SalesPurchaseProduct(models.Model):
+    sp = models.ForeignKey(SalesPurchase, related_name='sp_product', on_delete=models.CASCADE)
+    # product_code =  models.CharField(_("product_code"), max_length=50)
+    product_name = models.CharField(_("product_name"), max_length=50)
+    hs_code=models.CharField(_("hs_code"), max_length=50)
+    tolerance=models.FloatField(_("tolerance"))
+    batch_number=models.CharField(_("batch_number"), max_length=50)
+    production_date=models.DateField(_("production_date"))
+    trade_qty=models.FloatField(_("trade_qty"))
+    trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
+   
+    class Meta:
+        verbose_name = _("SalesPurchaseProduct")
+        verbose_name_plural = _("SalesPurchaseProducts")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("SalesPurchaseProduct_detail", kwargs={"pk": self.pk})
 
 class SalesPurchaseExtraCharge(models.Model):
     sp=models.ForeignKey("SalesPurchase", verbose_name=_("sp"), on_delete=models.CASCADE)
@@ -517,7 +539,7 @@ class SalesProductTrace(models.Model):
 
 
 class PurchasePending(models.Model):
-    trn=models.CharField(_("trn"), max_length=50)
+    trn=models.ForeignKey(Trade, related_name='purchase_pending_product', on_delete=models.CASCADE)
     trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
     company=models.CharField(_("company"), max_length=50)
     payment_term=models.CharField(_("company"), max_length=50)
@@ -545,7 +567,7 @@ class PurchasePending(models.Model):
 
 
 class SalesPending(models.Model):
-    trn=models.CharField(_("trn"), max_length=50)
+    trn=models.ForeignKey(Trade, related_name='sales_pending_product', on_delete=models.CASCADE)
     trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
     company=models.CharField(_("company"), max_length=50)
     payment_term=models.CharField(_("company"), max_length=50)

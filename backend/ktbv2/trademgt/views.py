@@ -72,7 +72,7 @@ class TradeView(APIView):
             'currency_selection': data.get('currency_selection'),
             'exchange_rate': data.get('exchange_rate'),
             'rate_in_usd': data.get('rate_in_usd'),
-            'commission': data.get('commission'),
+            'commission_agent': data.get('commission_agent'),
             'contract_value': data.get('contract_value'),
             'payment_term': data.get('payment_term'),
             'advance_value_to_receive': data.get('advance_value_to_receive'),
@@ -120,6 +120,7 @@ class TradeView(APIView):
                 'contract_balance_qty_unit': data.get(f'tradeProducts[{i}].contract_balance_qty_unit'),
                 'trade_qty': data.get(f'tradeProducts[{i}].trade_qty'),
                 'trade_qty_unit': data.get(f'tradeProducts[{i}].trade_qty_unit'),
+                'selected_currency_rate': data.get(f'tradeProducts[{i}].selected_currency_rate'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -182,7 +183,7 @@ class TradeView(APIView):
                         if existing_trace:
                             # If it exists, update only the fields you want to update
                             existing_trace.trade_qty = product.trade_qty
-                            existing_trace.contract_balance_qty = product.contract_balance_qty
+                            existing_trace.contract_balance_qty = float(product.contract_balance_qty)-float(product.trade_qty)
                             existing_trace.save()
                         else:
                             # If it doesn't exist, create a new record with all fields
@@ -190,7 +191,7 @@ class TradeView(APIView):
                             product_code=product.product_code,
                             total_contract_qty=product.total_contract_qty,
                             trade_qty=product.trade_qty,
-                            contract_balance_qty=product.contract_balance_qty,
+                            contract_balance_qty=float(product.contract_balance_qty)-float(product.trade_qty),
                             first_trn=trade.trn
                             )
                     except Exception as e:
@@ -252,7 +253,7 @@ class TradeView(APIView):
             'currency_selection': data.get('currency_selection'),
             'exchange_rate': data.get('exchange_rate'),
             'rate_in_usd': data.get('rate_in_usd'),
-            'commission': data.get('commission'),
+            'commission_agent': data.get('commission_agent'),
             'contract_value': data.get('contract_value'),
             'payment_term': data.get('payment_term'),
             'advance_value_to_receive': data.get('advance_value_to_receive'),
@@ -302,6 +303,7 @@ class TradeView(APIView):
                 'contract_balance_qty_unit': data.get(f'tradeProducts[{i}].contract_balance_qty_unit'),
                 'trade_qty': data.get(f'tradeProducts[{i}].trade_qty'),
                 'trade_qty_unit': data.get(f'tradeProducts[{i}].trade_qty_unit'),
+                'selected_currency_rate': data.get(f'tradeProducts[{i}].selected_currency_rate'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -360,10 +362,36 @@ class TradeView(APIView):
         except Trade.DoesNotExist:
             return Response({'error': 'Trade not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        # Start an atomic transaction
         with transaction.atomic():
+            # Fetch related TradeProduct instances before deleting them
+            trade_products = TradeProduct.objects.filter(trade=trade)
+
+            # Undo changes in SalesProductTrace if the trade type is 'sales'
+            if trade.trade_type.lower() == "sales":
+                for product in trade_products:
+                    existing_trace = SalesProductTrace.objects.filter(product_code=product.product_code).first()
+                    if existing_trace:
+                        # Revert the changes
+                        existing_trace.contract_balance_qty += float(product.trade_qty)
+                        existing_trace.trade_qty = 0  # Or adjust as needed
+                        existing_trace.save()
+
+            # Undo changes in PurchaseProductTrace if the trade type is 'purchase'
+            elif trade.trade_type.lower() == "purchase":
+                for product in trade_products:
+                    existing_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code).first()
+                    if existing_trace:
+                        # Revert the changes
+                        existing_trace.contract_balance_qty += float(product.trade_qty)
+                        existing_trace.trade_qty = 0  # Or adjust as needed
+                        existing_trace.save()
+
             # Delete related trade products and extra costs
             TradeProduct.objects.filter(trade=trade).delete()
             TradeExtraCost.objects.filter(trade=trade).delete()
+
+            # Finally, delete the trade
             trade.delete()
 
         return Response({'message': 'Trade deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
@@ -394,7 +422,7 @@ class TradeApproveView(APIView):
                     for product in trade_products:
                         # Create SalesPending instance using data from TradeProduct
                         sales_pending = SalesPending(
-                            trn=trade.trn,
+                            trn=trade,
                             trd=trade.trd,
                             company=trade.company,
                             payment_term=trade.payment_term,
@@ -421,7 +449,7 @@ class TradeApproveView(APIView):
                     for product in trade_products:
                         # Create PurchasePending instance using data from TradeProduct
                         purchase_pending = PurchasePending(
-                            trn=trade.trn,
+                            trn=trade,
                             trd=trade.trd,
                             company=trade.company,
                             payment_term=trade.payment_term,
@@ -492,24 +520,41 @@ class PreSalePurchaseView(APIView):
 
             return Response(response_data)
 
-        else:  # If `pk` is not provided, list all trades
-            # pre_sps = PreSalePurchase.objects.all()
-            # serializer = PreSalePurchaseSerializer(pre_sps, many=True)
-            # return Response(serializer.data)
+        else:  # If `pk` is not provided, list all PreSalePurchase entries
             queryset = PreSalePurchase.objects.all()
             filterset = PreSalePurchaseFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            serializer = PreSalePurchaseSerializer(filterset.qs, many=True)
-            return Response(serializer.data)
+            # Serialize the queryset with related acknowledgedPI and acknowledgedPO data
+            response_data = []
+
+            for pre_sp in filterset.qs:
+                pre_sp_serializer = PreSalePurchaseSerializer(pre_sp)
+                
+                # Get related acknowledgedPI and acknowledgedPO for the current PreSalePurchase
+                ack_pis = AcknowledgedPI.objects.filter(presalepurchase=pre_sp)
+                ack_pos = AcknowledgedPO.objects.filter(presalepurchase=pre_sp)
+
+                ack_pis_serializer = AcknowledgedPISerializer(ack_pis, many=True)
+                ack_pos_serializer = AcknowledgedPOSerializer(ack_pos, many=True)
+
+                # Add related data to serialized PreSalePurchase data
+                pre_sp_data = pre_sp_serializer.data
+                pre_sp_data['acknowledgedPI'] = ack_pis_serializer.data
+                pre_sp_data['acknowledgedPO'] = ack_pos_serializer.data
+
+                # Append the enriched data to the response list
+                response_data.append(pre_sp_data)
+
+            return Response(response_data)
 
     def post(self, request, *args, **kwargs):
         data = request.data
         # Prepare trade data separately
         pre_sp_data = {
-            'trn': 53,
+            'trn': data.get('trn'),
             'date': data.get('date'),
             'doc_issuance_date': data.get('doc_issuance_date'),
             'payment_term': data.get('payment_term'),
@@ -576,7 +621,7 @@ class PreSalePurchaseView(APIView):
 
         # Prepare trade data separately
         pre_sp_data = {
-            'trn': 53,
+            'trn': data.get('trn'),
             'date': data.get('date'),
             'doc_issuance_date': data.get('doc_issuance_date'),
             'payment_term': data.get('payment_term'),
@@ -705,7 +750,9 @@ class PrePaymentView(APIView):
         data = request.data
         # Prepare trade data separately
         prepayment_data = {
-            'trn': 53,
+            'trn': data.get('trn'),
+            'adv_due_date':data.get('adv_due_date'),
+            'as_per_pi_advance': data.get('as_per_pi_advance'),
             'lc_number': data.get('lc_number'),
             'lc_opening_bank': data.get('lc_opening_bank'),
             'advance_received': data.get('advance_received'),
@@ -790,7 +837,9 @@ class PrePaymentView(APIView):
 
         # Prepare trade data separately
         prepayment_data = {
-            'trn': 53,
+            'trn': data.get('trn'),
+            'adv_due_date':data.get('adv_due_date'),
+            'as_per_pi_advance': data.get('as_per_pi_advance'),
             'lc_number': data.get('lc_number'),
             'lc_opening_bank': data.get('lc_opening_bank'),
             'advance_received': data.get('advance_received'),
@@ -913,12 +962,14 @@ class SalesPurchaseView(APIView):
                 return Response({'detail': 'SalesPurchase not found.'}, status=status.HTTP_404_NOT_FOUND)
 
             sp_serializer = SalesPurchaseSerializer(sp)
+            sp_products = SalesPurchaseProduct.objects.filter(sp=sp)
             sp_extra_charges = SalesPurchaseExtraCharge.objects.filter(sp=sp)
             packing_list = PackingList.objects.filter(sp=sp)
             invoices = Invoice.objects.filter(sp=sp)
             coas = COA.objects.filter(sp=sp)
             bl_copies = BL_Copy.objects.filter(sp=sp)
 
+            sp_products_serializer = SalesPurchaseProductSerializer(sp_products, many=True)
             sp_extra_charges_serializer = SalesPurchaseExtraChargeSerializer(sp_extra_charges, many=True)
             packing_list_serializer = PackingListSerializer(packing_list, many=True)
             invoices_serializer = InvoiceSerializer(invoices, many=True)
@@ -926,6 +977,7 @@ class SalesPurchaseView(APIView):
             bl_copies_serializer = BL_CopySerializer(bl_copies, many=True)
 
             response_data = sp_serializer.data
+            response_data['salesPurchaseProducts'] = sp_products_serializer.data
             response_data['extraCharges'] = sp_extra_charges_serializer.data
             response_data['invoices'] = invoices_serializer.data
             response_data['coas'] = coas_serializer.data
@@ -948,7 +1000,7 @@ class SalesPurchaseView(APIView):
         data = request.data
         # Prepare trade data separately
         sp_data = {
-            'trn': 53,
+            'trn': data.get('trn'),
             'invoice_date': data.get('invoice_date'),
             'invoice_number': data.get('invoice_number'),
             'invoice_amount': data.get('invoice_amount'),
@@ -961,8 +1013,8 @@ class SalesPurchaseView(APIView):
             'total_packing_cost': data.get('total_packing_cost'),
             'packaging_supplier': data.get('packaging_supplier'),
             'logistic_supplier': data.get('logistic_supplier'),
-            'batch_number': data.get('batch_number'),
-            'production_date': data.get('production_date'),
+            # 'batch_number': data.get('batch_number'),
+            # 'production_date': data.get('production_date'),
             'logistic_cost': data.get('logistic_cost'),
             'logistic_cost_due_date': data.get('logistic_cost_due_date'),
             'liner': data.get('liner'),
@@ -973,12 +1025,26 @@ class SalesPurchaseView(APIView):
             'shipment_status': data.get('shipment_status'),
             'remarks': data.get('remarks')
         }
-
+        sp_products_data = []
         sp_extra_charges_data = []
         packing_list_data = []
         invoices_data = []
         coas_data = []
         bl_copies_data = []
+
+        h = 0
+        while f'salesPurchaseProducts[{h}].product_name' in data:
+            sp_product = {
+                'product_name': data.get(f'salesPurchaseProducts[{h}].product_name'),
+                'hs_code': data.get(f'salesPurchaseProducts[{h}].hs_code'),  
+                'tolerance': data.get(f'salesPurchaseProducts[{h}].tolerance'),  
+                'batch_number': data.get(f'salesPurchaseProducts[{h}].batch_number'),  
+                'production_date': data.get(f'salesPurchaseProducts[{h}].production_date'),  
+                'trade_qty': data.get(f'salesPurchaseProducts[{h}].trade_qty'),  
+                'trade_qty_unit': data.get(f'salesPurchaseProducts[{h}].trade_qty_unit'),  
+            }
+            sp_products_data.append(sp_product)
+            h += 1
 
         i = 0
         while f'extraCharges[{i}].name' in data:
@@ -1032,6 +1098,13 @@ class SalesPurchaseView(APIView):
             else:
                 return Response(sp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
+            if sp_products_data:
+                try: 
+                    sp_products = [SalesPurchaseProduct(**item, sp=sp) for item in sp_products_data]
+                    SalesPurchaseProduct.objects.bulk_create(sp_products)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
             if sp_extra_charges_data:
                 try: 
                     sp_extras = [SalesPurchaseExtraCharge(**item, sp=sp) for item in sp_extra_charges_data]
@@ -1080,7 +1153,7 @@ class SalesPurchaseView(APIView):
 
         # Prepare trade data separately
         sp_data = {
-            'trn': 53,
+            'trn': data.get('trn'),
             'invoice_date': data.get('invoice_date'),
             'invoice_number': data.get('invoice_number'),
             'invoice_amount': data.get('invoice_amount'),
@@ -1093,8 +1166,8 @@ class SalesPurchaseView(APIView):
             'total_packing_cost': data.get('total_packing_cost'),
             'packaging_supplier': data.get('packaging_supplier'),
             'logistic_supplier': data.get('logistic_supplier'),
-            'batch_number': data.get('batch_number'),
-            'production_date': data.get('production_date'),
+            # 'batch_number': data.get('batch_number'),
+            # 'production_date': data.get('production_date'),
             'logistic_cost': data.get('logistic_cost'),
             'logistic_cost_due_date': data.get('logistic_cost_due_date'),
             'liner': data.get('liner'),
@@ -1106,12 +1179,27 @@ class SalesPurchaseView(APIView):
             'remarks': data.get('remarks')
         }
 
+        sp_products_data = []
         sp_extra_charges_data = []
         packing_list_data = []
         invoices_data = []
         coas_data = []
         bl_copies_data = []
 
+
+        h = 0
+        while f'salesPurchaseProducts[{h}].product_name' in data:
+            sp_product = {
+                'product_name': data.get(f'salesPurchaseProducts[{h}].product_name'),
+                'hs_code': data.get(f'salesPurchaseProducts[{h}].hs_code'),  
+                'tolerance': data.get(f'salesPurchaseProducts[{h}].tolerance'),  
+                'batch_number': data.get(f'salesPurchaseProducts[{h}].batch_number'),  
+                'production_date': data.get(f'salesPurchaseProducts[{h}].production_date'),  
+                'trade_qty': data.get(f'salesPurchaseProducts[{h}].trade_qty'),  
+                'trade_qty_unit': data.get(f'salesPurchaseProducts[{h}].trade_qty_unit'),  
+            }
+            sp_products_data.append(sp_product)
+            h += 1
 
         i = 0
         while f'extraCharges[{i}].name' in data:
@@ -1164,6 +1252,17 @@ class SalesPurchaseView(APIView):
                 sp = sp_serializer.save()
             else:
                 return Response(sp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            
+            if sp_products_data:
+                # Clear existing trade products and add new ones
+                SalesPurchaseProduct.objects.filter(sp=sp).delete()
+               
+                try:
+                    sp_products = [SalesPurchaseProduct(**item, sp=sp) for item in sp_products_data]
+                    SalesPurchaseProduct.objects.bulk_create(sp_products)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
            
             if sp_extra_charges_data:
                 # Clear existing trade products and add new ones
@@ -1223,6 +1322,7 @@ class SalesPurchaseView(APIView):
 
         with transaction.atomic():
             # Delete related trade products and extra costs
+            SalesPurchaseProduct.objects.filter(sp=sp).delete()
             SalesPurchaseExtraCharge.objects.filter(sp=sp).delete()
             PackingList.objects.filter(sp=sp).delete()
             BL_Copy.objects.filter(sp=sp).delete()
@@ -1463,3 +1563,87 @@ class NextCounterView(APIView):
             return Response({'error': 'Company not found'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+
+class PrintView(APIView):
+    
+    def get(self, request, *args, **kwargs):
+        trade_id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if trade_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                trade = Trade.objects.get(id=trade_id)
+            except Trade.DoesNotExist:
+                return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            trade_serializer = PrintSerializer(trade)
+            trade_products = TradeProduct.objects.filter(trade=trade)
+            trade_extra_costs = TradeExtraCost.objects.filter(trade=trade)
+
+            trade_products_serializer = TradeProductSerializer(trade_products, many=True)
+            trade_extra_costs_serializer = TradeExtraCostSerializer(trade_extra_costs, many=True)
+
+            response_data = trade_serializer.data
+            response_data['tradeProducts'] = trade_products_serializer.data
+            response_data['tradeExtraCosts'] = trade_extra_costs_serializer.data
+
+            return Response(response_data)
+
+        else:  # If `pk` is not provided, list all trades
+            trades = Trade.objects.all()
+            serializer = PrintSerializer(trades, many=True)
+            return Response(serializer.data)
+            
+
+class PrePayView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if trade_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                trade = Trade.objects.get(id=trade_id)
+            except Trade.DoesNotExist:
+                return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            trade_serializer = PrePaySerializer(trade)
+            response_data = trade_serializer.data
+            return Response(response_data)
+        else:  # If `pk` is not provided, list all trades
+            trades = Trade.objects.all()
+            serializer = PrePaySerializer(trades, many=True)
+            return Response(serializer.data)
+
+class SPView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if trade_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                trade = Trade.objects.get(id=trade_id)
+            except Trade.DoesNotExist:
+                return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            trade_serializer = SPSerializer(trade)
+            response_data = trade_serializer.data
+            return Response(response_data)
+        else:  # If `pk` is not provided, list all trades
+            trades = Trade.objects.all()
+            serializer = SPSerializer(trades, many=True)
+            return Response(serializer.data)
+
+class PFView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if trade_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                trade = Trade.objects.get(id=trade_id)
+            except Trade.DoesNotExist:
+                return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            trade_serializer = PFSerializer(trade)
+            response_data = trade_serializer.data
+            return Response(response_data)
+        else:  # If `pk` is not provided, list all trades
+            trades = Trade.objects.all()
+            serializer = PFSerializer(trades, many=True)
+            return Response(serializer.data)
