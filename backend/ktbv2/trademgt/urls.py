@@ -23,6 +23,7 @@ router.register(r'invoices', InvoiceViewSet)
 router.register(r'coas', COAViewSet)
 # router.register(r'payment-finances', PaymentFinanceViewSet)
 router.register(r'tt-copies', TTCopyViewSet)
+router.register(r'pf-charges', PFChargesViewSet)
 router.register(r'kyc', KycViewSet)
 router.register(r'purchase-product-trace', PurchaseProductTraceViewSet)
 router.register(r'sales-product-trace', SalesProductTraceViewSet)
@@ -31,6 +32,7 @@ router.register(r'sales-pending', SalesPendingViewSet)
 router.register(r'company', CompanyViewSet)
 router.register(r'bank', BankViewSet)
 router.register(r'unit', UnitViewSet)
+router.register(r'inventory', InventoryViewSet)
 
 
 

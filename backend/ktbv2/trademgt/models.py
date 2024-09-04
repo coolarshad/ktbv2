@@ -418,24 +418,21 @@ class COA(models.Model):
 
 class PaymentFinance(models.Model):
     trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
-    batch_number=models.CharField(_("batch_number"), max_length=50)
-    production_date=models.DateField(_("production_date"), auto_now=False, auto_now_add=False)
-    balance_payment=models.FloatField(_("balance_payment"))
-    balance_payment_received=models.FloatField(_("balance_payment_received"))
-    balance_paymnet_made=models.FloatField(_("balance_paymnet_made"))
-    net_due_in_this_trade=models.FloatField(_("net_due_in_this_trade"))
+    balance_payment=models.FloatField(_("balance_payment"),null=True)
+    balance_payment_received=models.FloatField(_("balance_payment_received"),null=True)
+    balance_payment_made=models.FloatField(_("balance_payment_made"),null=True)
+    balance_payment_date=models.DateField(_("balance_payment_date"), auto_now=False, auto_now_add=False)
+    net_due_in_this_trade=models.FloatField(_("net_due_in_this_trade"),null=True)
     payment_mode=models.CharField(_("payment_mode"), max_length=50)
     status_of_payment=models.CharField(_("status_of_payment"), max_length=50)
-    logistic_cost=models.FloatField(_("logistic_cost"))
-    commission_agent_value=models.FloatField(_("commission_agent_value"))
-    bl_fee=models.FloatField(_("bl_fee"))
-    bl_collection_cost=models.FloatField(_("bl_collection_cost"))
+    logistic_cost=models.FloatField(_("logistic_cost"),null=True)
+    commission_value=models.FloatField(_("commission_value"),null=True)
+    bl_fee=models.FloatField(_("bl_fee"),null=True)
+    bl_collection_cost=models.FloatField(_("bl_collection_cost"),null=True)
     shipment_status=models.CharField(_("shipment_status"), max_length=50)
     release_docs=models.CharField(_("release_docs"), max_length=100)
     release_docs_date=models.CharField(_("release_docs_date"), max_length=50)
     remarks=models.CharField(_("remarks"), max_length=100)
-
-    
 
     class Meta:
         verbose_name = _("PaymentFinance")
@@ -462,6 +459,21 @@ class TTCopy(models.Model):
     def get_absolute_url(self):
         return reverse("TTCopy_detail", kwargs={"pk": self.pk})
 
+class PFCharges(models.Model):
+    payment_finance=models.ForeignKey("PaymentFinance", verbose_name=_("payment_finance"), on_delete=models.CASCADE)
+    name=models.CharField(_("name"), max_length=50)
+    charge=models.FloatField(_("charge"),null=True,default=0)
+    
+
+    class Meta:
+        verbose_name = _("PFCharges")
+        verbose_name_plural = _("PFChargess")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("PFCharges_detail", kwargs={"pk": self.pk})
 
 
 class Kyc(models.Model):
@@ -656,3 +668,21 @@ class Unit(models.Model):
 
     def get_absolute_url(self):
         return reverse("Unit_detail", kwargs={"pk": self.pk})
+
+class Inventory(models.Model):
+    product_name=models.CharField(_("product_name"), max_length=50)
+    batch_number=models.CharField(_("batch_number"), max_length=50)
+    production_date=models.DateField(_("production_date"), auto_now=False, auto_now_add=False)
+    quantity=models.FloatField(_("quantity"))
+    unit=models.CharField(_("unit"), max_length=50)
+    
+
+    class Meta:
+        verbose_name = _("Inventory")
+        verbose_name_plural = _("Inventorys")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("Inventory_detail", kwargs={"pk": self.pk})

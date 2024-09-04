@@ -283,7 +283,7 @@ class SalesPurchaseSerializer(serializers.ModelSerializer):
         
         # Add the serialized company details to the response
         ret['trn'] = self.get_trade_details(instance)
-        ret['prepayemnt'] = self.get_prepay_details(instance)
+        ret['prepayment'] = self.get_prepay_details(instance)
         
         return ret
         
@@ -362,6 +362,11 @@ class PaymentFinanceSerializer(serializers.ModelSerializer):
         
         return ret
 
+class PFChargesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PFCharges
+        fields = '__all__'
+
 class TTCopySerializer(serializers.ModelSerializer):
     class Meta:
         model = TTCopy
@@ -411,3 +416,8 @@ class SalesPendingSerializer(serializers.ModelSerializer):
         model = SalesPending
         fields = '__all__'
 
+
+class InventorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inventory
+        fields = '__all__'

@@ -124,16 +124,16 @@ class PaymentFinanceFilter(django_filters.FilterSet):
             'trn__trn': ['exact', 'icontains'],
             'trn__trade_type': ['exact', 'icontains'],
             'trn__company': ['exact', 'icontains'],
-            'production_date': ['exact', 'gte', 'lte'],
+           
             'balance_payment': ['exact', 'gte', 'lte'],
             'balance_payment_received': ['exact', 'gte', 'lte'],
-            'balance_paymnet_made': ['exact', 'gte', 'lte'],
+            'balance_payment_made': ['exact', 'gte', 'lte'],
             'net_due_in_this_trade': ['exact', 'gte', 'lte'],
             'logistic_cost': ['exact', 'gte', 'lte'],
-            'commission_agent_value': ['exact', 'gte', 'lte'],
+            'commission_value': ['exact', 'gte', 'lte'],
             'bl_fee': ['exact', 'gte', 'lte'],
             'bl_collection_cost': ['exact', 'gte', 'lte'],
-            'batch_number': ['exact', 'icontains'],
+           
             'payment_mode': ['exact', 'icontains'],
             'status_of_payment': ['exact', 'icontains'],
             'shipment_status': ['exact', 'icontains'],
@@ -167,4 +167,15 @@ class KycFilter(django_filters.FilterSet):
             'address': ['exact', 'icontains'],
             'swiftCode': ['exact', 'icontains'],
             'accountNumber': ['exact', 'icontains']
+        }
+
+class InventoryFilter(django_filters.FilterSet):
+    date_from = django_filters.DateFilter(field_name='production_date', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='production_date', lookup_expr='lte') 
+    class Meta:
+        model = Inventory
+        fields = {
+            'product_name': ['exact', 'icontains'],
+            'batch_number': ['exact', 'icontains'],
+            'unit': ['exact', 'icontains'],
         }

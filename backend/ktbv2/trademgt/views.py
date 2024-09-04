@@ -1366,11 +1366,14 @@ class PaymentFinanceView(APIView):
                 return Response({'detail': 'PaymentFinance not found.'}, status=status.HTTP_404_NOT_FOUND)
 
             pf_serializer = PaymentFinanceSerializer(pf)
+            charges = PFCharges.objects.filter(payment_finance=pf)
             tt_copies = TTCopy.objects.filter(payment_finance=pf)
            
+            charges_serializer = PFChargesSerializer(charges, many=True)
             tt_copies_serializer = TTCopySerializer(tt_copies, many=True)
             
             response_data = pf_serializer.data
+            response_data['pfCharges'] = charges_serializer.data
             response_data['ttCopies'] = tt_copies_serializer.data
             return Response(response_data)
 
@@ -1388,17 +1391,16 @@ class PaymentFinanceView(APIView):
         data = request.data
         # Prepare trade data separately
         pf_data = {
-            'trn': 53,
-            'batch_number': data.get('batch_number'),
-            'production_date': data.get('production_date'),
+            'trn': data.get('trn'),
             'balance_payment': data.get('balance_payment'),
             'balance_payment_received': data.get('balance_payment_received'),
-            'balance_paymnet_made': data.get('balance_paymnet_made'),
+            'balance_payment_made': data.get('balance_payment_made'),
+            'balance_payment_date': data.get('balance_payment_date'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
             'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
             'logistic_cost': data.get('logistic_cost'),
-            'commission_agent_value': data.get('commission_agent_value'),
+            'commission_value': data.get('commission_value'),
             'bl_fee': data.get('bl_fee'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'shipment_status': data.get('shipment_status'),
@@ -1407,7 +1409,17 @@ class PaymentFinanceView(APIView):
             'remarks': data.get('remarks'),
         }
 
+        charges_data = []
         tt_copies_data = []
+
+        k = 0
+        while f'pfCharges[{k}].name' in data:
+            charge_data = {
+                'name': data.get(f'pfCharges[{k}].name'),
+                'charge': data.get(f'pfCharges[{k}].charge'),  # Handle binary data as needed
+            }
+            charges_data.append(charge_data)
+            k += 1
 
         i = 0
         while f'ttCopies[{i}].name' in data:
@@ -1424,6 +1436,14 @@ class PaymentFinanceView(APIView):
                 pf = pf_serializer.save()
             else:
                 return Response(pf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            if charges_data:
+                try:
+                    
+                    pf_charges = [PFCharges(**item, payment_finance=pf) for item in charges_data]
+                    PFCharges.objects.bulk_create(pf_charges)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
             if tt_copies_data:
                 try:
@@ -1446,17 +1466,16 @@ class PaymentFinanceView(APIView):
 
         # Prepare trade data separately
         pf_data = {
-            'trn': 53,
-            'batch_number': data.get('batch_number'),
-            'production_date': data.get('production_date'),
+            'trn': data.get('trn'),
             'balance_payment': data.get('balance_payment'),
             'balance_payment_received': data.get('balance_payment_received'),
-            'balance_paymnet_made': data.get('balance_paymnet_made'),
+            'balance_payment_made': data.get('balance_payment_made'),
+            'balance_payment_date': data.get('balance_payment_date'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
             'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
             'logistic_cost': data.get('logistic_cost'),
-            'commission_agent_value': data.get('commission_agent_value'),
+            'commission_value': data.get('commission_value'),
             'bl_fee': data.get('bl_fee'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'shipment_status': data.get('shipment_status'),
@@ -1465,7 +1484,17 @@ class PaymentFinanceView(APIView):
             'remarks': data.get('remarks'),
         }
 
+        charges_data = []
         tt_copies_data = []
+
+        k = 0
+        while f'pfCharges[{k}].name' in data:
+            charge_data = {
+                'name': data.get(f'pfCharges[{k}].name'),
+                'charge': data.get(f'pfCharges[{k}].charge'),  # Handle binary data as needed
+            }
+            charges_data.append(charge_data)
+            k += 1
 
         i = 0
         while f'ttCopies[{i}].name' in data:
@@ -1482,6 +1511,16 @@ class PaymentFinanceView(APIView):
                 pf = pf_serializer.save()
             else:
                 return Response(pf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            if charges_data:
+                # Clear existing trade products and add new ones
+                PFCharges.objects.filter(payment_finance=pf).delete()
+                try:
+                    
+                    pf_charges = [PFCharges(**item, payment_finance=pf) for item in charges_data]
+                    PFCharges.objects.bulk_create(pf_charges)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
            
             if tt_copies_data:
                 # Clear existing trade products and add new ones
@@ -1505,6 +1544,7 @@ class PaymentFinanceView(APIView):
 
         with transaction.atomic():
             # Delete related trade products and extra costs
+            PFCharges.objects.filter(payment_finance=pf).delete()
             TTCopy.objects.filter(payment_finance=pf).delete()
             pf.delete()
 
@@ -1513,6 +1553,10 @@ class PaymentFinanceView(APIView):
 class TTCopyViewSet(viewsets.ModelViewSet):
     queryset = TTCopy.objects.all()
     serializer_class = TTCopySerializer
+
+class PFChargesViewSet(viewsets.ModelViewSet):
+    queryset = PFCharges.objects.all()
+    serializer_class = PFChargesSerializer
 
 
 class KycViewSet(viewsets.ModelViewSet):
@@ -1647,3 +1691,7 @@ class PFView(APIView):
             trades = Trade.objects.all()
             serializer = PFSerializer(trades, many=True)
             return Response(serializer.data)
+
+class InventoryViewSet(viewsets.ModelViewSet):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer
