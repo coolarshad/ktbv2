@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../axiosConfig'
+import axios from '../axiosConfig';
 
 const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
-  const [formData, setFormData] = useState({
-    name: ''
-  });
-
+  const [formData, setFormData] = useState({ name: '' });
   const [documents, setDocuments] = useState([]);
+  const [currentMode, setCurrentMode] = useState(mode);
+  const [currentDocumentId, setCurrentDocumentId] = useState(documentId);
 
   useEffect(() => {
-    if (mode === 'update' && documentId) {
-      // Fetch the existing document data from the API
-      axios.get(`/trademgt/documents/${documentId}`)
+    if (currentMode === 'update' && currentDocumentId) {
+      axios.get(`/trademgt/documents/${currentDocumentId}`)
         .then(response => {
           setFormData(response.data);
         })
@@ -20,7 +18,6 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
         });
     }
 
-    // Fetch all documents
     axios.get('/trademgt/documents/')
       .then(response => {
         const docs = response.data;
@@ -33,7 +30,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
       .catch(error => {
         console.error('There was an error fetching the documents!', error);
       });
-  }, [mode, documentId]);
+  }, [currentMode, currentDocumentId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,22 +42,22 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (mode === 'add') {
-      // Post new document data to API
+    if (currentMode === 'add') {
       axios.post('/trademgt/documents/', formData)
         .then(response => {
-          console.log('Document added successfully!', response.data);
           setDocuments(prevDocs => [...prevDocs, response.data]);
+          setFormData({ name: '' }); // Reset form after add
         })
         .catch(error => {
           console.error('There was an error adding the document!', error);
         });
-    } else if (mode === 'update') {
-      // Put updated document data to API
-      axios.put(`/api/documents-required/${documentId}`, formData)
+    } else if (currentMode === 'update' && currentDocumentId) {
+      axios.put(`/trademgt/documents/${currentDocumentId}/`, formData)
         .then(response => {
-          console.log('Document updated successfully!', response.data);
           setDocuments(prevDocs => prevDocs.map(doc => doc.id === response.data.id ? response.data : doc));
+          setCurrentMode('add');  // Reset to 'add' mode after update
+          setCurrentDocumentId(null);  // Reset currentDocumentId
+          setFormData({ name: '' }); // Reset form after update
         })
         .catch(error => {
           console.error('There was an error updating the document!', error);
@@ -71,12 +68,17 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
   const handleDelete = (id) => {
     axios.delete(`/trademgt/documents/${id}`)
       .then(() => {
-        console.log('Document deleted successfully!');
         setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== id));
       })
       .catch(error => {
         console.error('There was an error deleting the document!', error);
       });
+  };
+
+  const handleUpdate = (id) => {
+    setCurrentMode('update');
+    setCurrentDocumentId(id);
+    setFormData(documents.find(doc => doc.id === id) || { name: '' });
   };
 
   return (
@@ -95,7 +97,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
             type="submit"
             className="bg-blue-500 text-white p-2 rounded"
           >
-            {mode === 'add' ? 'Add Document' : 'Update Document'}
+            {currentMode === 'add' ? 'Add Document' : 'Update Document'}
           </button>
         </div>
       </form>
@@ -111,12 +113,20 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
               <div>
                 <h3 className="text-lg font-medium">{doc.name}</h3>
               </div>
-              <button
-                onClick={() => handleDelete(doc.id)}
-                className="bg-red-500 text-white p-2 rounded"
-              >
-                Delete
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleUpdate(doc.id)}
+                  className="bg-green-500 text-white p-2 rounded"
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => handleDelete(doc.id)}
+                  className="bg-red-500 text-white p-2 rounded"
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>

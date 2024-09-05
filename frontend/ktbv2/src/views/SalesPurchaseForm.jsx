@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
+import { FaTrash } from 'react-icons/fa';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -557,81 +558,94 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             <hr className="my-6" />
             <div>
             <h3 className="text-lg font-medium text-gray-900">Products</h3>
-            {formData.salesPurchaseProducts.map((product, index) => (
-                <>
-                    <div key={index} className="grid grid-cols-4 gap-4 mb-4 justify-between items-end px-4 py-2">
-                        <div>
-                            <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                            <input
-                                type="text"
-                                name="product_name"
-                                value={product.product_name}
-                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                placeholder="Product Name"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
-                            <input
-                                type="text"
-                                name="hs_code"
-                                value={product.hs_code}
-                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                placeholder="HS Code"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
-                            <input
-                                type="number"
-                                name="tolerance"
-                                value={product.tolerance}
-                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                placeholder="Tolerance"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="batch_number" className="block text-sm font-medium text-gray-700">Batch Number</label>
-                            <input
-                                type="text"
-                                name="batch_number"
-                                value={product.batch_number}
-                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                placeholder="Batch Number"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
-                            <input
-                                type="date"
-                                name="production_date"
-                                value={product.production_date}
-                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="trade_qty" className="block text-sm font-medium text-gray-700">Trade Quantity</label>
-                            <input
-                                type="number"
-                                name="trade_qty"
-                                value={product.trade_qty}
-                                onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                placeholder="Trade Quantity"
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
-                            <select
+                {formData.salesPurchaseProducts.map((product, index) => (
+                    <>
+                        <div key={index} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-10 gap-1 mb-4 justify-between items-end px-4 py-2">
+                            {/* Product Name */}
+                            <div className="col-span-1 sm:col-span-2">
+                                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
+                                <input
+                                    type="text"
+                                    name="product_name"
+                                    value={product.product_name}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Product Name"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                            </div>
+
+                            {/* HS Code */}
+                            <div>
+                                <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
+                                <input
+                                    type="text"
+                                    name="hs_code"
+                                    value={product.hs_code}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="HS Code"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                            </div>
+
+                            {/* Tolerance */}
+                            <div>
+                                <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
+                                <input
+                                    type="number"
+                                    name="tolerance"
+                                    value={product.tolerance}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Tolerance"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                            </div>
+
+                            {/* Batch Number */}
+                            <div>
+                                <label htmlFor="batch_number" className="block text-sm font-medium text-gray-700">Batch Number</label>
+                                <input
+                                    type="text"
+                                    name="batch_number"
+                                    value={product.batch_number}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Batch Number"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                            </div>
+
+                            {/* Production Date */}
+                            <div className="col-span-1 sm:col-span-2">
+                                <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
+                                <input
+                                    type="date"
+                                    name="production_date"
+                                    value={product.production_date}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                            </div>
+
+                            {/* Trade Quantity */}
+                            <div>
+                                <label htmlFor="trade_qty" className="block text-sm font-medium text-gray-700">Trade Quantity</label>
+                                <input
+                                    type="number"
+                                    name="trade_qty"
+                                    value={product.trade_qty}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Trade Quantity"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                            </div>
+
+                            {/* Trade Qty Unit */}
+                            <div>
+                                <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
+                                <select
                                     name="trade_qty_unit"
                                     value={product.trade_qty_unit}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    className="border border-gray-300 p-2 rounded w-full"
                                 >
                                     <option value="">Select Trade Unit</option>
                                     {unitOptions?.map((option) => (
@@ -640,17 +654,18 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                         </option>
                                     ))}
                                 </select>
+                            </div>
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveProduct(index)}
+                                    className="bg-red-500 text-white p-2 rounded"
+                                >
+                                    <FaTrash />
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveProduct(index)}
-                                className="bg-red-500 text-white p-2 rounded"
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    </div>
+
                     <hr />
                 </>
             ))}
@@ -873,9 +888,12 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             </div>
             <hr className="my-6" />
             <div className='grid grid-cols-3 gap-4 mb-4'>
-            <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
-                Submit
-            </button>
+            <button
+                    type="submit"
+                    className="bg-blue-500 text-white p-2 rounded col-span-3"
+                >
+                    {mode === 'add' ? 'Add S&P' : 'Update S&P'}
+                </button>
             </div>
         </form>
     );

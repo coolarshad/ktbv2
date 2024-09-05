@@ -9,11 +9,13 @@ const Bank = ({ mode = 'add', bankId = null }) => {
   });
 
   const [banks, setBanks] = useState([]);
+  const [isUpdateMode, setIsUpdateMode] = useState(mode === 'update');
+  const [selectedBankId, setSelectedBankId] = useState(bankId);
 
   useEffect(() => {
-    if (mode === 'update' && bankId) {
-      // Fetch the existing payment term data from the API
-      axios.get(`/trademgt/bank/${bankId}`)
+    if (isUpdateMode && selectedBankId) {
+      // Fetch the specific bank data when updating
+      axios.get(`/trademgt/bank/${selectedBankId}`)
         .then(response => {
           setFormData(response.data);
         })
@@ -22,7 +24,11 @@ const Bank = ({ mode = 'add', bankId = null }) => {
         });
     }
 
-    // Fetch all payment terms
+    // Fetch all banks
+    fetchBanks();
+  }, [isUpdateMode, selectedBankId]);
+
+  const fetchBanks = () => {
     axios.get('/trademgt/bank')
       .then(response => {
         const terms = response.data;
@@ -35,7 +41,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
       .catch(error => {
         console.error('There was an error fetching the banks!', error);
       });
-  }, [mode, bankId]);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,22 +53,25 @@ const Bank = ({ mode = 'add', bankId = null }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (mode === 'add') {
-      // Post new payment term data to API
+    if (!isUpdateMode) {
+      // Post new bank data to API
       axios.post('/trademgt/bank/', formData)
         .then(response => {
           console.log('Bank added successfully!', response.data);
           setBanks(prevData => [...prevData, response.data]);
+          setFormData({ name: '', account_number: '', swift_code: '' }); // Reset form after add
         })
         .catch(error => {
           console.error('There was an error adding the bank!', error);
         });
-    } else if (mode === 'update') {
-      // Put updated payment term data to API
-      axios.put(`/trademgt/bank/${bankId}`, formData)
+    } else {
+      // Put updated bank data to API
+      axios.put(`/trademgt/bank/${selectedBankId}/`, formData)
         .then(response => {
           console.log('Bank updated successfully!', response.data);
           setBanks(prevData => prevData.map(bank => bank.id === response.data.id ? response.data : bank));
+          setIsUpdateMode(false);
+          setFormData({ name: '', account_number: '', swift_code: '' }); // Reset form after update
         })
         .catch(error => {
           console.error('There was an error updating the bank!', error);
@@ -74,11 +83,16 @@ const Bank = ({ mode = 'add', bankId = null }) => {
     axios.delete(`/trademgt/bank/${id}`)
       .then(() => {
         console.log('Bank deleted successfully!');
-        setBanks(prevTerms => prevTerms.filter(term => term.id !== id));
+        setBanks(prevBanks => prevBanks.filter(bank => bank.id !== id));
       })
       .catch(error => {
-        console.error('There was an error deleting the banks!', error);
+        console.error('There was an error deleting the bank!', error);
       });
+  };
+
+  const handleUpdate = (id) => {
+    setSelectedBankId(id);
+    setIsUpdateMode(true);
   };
 
   return (
@@ -98,7 +112,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
             name="account_number"
             value={formData.account_number}
             onChange={handleChange}
-            placeholder="account number"
+            placeholder="Account Number"
             className="border border-gray-300 p-2 rounded w-full"
           />
           <input
@@ -106,21 +120,21 @@ const Bank = ({ mode = 'add', bankId = null }) => {
             name="swift_code"
             value={formData.swift_code}
             onChange={handleChange}
-            placeholder="swift code"
+            placeholder="Swift Code"
             className="border border-gray-300 p-2 rounded w-full"
           />
           <button
             type="submit"
             className="bg-blue-500 text-white p-2 rounded"
           >
-            {mode === 'add' ? 'Add Bank' : 'Update Bank'}
+            {isUpdateMode ? 'Update Bank' : 'Add Bank'}
           </button>
         </div>
       </form>
 
       <hr className="my-6" />
 
-      {/* List of Existing Payment Terms */}
+      {/* List of Existing Banks */}
       <div className='space-y-4 w-full lg:w-2/3 mx-auto'>
         <h2 className="text-xl font-semibold mb-4">Existing Banks</h2>
         <ul className="space-y-4">
@@ -129,14 +143,22 @@ const Bank = ({ mode = 'add', bankId = null }) => {
               <div>
                 <h3 className="text-lg font-medium">{bank.name}</h3>
                 <p>Account Number: {bank.account_number}</p>
-                <p>Swift Code: {bank.swift_code} Days</p>
+                <p>Swift Code: {bank.swift_code}</p>
               </div>
-              <button
-                onClick={() => handleDelete(bank.id)}
-                className="bg-red-500 text-white p-2 rounded"
-              >
-                Delete
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleUpdate(bank.id)}
+                  className="bg-green-500 text-white p-2 rounded"
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => handleDelete(bank.id)}
+                  className="bg-red-500 text-white p-2 rounded"
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>

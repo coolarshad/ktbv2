@@ -455,8 +455,11 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">
-                <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
-                    Submit
+            <button
+                    type="submit"
+                    className="bg-blue-500 text-white p-2 rounded col-span-3"
+                >
+                    {mode === 'add' ? 'Add PrePayment' : 'Update PrePayment'}
                 </button>
             </div>
         </form>

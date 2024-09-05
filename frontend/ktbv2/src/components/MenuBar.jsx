@@ -1,4 +1,3 @@
-// src/components/MenuBar.js
 import React, { useState, useEffect, useRef } from 'react';
 import { FaBars, FaTimes, FaBell, FaUser, FaEnvelope, FaCaretDown } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -8,7 +7,6 @@ const MenuBar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const menuRef = useRef(null);
 
-
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
@@ -16,8 +14,6 @@ const MenuBar = () => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
-
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -40,10 +36,9 @@ const MenuBar = () => {
     };
   }, [isOpen]);
 
-
   return (
     <div>
-      <div className="flex items-center justify-between p-2 bg-red-700	 text-white">
+      <div className="flex items-center justify-between p-2 bg-red-700 text-white">
         <div className="flex items-center space-x-4">
           <div className="cursor-pointer" onClick={toggleMenu}>
             <FaBars size={24} />
@@ -69,30 +64,50 @@ const MenuBar = () => {
           </div>
         </div>
       </div>
-      <div ref={menuRef} className={`fixed top-0 left-0 h-full bg-red-700 text-white p-4 transition-transform duration-300 ${isOpen ? 'transform translate-x-0' : 'transform -translate-x-full'} w-1/7 z-50`}>
+      <div ref={menuRef} className={`fixed top-0 left-0 h-full bg-red-700 text-white p-4 transition-transform duration-300 ${isOpen ? 'transform translate-x-0' : 'transform -translate-x-full'} w-1/7 z-50 overflow-y-auto`}>
         <div className="flex flex-col space-y-4">
           <div className="flex justify-end">
             <FaTimes size={24} className="cursor-pointer" onClick={toggleMenu} />
           </div>
-          <Link to="/" className="hover:text-gray-400">Dashboard</Link>
-          <Link to="/kyc" className="hover:text-gray-400">KYC</Link>
-          <Link to="/trade-approval" className="hover:text-gray-400">Trade Approval</Link>
-          <Link to="/trade-approved" className="hover:text-gray-400">Trade Approved</Link>
-          <Link to="/pre-sale-purchase" className="hover:text-gray-400">Pre-Sale Purchase</Link>
-          <Link to="/pre-payment" className="hover:text-gray-400">Pre Payment</Link>
-          <Link to="/sales-purchases" className="hover:text-gray-400">Sales Purchases</Link>
-          <Link to="/payment-finance" className="hover:text-gray-400">Payment Finance</Link>
-          <Link to="/pl" className="hover:text-gray-400">PL</Link>
-         
-          <Link to="/payment-term-form" className="hover:text-gray-400">Payment Term Form</Link>
-          <Link to="/documents-required-form" className="hover:text-gray-400">Documents Required Form</Link>
-          <Link to="/company" className="hover:text-gray-400">Company</Link>
-          <Link to="/bank" className="hover:text-gray-400">Bank</Link>
-          <Link to="/units" className="hover:text-gray-400">Units</Link>
-          <Link to="/sales-pending" className="hover:text-gray-400">Sales Pending</Link>
-          <Link to="/purchase-pending" className="hover:text-gray-400">Purchase Pending</Link>
-          <Link to="/sales-product-trace" className="hover:text-gray-400">Sales Product Trace</Link>
-          <Link to="/purchase-product-trace" className="hover:text-gray-400">Purchase Product Trace</Link>
+
+          {/* Section 1: Dashboard & Overview */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Dashboard & Overview</h3>
+            <Link to="/" className="block px-4 py-2 hover:bg-gray-700">Dashboard</Link>
+            
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Profiles</h3>
+            <Link to="/kyc" className="block px-4 py-2 hover:bg-gray-700">KYC</Link>
+            <Link to="/company" className="block px-4 py-2 hover:bg-gray-700">Company</Link>
+            <Link to="/payment-term-form" className="block px-4 py-2 hover:bg-gray-700">Payment Term Form</Link>
+            <Link to="/bank" className="block px-4 py-2 hover:bg-gray-700">Bank</Link>
+            <Link to="/units" className="block px-4 py-2 hover:bg-gray-700">Units</Link>
+            <Link to="/documents-required-form" className="block px-4 py-2 hover:bg-gray-700">Documents Required Form</Link>
+          </div>
+
+          {/* Section 2: Trade Management */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Trade Management</h3>
+            <Link to="/trade-approval" className="block px-4 py-2 hover:bg-gray-700">Trade Approval</Link>
+            <Link to="/trade-approved" className="block px-4 py-2 hover:bg-gray-700">Trade Approved</Link>
+            <Link to="/pre-sale-purchase" className="block px-4 py-2 hover:bg-gray-700">Pre-Sale Purchase</Link>
+            <Link to="/pre-payment" className="block px-4 py-2 hover:bg-gray-700">Pre Payment</Link>
+            <Link to="/sales-purchases" className="block px-4 py-2 hover:bg-gray-700">Sales Purchases</Link>
+            <Link to="/payment-finance" className="block px-4 py-2 hover:bg-gray-700">Payment Finance</Link>
+            <Link to="/pl" className="block px-4 py-2 hover:bg-gray-700">PL</Link>
+          </div>
+
+          {/* Section 6: Miscellaneous */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Trade Report</h3>
+            
+            <Link to="/sales-pending" className="block px-4 py-2 hover:bg-gray-700">Sales Pending</Link>
+            <Link to="/purchase-pending" className="block px-4 py-2 hover:bg-gray-700">Purchase Pending</Link>
+            <Link to="/sales-product-trace" className="block px-4 py-2 hover:bg-gray-700">Sales Product Trace</Link>
+            <Link to="/purchase-product-trace" className="block px-4 py-2 hover:bg-gray-700">Purchase Product Trace</Link>
+          </div>
         </div>
       </div>
     </div>

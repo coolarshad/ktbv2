@@ -531,7 +531,7 @@ const PreSPTable = ({ data, onDelete }) => {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <h2 className="text-2xl mb-2 text-center">Trade Details</h2>
+             <h2 className="text-2xl mb-2 text-center">Pre Sales/Purchase Details</h2>
              <hr className='mb-2' />
              <div className="overflow-x-auto">
               <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">

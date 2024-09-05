@@ -10,11 +10,12 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   });
 
   const [paymentTerms, setPaymentTerms] = useState([]);
+  const [currentMode, setCurrentMode] = useState(mode);
+  const [currentPaymentTermId, setCurrentPaymentTermId] = useState(paymentTermId);
 
   useEffect(() => {
-    if (mode === 'update' && paymentTermId) {
-      // Fetch the existing payment term data from the API
-      axios.get(`/trademgt/payment-terms/${paymentTermId}`)
+    if (currentMode === 'update' && currentPaymentTermId) {
+      axios.get(`/trademgt/payment-terms/${currentPaymentTermId}`)
         .then(response => {
           setFormData(response.data);
         })
@@ -23,7 +24,6 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
         });
     }
 
-    // Fetch all payment terms
     axios.get('/trademgt/payment-terms')
       .then(response => {
         const terms = response.data;
@@ -36,7 +36,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
       .catch(error => {
         console.error('There was an error fetching the payment terms!', error);
       });
-  }, [mode, paymentTermId]);
+  }, [currentMode, currentPaymentTermId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,22 +48,32 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (mode === 'add') {
-      // Post new payment term data to API
+    if (currentMode === 'add') {
       axios.post('/trademgt/payment-terms/', formData)
         .then(response => {
-          console.log('Payment term added successfully!', response.data);
           setPaymentTerms(prevTerms => [...prevTerms, response.data]);
+          setFormData({
+            name: '',
+            advance_in_percentage: '',
+            advance_within: '',
+            payment_within: ''
+          }); // Reset form after add
         })
         .catch(error => {
           console.error('There was an error adding the payment term!', error);
         });
-    } else if (mode === 'update') {
-      // Put updated payment term data to API
-      axios.put(`/trademgt/payment-terms/${paymentTermId}`, formData)
+    } else if (currentMode === 'update' && currentPaymentTermId) {
+      axios.put(`/trademgt/payment-terms/${currentPaymentTermId}/`, formData)
         .then(response => {
-          console.log('Payment term updated successfully!', response.data);
           setPaymentTerms(prevTerms => prevTerms.map(term => term.id === response.data.id ? response.data : term));
+          setCurrentMode('add');  // Reset to 'add' mode after update
+          setCurrentPaymentTermId(null);  // Reset currentPaymentTermId
+          setFormData({
+            name: '',
+            advance_in_percentage: '',
+            advance_within: '',
+            payment_within: ''
+          }); // Reset form after update
         })
         .catch(error => {
           console.error('There was an error updating the payment term!', error);
@@ -74,12 +84,22 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   const handleDelete = (id) => {
     axios.delete(`/trademgt/payment-terms/${id}`)
       .then(() => {
-        console.log('Payment term deleted successfully!');
         setPaymentTerms(prevTerms => prevTerms.filter(term => term.id !== id));
       })
       .catch(error => {
         console.error('There was an error deleting the payment term!', error);
       });
+  };
+
+  const handleUpdate = (id) => {
+    setCurrentMode('update');
+    setCurrentPaymentTermId(id);
+    setFormData(paymentTerms.find(term => term.id === id) || {
+      name: '',
+      advance_in_percentage: '',
+      advance_within: '',
+      payment_within: ''
+    });
   };
 
   return (
@@ -122,7 +142,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
             type="submit"
             className="bg-blue-500 text-white p-2 rounded"
           >
-            {mode === 'add' ? 'Add Payment Term' : 'Update Payment Term'}
+            {currentMode === 'add' ? 'Add Payment Term' : 'Update Payment Term'}
           </button>
         </div>
       </form>
@@ -141,12 +161,20 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
                 <p>Advance Within: {term.advance_within} Days</p>
                 <p>Payment Within: {term.payment_within} Days</p>
               </div>
-              <button
-                onClick={() => handleDelete(term.id)}
-                className="bg-red-500 text-white p-2 rounded"
-              >
-                Delete
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleUpdate(term.id)}
+                  className="bg-green-500 text-white p-2 rounded"
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => handleDelete(term.id)}
+                  className="bg-red-500 text-white p-2 rounded"
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>

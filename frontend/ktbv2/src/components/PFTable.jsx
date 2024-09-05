@@ -15,20 +15,14 @@ const PFTable = ({ data, onDelete, onView }) => {
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-  
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch Number</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Payment Mode</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status Of Payment</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Shipment Status</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Balance Payment</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Balance Paymnet Made</th>
-           
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Net Due</th>
-          
-
-            
+        
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
         </thead>
@@ -36,19 +30,13 @@ const PFTable = ({ data, onDelete, onView }) => {
           {data.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.batch_number}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.payment_mode}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.status_of_payment}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.shipment_status}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_payment}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.production_date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_paymnet_made}</td>
-             
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_payment_made}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.net_due_in_this_trade}</td>
-             
-              
              
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
