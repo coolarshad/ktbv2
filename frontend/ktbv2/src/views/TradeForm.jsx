@@ -187,7 +187,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     console.error('Error fetching next counter:', error);
                 }
             } else if (name === 'customer_company_name') {
-                const selectedCustomer = customerOptions.find((customer) => customer.name === value);
+                const selectedCustomer = customerOptions.find((customer) => customer.id == value);
     
                 setFormData((prevState) => ({
                     ...prevState,
