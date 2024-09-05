@@ -164,7 +164,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 }));
     
                 try {
-                    const selectedCompany = companyOptions.find((company) => company.name === value);
+                    const selectedCompany = companyOptions.find((company) => company.id == value);
                     if (selectedCompany) {
                         try {
                             const response = await axios.get(`/trademgt/companies/${selectedCompany.id}/next-counter/`);
