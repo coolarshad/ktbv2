@@ -28,6 +28,14 @@ import SalesPending from './views/SalesPending';
 import PurchasePending from './views/PurchasePending';
 import SalesProductTrace from './views/SalesProductTrace';
 import PurchaseProductTrace from './views/PurchaseProductTrace';
+import Packing from './views/Packing';
+import PackingForm from './views/PackingForm';
+import RawMaterial from './views/RawMaterial';
+import RawMaterialForm from './views/RawMaterialForm';
+import Additive from './views/Additive';
+import AdditiveForm from './views/AdditiveForm';
+import Consumption from './views/Consumption';
+import ConsumptionForm from './views/ConsumptionForm';
 
 function App() {
  
@@ -66,6 +74,22 @@ function App() {
           <Route path="/purchase-pending" element={<PurchasePending />} />
           <Route path="/sales-product-trace" element={<SalesProductTrace />} />
           <Route path="/purchase-product-trace" element={<PurchaseProductTrace />} />
+
+          <Route path="/packings" element={<Packing />} />
+          <Route path="/packing-form" element={<PackingForm />} />
+          <Route path="/packing-form/:id" element={<PackingForm mode="update" />} />
+
+          <Route path="/raw-materials" element={<RawMaterial />} />
+          <Route path="/raw-material-form" element={<RawMaterialForm />} />
+          <Route path="/raw-material-form/:id" element={<RawMaterialForm mode="update" />} />
+
+          <Route path="/additives" element={<Additive />} />
+          <Route path="/additive-form" element={<AdditiveForm />} />
+          <Route path="/additive-form/:id" element={<AdditiveForm mode="update" />} />
+
+          <Route path="/consumptions" element={<Consumption />} />
+          <Route path="/consumption-form" element={<ConsumptionForm />} />
+          <Route path="/consumption-form/:id" element={<ConsumptionForm mode="update" />} />
         </Routes>
       </div>
     </Router>

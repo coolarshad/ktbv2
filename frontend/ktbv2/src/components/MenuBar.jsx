@@ -108,6 +108,16 @@ const MenuBar = () => {
             <Link to="/sales-product-trace" className="block px-4 py-2 hover:bg-gray-700">Sales Product Trace</Link>
             <Link to="/purchase-product-trace" className="block px-4 py-2 hover:bg-gray-700">Purchase Product Trace</Link>
           </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Cost Management</h3>
+            
+            <Link to="/packings" className="block px-4 py-2 hover:bg-gray-700">Packings</Link>
+            <Link to="/raw-materials" className="block px-4 py-2 hover:bg-gray-700">Raw Materials</Link>
+            <Link to="/additives" className="block px-4 py-2 hover:bg-gray-700">Additives</Link>
+            <Link to="/consumptions" className="block px-4 py-2 hover:bg-gray-700">Consumption</Link>
+           
+          </div>
         </div>
       </div>
     </div>
