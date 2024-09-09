@@ -85,6 +85,10 @@ const MenuBar = () => {
             <Link to="/bank" className="block px-4 py-2 hover:bg-gray-700">Bank</Link>
             <Link to="/units" className="block px-4 py-2 hover:bg-gray-700">Units</Link>
             <Link to="/documents-required-form" className="block px-4 py-2 hover:bg-gray-700">Documents Required Form</Link>
+            <Link to="/products-name" className="block px-4 py-2 hover:bg-gray-700">Product Name</Link>
+            <Link to="/shipments-size" className="block px-4 py-2 hover:bg-gray-700">Shipment Size</Link>
+            <Link to="/currency" className="block px-4 py-2 hover:bg-gray-700">Currency</Link>
+            <Link to="/trade-packings" className="block px-4 py-2 hover:bg-gray-700">Packings</Link>
           </div>
 
           {/* Section 2: Trade Management */}
@@ -116,6 +120,7 @@ const MenuBar = () => {
             <Link to="/raw-materials" className="block px-4 py-2 hover:bg-gray-700">Raw Materials</Link>
             <Link to="/additives" className="block px-4 py-2 hover:bg-gray-700">Additives</Link>
             <Link to="/consumptions" className="block px-4 py-2 hover:bg-gray-700">Consumption</Link>
+            <Link to="/final-products" className="block px-4 py-2 hover:bg-gray-700">Final Product Cost</Link>
            
           </div>
         </div>

@@ -421,3 +421,23 @@ class InventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventory
         fields = '__all__'
+
+class PackingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Packing
+        fields = '__all__'
+
+class ShipmentSizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShipmentSize
+        fields = '__all__'
+
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = '__all__'
+
+class ProductNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductName
+        fields = '__all__'

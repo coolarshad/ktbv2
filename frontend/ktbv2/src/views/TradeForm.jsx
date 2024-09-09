@@ -7,10 +7,11 @@ const TradeForm = ({ mode = 'add' }) => {
 
     const { id } = useParams();
     const navigate = useNavigate();
-    
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+
     const [formData, setFormData] = useState({
         company: '',
-        trd: '',
+        trd: today,
         trn: '',
         trade_type: '',
         trade_category: '',
@@ -45,7 +46,7 @@ const TradeForm = ({ mode = 'add' }) => {
         remarks: '',
         trader_name: '',
         insurance_policy_number: '',
-        bl_declaration: '',
+        
         shipper_in_bl: '',
         consignee_in_bl: '',
         notify_party_in_bl: '',
@@ -87,6 +88,10 @@ const TradeForm = ({ mode = 'add' }) => {
     const [paymentTermOptions, setPaymentTermOptions] = useState([]); 
     const [bankNameOptions, setBankNameOptions] = useState([]); 
     const [unitOptions, setUnitOptions] = useState([]);
+    const [productNameOptions, setProductNameOptions] = useState([]);
+    const [packingOptions, setPackingOptions] = useState([]);
+    const [shipmentSizeOptions, setShipmentSizeOptions] = useState([]);
+    const [currencyOptions, setCurrencyOptions] = useState([]);
     
     // Function to fetch data
     const fetchData = async (url, setStateFunction) => {
@@ -105,6 +110,10 @@ const TradeForm = ({ mode = 'add' }) => {
         fetchData('/trademgt/payment-terms', setPaymentTermOptions);
         fetchData('/trademgt/bank', setBankNameOptions);
         fetchData('/trademgt/unit', setUnitOptions);
+        fetchData('/trademgt/packings', setPackingOptions);
+        fetchData('/trademgt/product-names', setProductNameOptions);
+        fetchData('/trademgt/currencies', setCurrencyOptions);
+        fetchData('/trademgt/shipment-sizes', setShipmentSizeOptions);
     }, []);
 
 
@@ -146,6 +155,84 @@ const TradeForm = ({ mode = 'add' }) => {
         }
     }, [mode, id]);
 
+    // const handleChange = async (e, index, section) => {
+    //     const { name, value, type, files } = e.target;
+    
+    //     if (type === 'file') {
+    //         setFormData((prevState) => {
+    //             const updatedProducts = [...prevState.tradeProducts];
+    //             updatedProducts[index][name] = files[0];
+    //             return { ...prevState, tradeProducts: updatedProducts };
+    //         });
+    //     } else {
+    //         if (name === 'company') {
+    //             // When a company is selected, fetch the next counter value
+    //             setFormData((prevState) => ({
+    //                 ...prevState,
+    //                 [name]: value,
+    //             }));
+    
+    //             try {
+    //                 const selectedCompany = companyOptions.find((company) => company.id == value);
+    //                 if (selectedCompany) {
+    //                     try {
+    //                         const response = await axios.get(`/trademgt/companies/${selectedCompany.id}/next-counter/`);
+                            
+    //                         // Check if the request was successful
+    //                         if (response.status === 200) {
+    //                           const data = response.data; // axios handles JSON parsing
+    //                           setFormData((prevState) => ({
+    //                             ...prevState,
+    //                             trn: data.next_counter, // Auto-fill the TRN field with the next counter
+    //                           }));
+    //                         } else {
+    //                           console.error('Error fetching the next counter:', response.statusText);
+    //                         }
+    //                       } catch (error) {
+    //                         console.error('Error:', error.message);
+    //                       }
+    //                 }
+    //             } catch (error) {
+    //                 console.error('Error fetching next counter:', error);
+    //             }
+    //         } else if (name === 'customer_company_name') {
+    //             const selectedCustomer = customerOptions.find((customer) => customer.id == value);
+    
+    //             setFormData((prevState) => ({
+    //                 ...prevState,
+    //                 [name]: value,
+    //                 address: selectedCustomer?.address || '',
+    //             }));
+    //         }
+    //          else if (name === 'bank_name_address') {
+    //             const selectedBank = bankNameOptions.find((bank) => bank.id == value);
+    
+    //             setFormData((prevState) => ({
+    //                 ...prevState,
+    //                 [name]: value,
+    //                 swift_code: selectedBank?.swift_code || '',
+    //                 account_number: selectedBank?.account_number || '',
+    //             }));
+    //         } else if (section === 'products') {
+    //             setFormData((prevState) => {
+    //                 const updatedProducts = [...prevState.tradeProducts];
+    //                 updatedProducts[index][name] = value;
+    //                 return { ...prevState, tradeProducts: updatedProducts };
+    //             });
+    //         } else if (section === 'extraCosts') {
+    //             setFormData((prevState) => {
+    //                 const updatedExtraCosts = [...prevState.tradeExtraCosts];
+    //                 updatedExtraCosts[index][name] = value;
+    //                 return { ...prevState, tradeExtraCosts: updatedExtraCosts };
+    //             });
+    //         } else {
+    //             setFormData((prevState) => ({
+    //                 ...prevState,
+    //                 [name]: value,
+    //             }));
+    //         }
+    //     }
+    // };
     const handleChange = async (e, index, section) => {
         const { name, value, type, files } = e.target;
     
@@ -171,17 +258,17 @@ const TradeForm = ({ mode = 'add' }) => {
                             
                             // Check if the request was successful
                             if (response.status === 200) {
-                              const data = response.data; // axios handles JSON parsing
-                              setFormData((prevState) => ({
-                                ...prevState,
-                                trn: data.next_counter, // Auto-fill the TRN field with the next counter
-                              }));
+                                const data = response.data; // axios handles JSON parsing
+                                setFormData((prevState) => ({
+                                    ...prevState,
+                                    trn: data.next_counter, // Auto-fill the TRN field with the next counter
+                                }));
                             } else {
-                              console.error('Error fetching the next counter:', response.statusText);
+                                console.error('Error fetching the next counter:', response.statusText);
                             }
-                          } catch (error) {
+                        } catch (error) {
                             console.error('Error:', error.message);
-                          }
+                        }
                     }
                 } catch (error) {
                     console.error('Error fetching next counter:', error);
@@ -194,8 +281,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     [name]: value,
                     address: selectedCustomer?.address || '',
                 }));
-            }
-             else if (name === 'bank_name_address') {
+            } else if (name === 'bank_name_address') {
                 const selectedBank = bankNameOptions.find((bank) => bank.id == value);
     
                 setFormData((prevState) => ({
@@ -208,6 +294,15 @@ const TradeForm = ({ mode = 'add' }) => {
                 setFormData((prevState) => {
                     const updatedProducts = [...prevState.tradeProducts];
                     updatedProducts[index][name] = value;
+    
+                    // Check if the changed field is one of the synchronized dropdowns
+                    if (name === 'total_contract_qty_unit' || name === 'contract_balance_qty_unit' || name === 'trade_qty_unit') {
+                        // Update both fields to the same value
+                        updatedProducts[index].total_contract_qty_unit = value;
+                        updatedProducts[index].contract_balance_qty_unit = value;
+                        updatedProducts[index].trade_qty_unit = value;
+                    }
+    
                     return { ...prevState, tradeProducts: updatedProducts };
                 });
             } else if (section === 'extraCosts') {
@@ -224,6 +319,7 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         }
     };
+    
       
 
     const handleAddProduct = () => {
@@ -402,6 +498,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Trade Date"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly
                     />
                 </div>
                 <div>
@@ -474,14 +571,19 @@ const TradeForm = ({ mode = 'add' }) => {
                 </div>
                 <div>
                     <label htmlFor="packing" className="block text-sm font-medium text-gray-700">Packing</label>
-                    <input
-                        type="text"
+                    <select
                         name="packing"
                         value={formData.packing}
                         onChange={handleChange}
-                        placeholder="Packing"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
+                    >
+                        <option value="">Select Packing</option>
+                        {packingOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div>
                     <label htmlFor="cost_of_packing_per_each" className="block text-sm font-medium text-gray-700">Cost of Packing Per Each</label>
@@ -507,36 +609,36 @@ const TradeForm = ({ mode = 'add' }) => {
                 </div>
                 <div>
                     <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
-                    <input
-                        type="text"
+                    <select
                         name="packaging_supplier"
                         value={formData.packaging_supplier}
                         onChange={handleChange}
-                        placeholder="Packaging Supplier"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
+                    >
+                        <option value="">Select Supplier</option>
+                        {customerOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
-                {/* <div>
-                    <label htmlFor="selected_currency_rate" className="block text-sm font-medium text-gray-700">Selected Currency Rate</label>
-                    <input
-                        type="number"
-                        name="selected_currency_rate"
-                        value={formData.selected_currency_rate}
-                        onChange={handleChange}
-                        placeholder="Selected Currency Rate"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div> */}
+               
                 <div>
                     <label htmlFor="currency_selection" className="block text-sm font-medium text-gray-700">Currency Selection</label>
-                    <input
-                        type="text"
+                    <select
                         name="currency_selection"
                         value={formData.currency_selection}
                         onChange={handleChange}
-                        placeholder="Currency Selection"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
+                    >
+                        <option value="">Select Currency</option>
+                        {currencyOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div>
                     <label htmlFor="exchange_rate" className="block text-sm font-medium text-gray-700">Exchange Rate</label>
@@ -790,17 +892,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="bl_declaration" className="block text-sm font-medium text-gray-700">BL Declaration</label>
-                    <input
-                        type="text"
-                        name="bl_declaration"
-                        value={formData.bl_declaration}
-                        onChange={handleChange}
-                        placeholder="BL Declaration"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+                
                 <div>
                     <label htmlFor="shipper_in_bl" className="block text-sm font-medium text-gray-700">Shipper in BL</label>
                     <input
@@ -847,14 +939,19 @@ const TradeForm = ({ mode = 'add' }) => {
                 </div>
                 <div>
                     <label htmlFor="container_shipment_size" className="block text-sm font-medium text-gray-700">Container Shipment Size</label>
-                    <input
-                        type="text"
+                    <select
                         name="container_shipment_size"
                         value={formData.container_shipment_size}
                         onChange={handleChange}
-                        placeholder="Container Shipment Size"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
+                    >
+                        <option value="">Select Size</option>
+                        {shipmentSizeOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div>
                     <label htmlFor="bl_fee" className="block text-sm font-medium text-gray-700">BL Fee</label>
@@ -907,14 +1004,19 @@ const TradeForm = ({ mode = 'add' }) => {
                             </div>
                             <div>
                                 <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="product_name"
-                                    value={product.product_name}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    placeholder="Product Name"
+                                    value={formData.product_name}
+                                    onChange={handleChange}
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                />
+                                >
+                                    <option value="">Select Product Name</option>
+                                    {productNameOptions.map((option) => (
+                                        <option key={option.id} value={option.id}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label htmlFor="product_name_for_client" className="block text-sm font-medium text-gray-700">Product Name for Client</label>
@@ -972,7 +1074,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 >
-                                    <option value="">Select Contract Unit</option>
+                                    <option value="">Select Unit</option>
                                     {unitOptions.map((option) => (
                                         <option key={option.id} value={option.name}>
                                             {option.name}
@@ -1013,7 +1115,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 >
-                                    <option value="">Select Balance Unit</option>
+                                    <option value="">Select Unit</option>
                                     {unitOptions.map((option) => (
                                         <option key={option.id} value={option.name}>
                                             {option.name}
@@ -1043,7 +1145,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 >
-                                    <option value="">Select Balance Unit</option>
+                                    <option value="">Select Unit</option>
                                     {unitOptions.map((option) => (
                                         <option key={option.id} value={option.name}>
                                             {option.name}
@@ -1052,13 +1154,13 @@ const TradeForm = ({ mode = 'add' }) => {
                                 </select>
                             </div>
                             <div>
-                                <label htmlFor="selected_currency_rate" className="block text-sm font-medium text-gray-700">Selected Currency Rate</label>
+                                <label htmlFor="selected_currency_rate" className="block text-sm font-medium text-gray-700">Rate in Selected Currency</label>
                                 <input
                                     type="number"
                                     name="selected_currency_rate"
                                     value={product.selected_currency_rate}
                                     onChange={(e) => handleChange(e, index, 'products')}
-                                    placeholder="Selected Currency Rate"
+                                    placeholder=""
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>

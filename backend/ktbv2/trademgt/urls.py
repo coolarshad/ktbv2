@@ -33,6 +33,10 @@ router.register(r'company', CompanyViewSet)
 router.register(r'bank', BankViewSet)
 router.register(r'unit', UnitViewSet)
 router.register(r'inventory', InventoryViewSet)
+router.register(r'packings', PackingViewSet)
+router.register(r'shipment-sizes', ShipmentSizeViewSet)
+router.register(r'currencies', CurrencyViewSet)
+router.register(r'product-names', ProductNameViewSet)
 
 
 
@@ -60,6 +64,10 @@ urlpatterns = [
     path('prepay/<int:pk>/', PrePayView.as_view(), name='prepay'),
     path('sp/<int:pk>/', SPView.as_view(), name='sp'),
     path('pf/<int:pk>/', PFView.as_view(), name='pf'),
+
+
+    path('kyc-approve-one/<int:pk>/', KycApproveOneView.as_view(), name='kyc-approve1'),
+    path('kyc-approve-two/<int:pk>/', KycApproveTwoView.as_view(), name='kyc-approve2'),
 ]+ router.urls
 
 # urlpatterns = [

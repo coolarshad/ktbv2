@@ -33,3 +33,8 @@ class ConsumptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consumption
         fields = '__all__'
+
+class FinalProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FinalProduct
+        fields = '__all__'

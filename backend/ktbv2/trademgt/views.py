@@ -1565,6 +1565,48 @@ class KycViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = KycFilter
 
+class KycApproveOneView(APIView):
+    def get(self, request, *args, **kwargs):
+        kyc_id = kwargs.get('pk')
+    
+        if not kyc_id:
+            return Response({'detail': 'Kyc ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                kyc = Kyc.objects.get(id=kyc_id)
+
+                kyc.approve1 = True
+                kyc.save()
+
+                serializer = KycSerializer(kyc)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except Kyc.DoesNotExist:
+            return Response({'detail': 'Kyc not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class KycApproveTwoView(APIView):
+    def get(self, request, *args, **kwargs):
+        kyc_id = kwargs.get('pk')
+    
+        if not kyc_id:
+            return Response({'detail': 'Kyc ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                kyc = Kyc.objects.get(id=kyc_id)
+
+                kyc.approve2 = True
+                kyc.save()
+
+                serializer = KycSerializer(kyc)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except Kyc.DoesNotExist:
+            return Response({'detail': 'Kyc not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class PurchaseProductTraceViewSet(viewsets.ModelViewSet):
     queryset = PurchaseProductTrace.objects.all()
@@ -1695,3 +1737,20 @@ class PFView(APIView):
 class InventoryViewSet(viewsets.ModelViewSet):
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
+
+
+class ProductNameViewSet(viewsets.ModelViewSet):
+    queryset = ProductName.objects.all()
+    serializer_class = ProductNameSerializer
+
+class ShipmentSizeViewSet(viewsets.ModelViewSet):
+    queryset = ShipmentSize.objects.all()
+    serializer_class = ShipmentSizeSerializer
+
+class CurrencyViewSet(viewsets.ModelViewSet):
+    queryset = Currency.objects.all()
+    serializer_class = CurrencySerializer
+
+class PackingViewSet(viewsets.ModelViewSet):
+    queryset = Packing.objects.all()
+    serializer_class = PackingSerializer

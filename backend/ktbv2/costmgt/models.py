@@ -120,3 +120,41 @@ class ConsumptionBaseOil(models.Model):
 
     def get_absolute_url(self):
         return reverse("ConsumptionBaseOil_detail", kwargs={"pk": self.pk})
+
+class FinalProduct(models.Model):
+    date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
+    name=models.CharField(max_length=50,null=True,blank=True)
+    packing_size=models.CharField(max_length=50,null=True,blank=True)
+    bottles_per_pack=models.FloatField(null=True,blank=True)
+    liters_per_pack=models.FloatField(null=True,blank=True)
+    total_qty=models.FloatField(null=True,blank=True)
+    total_qty_unit=models.CharField(max_length=50,null=True,blank=True)
+    qty_in_liters=models.FloatField(null=True,blank=True)
+    per_liter_cost=models.FloatField(null=True,blank=True)
+    cost_per_case=models.FloatField(null=True,blank=True)
+    dk_cost=models.FloatField(null=True,blank=True)
+    price_per_bottle=models.CharField(_("price_per_bottle"), max_length=50)
+    price_per_label=models.CharField(_("price_per_label"), max_length=50)
+    price_per_bottle_cap=models.CharField(_("price_per_bottle_cap"), max_length=50)
+    bottle_per_case=models.FloatField(_("bottle_per_case"))
+    label_per_case=models.FloatField(_("label_per_case"))
+    bottle_cap_per_case=models.FloatField(_("bottle_cap_per_case"))
+    price_per_carton=models.CharField(_("price_per_carton"), max_length=50)
+    dk_exprice=models.FloatField(null=True,blank=True)
+    ks_cost=models.FloatField(null=True,blank=True)
+    total_factory_price=models.FloatField(null=True,blank=True)
+    freight_logistic=models.FloatField(null=True,blank=True)
+    total_cif_price=models.FloatField(null=True,blank=True)
+    remarks=models.CharField(max_length=50,null=True,blank=True)
+    approved=models.BooleanField(null=True,default=False)
+
+    class Meta:
+        verbose_name = _("FinalProduct")
+        verbose_name_plural = _("FinalProducts")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("FinalProduct_detail", kwargs={"pk": self.pk})
+

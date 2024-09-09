@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register(r'packings', PackingViewSet)
 router.register(r'raw-materials', RawMaterialViewSet)
 router.register(r'additives', AdditiveViewSet)
+router.register(r'final-products', FinalProductViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

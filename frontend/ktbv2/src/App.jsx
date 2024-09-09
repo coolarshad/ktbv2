@@ -36,6 +36,12 @@ import Additive from './views/Additive';
 import AdditiveForm from './views/AdditiveForm';
 import Consumption from './views/Consumption';
 import ConsumptionForm from './views/ConsumptionForm';
+import FinalProduct from './views/FinalProduct';
+import FinalProductForm from './views/FinalProductForm';
+import ProductName from './views/ProductName';
+import ShipmentSize from './views/ShipmentSize';
+import Currency from './views/Currency';
+import TradePacking from './views/TradePacking';
 
 function App() {
  
@@ -90,6 +96,15 @@ function App() {
           <Route path="/consumptions" element={<Consumption />} />
           <Route path="/consumption-form" element={<ConsumptionForm />} />
           <Route path="/consumption-form/:id" element={<ConsumptionForm mode="update" />} />
+
+          <Route path="/final-products" element={<FinalProduct />} />
+          <Route path="/final-product-form" element={<FinalProductForm />} />
+          <Route path="/final-product-form/:id" element={<FinalProductForm mode="update" />} />
+
+          <Route path="/products-name" element={<ProductName />} />
+          <Route path="/shipments-size" element={<ShipmentSize />} />
+          <Route path="/currency" element={<Currency />} />
+          <Route path="/trade-packings" element={<TradePacking />} />
         </Routes>
       </div>
     </Router>

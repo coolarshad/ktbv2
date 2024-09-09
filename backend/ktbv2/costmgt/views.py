@@ -225,3 +225,8 @@ class ConsumptionView(APIView):
             consumption.delete()
 
         return Response({'message': 'Consumption deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+
+class FinalProductViewSet(viewsets.ModelViewSet):
+    queryset = FinalProduct.objects.all()
+    serializer_class = FinalProductSerializer

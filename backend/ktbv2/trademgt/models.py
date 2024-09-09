@@ -51,7 +51,7 @@ class Trade(models.Model):
     trader_name=models.CharField(_("trader_name"), max_length=150)
     insurance_policy_number=models.CharField(_("insurance_policy_number"), max_length=50)
 
-    bl_declaration=models.CharField(_("bl_declaration"), max_length=100)
+    # bl_declaration=models.CharField(_("bl_declaration"), max_length=100)
     shipper_in_bl=models.CharField(_("shipper_in_bl"), max_length=50)
     consignee_in_bl=models.CharField(_("consignee_in_bl"), max_length=50)
     notify_party_in_bl=models.CharField(_("notify_party_in_bl"), max_length=50)
@@ -605,7 +605,7 @@ class SalesPending(models.Model):
 
 
 class Company(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
     initial = models.CharField(max_length=10)  # e.g., "KP", "SP", etc.
     counter = models.PositiveIntegerField(default=0)
 
@@ -686,3 +686,58 @@ class Inventory(models.Model):
 
     def get_absolute_url(self):
         return reverse("Inventory_detail", kwargs={"pk": self.pk})
+
+class ProductName(models.Model):
+    name=models.CharField(_("name"), max_length=50)
+    
+    class Meta:
+        verbose_name = _("ProductName")
+        verbose_name_plural = _("ProductNames")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("ProductName_detail", kwargs={"pk": self.pk})
+
+class ShipmentSize(models.Model):
+    name=models.CharField(_("name"), max_length=50)
+    
+    class Meta:
+        verbose_name = _("ShipmentSize")
+        verbose_name_plural = _("ShipmentSizes")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("ShipmentSize_detail", kwargs={"pk": self.pk})
+
+class Currency(models.Model):
+    name=models.CharField(_("name"), max_length=50)
+
+    class Meta:
+        verbose_name = _("Currency")
+        verbose_name_plural = _("Currencys")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("Currency_detail", kwargs={"pk": self.pk})
+
+class Packing(models.Model):
+    name=models.CharField(_("name"), max_length=50)
+    
+
+    class Meta:
+        verbose_name = _("Packing")
+        verbose_name_plural = _("Packings")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("Packing_detail", kwargs={"pk": self.pk})
+
+

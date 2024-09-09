@@ -5,8 +5,11 @@ import axios from '../axiosConfig';
 const KycForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
+
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+
     const [formData, setFormData] = useState({
-        date: '',
+        date: today,
         name: '',
         companyRegNo: '',
         regAddress: '',
@@ -135,6 +138,7 @@ const KycForm = ({ mode = 'add' }) => {
                         value={formData.date}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly
                     />
                 </div>
                 <div>

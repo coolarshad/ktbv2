@@ -62,10 +62,10 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.swiftCode}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.accountNumber}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved1} onChange={() => {}} />
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve1} onChange={() => {}} />
               </td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved2} onChange={() => {}} />
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve2} onChange={() => {}} />
               </td>
              
              

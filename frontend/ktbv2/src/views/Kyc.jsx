@@ -60,12 +60,37 @@ const Kyc = () => {
 
     const closeModal = () => {
       setIsModalOpen(false);
-      setKycData(null);
+      setSelectedKyc(null);
     };
   
 
     const handleFilter = (filters) => {
       setKycData(filters)
+    };
+
+    const approveKycOne = async () => {
+      try {
+        const response = await axios.get(`/trademgt/kyc-approve-one/${selectedKyc.id}/`);
+       
+        setIsModalOpen(false);
+        setSelectedTrade(null);
+  
+      } catch (error) {
+        console.error('Error approving Kyc:', error);
+        // Optionally, handle the error (e.g., show a user-friendly error message)
+      }
+    };
+    const approveKycTwo = async () => {
+      try {
+        const response = await axios.get(`/trademgt/kyc-approve-two/${selectedKyc.id}/`);
+       
+        setIsModalOpen(false);
+        setSelectedTrade(null);
+  
+      } catch (error) {
+        console.error('Error approving Kyc:', error);
+        // Optionally, handle the error (e.g., show a user-friendly error message)
+      }
     };
     
     const fieldOptions = [
@@ -200,6 +225,16 @@ const Kyc = () => {
                  
                 </tbody>
                 </table>
+                  {selectedKyc.approve1 ? '' :
+                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                      <button onClick={approveKycOne} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>
+                    </div>
+                  }
+                  {selectedKyc.approve2 ? '' :
+                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                      <button onClick={approveKycTwo} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 2</button>
+                    </div>
+                  }
              </div>
             
            </div>

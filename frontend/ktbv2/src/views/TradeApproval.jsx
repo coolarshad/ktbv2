@@ -270,10 +270,7 @@ function TradeApproval() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurance Policy Number</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.insurance_policy_number}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Declaration</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_declaration}</td>
-                  </tr>
+                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Shipper in BL</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.shipper_in_bl}</td>
