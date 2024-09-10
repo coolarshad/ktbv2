@@ -160,22 +160,9 @@ function TradeApproval() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Address </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.address}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packing}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost of Packing per Each </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.cost_of_packing_per_each}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Packing Cost </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.total_packing_cost}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packaging Supplier </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packaging_supplier}</td>
-                  </tr>
+                  
+                
+                 
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Currency Selection </td>
@@ -186,10 +173,7 @@ function TradeApproval() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Exchange Rate </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.exchange_rate}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Rate in USD </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.rate_in_usd}</td>
-                  </tr>
+                 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_agent}</td>
@@ -209,6 +193,10 @@ function TradeApproval() {
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Rate</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_rate}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_value}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
@@ -283,10 +271,7 @@ function TradeApproval() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Notify Party in BL</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.notify_party_in_bl}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Markings in Packaging</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.markings_in_packaging}</td>
-                  </tr>
+                 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.container_shipment_size}</td>
@@ -325,6 +310,14 @@ function TradeApproval() {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in USD</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Value</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Mode of Packing</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate of Each packing</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty of packing</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Markings in Packaging</th>
                  </tr>
                </thead>
                <tbody>
@@ -343,6 +336,14 @@ function TradeApproval() {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_in_usd}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_value}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.mode_of_packing}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_of_each_packing}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.qty_of_packing}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packaging_supplier}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
                    </tr>
                  ))}
                </tbody>

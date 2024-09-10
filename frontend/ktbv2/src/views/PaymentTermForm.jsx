@@ -6,7 +6,9 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
     name: '',
     advance_in_percentage: '',
     advance_within: '',
-    payment_within: ''
+    advance_from: '',
+    payment_within: '',
+    payment_from: '',
   });
 
   const [paymentTerms, setPaymentTerms] = useState([]);
@@ -56,7 +58,9 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
             name: '',
             advance_in_percentage: '',
             advance_within: '',
-            payment_within: ''
+            advance_from: '',
+            payment_within: '',
+            payment_from: '',
           }); // Reset form after add
         })
         .catch(error => {
@@ -72,7 +76,9 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
             name: '',
             advance_in_percentage: '',
             advance_within: '',
-            payment_within: ''
+            advance_from: '',
+            payment_within: '',
+            payment_from: '',
           }); // Reset form after update
         })
         .catch(error => {
@@ -98,46 +104,115 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
       name: '',
       advance_in_percentage: '',
       advance_within: '',
-      payment_within: ''
+      advance_from: '',
+      payment_within: '',
+      payment_from: '',
     });
   };
+
+  const advanceOptions = [
+    { value: 'PURCHASE ORDER' },
+    { value: 'PERFORMA INVOICE' },
+    { value: 'SALES BILL'},
+    { value: 'PURCHASE BILL' },
+    { value: 'BL'},
+];
 
   return (
     <div>
       <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
-        <div className="grid grid-cols-1 gap-4 p-4">
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Name"
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          <input
-            type="number"
-            name="advance_in_percentage"
-            value={formData.advance_in_percentage}
-            onChange={handleChange}
-            placeholder="Advance in Percentage"
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          <input
-            type="number"
-            name="advance_within"
-            value={formData.advance_within}
-            onChange={handleChange}
-            placeholder="Advance Within (Days)"
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          <input
-            type="number"
-            name="payment_within"
-            value={formData.payment_within}
-            onChange={handleChange}
-            placeholder="Payment Within (Days)"
-            className="border border-gray-300 p-2 rounded w-full"
-          />
+        <div className="grid grid-cols-1 gap-2  p-4">
+          <div>
+            <label htmlFor="advance_within" className="block text-sm font-medium text-gray-700">
+              Payment Term Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Name"
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+          </div>
+          <div>
+            <label htmlFor="advance_within" className="block text-sm font-medium text-gray-700">
+              Advance (%)
+            </label>
+            <input
+              type="number"
+              name="advance_in_percentage"
+              value={formData.advance_in_percentage}
+              onChange={handleChange}
+              placeholder="Advance in Percentage"
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+          </div>
+          <div>
+            <label htmlFor="advance_within" className="block text-sm font-medium text-gray-700">
+              Advance Within (days)
+            </label>
+            <input
+              type="number"
+              name="advance_within"
+              value={formData.advance_within}
+              onChange={handleChange}
+              placeholder="Advance Within (Days)"
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+          </div>
+          <div>
+            <label htmlFor="advance_from" className="block text-sm font-medium text-gray-700">
+              Advance From
+            </label>
+            <select
+              name="advance_from"
+              value={formData.advance_from}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            >
+              <option value="" disabled>Select ---</option>
+              {advanceOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.value}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="advance_within" className="block text-sm font-medium text-gray-700">
+              Payment Within (days)
+            </label>
+            <input
+              type="number"
+              name="payment_within"
+              value={formData.payment_within}
+              onChange={handleChange}
+              placeholder="Payment Within (Days)"
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+          </div>
+          <div>
+            <label htmlFor="payment_from" className="block text-sm font-medium text-gray-700">
+              Payment From
+            </label>
+            <select
+              name="payment_from"
+              value={formData.payment_from}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            >
+              <option value="" disabled>Select ---</option>
+              {advanceOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.value}
+                </option>
+              ))}
+            </select>
+          </div>
+
+
           <button
             type="submit"
             className="bg-blue-500 text-white p-2 rounded"
@@ -158,8 +233,12 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
               <div>
                 <h3 className="text-lg font-medium">{term.name}</h3>
                 <p>Advance in Percentage: {term.advance_in_percentage}%</p>
-                <p>Advance Within: {term.advance_within} Days</p>
-                <p>Payment Within: {term.payment_within} Days</p>
+                <div className="grid grid-cols-2">
+                  <p>Advance Within: {term.advance_within} Days</p>
+                  <p className='ml-10'>Advance From: {term.advance_from}</p>
+                  <p>Payment Within: {term.payment_within} Days</p>
+                  <p className='ml-10'>Payment From: {term.payment_from}</p>
+                </div>
               </div>
               <div className="flex space-x-2">
                 <button

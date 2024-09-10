@@ -64,19 +64,17 @@ class TradeView(APIView):
             'country_of_origin': data.get('country_of_origin'),
             'customer_company_name': data.get('customer_company_name'),
             'address': data.get('address'),
-            'packing': data.get('packing'),
-            'cost_of_packing_per_each': data.get('cost_of_packing_per_each'),
-            'total_packing_cost': data.get('total_packing_cost'),
-            'packaging_supplier': data.get('packaging_supplier'),
-            'selected_currency_rate': data.get('selected_currency_rate'),
+            
+           
             'currency_selection': data.get('currency_selection'),
             'exchange_rate': data.get('exchange_rate'),
-            'rate_in_usd': data.get('rate_in_usd'),
+            
             'commission_agent': data.get('commission_agent'),
             'contract_value': data.get('contract_value'),
             'payment_term': data.get('payment_term'),
             'advance_value_to_receive': data.get('advance_value_to_receive'),
             'commission_rate': data.get('commission_rate'),
+            'commission_value': data.get('commission_value'),
             'logistic_provider': data.get('logistic_provider'),
             'estimated_logistic_cost': data.get('estimated_logistic_cost'),
             'logistic_cost_tolerence': data.get('logistic_cost_tolerence'),
@@ -92,11 +90,11 @@ class TradeView(APIView):
             'remarks': data.get('remarks'),
             'trader_name': data.get('trader_name'),
             'insurance_policy_number': data.get('insurance_policy_number'),
-            'bl_declaration': data.get('bl_declaration'),
+           
             'shipper_in_bl': data.get('shipper_in_bl'),
             'consignee_in_bl': data.get('consignee_in_bl'),
             'notify_party_in_bl': data.get('notify_party_in_bl'),
-            'markings_in_packaging': data.get('markings_in_packaging'),
+            
             'container_shipment_size': data.get('container_shipment_size'),
             'bl_fee': data.get('bl_fee'),
             'bl_fee_remarks': data.get('bl_fee_remarks'),
@@ -121,6 +119,14 @@ class TradeView(APIView):
                 'trade_qty': data.get(f'tradeProducts[{i}].trade_qty'),
                 'trade_qty_unit': data.get(f'tradeProducts[{i}].trade_qty_unit'),
                 'selected_currency_rate': data.get(f'tradeProducts[{i}].selected_currency_rate'),
+                'rate_in_usd': data.get(f'tradeProducts[{i}].rate_in_usd'),
+                'markings_in_packaging': data.get(f'tradeProducts[{i}].markings_in_packaging'),
+                'mode_of_packing': data.get(f'tradeProducts[{i}].mode_of_packing'),
+                'rate_of_each_packing': data.get(f'tradeProducts[{i}].rate_of_each_packing'),
+                'qty_of_packing': data.get(f'tradeProducts[{i}].qty_of_packing'),
+                'total_packing_cost': data.get(f'tradeProducts[{i}].total_packing_cost'),
+                'packaging_supplier': data.get(f'tradeProducts[{i}].packaging_supplier'),
+                'product_value': data.get(f'tradeProducts[{i}].product_value'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -245,19 +251,17 @@ class TradeView(APIView):
             'country_of_origin': data.get('country_of_origin'),
             'customer_company_name': data.get('customer_company_name'),
             'address': data.get('address'),
-            'packing': data.get('packing'),
-            'cost_of_packing_per_each': data.get('cost_of_packing_per_each'),
-            'total_packing_cost': data.get('total_packing_cost'),
-            'packaging_supplier': data.get('packaging_supplier'),
-            'selected_currency_rate': data.get('selected_currency_rate'),
+           
+            
             'currency_selection': data.get('currency_selection'),
             'exchange_rate': data.get('exchange_rate'),
-            'rate_in_usd': data.get('rate_in_usd'),
+          
             'commission_agent': data.get('commission_agent'),
             'contract_value': data.get('contract_value'),
             'payment_term': data.get('payment_term'),
             'advance_value_to_receive': data.get('advance_value_to_receive'),
             'commission_rate': data.get('commission_rate'),
+            'commission_value': data.get('commission_value'),
             'logistic_provider': data.get('logistic_provider'),
             'estimated_logistic_cost': data.get('estimated_logistic_cost'),
             'logistic_cost_tolerence': data.get('logistic_cost_tolerence'),
@@ -273,11 +277,11 @@ class TradeView(APIView):
             'remarks': data.get('remarks'),
             'trader_name': data.get('trader_name'),
             'insurance_policy_number': data.get('insurance_policy_number'),
-            'bl_declaration': data.get('bl_declaration'),
+           
             'shipper_in_bl': data.get('shipper_in_bl'),
             'consignee_in_bl': data.get('consignee_in_bl'),
             'notify_party_in_bl': data.get('notify_party_in_bl'),
-            'markings_in_packaging': data.get('markings_in_packaging'),
+           
             'container_shipment_size': data.get('container_shipment_size'),
             'bl_fee': data.get('bl_fee'),
             'bl_fee_remarks': data.get('bl_fee_remarks'),
@@ -304,6 +308,14 @@ class TradeView(APIView):
                 'trade_qty': data.get(f'tradeProducts[{i}].trade_qty'),
                 'trade_qty_unit': data.get(f'tradeProducts[{i}].trade_qty_unit'),
                 'selected_currency_rate': data.get(f'tradeProducts[{i}].selected_currency_rate'),
+                'rate_in_usd': data.get(f'tradeProducts[{i}].rate_in_usd'),
+                'markings_in_packaging': data.get(f'tradeProducts[{i}].markings_in_packaging'),
+                'mode_of_packing': data.get(f'tradeProducts[{i}].mode_of_packing'),
+                'rate_of_each_packing': data.get(f'tradeProducts[{i}].rate_of_each_packing'),
+                'qty_of_packing': data.get(f'tradeProducts[{i}].qty_of_packing'),
+                'total_packing_cost': data.get(f'tradeProducts[{i}].total_packing_cost'),
+                'packaging_supplier': data.get(f'tradeProducts[{i}].packaging_supplier'),
+                'product_value': data.get(f'tradeProducts[{i}].product_value'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -1612,14 +1624,35 @@ class PurchaseProductTraceViewSet(viewsets.ModelViewSet):
     queryset = PurchaseProductTrace.objects.all()
     serializer_class = PurchaseProductTraceSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        product_code = self.request.query_params.get('product_code', None)
+        if product_code:
+            queryset = queryset.filter(product_code=product_code)
+        return queryset
+
 
 class SalesProductTraceViewSet(viewsets.ModelViewSet):
     queryset = SalesProductTrace.objects.all()
     serializer_class = SalesProductTraceSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        product_code = self.request.query_params.get('product_code', None)
+        if product_code:
+            queryset = queryset.filter(product_code=product_code)
+        return queryset
+
 class PurchasePendingViewSet(viewsets.ModelViewSet):
     queryset = PurchasePending.objects.all()
     serializer_class = PurchasePendingSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        product_code = self.request.query_params.get('product_code', None)
+        if product_code:
+            queryset = queryset.filter(product_code=product_code)
+        return queryset
 
 class SalesPendingViewSet(viewsets.ModelViewSet):
     queryset = SalesPending.objects.all()

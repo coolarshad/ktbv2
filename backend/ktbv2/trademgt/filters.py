@@ -179,3 +179,23 @@ class InventoryFilter(django_filters.FilterSet):
             'batch_number': ['exact', 'icontains'],
             'unit': ['exact', 'icontains'],
         }
+
+class SalesProductTraceFilter(django_filters.FilterSet):
+    # date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    # date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+    class Meta:
+        model = SalesProductTrace
+        fields = {
+            'product_code': ['exact', 'icontains'],  # Filter by Trade TRN
+          
+        }
+
+class PurchaseProductTraceFilter(django_filters.FilterSet):
+    # date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    # date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+    class Meta:
+        model = PurchaseProductTrace
+        fields = {
+            'product_code': ['exact', 'icontains'],  # Filter by Trade TRN
+          
+        }

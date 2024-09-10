@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
+import debounce from 'lodash.debounce';
 
 const TradeForm = ({ mode = 'add' }) => {
 
     const { id } = useParams();
     const navigate = useNavigate();
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+
+    const [isContractBalanceQtyReadOnly, setIsContractBalanceQtyReadOnly] = useState(false);
 
     const [formData, setFormData] = useState({
         company: '',
@@ -18,19 +21,16 @@ const TradeForm = ({ mode = 'add' }) => {
         country_of_origin: '',
         customer_company_name: '',
         address: '',
-        packing: '',
-        cost_of_packing_per_each: '',
-        total_packing_cost: '',
-        packaging_supplier: '',
-        
+       
         currency_selection: '',
         exchange_rate: '',
-        rate_in_usd: '',
+      
         commission_agent: '',
         contract_value: '',
         payment_term: '',
         advance_value_to_receive: '',
         commission_rate: '',
+        commission_value: '',
         logistic_provider: '',
         estimated_logistic_cost: '',
         logistic_cost_tolerence: '',
@@ -50,7 +50,7 @@ const TradeForm = ({ mode = 'add' }) => {
         shipper_in_bl: '',
         consignee_in_bl: '',
         notify_party_in_bl: '',
-        markings_in_packaging: '',
+        
         container_shipment_size: '',
         bl_fee: '',
         bl_fee_remarks: '',
@@ -69,6 +69,14 @@ const TradeForm = ({ mode = 'add' }) => {
                 trade_qty: '',
                 trade_qty_unit: '',
                 selected_currency_rate: '',
+                rate_in_usd:'',
+                product_value:'',
+                markings_in_packaging:'',
+                packaging_supplier:'',
+                mode_of_packing:'',
+                rate_of_each_packing:'',
+                qty_of_packing:'',
+                total_packing_cost:'',
             }
         ],
         tradeExtraCosts: [
@@ -155,84 +163,40 @@ const TradeForm = ({ mode = 'add' }) => {
         }
     }, [mode, id]);
 
-    // const handleChange = async (e, index, section) => {
-    //     const { name, value, type, files } = e.target;
-    
-    //     if (type === 'file') {
-    //         setFormData((prevState) => {
-    //             const updatedProducts = [...prevState.tradeProducts];
-    //             updatedProducts[index][name] = files[0];
-    //             return { ...prevState, tradeProducts: updatedProducts };
-    //         });
-    //     } else {
-    //         if (name === 'company') {
-    //             // When a company is selected, fetch the next counter value
-    //             setFormData((prevState) => ({
-    //                 ...prevState,
-    //                 [name]: value,
-    //             }));
-    
-    //             try {
-    //                 const selectedCompany = companyOptions.find((company) => company.id == value);
-    //                 if (selectedCompany) {
-    //                     try {
-    //                         const response = await axios.get(`/trademgt/companies/${selectedCompany.id}/next-counter/`);
-                            
-    //                         // Check if the request was successful
-    //                         if (response.status === 200) {
-    //                           const data = response.data; // axios handles JSON parsing
-    //                           setFormData((prevState) => ({
-    //                             ...prevState,
-    //                             trn: data.next_counter, // Auto-fill the TRN field with the next counter
-    //                           }));
-    //                         } else {
-    //                           console.error('Error fetching the next counter:', response.statusText);
-    //                         }
-    //                       } catch (error) {
-    //                         console.error('Error:', error.message);
-    //                       }
-    //                 }
-    //             } catch (error) {
-    //                 console.error('Error fetching next counter:', error);
-    //             }
-    //         } else if (name === 'customer_company_name') {
-    //             const selectedCustomer = customerOptions.find((customer) => customer.id == value);
-    
-    //             setFormData((prevState) => ({
-    //                 ...prevState,
-    //                 [name]: value,
-    //                 address: selectedCustomer?.address || '',
-    //             }));
-    //         }
-    //          else if (name === 'bank_name_address') {
-    //             const selectedBank = bankNameOptions.find((bank) => bank.id == value);
-    
-    //             setFormData((prevState) => ({
-    //                 ...prevState,
-    //                 [name]: value,
-    //                 swift_code: selectedBank?.swift_code || '',
-    //                 account_number: selectedBank?.account_number || '',
-    //             }));
-    //         } else if (section === 'products') {
-    //             setFormData((prevState) => {
-    //                 const updatedProducts = [...prevState.tradeProducts];
-    //                 updatedProducts[index][name] = value;
-    //                 return { ...prevState, tradeProducts: updatedProducts };
-    //             });
-    //         } else if (section === 'extraCosts') {
-    //             setFormData((prevState) => {
-    //                 const updatedExtraCosts = [...prevState.tradeExtraCosts];
-    //                 updatedExtraCosts[index][name] = value;
-    //                 return { ...prevState, tradeExtraCosts: updatedExtraCosts };
-    //             });
-    //         } else {
-    //             setFormData((prevState) => ({
-    //                 ...prevState,
-    //                 [name]: value,
-    //             }));
-    //         }
-    //     }
-    // };
+    // Debounced function to call the API
+    const fetchProductDetails = useCallback(
+        debounce(async (index, productCode) => {
+          try {
+            let response;
+      
+            if (formData.trade_type === 'Sales') {
+              response = await axios.get(`/trademgt/sales-product-trace/?product_code=${productCode}`);
+            } else {
+              response = await axios.get(`/trademgt/purchase-product-trace/?product_code=${productCode}`);
+            }
+            if (response.status === 200) {
+              const { data } = response;
+              if (Array.isArray(data) && data.length > 0) {
+                setFormData((prevState) => {
+                    const updatedProducts = [...prevState.tradeProducts];
+                    updatedProducts[index].total_contract_qty = data[0]?.total_contract_qty; // Example field
+                    updatedProducts[index].contract_balance_qty = data[0]?.contract_balance_qty; // Example field
+                    setIsContractBalanceQtyReadOnly(true);
+                    return { ...prevState, tradeProducts: updatedProducts };
+                });
+              }
+            
+            } else {
+                setIsContractBalanceQtyReadOnly(false);
+                console.error('Error fetching product details:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error fetching product details:', error.message);
+          }
+        }, 500), // Debounce delay in milliseconds
+        [formData.trade_type] // Dependency array
+      );
+
     const handleChange = async (e, index, section) => {
         const { name, value, type, files } = e.target;
     
@@ -281,6 +245,16 @@ const TradeForm = ({ mode = 'add' }) => {
                     [name]: value,
                     address: selectedCustomer?.address || '',
                 }));
+            } else if (name === 'payment_term'){
+                const selectedTerm = paymentTermOptions.find((term) => term.id == value);
+                
+                setFormData((prevState) => ({
+                    ...prevState,
+                    [name]: value,
+                    advance_value_to_receive: ((selectedTerm?.advance_in_percentage / 100) * prevState?.contract_value).toFixed(2) || 0
+
+                }));
+                
             } else if (name === 'bank_name_address') {
                 const selectedBank = bankNameOptions.find((bank) => bank.id == value);
     
@@ -294,7 +268,16 @@ const TradeForm = ({ mode = 'add' }) => {
                 setFormData((prevState) => {
                     const updatedProducts = [...prevState.tradeProducts];
                     updatedProducts[index][name] = value;
-    
+                    if (name==='product_code' && value){
+                        setIsContractBalanceQtyReadOnly(false);
+                        fetchProductDetails(index, value); // Fetch product details
+                    }
+                    if (name === 'total_contract_qty') {
+                        updatedProducts[index].contract_balance_qty = value;
+                    }
+                    if (name === 'contract_balance_qty') {
+                        updatedProducts[index].total_contract_qty = value;
+                    }
                     // Check if the changed field is one of the synchronized dropdowns
                     if (name === 'total_contract_qty_unit' || name === 'contract_balance_qty_unit' || name === 'trade_qty_unit') {
                         // Update both fields to the same value
@@ -302,8 +285,26 @@ const TradeForm = ({ mode = 'add' }) => {
                         updatedProducts[index].contract_balance_qty_unit = value;
                         updatedProducts[index].trade_qty_unit = value;
                     }
+                    if(name==='qty_of_packing' || name==='rate_of_each_packing'){
+                        
+                        const rate = parseFloat(updatedProducts[index].rate_of_each_packing) || 0;
+                        const qty = parseFloat(updatedProducts[index].qty_of_packing) || 0;
+                        
+                        // Calculate total packing cost
+                        updatedProducts[index].total_packing_cost = (rate * qty).toFixed(2);        
+                    }
+                    if(name==='trade_qty' || name==='selected_currency_rate'){
+                        const trade_qty = parseFloat(updatedProducts[index].trade_qty) || 0;
+                        const selected_currency_rate = parseFloat(updatedProducts[index].selected_currency_rate) || 0;
+                        
+                        updatedProducts[index].rate_in_usd =  selected_currency_rate * parseFloat(prevState.exchange_rate);
+                        updatedProducts[index].product_value = (selected_currency_rate * trade_qty).toFixed(2);
+                    }
+
+                    const totalContractValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
+
     
-                    return { ...prevState, tradeProducts: updatedProducts };
+                    return { ...prevState, tradeProducts: updatedProducts,contract_value: totalContractValue.toFixed(2) };
                 });
             } else if (section === 'extraCosts') {
                 setFormData((prevState) => {
@@ -319,8 +320,6 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         }
     };
-    
-      
 
     const handleAddProduct = () => {
         setFormData(prevState => ({
@@ -341,6 +340,14 @@ const TradeForm = ({ mode = 'add' }) => {
                     trade_qty: '',
                     trade_qty_unit: '',
                     selected_currency_rate: '',
+                    rate_in_usd:'',
+                    product_value:'',
+                    markings_in_packaging:'',
+                    packaging_supplier:'',
+                    mode_of_packing:'',
+                    rate_of_each_packing:'',
+                    qty_of_packing:'',
+                    total_packing_cost:'',
                 }
             ]
         }));
@@ -490,7 +497,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                 </div>
                 <div>
-                    <label htmlFor="trd" className="block text-sm font-medium text-gray-700">Trade Date</label>
+                    <label htmlFor="trd" className="block text-sm font-medium text-gray-700">Trade Reference Date</label>
                     <input
                         type="date"
                         name="trd"
@@ -569,60 +576,8 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="packing" className="block text-sm font-medium text-gray-700">Packing</label>
-                    <select
-                        name="packing"
-                        value={formData.packing}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select Packing</option>
-                        {packingOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="cost_of_packing_per_each" className="block text-sm font-medium text-gray-700">Cost of Packing Per Each</label>
-                    <input
-                        type="number"
-                        name="cost_of_packing_per_each"
-                        value={formData.cost_of_packing_per_each}
-                        onChange={handleChange}
-                        placeholder="Cost of Packing Per Each"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="total_packing_cost" className="block text-sm font-medium text-gray-700">Total Packing Cost</label>
-                    <input
-                        type="number"
-                        name="total_packing_cost"
-                        value={formData.total_packing_cost}
-                        onChange={handleChange}
-                        placeholder="Total Packing Cost"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
-                    <select
-                        name="packaging_supplier"
-                        value={formData.packaging_supplier}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select Supplier</option>
-                        {customerOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                
+              
                
                 <div>
                     <label htmlFor="currency_selection" className="block text-sm font-medium text-gray-700">Currency Selection</label>
@@ -651,17 +606,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="rate_in_usd" className="block text-sm font-medium text-gray-700">Rate in USD</label>
-                    <input
-                        type="number"
-                        name="rate_in_usd"
-                        value={formData.rate_in_usd}
-                        onChange={handleChange}
-                        placeholder="Rate in USD"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+                
                 <div>
                     <label htmlFor="commission" className="block text-sm font-medium text-gray-700">Commission Agent</label>
                     <input
@@ -670,6 +615,28 @@ const TradeForm = ({ mode = 'add' }) => {
                         value={formData.commission_agent}
                         onChange={handleChange}
                         placeholder="Commission Agent"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="commission_rate" className="block text-sm font-medium text-gray-700">Commission Rate</label>
+                    <input
+                        type="number"
+                        name="commission_rate"
+                        value={formData.commission_rate}
+                        onChange={handleChange}
+                        placeholder="Commission Rate"
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
+                    <input
+                        type="number"
+                        name="commission_value"
+                        value={formData.commission_value}
+                        onChange={handleChange}
+                        placeholder="Commission Value"
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
@@ -694,7 +661,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     >
                         <option value="">Select Payment Term</option>
                         {paymentTermOptions.map((option) => (
-                            <option key={option.id} value={option.name}>
+                            <option key={option.id} value={option.id}>
                                 {option.name}
                             </option>
                         ))}
@@ -711,17 +678,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="commission_rate" className="block text-sm font-medium text-gray-700">Commission Rate</label>
-                    <input
-                        type="number"
-                        name="commission_rate"
-                        value={formData.commission_rate}
-                        onChange={handleChange}
-                        placeholder="Commission Rate"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+               
                 <div>
                     <label htmlFor="logistic_provider" className="block text-sm font-medium text-gray-700">Logistic Provider</label>
                     <input
@@ -926,17 +883,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="markings_in_packaging" className="block text-sm font-medium text-gray-700">Markings in Packaging</label>
-                    <input
-                        type="text"
-                        name="markings_in_packaging"
-                        value={formData.markings_in_packaging}
-                        onChange={handleChange}
-                        placeholder="Markings in Packaging"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+               
                 <div>
                     <label htmlFor="container_shipment_size" className="block text-sm font-medium text-gray-700">Container Shipment Size</label>
                     <select
@@ -990,7 +937,7 @@ const TradeForm = ({ mode = 'add' }) => {
             <div >
                 {formData.tradeProducts.map((product, index) => (
                     <>
-                        <div key={index} className="grid grid-cols-5 gap-4 mb-4 justify-between items-end px-4 py-2">
+                        <div key={index} className="grid grid-cols-5 gap-2 mb-4 justify-between items-end px-4 py-2">
                             <div>
                                 <label htmlFor="product_code" className="block text-sm font-medium text-gray-700">Product Code</label>
                                 <input
@@ -1006,8 +953,8 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
                                 <select
                                     name="product_name"
-                                    value={formData.product_name}
-                                    onChange={handleChange}
+                                    value={product.product_name}
+                                    onChange={(e) => handleChange(e, index, 'products')}
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 >
                                     <option value="">Select Product Name</option>
@@ -1061,6 +1008,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     placeholder="Total Contract Qty"
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    readOnly={isContractBalanceQtyReadOnly}
                                 />
                             </div>
                             
@@ -1102,6 +1050,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     placeholder="Contract Balance Qty"
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    readOnly={isContractBalanceQtyReadOnly}
                                 />
                             </div>
                            
@@ -1160,7 +1109,105 @@ const TradeForm = ({ mode = 'add' }) => {
                                     name="selected_currency_rate"
                                     value={product.selected_currency_rate}
                                     onChange={(e) => handleChange(e, index, 'products')}
-                                    placeholder=""
+                                    placeholder="Rate"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="rate_in_usd" className="block text-sm font-medium text-gray-700">Rate in USD</label>
+                                <input
+                                    type="number"
+                                    name="rate_in_usd"
+                                    value={product.rate_in_usd}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Rate in USD"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="product_value" className="block text-sm font-medium text-gray-700">Product Value</label>
+                                <input
+                                    type="number"
+                                    name="product_value"
+                                    value={product.product_value}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Product Value"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="mode_of_packing" className="block text-sm font-medium text-gray-700">Mode of Packing</label>
+                                <select
+                                    name="mode_of_packing"
+                                    value={product.mode_of_packing}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                >
+                                    <option value="">Select Packing</option>
+                                    {packingOptions.map((option) => (
+                                        <option key={option.id} value={option.id}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="rate_of_each_packing" className="block text-sm font-medium text-gray-700">Rate of Each packing</label>
+                                <input
+                                    type="number"
+                                    name="rate_of_each_packing"
+                                    value={product.rate_of_each_packing}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Rate of Each packing"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="qty_of_packing" className="block text-sm font-medium text-gray-700">Qty of packing</label>
+                                <input
+                                    type="number"
+                                    name="qty_of_packing"
+                                    value={product.qty_of_packing}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Qty of packing"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="total_packing_cost" className="block text-sm font-medium text-gray-700">Total Packing Cost</label>
+                                <input
+                                    type="number"
+                                    name="total_packing_cost"
+                                    value={product.total_packing_cost}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Total Packing Cost"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
+                                <select
+                                    name="packaging_supplier"
+                                    value={product.packaging_supplier}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                >
+                                    <option value="">Select Supplier</option>
+                                    {customerOptions.map((option) => (
+                                        <option key={option.id} value={option.id}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="markings_in_packaging" className="block text-sm font-medium text-gray-700">Markings in Packaging</label>
+                                <input
+                                    type="text"
+                                    name="markings_in_packaging"
+                                    value={product.markings_in_packaging}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Markings in Packaging"
                                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                                 />
                             </div>
