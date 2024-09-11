@@ -29,7 +29,7 @@ const TradeForm = ({ mode = 'add' }) => {
         contract_value: '',
         payment_term: '',
         advance_value_to_receive: '',
-        commission_rate: '',
+        
         commission_value: '',
         logistic_provider: '',
         estimated_logistic_cost: '',
@@ -77,6 +77,8 @@ const TradeForm = ({ mode = 'add' }) => {
                 rate_of_each_packing:'',
                 qty_of_packing:'',
                 total_packing_cost:'',
+                commission_rate: '',
+                total_commission: '',
             }
         ],
         tradeExtraCosts: [
@@ -278,6 +280,10 @@ const TradeForm = ({ mode = 'add' }) => {
                     if (name === 'contract_balance_qty') {
                         updatedProducts[index].total_contract_qty = value;
                     }
+                    if (name === 'commission_rate') {
+                        const trade_qty = parseFloat(updatedProducts[index].trade_qty) || 0;
+                        updatedProducts[index].total_commission = (value * trade_qty).toFixed(2);
+                    }
                     // Check if the changed field is one of the synchronized dropdowns
                     if (name === 'total_contract_qty_unit' || name === 'contract_balance_qty_unit' || name === 'trade_qty_unit') {
                         // Update both fields to the same value
@@ -302,9 +308,9 @@ const TradeForm = ({ mode = 'add' }) => {
                     }
 
                     const totalContractValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
-
+                    const commissionValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.total_commission) || 0), 0);
     
-                    return { ...prevState, tradeProducts: updatedProducts,contract_value: totalContractValue.toFixed(2) };
+                    return { ...prevState, tradeProducts: updatedProducts,contract_value: totalContractValue.toFixed(2),commission_value: commissionValue.toFixed(2) };
                 });
             } else if (section === 'extraCosts') {
                 setFormData((prevState) => {
@@ -348,6 +354,8 @@ const TradeForm = ({ mode = 'add' }) => {
                     rate_of_each_packing:'',
                     qty_of_packing:'',
                     total_packing_cost:'',
+                    commission_rate: '',
+                    total_commission: '',
                 }
             ]
         }));
@@ -618,17 +626,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="commission_rate" className="block text-sm font-medium text-gray-700">Commission Rate</label>
-                    <input
-                        type="number"
-                        name="commission_rate"
-                        value={formData.commission_rate}
-                        onChange={handleChange}
-                        placeholder="Commission Rate"
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+                
                 <div>
                     <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
                     <input
@@ -1212,12 +1210,34 @@ const TradeForm = ({ mode = 'add' }) => {
                                 />
                             </div>
                             <div>
+                                <label htmlFor="commission_rate" className="block text-sm font-medium text-gray-700">Commission Rate</label>
+                                <input
+                                    type="number"
+                                    name="commission_rate"
+                                    value={product.commission_rate}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Commission Rate"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="total_commission" className="block text-sm font-medium text-gray-700">Total Commission</label>
+                                <input
+                                    type="number"
+                                    name="total_commission"
+                                    value={product.total_commission}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Total Commission"
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                />
+                            </div>
+                            <div className="col-span-5 flex justify-end">
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveProduct(index)}
                                     className=" bg-red-500 text-white p-2 rounded"
                                 >
-                                    Remove
+                                    Remove Product
                                 </button>
                             </div>
 

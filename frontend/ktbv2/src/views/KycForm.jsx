@@ -29,6 +29,7 @@ const KycForm = ({ mode = 'add' }) => {
         swiftCode: '',
         accountNumber: '',
     });
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -76,8 +77,23 @@ const KycForm = ({ mode = 'add' }) => {
         }
     };
 
+    const validateForm = () => {
+        const newErrors = {};
+        for (const [key, value] of Object.entries(formData)) {
+          if (!value.trim()) {
+            newErrors[key] = 'This field is required';
+          }
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+      };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+          }
         // console.log(formData);
         const formDataToSend = new FormData();
 

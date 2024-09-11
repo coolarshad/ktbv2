@@ -110,14 +110,16 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
     });
   };
 
-  const advanceOptions = [
-    { value: 'PURCHASE ORDER' },
-    { value: 'PERFORMA INVOICE' },
-    { value: 'SALES BILL'},
-    { value: 'PURCHASE BILL' },
-    { value: 'BL'},
-];
+  const advanceWithinOptions = [
+    { value: 'PERFORMA INVOICE DATE' },
+    { value: 'PURCHASE ORDER DATE' },
 
+  ];
+  const paymentWithinOptions = [
+    { value: 'BL DATE' },
+    { value: 'SALES BILL DATE' },
+    { value: 'PURCHASE BILL DATE' },
+  ];
   return (
     <div>
       <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
@@ -172,7 +174,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
               className="border border-gray-300 p-2 rounded w-full"
             >
               <option value="" disabled>Select ---</option>
-              {advanceOptions.map((option) => (
+              {advanceWithinOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.value}
                 </option>
@@ -204,7 +206,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
               className="border border-gray-300 p-2 rounded w-full"
             >
               <option value="" disabled>Select ---</option>
-              {advanceOptions.map((option) => (
+              {paymentWithinOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.value}
                 </option>

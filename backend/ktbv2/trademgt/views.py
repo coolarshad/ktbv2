@@ -73,7 +73,7 @@ class TradeView(APIView):
             'contract_value': data.get('contract_value'),
             'payment_term': data.get('payment_term'),
             'advance_value_to_receive': data.get('advance_value_to_receive'),
-            'commission_rate': data.get('commission_rate'),
+            
             'commission_value': data.get('commission_value'),
             'logistic_provider': data.get('logistic_provider'),
             'estimated_logistic_cost': data.get('estimated_logistic_cost'),
@@ -127,6 +127,7 @@ class TradeView(APIView):
                 'total_packing_cost': data.get(f'tradeProducts[{i}].total_packing_cost'),
                 'packaging_supplier': data.get(f'tradeProducts[{i}].packaging_supplier'),
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
+                'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -260,7 +261,7 @@ class TradeView(APIView):
             'contract_value': data.get('contract_value'),
             'payment_term': data.get('payment_term'),
             'advance_value_to_receive': data.get('advance_value_to_receive'),
-            'commission_rate': data.get('commission_rate'),
+           
             'commission_value': data.get('commission_value'),
             'logistic_provider': data.get('logistic_provider'),
             'estimated_logistic_cost': data.get('estimated_logistic_cost'),
@@ -316,6 +317,7 @@ class TradeView(APIView):
                 'total_packing_cost': data.get(f'tradeProducts[{i}].total_packing_cost'),
                 'packaging_supplier': data.get(f'tradeProducts[{i}].packaging_supplier'),
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
+                'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
             }
             trade_products_data.append(product_data)
             i += 1

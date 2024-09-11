@@ -19,7 +19,7 @@ class Trade(models.Model):
     contract_value=models.FloatField(_("contract_value"))
     payment_term=models.CharField(_("payment_term"), max_length=100)
     advance_value_to_receive=models.FloatField(_("advance_value_to_receive"))
-    commission_rate=models.FloatField(_("commission_rate"))
+    
     commission_value=models.FloatField(_("commission_value"))
     logistic_provider=models.CharField(_("logistic_provider"), max_length=100)
     estimated_logistic_cost=models.FloatField(_("estimated_logistic_cost"))
@@ -87,6 +87,8 @@ class TradeProduct(models.Model):
     rate_of_each_packing=models.FloatField(_("rate_of_each_packing"))
     qty_of_packing=models.FloatField(_("qty_of_packing"))
     total_packing_cost=models.FloatField(_("total_packing_cost"))
+    commission_rate=models.FloatField(_("commission_rate"))
+    total_commission=models.FloatField(_("total_commission"))
 
 
     class Meta:
