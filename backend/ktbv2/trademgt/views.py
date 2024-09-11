@@ -128,6 +128,8 @@ class TradeView(APIView):
                 'packaging_supplier': data.get(f'tradeProducts[{i}].packaging_supplier'),
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
                 'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
+                'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
+                
             }
             trade_products_data.append(product_data)
             i += 1
@@ -318,6 +320,7 @@ class TradeView(APIView):
                 'packaging_supplier': data.get(f'tradeProducts[{i}].packaging_supplier'),
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
                 'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
+                'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
             }
             trade_products_data.append(product_data)
             i += 1

@@ -296,6 +296,8 @@ function TradeApproved() {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Commission Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Commission</th>
                  </tr>
                </thead>
                <tbody>
@@ -314,6 +316,8 @@ function TradeApproved() {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.commission_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_commission}</td>
                      
                    </tr>
                  ))}

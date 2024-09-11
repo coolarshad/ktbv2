@@ -318,6 +318,8 @@ function TradeApproval() {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Markings in Packaging</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Commission Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Commission</th>
                  </tr>
                </thead>
                <tbody>
@@ -344,6 +346,8 @@ function TradeApproval() {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packaging_supplier}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.commission_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_commission}</td>
                    </tr>
                  ))}
                </tbody>
