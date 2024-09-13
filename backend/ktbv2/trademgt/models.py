@@ -122,9 +122,9 @@ class TradeExtraCost(models.Model):
 class PaymentTerm(models.Model):
     name=models.CharField(_("name"), max_length=100)
     advance_in_percentage=models.FloatField(_("advance_in_percentage"))
-    advance_within=models.IntegerField(_("advance_within"))
+    advance_within=models.CharField(_("advance_within"), max_length=100)
     advance_from=models.CharField(_("advance_from"), max_length=100)
-    payment_within=models.IntegerField(_("payment_within"))
+    payment_within=models.CharField(_("payment_within"), max_length=100)
     payment_from=models.CharField(_("payment_from"), max_length=100)
 
     class Meta:

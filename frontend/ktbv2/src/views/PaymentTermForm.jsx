@@ -113,12 +113,14 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   const advanceWithinOptions = [
     { value: 'PERFORMA INVOICE DATE' },
     { value: 'PURCHASE ORDER DATE' },
+    { value: 'NA' },
 
   ];
   const paymentWithinOptions = [
     { value: 'BL DATE' },
     { value: 'SALES BILL DATE' },
     { value: 'PURCHASE BILL DATE' },
+    { value: 'NA' },
   ];
   return (
     <div>
@@ -155,7 +157,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
               Advance Within (days)
             </label>
             <input
-              type="number"
+              type="text"
               name="advance_within"
               value={formData.advance_within}
               onChange={handleChange}
@@ -187,7 +189,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
               Payment Within (days)
             </label>
             <input
-              type="number"
+              type="text"
               name="payment_within"
               value={formData.payment_within}
               onChange={handleChange}
