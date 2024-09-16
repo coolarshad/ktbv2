@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'ktbv2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join('/app/db_data', 'db.sqlite3'), #BASE_DIR / 'db.sqlite3',
     }
 }
 

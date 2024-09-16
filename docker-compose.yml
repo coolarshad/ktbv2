@@ -20,3 +20,4 @@ services:
       - "8000:8000"  # Port mapping for Django
     volumes:
       - ./backend/ktbv2:/backend
+      - ./db_data:/app/db_data  # Persist SQLite database in the host machine
