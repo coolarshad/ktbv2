@@ -18,17 +18,8 @@ services:
     container_name: backend_container
     ports:
       - "8000:8000"  # Expose Django on port 8000
-    environment:
-      # Ensure these match your PostgreSQL settings
-      - DATABASE_NAME=ktbv2_db
-      - DATABASE_USER=ktbv2_user
-      - DATABASE_PASSWORD=admin123
-      - DATABASE_HOST=148.72.247.191  # Referencing your local DB
-      - DATABASE_PORT=5432
     volumes:
       - ./backend/ktbv2:/app
+    
 
 # Optionally, you can define a custom network if needed, but this is not necessary for simple setups
-# networks:
-#   default:
-#     driver: bridge
