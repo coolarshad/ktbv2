@@ -57,11 +57,8 @@ function PreSalePurchase() {
     { value: 'trn__trn', label: 'TRN' },  // Trade TRN field in PreSalePurchase filter
     { value: 'trn__company', label: 'Company' },
     { value: 'trn__trade_type', label: 'Trade Type' },
-    { value: 'date', label: 'Date' },
     { value: 'doc_issuance_date', label: 'Document Issuance Date' },
-    { value: 'payment_term', label: 'Payment Term' },
-    { value: 'advance_due_date', label: 'Advance Due Date' },
-    { value: 'lc_due_date', label: 'LC Due Date' },
+   
     { value: 'remarks', label: 'Remarks' },
   ];
 

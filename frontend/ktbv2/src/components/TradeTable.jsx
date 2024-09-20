@@ -30,14 +30,14 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
             <tr key={index} onClick={() => onRowClick(trade.id)}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.company}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer_company_name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trd}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.reviewed} onChange={() => {}} />
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => {}} />
               </td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">

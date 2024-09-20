@@ -88,10 +88,15 @@ WSGI_APPLICATION = 'ktbv2.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join('/app/db_data', 'db.sqlite3'), #BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ktbv2_db',
+        'USER': 'ktbv2_user',
+        'PASSWORD': 'admin123',
+        'HOST': 'host.docker.internal',  # Refers to the PostgreSQL service name in Docker Compose
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
@@ -137,3 +142,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

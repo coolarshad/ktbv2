@@ -6,111 +6,122 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const getCurrentDate = () => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-        const day = String(today.getDate()).padStart(2, '0');
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+
+    const addDaysToDate = (days) => {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+        const resultDate = new Date(today);
+        resultDate.setDate(resultDate.getDate() + parseInt(days, 10));
+
+        const year = resultDate.getFullYear();
+        const month = String(resultDate.getMonth() + 1).padStart(2, '0');
+        const day = String(resultDate.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
-      };
+    };
 
     const [formData, setFormData] = useState({
         trn: '',
-        date: getCurrentDate(),
-        doc_issuance_date: '',
-        payment_term: '',
-        advance_due_date: '',
-        lc_due_date: '',
+        date: today,
+        doc_issuance_date: today,
         remarks: '',
+        documentRequired: [{ name: '' }], // Ensure all sections are initialized as arrays
         acknowledgedPI: [{ ackn_pi: null, ackn_pi_name: '' }],
         acknowledgedPO: [{ ackn_po: null, ackn_po_name: '' }]
     });
-    const [data, setData] = useState(null); 
-    const [trnOptions, setTrnOptions] = useState([]); 
-    const [paymentTermOptions, setPaymentTermOptions] = useState([]);
-    
+    const [data, setData] = useState(null);
+    const [trnOptions, setTrnOptions] = useState([]);
+    const [docOptions, setDocOptions] = useState([]);
+
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
-          const response = await axios.get(url, { params });  // Pass params to axios.get
-          setStateFunction(response.data);
+            const response = await axios.get(url, { params });
+            setStateFunction(response.data);
         } catch (error) {
-          console.error(`Error fetching data from ${url}:`, error);
+            console.error(`Error fetching data from ${url}:`, error);
         }
-      };
-    
-      // Combined useEffect for all API calls
-      useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
-        fetchData('/trademgt/payment-terms', {}, setPaymentTermOptions);  // Example without params
-      }, []);
+    };
 
+    useEffect(() => {
+        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);
+        fetchData('/trademgt/documents', {}, setDocOptions);
+    }, []);
 
-      useEffect(() => {
+    useEffect(() => {
         if (mode === 'update' && id) {
-          axios
-            .get(`/trademgt/pre-sales-purchases/${id}`)
-            .then(response => {
-              const data = response.data;
-              setFormData(prevState => ({
-                ...prevState,
-                trn: data.trn,
-                date: data.date,
-                doc_issuance_date: data.doc_issuance_date,
-                payment_term: data.payment_term,
-                advance_due_date: data.advance_due_date,
-                lc_due_date: data.lc_due_date,
-                remarks: data.remarks,
-                acknowledgedPI: data.acknowledgedPI || [{ ackn_pi: null, ackn_pi_name: '' }],
-                acknowledgedPO: data.acknowledgedPO || [{ ackn_po: null, ackn_po_name: '' }]
-              }));
-      
-              // Call the second API after the first one is complete
-              return axios.get(`/trademgt/print/${data.trn}`);
-            })
-            .then(response => {
-                setData(response.data)
-            })
-            .catch(error => {
-              console.error('There was an error fetching the data!', error);
-            });
+            axios
+                .get(`/trademgt/pre-sales-purchases/${id}`)
+                .then(response => {
+                    const data = response.data;
+                    setFormData(prevState => ({
+                        ...prevState,
+                        trn: data.trn,
+                        date: data.date,
+                        doc_issuance_date: data.doc_issuance_date,
+                        remarks: data.remarks,
+                        documentRequired: data.documentRequired || [{ name: '' }],
+                        acknowledgedPI: data.acknowledgedPI || [{ ackn_pi: null, ackn_pi_name: '' }],
+                        acknowledgedPO: data.acknowledgedPO || [{ ackn_po: null, ackn_po_name: '' }]
+                    }));
+                    return axios.get(`/trademgt/print/${data.trn}`);
+                })
+                .then(response => {
+                    setData(response.data);
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the data!', error);
+                });
         }
-      }, [mode, id]);
+    }, [mode, id]);
 
-    const handleChange = async (e, index, section) => {
+    const handleChange = async (e, index = null, section = null) => {
         const { name, value, type, files } = e.target;
-        
-        if (type === 'file') {
-          setFormData(prevState => {
-            const updatedSection = [...prevState[section]];
+      
+        if (type === 'file' && section) {
+          setFormData((prevState) => {
+            const updatedSection = prevState[section] ? [...prevState[section]] : []; // Handle undefined case
             updatedSection[index][name] = files[0];
             return { ...prevState, [section]: updatedSection };
           });
+        } else if (section) {
+          setFormData((prevState) => {
+            const updatedSection = prevState[section] ? [...prevState[section]] : []; // Handle undefined case
+            updatedSection[index][name] = value;
+            return { ...prevState, [section]: updatedSection };
+          });
         } else {
-            setFormData((prevState) => ({
-                ...prevState,
-                [name]: value,
-            }));
-         
+          // Handle updates for the top-level keys in formData
+          setFormData((prevState) => ({
+            ...prevState,
+            [name]: value,
+          }));
+      
           // Trigger API call when a specific field changes (e.g., "trn")
           if (name === 'trn') {
             try {
-                const response = await axios.get(`/trademgt/print/${value}/`);
-                setData(response.data)
-                
+              const response = await axios.get(`/trademgt/print/${value}/`);
+              setData(response.data);
+              console.log(value, response.data);
             } catch (error) {
               console.error('Error fetching data:', error);
             }
           }
         }
       };
-
-    
+      
 
     const handleAddRow = (section) => {
-        const newRow = section === 'acknowledgedPI' ? { ackn_pi: null, ackn_pi_name: '' } : { ackn_po: null, ackn_po_name: '' };
-        setFormData(prevState => ({
+        let newRow;
+        if (section === 'acknowledgedPI') {
+            newRow = { ackn_pi: null, ackn_pi_name: '' };
+        } else if (section === 'acknowledgedPO') {
+            newRow = { ackn_po: null, ackn_po_name: '' };
+        } else if (section === 'documentRequired') {
+            newRow = { name: '' };
+        }
+
+        setFormData((prevState) => ({
             ...prevState,
-            [section]: [...prevState[section], newRow]
+            [section]: prevState[section] ? [...prevState[section], newRow] : [newRow], // Ensure section is an array
         }));
     };
 
@@ -118,7 +129,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         const updatedSection = formData[section].filter((_, i) => i !== index);
         setFormData({
             ...formData,
-            [section]: updatedSection
+            [section]: updatedSection,
         });
     };
 
@@ -177,7 +188,9 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         { label: 'Country of Origin', text: data.country_of_origin || '' },
         { label: 'Customer Company Name', text: data.customer_company_name?.name || '' },
         { label: 'Address', text: data.address || '' },
-        { label: 'Packing', text: data.packing || '' },
+        { label: 'Payment Term', text: data.paymentTerm.name || '' },
+        { label: 'Advance Due Date', text: data.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.paymentTerm.advance_within) || '' },
+        { label: 'LC Due Date', text: data.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.paymentTerm.advance_within) || '' },
         { label: 'Bank Name Address', text: data.bank_name_address?.name || '' },
         { label: 'Account Number', text: data.bank_name_address?.account_number || '' },
         { label: 'SWIFT Code', text: data.bank_name_address?.swift_code || '' },
@@ -188,7 +201,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         { label: 'ETD', text: data.etd || '' },
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
-        { label: 'Container Shipment Size', text: data.container_shipment_size || '' },
+        { label: 'Container Shipment Size', text: data.shipmentSize.name || '' },
         { label: 'Remarks', text: data.remarks || '' },
       ]
     : [];
@@ -229,7 +242,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                  {data.trade_products.map(product => (
                    <tr key={product.id}>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                     
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
@@ -253,7 +266,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         id="trn"
                         name="trn"
                         value={formData.trn}
-                        onChange={handleChange}
+                        onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     >
                         <option value="">Select TRN</option>
@@ -286,45 +299,8 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div>
-                    <label htmlFor="payment_term" className="block text-sm font-medium text-gray-700">Payment Term</label>
-                    <select
-                        id="payment_term"
-                        name="payment_term"
-                        value={formData.payment_term}
-                        onChange={e => setFormData({ ...formData, payment_term: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select Payment Term</option>
-                        {paymentTermOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="advance_due_date" className="block text-sm font-medium text-gray-700">Advance Due Date</label>
-                    <input
-                        id="advance_due_date"
-                        name="advance_due_date"
-                        type="date"
-                        value={formData.advance_due_date}
-                        onChange={e => setFormData({ ...formData, advance_due_date: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="lc_due_date" className="block text-sm font-medium text-gray-700">LC Due Date</label>
-                    <input
-                        id="lc_due_date"
-                        name="lc_due_date"
-                        type="date"
-                        value={formData.lc_due_date}
-                        onChange={e => setFormData({ ...formData, lc_due_date: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+               
+            
                 <div>
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
                     <textarea
@@ -334,6 +310,51 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         onChange={e => setFormData({ ...formData, remarks: e.target.value })}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                </div>
+            </div>
+            <div className="mt-0 p-4">
+                <h3 className="text-lg font-medium text-gray-900">Documents Required</h3>
+                {formData.documentRequired.map((doc, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+
+                        <div>
+                            <label htmlFor={`doc_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
+                            <select
+                                id={`doc_name_${index}`}
+                                name="name"
+                                value={doc.name}
+                                onChange={(e) => handleChange(e, index, 'documentRequired')}
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            >
+                                <option value="">Select Document</option>
+                                {docOptions.map(option => (
+                                    <option key={option.id} value={option.id}>
+                                        {option.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex items-end">
+
+                            <button
+                                    type="button"
+                                    onClick={() => handleRemoveRow('documentRequired', index)}
+                                    className="px-3 py-1 bg-red-600 text-white rounded-md"
+                                >
+                                    Remove
+                                </button>
+                           
+                        </div>
+                    </div>
+                ))}
+                <div className="text-right">
+                    <button
+                        type="button"
+                        onClick={() => handleAddRow('documentRequired')}
+                        className="mt-2 px-3 py-1 bg-green-600 text-white rounded-md"
+                    >
+                        Add Document
+                    </button>
                 </div>
             </div>
             {/* Acknowledged PI Section */}
@@ -368,7 +389,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                             />
                         </div>
                         <div className="flex items-end">
-                            {index > 0 && (
+                            
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveRow('acknowledgedPI', index)}
@@ -376,7 +397,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 >
                                     Remove
                                 </button>
-                            )}
+                           
                         </div>
                     </div>
                 ))}
@@ -419,7 +440,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                             />
                         </div>
                         <div className="flex items-end">
-                            {index > 0 && (
+                            
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveRow('acknowledgedPO', index)}
@@ -427,7 +448,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 >
                                     Remove
                                 </button>
-                            )}
+                            
                         </div>
                     </div>
                 ))}

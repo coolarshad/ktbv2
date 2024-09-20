@@ -27,6 +27,39 @@ class TradeProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = TradeProduct
         fields = '__all__'
+        
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+    def get_supplier_details(self, obj):
+        try:
+            instance = Kyc.objects.get(id=obj.packaging_supplier)  # or use another field to identify the company
+            return KycSerializer(instance).data
+        except Kyc.DoesNotExist:
+            return None
+    def get_packing_details(self, obj):
+        try:
+            instance = Packing.objects.get(id=obj.mode_of_packing)  # or use another field to identify the company
+            return PackingSerializer(instance).data
+        except Packing.DoesNotExist:
+            return None
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        # Debugging: Check the original URL
+        print("Original LOI URL:", ret['loi'])
+        # Add the serialized company details to the response
+        ret['productName'] = self.get_product_details(instance)
+        ret['supplier'] = self.get_supplier_details(instance)
+        ret['packing'] = self.get_packing_details(instance)
+
+        # Debugging: Check the URL after adding details
+        print("Modified LOI URL:", ret['loi'])
+        return ret
 
 class TradeExtraCostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,6 +94,60 @@ class TradeSerializer(serializers.ModelSerializer):
             trade.related_trades.set(related_trades_data)
         return trade
 
+    ## additional related info
+    def get_company_details(self, obj):
+        try:
+            company_instance = Company.objects.get(id=obj.company)  
+            return CompanySerializer(company_instance).data
+        except Company.DoesNotExist:
+            return None 
+
+    def get_kyc_details(self, obj):
+        try:
+            kyc_instance = Kyc.objects.get(id=obj.customer_company_name)  # or use another field to identify the company
+            return KycSerializer(kyc_instance).data
+        except Kyc.DoesNotExist:
+            return None
+    
+    def get_bank_details(self, obj):
+        try:
+            instance = Bank.objects.get(id=obj.bank_name_address)
+            return BankSerializer(instance).data
+        except Bank.DoesNotExist:
+            return None
+    def get_currency_details(self, obj):
+        try:
+            instance = Currency.objects.get(id=obj.currency_selection)
+            return CurrencySerializer(instance).data
+        except Currency.DoesNotExist:
+            return None
+    def get_payment_term_details(self, obj):
+        try:
+            instance = PaymentTerm.objects.get(id=obj.payment_term)
+            return PaymentTermSerializer(instance).data
+        except PaymentTerm.DoesNotExist:
+            return None
+    def get_container_details(self, obj):
+        try:
+            instance = ShipmentSize.objects.get(id=obj.payment_term)
+            return ShipmentSizeSerializer(instance).data
+        except ShipmentSize.DoesNotExist:
+            return None
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['companyName'] = self.get_company_details(instance)
+        ret['customer'] = self.get_kyc_details(instance)
+        ret['bank'] = self.get_bank_details(instance)
+        ret['currency'] = self.get_currency_details(instance)
+        ret['paymentTerm'] = self.get_payment_term_details(instance)
+        ret['shipmentSize'] = self.get_container_details(instance)
+        
+        return ret
+
 
 class PrintSerializer(serializers.ModelSerializer):
     trade_products = TradeProductSerializer(many=True, read_only=True)
@@ -75,6 +162,21 @@ class PrintSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trade
         fields = '__all__'    
+    
+    def get_currency_details(self, obj):
+        try:
+            instance = Currency.objects.get(id=obj.currency_selection)
+            return CurrencySerializer(instance).data
+        except Currency.DoesNotExist:
+            return None
+
+    def get_payment_term_details(self, obj):
+        try:
+            instance = PaymentTerm.objects.get(id=obj.payment_term)
+            return PaymentTermSerializer(instance).data
+        except PaymentTerm.DoesNotExist:
+            return None
+
     def get_company_details(self, obj):
         # Fetch company details manually
         try:
@@ -101,6 +203,14 @@ class PrintSerializer(serializers.ModelSerializer):
             return BankSerializer(instance).data
         except Bank.DoesNotExist:
             return None  # Or handle it as needed
+    
+    def get_container_details(self, obj):
+        try:
+            instance = ShipmentSize.objects.get(id=obj.payment_term)
+            return ShipmentSizeSerializer(instance).data
+        except ShipmentSize.DoesNotExist:
+            return None
+
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
@@ -110,6 +220,9 @@ class PrintSerializer(serializers.ModelSerializer):
         ret['company'] = self.get_company_details(instance)
         ret['customer_company_name'] = self.get_kyc_details(instance)
         ret['bank_name_address'] = self.get_bank_details(instance)
+        ret['paymentTerm'] = self.get_payment_term_details(instance)
+        ret['shipmentSize'] = self.get_container_details(instance)
+        ret['currency'] = self.get_currency_details(instance)
         
         return ret
 
@@ -126,6 +239,44 @@ class PreSalePurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = PreSalePurchase
         fields = '__all__'
+
+    def get_trade_details(self, obj):
+        try:
+            instance = Trade.objects.get(id=obj.trn.id)
+            return TradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None
+    
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['trade'] = self.get_trade_details(instance)
+       
+        return ret
+
+class PreDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PreDocument
+        fields = '__all__'
+    
+    def get_doc_details(self, obj):
+        try:
+            instance = DocumentsRequired.objects.get(id=obj.name)
+            return DocumentsRequiredSerializer(instance).data
+        except DocumentsRequired.DoesNotExist:
+            return None
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+     
+        ret['doc'] = self.get_doc_details(instance)
+        
+        return ret
 
 class AcknowledgedPISerializer(serializers.ModelSerializer):
     class Meta:
@@ -410,12 +561,57 @@ class PurchasePendingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchasePending
         fields = '__all__'
+    
+    def get_trade_details(self, obj):
+        try:
+            instance = Trade.objects.get(id=obj.payment_term)
+            return TradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['trade'] = self.get_trade_details(instance)
+        ret['productName'] = self.get_product_details(instance)
+    
+        return ret
 
 class SalesPendingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesPending
         fields = '__all__'
 
+    def get_trade_details(self, obj):
+        try:
+            instance = Trade.objects.get(id=obj.payment_term)
+            return TradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['trade'] = self.get_trade_details(instance)
+        ret['productName'] = self.get_product_details(instance)
+    
+        return ret
 
 class InventorySerializer(serializers.ModelSerializer):
     class Meta:

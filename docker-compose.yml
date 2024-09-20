@@ -1,23 +1,34 @@
 version: '3.8'
 
 services:
-  react:
+  frontend:
     build:
       context: ./frontend/ktbv2
       dockerfile: Dockerfile
-    container_name: react_container
+    container_name: frontend_container
     ports:
-      - "5173:80"  # Port mapping for Vite React
-    # volumes:
-    #   - ./frontend/ktbv2:/app
+      - "5173:80"  # Serve frontend on port 80
+    depends_on:
+      - backend  # Ensure backend starts before frontend
 
-  web:
+  backend:
     build:
       context: ./backend/ktbv2
       dockerfile: Dockerfile
-    container_name: web_container
+    container_name: backend_container
     ports:
-      - "8000:8000"  # Port mapping for Django
+      - "8000:8000"  # Expose Django on port 8000
+    environment:
+      # Ensure these match your PostgreSQL settings
+      - DATABASE_NAME=ktbv2_db
+      - DATABASE_USER=ktbv2_user
+      - DATABASE_PASSWORD=admin123
+      - DATABASE_HOST=host.docker.internal  # Referencing your local DB
+      - DATABASE_PORT=5432
     volumes:
-      - ./backend/ktbv2:/backend
-      - ./db_data:/app/db_data  # Persist SQLite database in the host machine
+      - ./backend/ktbv2:/app
+
+# Optionally, you can define a custom network if needed, but this is not necessary for simple setups
+# networks:
+#   default:
+#     driver: bridge

@@ -426,7 +426,8 @@ const TradeForm = ({ mode = 'add' }) => {
             })
                 .then(response => {
                     console.log('Trade added successfully!', response.data);
-                    navigate(`/trade-approval`);
+                    navigate(-1);
+                               
                 })
                 .catch(error => {
                     console.error('There was an error adding the trade!', error);
@@ -439,7 +440,7 @@ const TradeForm = ({ mode = 'add' }) => {
             })
                 .then(response => {
                     console.log('Trade updated successfully!', response.data);
-                    navigate(`/trade-approval`);
+                    navigate(-1);
                 })
                 .catch(error => {
                     console.error('There was an error updating the trade!', error);

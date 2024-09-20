@@ -72,6 +72,11 @@ function TradeApproved() {
       }
     }
   };
+
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
   return (
     <>
       <div className="w-full h-full rounded bg-slate-200  p-3	">
@@ -105,7 +110,7 @@ function TradeApproved() {
                 <tbody>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Company </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.company}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.companyName.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
@@ -125,42 +130,26 @@ function TradeApproved() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Customer Company Name </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.customer_company_name}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.customer.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Address </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.address}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packing}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost of Packing per Each </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.cost_of_packing_per_each}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Packing Cost </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.total_packing_cost}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packaging Supplier </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packaging_supplier}</td>
-                  </tr>
                   
+                
+                 
+                 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Currency Selection </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.currency_selection}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.currency.name}</td>
                   </tr>
 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Exchange Rate </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.exchange_rate}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Rate in USD </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.rate_in_usd}</td>
-                  </tr>
+                 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_agent}</td>
@@ -171,15 +160,16 @@ function TradeApproved() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.payment_term}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Value to Receive</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.advance_value_to_receive}</td>
                   </tr>
+                  
                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Rate</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_rate}</td>
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_value}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
@@ -199,7 +189,7 @@ function TradeApproved() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bank_name_address}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bank.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>
@@ -254,13 +244,10 @@ function TradeApproved() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Notify Party in BL</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.notify_party_in_bl}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Markings in Packaging</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.markings_in_packaging}</td>
-                  </tr>
+                 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.container_shipment_size}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.shipmentSize.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fee</td>
@@ -296,6 +283,14 @@ function TradeApproved() {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in USD</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Value</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Mode of Packing</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate of Each packing</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty of packing</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Markings in Packaging</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Commission Rate</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Commission</th>
                  </tr>
@@ -304,9 +299,9 @@ function TradeApproved() {
                  {selectedTrade.trade_products.map(product => (
                    <tr key={product.id}>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name_for_client}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm"><a href={product.loi} target="_blank" rel="noopener noreferrer">View LOI</a></td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm underline"><a href={`${BACKEND_URL}${product.loi}`} target="_blank" rel="noopener noreferrer">View</a></td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
@@ -316,9 +311,16 @@ function TradeApproved() {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_in_usd}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_value}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packing.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_of_each_packing}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.qty_of_packing}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.commission_rate}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_commission}</td>
-                     
                    </tr>
                  ))}
                </tbody>
@@ -341,11 +343,11 @@ function TradeApproved() {
                  ))}
                </tbody>
              </table>
-             {/* {selectedTrade.approved ? '' : 
+             {selectedTrade.approved ? '' : 
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={approveTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
              </div>
-             } */}
+             }
            </div>
          </div>
         )}

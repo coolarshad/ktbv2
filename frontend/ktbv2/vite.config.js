@@ -15,4 +15,7 @@ export default defineConfig({
     port: 5173, // Ensure the server listens on port 5173
     host: '0.0.0.0', // Allows access from outside the container
   },
+  define: {
+    'process.env': process.env,
+  },
 })

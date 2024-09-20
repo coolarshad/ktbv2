@@ -14,6 +14,9 @@ function TradeApproval() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
 
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+
+
   useEffect(() => {
     const params = {
       [`approved`]: false,
@@ -134,7 +137,7 @@ function TradeApproval() {
                 <tbody>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Company </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.company}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.companyName.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
@@ -154,7 +157,7 @@ function TradeApproval() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Customer Company Name </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.customer_company_name}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.customer.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Address </td>
@@ -166,7 +169,7 @@ function TradeApproval() {
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Currency Selection </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.currency_selection}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.currency.name}</td>
                   </tr>
 
                   <tr className="border-b border-gray-200">
@@ -184,16 +187,13 @@ function TradeApproval() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.payment_term}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Value to Receive</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.advance_value_to_receive}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Rate</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_rate}</td>
-                  </tr>
+                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_value}</td>
@@ -216,7 +216,7 @@ function TradeApproval() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bank_name_address}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.bank.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>
@@ -274,7 +274,7 @@ function TradeApproval() {
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.container_shipment_size}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.shipmentSize.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fee</td>
@@ -326,9 +326,9 @@ function TradeApproval() {
                  {selectedTrade.trade_products.map(product => (
                    <tr key={product.id}>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name_for_client}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm"><a href={product.loi} target="_blank" rel="noopener noreferrer">View LOI</a></td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm"><a href={`${BACKEND_URL}${product.loi}`} target="_blank" rel="noopener noreferrer">View</a></td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
@@ -340,11 +340,11 @@ function TradeApproval() {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_in_usd}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_value}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.mode_of_packing}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packing.name}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_of_each_packing}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.qty_of_packing}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packaging_supplier}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.commission_rate}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_commission}</td>

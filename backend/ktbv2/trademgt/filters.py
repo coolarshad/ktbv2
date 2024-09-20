@@ -24,6 +24,7 @@ class TradeFilter(django_filters.FilterSet):
             'logistic_provider': ['exact', 'icontains'],
             'bank_name_address': ['exact', 'icontains'],
             'approved': ['exact'],
+            'commission_value': ['exact', 'gte', 'lte'],
         }
 
 class TradeProductFilter(django_filters.FilterSet):
@@ -55,9 +56,7 @@ class PreSalePurchaseFilter(django_filters.FilterSet):
             'trn__company': ['exact', 'icontains'],
             'date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
             'doc_issuance_date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
-            'payment_term': ['exact', 'icontains'],
-            'advance_due_date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
-            'lc_due_date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
+           
             'remarks': ['exact', 'icontains'],
         }
 

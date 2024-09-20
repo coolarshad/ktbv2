@@ -525,15 +525,18 @@ class PreSalePurchaseView(APIView):
                 return Response({'detail': 'PreSalePurchase not found.'}, status=status.HTTP_404_NOT_FOUND)
 
             pre_sp_serializer = PreSalePurchaseSerializer(pre_sp)
+            docs = PreDocument.objects.filter(presalepurchase=pre_sp)
             ack_pis = AcknowledgedPI.objects.filter(presalepurchase=pre_sp)
             ack_pos = AcknowledgedPO.objects.filter(presalepurchase=pre_sp)
 
+            docs_serializer = PreDocumentSerializer(docs, many=True)
             ack_pis_serializer = AcknowledgedPISerializer(ack_pis, many=True)
             ack_pos_serializer = AcknowledgedPOSerializer(ack_pos, many=True)
 
             response_data = pre_sp_serializer.data
             response_data['acknowledgedPI'] = ack_pis_serializer.data
             response_data['acknowledgedPO'] = ack_pos_serializer.data
+            response_data['documentRequired'] = docs_serializer.data
 
             return Response(response_data)
 
@@ -551,14 +554,17 @@ class PreSalePurchaseView(APIView):
                 pre_sp_serializer = PreSalePurchaseSerializer(pre_sp)
                 
                 # Get related acknowledgedPI and acknowledgedPO for the current PreSalePurchase
+                docs = PreDocument.objects.filter(presalepurchase=pre_sp)
                 ack_pis = AcknowledgedPI.objects.filter(presalepurchase=pre_sp)
                 ack_pos = AcknowledgedPO.objects.filter(presalepurchase=pre_sp)
 
+                docs_serializer = PreDocumentSerializer(docs, many=True)
                 ack_pis_serializer = AcknowledgedPISerializer(ack_pis, many=True)
                 ack_pos_serializer = AcknowledgedPOSerializer(ack_pos, many=True)
 
                 # Add related data to serialized PreSalePurchase data
                 pre_sp_data = pre_sp_serializer.data
+                pre_sp_data['documentRequired'] = docs_serializer.data
                 pre_sp_data['acknowledgedPI'] = ack_pis_serializer.data
                 pre_sp_data['acknowledgedPO'] = ack_pos_serializer.data
 
@@ -574,14 +580,20 @@ class PreSalePurchaseView(APIView):
             'trn': data.get('trn'),
             'date': data.get('date'),
             'doc_issuance_date': data.get('doc_issuance_date'),
-            'payment_term': data.get('payment_term'),
-            'advance_due_date': data.get('advance_due_date'),
-            'lc_due_date': data.get('lc_due_date'),
+          
             'remarks': data.get('remarks'),
         }
-
+        document_required_data=[]
         acknowledged_pi_data = []
         acknowledged_po_data = []
+
+        k = 0
+        while f'documentRequired[{k}].name' in data:
+            doc_data = {
+                'name': data.get(f'documentRequired[{k}].name'),
+            }
+            document_required_data.append(doc_data)
+            k += 1
 
         i = 0
         while f'acknowledgedPI[{i}].ackn_pi_name' in data:
@@ -608,9 +620,15 @@ class PreSalePurchaseView(APIView):
             else:
                 return Response(pre_sp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
+            if document_required_data:
+                try:
+                    docs = [PreDocument(**item, presalepurchase=pre_sp) for item in document_required_data]
+                    PreDocument.objects.bulk_create(docs)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
             if acknowledged_pi_data:
                 try:
-                    
                     pis = [AcknowledgedPI(**item, presalepurchase=pre_sp) for item in acknowledged_pi_data]
                     AcknowledgedPI.objects.bulk_create(pis)
                 except Exception as e:
@@ -641,14 +659,20 @@ class PreSalePurchaseView(APIView):
             'trn': data.get('trn'),
             'date': data.get('date'),
             'doc_issuance_date': data.get('doc_issuance_date'),
-            'payment_term': data.get('payment_term'),
-            'advance_due_date': data.get('advance_due_date'),
-            'lc_due_date': data.get('lc_due_date'),
+            
             'remarks': data.get('remarks'),
         }
-
+        document_required_data=[]
         acknowledged_pi_data = []
         acknowledged_po_data = []
+
+        k = 0
+        while f'documentRequired[{k}].name' in data:
+            doc_data = {
+                'name': data.get(f'documentRequired[{k}].name'),
+            }
+            document_required_data.append(doc_data)
+            k += 1
 
         i = 0
         while f'acknowledgedPI[{i}].ackn_pi_name' in data:
@@ -674,6 +698,15 @@ class PreSalePurchaseView(APIView):
                 pre_sp = pre_sp_serializer.save()
             else:
                 return Response(pre_sp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            if document_required_data:
+                # Clear existing trade products and add new ones
+                PreDocument.objects.filter(presalepurchase=pre_sp).delete()
+                try:
+                    docs = [PreDocument(**item, presalepurchase=pre_sp) for item in document_required_data]
+                    PreDocument.objects.bulk_create(docs)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
            
             if acknowledged_pi_data:
                 # Clear existing trade products and add new ones
@@ -706,6 +739,7 @@ class PreSalePurchaseView(APIView):
 
         with transaction.atomic():
             # Delete related trade products and extra costs
+            PreDocument.objects.filter(presalepurchase=pre_sp).delete()
             AcknowledgedPI.objects.filter(presalepurchase=pre_sp).delete()
             AcknowledgedPO.objects.filter(presalepurchase=pre_sp).delete()
             pre_sp.delete()
@@ -715,6 +749,10 @@ class PreSalePurchaseView(APIView):
 class AcknowledgedPIViewSet(viewsets.ModelViewSet):
     queryset = AcknowledgedPI.objects.all()
     serializer_class = AcknowledgedPISerializer
+
+class PreDocumentViewSet(viewsets.ModelViewSet):
+    queryset = PreDocument.objects.all()
+    serializer_class = PreDocumentSerializer
 
 class AcknowledgedPOViewSet(viewsets.ModelViewSet):
     queryset = AcknowledgedPO.objects.all()

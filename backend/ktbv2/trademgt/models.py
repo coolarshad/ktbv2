@@ -143,9 +143,9 @@ class PreSalePurchase(models.Model):
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
     # trn=models.CharField(_("trn"), max_length=50)
     doc_issuance_date=models.DateField(_("doc_issuance_date"), auto_now=False, auto_now_add=False)
-    payment_term=models.CharField(_("payment_term"), max_length=100)
-    advance_due_date=models.DateField(_("advance_due_date"), auto_now=False, auto_now_add=False)
-    lc_due_date=models.DateField(_("lc_due_date"), auto_now=False, auto_now_add=False)
+    # payment_term=models.CharField(_("payment_term"), max_length=100)
+    # advance_due_date=models.DateField(_("advance_due_date"), auto_now=False, auto_now_add=False)
+    # lc_due_date=models.DateField(_("lc_due_date"), auto_now=False, auto_now_add=False)
     remarks=models.CharField(_("payment_term"), max_length=100)
 
     class Meta:
@@ -157,6 +157,20 @@ class PreSalePurchase(models.Model):
 
     def get_absolute_url(self):
         return reverse("PreSalePurchase_detail", kwargs={"pk": self.pk})
+
+class PreDocument(models.Model):
+    presalepurchase=models.ForeignKey("PreSalePurchase", verbose_name=_("presalepurchase"), on_delete=models.CASCADE)
+    name=models.CharField(_("name"), max_length=50)
+
+    class Meta:
+        verbose_name = _("PreDocument")
+        verbose_name_plural = _("PreDocuments")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("PreDocument_detail", kwargs={"pk": self.pk})
 
 class AcknowledgedPI(models.Model):
     presalepurchase=models.ForeignKey("PreSalePurchase", verbose_name=_("presalepurchase"), on_delete=models.CASCADE)

@@ -8,6 +8,7 @@ import Modal from './Modal';
 import PrintModal from './PrintModal';
 import axios from '../axiosConfig';
 import { toWords } from 'number-to-words';
+import { today, addDaysToDate } from '../dateUtils';
 
 const PreSPTable = ({ data, onDelete }) => {
   const navigate = useNavigate();  
@@ -19,6 +20,9 @@ const PreSPTable = ({ data, onDelete }) => {
   const [totalTradeQuantity, setTotalTradeQuantity] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   // const [textAmount, setTextAmount] = useState(0);
+
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -40,7 +44,7 @@ const PreSPTable = ({ data, onDelete }) => {
   
       // Calculate sums directly from the fetched data
       const totalQuantity = response.data.trade_products?.reduce((sum, product) => sum + Number(product.trade_qty), 0);
-      const totalAmountSum = response.data.trade_products?.reduce((sum, product) => sum + Number(product.trade_qty*product.selected_currency_rate), 0);
+      const totalAmountSum = response.data.trade_products?.reduce((sum, product) => sum + Number(product.product_value), 0);
   
       // Update state with the calculated sums
       setTotalTradeQuantity(totalQuantity);
@@ -83,8 +87,9 @@ const PreSPTable = ({ data, onDelete }) => {
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Doc Issuance Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Payment Term</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Due Date</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Due Date</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th> */}
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th> */}
@@ -98,10 +103,11 @@ const PreSPTable = ({ data, onDelete }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.doc_issuance_date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.payment_term}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.customer.name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.paymentTerm.name}</td>
              
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.lc_due_date}</td>
+              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.lc_due_date}</td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.remarks}</td>
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
@@ -178,13 +184,10 @@ const PreSPTable = ({ data, onDelete }) => {
                             <p className='font-bold text-sm'>INCOTERM</p>
                             <p className='text-sm uppercase'>{selectedTrade.incoterm}</p>
                           </div>
-                          <div className="border-b border-black p-2">
-                            <p className='font-bold text-sm'>Packing</p>
-                            <p className='text-sm uppercase'>{selectedTrade.packing}</p>
-                          </div>
+                         
                           <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>CONTAINER SIZE</p>
-                            <p className='text-sm uppercase'>{selectedTrade.container_shipment_size}</p>
+                            <p className='text-sm uppercase'>{selectedTrade.shipmentSize.name}</p>
                           </div>
                           <div className="p-2">
                             <p className='font-bold text-sm'>
@@ -203,7 +206,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           </div>
                           <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>Terms of Payment</p>
-                            <p className='text-sm uppercase'>{selectedTrade.payment_term}</p>
+                            <p className='text-sm uppercase'>{selectedTrade.paymentTerm.name}</p>
                           </div>
                           <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>Port of Loading</p>
@@ -237,19 +240,19 @@ const PreSPTable = ({ data, onDelete }) => {
                         <tbody>
                           {selectedTrade.trade_products.map((product, index) => (
                             <tr key={index}>
-                              <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
-                              <td className="border-l border-r border-black p-1 font-bold text-sm">
-                                {product.product_name_for_client ? product.product_name_for_client : product.product_name}
-                              </td>
-                              <td className="border-l border-r border-black p-1 text-sm">{product.hs_code}</td>
-                              <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty}</td>
-                              <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty_unit}</td>
-                              <td className="border-l border-r border-black p-1 text-sm">{product.selected_currency_rate}</td>
-                              <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency_selection}</td>
-                              <td className="border-l border-r border-black p-1 text-sm">{product.tolerance}</td>
-                              <td className="border-l border-r border-black p-1 text-right text-sm">
-                                {product.trade_qty * selectedTrade.rate_in_usd}
-                              </td>
+                               <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
+                                <td className="border-l border-r border-black p-1 font-bold text-sm">
+                                  {product.product_name_for_client ? product.product_name_for_client : product.productName.name}
+                                </td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.hs_code}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty_unit}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.selected_currency_rate}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency.name}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{product.tolerance}</td>
+                                <td className="border-l border-r border-black p-1 text-right text-sm">
+                                  {product.product_value}
+                                </td>
                             </tr>
                           ))}
                           {Array.from({ length: 18 - selectedTrade.trade_products.length }, (_, index) => (
@@ -287,15 +290,15 @@ const PreSPTable = ({ data, onDelete }) => {
                         <p className='text-sm'>Amount Chargeable (in words)</p>
                         <p className='font-bold mb-2 text-sm uppercase'>{selectedTrade.currency_selection} {toWords(totalAmount)} Only</p>
                         <p className='text-sm'>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
-                        {selectedPresp.acknowledgedPO && selectedPresp.acknowledgedPO.length > 0 ? (
-                          selectedPresp.acknowledgedPO.map((product, index) => (
+                        {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
+                          selectedPresp.documentRequired.map((product, index) => (
                             <div key={index}>
-                              <p className='text-sm'>{index + 1}. {product.ackn_po_name}</p> {/* Replace 'someField1' with the actual field name */}
+                              <p className='text-sm'>{index + 1}. {product.doc.name}</p> {/* Replace 'someField1' with the actual field name */}
 
                             </div>
                           ))
                         ) : (
-                          <p>No acknowledged PO data available.</p>
+                          <p>No Document data available.</p>
                         )}
 
                       </div>
@@ -373,13 +376,10 @@ const PreSPTable = ({ data, onDelete }) => {
                               <p className='font-bold'>INCOTERM</p>
                               <p className='uppercase'>{selectedTrade.incoterm}</p>
                             </div>
-                            <div className="border-b border-black p-2">
-                              <p className='font-bold'>Packing</p>
-                              <p className='uppercase'>{selectedTrade.packing}</p>
-                            </div>
+                            
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>CONTAINER SIZE</p>
-                              <p className='uppercase'>{selectedTrade.container_shipment_size}</p>
+                              <p className='uppercase'>{selectedTrade.shipmentSize.name}</p>
                             </div>
                             <div className="p-2">
                               <p className='font-bold'>
@@ -398,15 +398,15 @@ const PreSPTable = ({ data, onDelete }) => {
                             </div>
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>Terms of Payment</p>
-                              <p className='uppercase'>{selectedTrade.payment_term}</p>
+                              <p className='uppercase'>{selectedTrade.paymentTerm.name}</p>
                             </div>
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>ADVANCE DUE DATE /</p>
-                              <p className='uppercase'>{selectedPresp.advance_due_date}</p>
+                              <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
                             </div>
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>LC DUE DATE</p>
-                              <p className='uppercase'>{selectedPresp.lc_due_date}</p>
+                              <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
                             </div>
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>Port of Loading</p>
@@ -441,16 +441,16 @@ const PreSPTable = ({ data, onDelete }) => {
                               <tr key={index}>
                                 <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
-                                  {product.product_name_for_client ? product.product_name_for_client : product.product_name}
+                                  {product.product_name_for_client ? product.product_name_for_client : product.productName.name}
                                 </td>
                                 <td className="border-l border-r border-black p-1 text-sm">{product.hs_code}</td>
                                 <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty}</td>
                                 <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty_unit}</td>
                                 <td className="border-l border-r border-black p-1 text-sm">{product.selected_currency_rate}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency_selection}</td>
+                                <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency.name}</td>
                                 <td className="border-l border-r border-black p-1 text-sm">{product.tolerance}</td>
                                 <td className="border-l border-r border-black p-1 text-right text-sm">
-                                  {product.trade_qty * selectedTrade.rate_in_usd}
+                                  {product.product_value}
                                 </td>
                               </tr>
                             ))}
@@ -487,17 +487,17 @@ const PreSPTable = ({ data, onDelete }) => {
                         {/* Row 1 */}
                         <div className=" px-2 py-1">
                           <p>Amount Chargeable (in words)</p>
-                          <p className='font-bold uppercase'>{selectedTrade.currency_selection} {toWords(totalAmount)} Only</p>
+                          <p className='font-bold uppercase'>{selectedTrade.currency.name} {toWords(totalAmount)} Only</p>
                           <p>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
-                          {selectedPresp.acknowledgedPI && selectedPresp.acknowledgedPI.length > 0 ? (
-                          selectedPresp.acknowledgedPI.map((product, index) => (
+                          {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
+                          selectedPresp.documentRequired.map((product, index) => (
                             <div key={index}>
-                              <p className='text-sm'>{index + 1}. {product.ackn_pi_name}</p> {/* Replace 'someField1' with the actual field name */}
+                              <p className='text-sm'>{index + 1}. {product.doc.name}</p> {/* Replace 'someField1' with the actual field name */}
 
                             </div>
                           ))
                         ) : (
-                          <p>No acknowledged PO data available.</p>
+                          <p>No Document data available.</p>
                         )}
                           <p className='mt-3 underline'>Declaration</p>
                           <p>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</p>
@@ -576,23 +576,20 @@ const PreSPTable = ({ data, onDelete }) => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Address </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.address}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.packing}</td>
-                  </tr>
+                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.payment_term}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPresp.advance_due_date}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</td>
                   </tr>
                  
                   
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Due Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPresp.lc_due_date}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
@@ -636,7 +633,7 @@ const PreSPTable = ({ data, onDelete }) => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.container_shipment_size}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.shipmentSize.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
@@ -665,13 +662,14 @@ const PreSPTable = ({ data, onDelete }) => {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing</th>
                  </tr>
                </thead>
                <tbody>
                  {selectedTrade.trade_products.map(product => (
                    <tr key={product.id}>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                      {/* <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name_for_client}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm"><a href={product.loi} target="_blank" rel="noopener noreferrer">View LOI</a></td> */}
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
@@ -683,15 +681,24 @@ const PreSPTable = ({ data, onDelete }) => {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packing.name}</td>
                    </tr>
                  ))}
                </tbody>
              </table>
+             <p className='my-2 underline'>Documents Required</p>
+              {selectedPresp.documentRequired && (
+                selectedPresp.documentRequired.map((product, index) => (
+                  <div key={index}>
+                    <p className='text-sm'>{index + 1}. {product.doc.name}</p>
+
+                  </div>
+                )))}
               <p className='my-2 underline'>Acknowledged PI</p>
               {selectedPresp.acknowledgedPI && (
                 selectedPresp.acknowledgedPI.map((product, index) => (
                   <div key={index}>
-                    <p className='text-sm'>{index + 1}. <a href={product.ackn_pi}>{product.ackn_pi_name}</a></p>
+                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_pi}`}>{product.ackn_pi_name}</a></p>
 
                   </div>
                 )))}
@@ -700,7 +707,7 @@ const PreSPTable = ({ data, onDelete }) => {
               {selectedPresp.acknowledgedPO && (
                 selectedPresp.acknowledgedPO.map((product, index) => (
                   <div key={index}>
-                    <p className='text-sm'>{index + 1}. <a href={product.ackn_po}>{product.ackn_po_name}</a></p>
+                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_po}`}>{product.ackn_po_name}</a></p>
 
                   </div>
                 )))}

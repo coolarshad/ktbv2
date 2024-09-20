@@ -31,12 +31,12 @@ const PurchasePendingTable = ({ data , onDelete, onView }) => { // Default value
           {data?.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trd}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.company}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.payment_term}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.companyName.name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.paymentTerm.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.hs_code}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty_unit}</td>
