@@ -92,7 +92,7 @@ DATABASES = {
         'NAME': 'ktbv2_db',
         'USER': 'ktbv2_user',
         'PASSWORD': 'admin123',
-        'HOST': 'localhost',  # Refers to the PostgreSQL service name in Docker Compose
+        'HOST': os.environ.get('DB_HOST'),  
         'PORT': '5432',
     }
 }
