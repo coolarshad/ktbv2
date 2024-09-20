@@ -23,7 +23,7 @@ services:
       - DATABASE_NAME=ktbv2_db
       - DATABASE_USER=ktbv2_user
       - DATABASE_PASSWORD=admin123
-      - DATABASE_HOST=host.docker.internal  # Referencing your local DB
+      - DATABASE_HOST=148.72.247.191  # Referencing your local DB
       - DATABASE_PORT=5432
     volumes:
       - ./backend/ktbv2:/app
