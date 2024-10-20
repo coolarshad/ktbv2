@@ -1,8 +1,9 @@
 // src/axiosConfig.js
 import axios from 'axios';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 
 const instance = axios.create({
-    baseURL: 'http://148.72.247.191:8000', // Replace with your API base URL
+    baseURL: `${BACKEND_URL}`, // Replace with your API base URL
     // timeout: 1000,
     // headers: { 'Content-Type': 'application/json' }
 });
