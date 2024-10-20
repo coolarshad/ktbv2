@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'costmgt',
     'corsheaders',
     'django_filters',
+    'excel',
 ]
 
 MIDDLEWARE = [

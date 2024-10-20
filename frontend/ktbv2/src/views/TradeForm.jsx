@@ -391,6 +391,26 @@ const TradeForm = ({ mode = 'add' }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        // Log formData to check its structure
+    console.log('Form Data:', formData);
+
+    // Check if formData.tradeProducts is defined and is an array
+    if (!Array.isArray(formData.tradeProducts) || formData.tradeProducts.length === 0) {
+        alert('Trade Products data is missing or invalid!');
+        return; // Stop form submission
+    }
+
+    // Validate Trade Quantity against Contract Balance Quantity
+    const invalidProduct = formData.tradeProducts.find(product => {
+        console.log('Product:', product); // Debug: Log each product to ensure it's structured correctly
+        return Number(product.trade_qty) > Number(product.contract_balance_qty); // Ensure values are compared as numbers
+    });
+
+    if (invalidProduct) {
+        alert(`Trade Quantity cannot be greater than Contract Balance Quantity for product index: ${formData.tradeProducts.indexOf(invalidProduct) + 1}`);
+        return; // Stop form submission
+    }
+
         const formDataToSend = new FormData();
 
         // Append regular fields

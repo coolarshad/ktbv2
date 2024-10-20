@@ -11,6 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
 import logging
+import pandas as pd
 logger = logging.getLogger(__name__)
 
 class TradeView(APIView):
@@ -1830,3 +1831,4 @@ class CurrencyViewSet(viewsets.ModelViewSet):
 class PackingViewSet(viewsets.ModelViewSet):
     queryset = Packing.objects.all()
     serializer_class = PackingSerializer
+

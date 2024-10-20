@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
+import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -161,11 +162,12 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     ? [
         { label: 'PO Date/PI Date', text: data.presp.date || '' },
         { label: 'Trade Type', text: data.trade_type || '' },
-        { label: 'Payment Term', text: data.payment_term?.name || '' },
-        { label: 'Customer Company Name', text: data.kyc?.name || '' },
-        { label: 'Value of Contract', text: data.country_of_origin || '' },
-        { label: 'Advance to Pay/Receive', text: data.address || '' },
-       
+        { label: 'Payment Term', text: data.presp.trade.paymentTerm.name || '' },
+        { label: 'Buyer/Seller Name', text: data.presp.trade.customer.name || '' },
+        { label: 'Value of Contract', text: data.presp.trade.contract_value || '' },
+        { label: 'Advance to Pay', text: advanceToPay(data) || '' },
+        { label: 'Advance to Receive', text: advanceToReceive(data) || '' },
+        { label: 'Advance Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
     
@@ -216,7 +218,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     />
                 </div>
                 <div>
-                    <label htmlFor='as_per_pi_advance' className="block text-sm font-medium text-gray-700">As Per PI Advance</label>
+                    <label htmlFor='as_per_pi_advance' className="block text-sm font-medium text-gray-700">As Per PI Cash/TT/Advance</label>
                     <input
                         id="as_per_pi_advance"
                         name="as_per_pi_advance"

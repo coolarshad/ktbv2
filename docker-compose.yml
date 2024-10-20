@@ -20,7 +20,4 @@ services:
       - "8000:8000"  # Expose Django on port 8000
     volumes:
       - ./backend/ktbv2:/app
-    # network_mode: "host"  # Add this line
-    
-
-# Optionally, you can define a custom network if needed, but this is not necessary for simple setups
+   

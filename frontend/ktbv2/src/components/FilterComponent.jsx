@@ -11,6 +11,31 @@ const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, c
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
 
+  const downloadExcel = async () => {
+    try {
+      // Send a GET request with 'responseType' set to 'blob' to handle binary data
+      const response = await axios.get('/excel/export/trade/', {
+        responseType: 'blob', // This is necessary for handling binary data correctly
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      });
+  
+      // Create a URL from the received blob data
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      // Create a link element and trigger the download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'trades.xlsx'); // File name for download
+      document.body.appendChild(link);
+      link.click();
+      link.remove(); // Remove the link element after clicking
+    } catch (error) {
+      console.error('Error downloading the file:', error);
+    }
+  };
+
   const handleSearch = async () => {
     try {
       const params = {
@@ -144,7 +169,7 @@ const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, c
           </div>
        
           <button
-            onClick={() => {/* Add download functionality here */}}
+            onClick={downloadExcel}
             className="flex items-center bg-green-500 text-white px-2 py-1 text-xs rounded-md gap-2"
           >
             <FaDownload />
