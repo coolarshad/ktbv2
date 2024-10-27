@@ -14,6 +14,7 @@ const PurchaseTraceTable = ({ data , onDelete, onView }) => { // Default value f
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Balance Qty</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reference Balance Qty</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Starting TRN</th>
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
@@ -27,6 +28,7 @@ const PurchaseTraceTable = ({ data , onDelete, onView }) => { // Default value f
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_qty}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_balance_qty}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ref_balance_qty}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.first_trn}</td>
              
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">

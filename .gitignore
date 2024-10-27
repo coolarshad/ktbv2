@@ -1,4 +1,22 @@
-./backend/venv
-./frontend/node_modules
+backend/venv/
+frontend/node_modules/
 
 .env
+
+
+# Django specific
+backend/ktbv2/*.log
+backend/ktbv2/*.pot
+backend/ktbv2/*.pyc
+backend/ktbv2/__pycache__/
+backend/ktbv2/ktbv2/__pycache__/
+backend/ktbv2/excel/__pycache__/
+backend/ktbv2/db.sqlite3
+backend/ktbv2/*.sqlite3
+backend/ktbv2/**/*.py[cod]
+backend/ktbv2/**/migrations/
+
+
+backend/ktbv2/media/
+backend/ktbv2/staticfiles/
+backend/ktbv2/static/

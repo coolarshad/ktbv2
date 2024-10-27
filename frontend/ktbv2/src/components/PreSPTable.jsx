@@ -116,7 +116,7 @@ const PreSPTable = ({ data, onDelete }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
               <div className="space-x-2">
                   <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(presp)}>Print</button>
-                  <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp)}>View</button>
+                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp)}>View</button>
                   <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
                   <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
                 </div>

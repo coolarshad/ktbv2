@@ -46,19 +46,25 @@ class TradeProductSerializer(serializers.ModelSerializer):
             return PackingSerializer(instance).data
         except Packing.DoesNotExist:
             return None
+    
+    def get_ref_trn_details(self, obj):
+        try:
+            if obj.ref_trn != 'NA':
+                instance = Trade.objects.get(trn=obj.ref_trn)  # or use another field to identify the company
+                return instance.trn
+        except Trade.DoesNotExist:
+            return None
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
         ret = super().to_representation(instance)
-        # Debugging: Check the original URL
-        print("Original LOI URL:", ret['loi'])
+       
         # Add the serialized company details to the response
         ret['productName'] = self.get_product_details(instance)
         ret['supplier'] = self.get_supplier_details(instance)
         ret['packing'] = self.get_packing_details(instance)
+        ret['refTrn'] = self.get_ref_trn_details(instance)
 
-        # Debugging: Check the URL after adding details
-        print("Modified LOI URL:", ret['loi'])
         return ret
 
 class TradeExtraCostSerializer(serializers.ModelSerializer):
@@ -69,30 +75,30 @@ class TradeExtraCostSerializer(serializers.ModelSerializer):
 class TradeSerializer(serializers.ModelSerializer):
     trade_products = TradeProductSerializer(many=True, read_only=True)
     trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
-    related_trades = serializers.PrimaryKeyRelatedField(
-        queryset=Trade.objects.all(),
-        many=True,
-        required=False,
+    # related_trades = serializers.PrimaryKeyRelatedField(
+    #     queryset=Trade.objects.all(),
+    #     many=True,
+    #     required=False,
         
-    )
+    # )
     
     class Meta:
         model = Trade
         fields = '__all__'
 
-    def create(self, validated_data):
-        related_trades_data = validated_data.pop('related_trades', [])
-        trade = super().create(validated_data)
-        if related_trades_data:
-            trade.related_trades.set(related_trades_data)
-        return trade
+    # def create(self, validated_data):
+    #     related_trades_data = validated_data.pop('related_trades', [])
+    #     trade = super().create(validated_data)
+    #     if related_trades_data:
+    #         trade.related_trades.set(related_trades_data)
+    #     return trade
     
-    def update(self, instance, validated_data):
-        related_trades_data = validated_data.pop('related_trades', [])
-        trade = super().update(instance, validated_data)
-        if related_trades_data:
-            trade.related_trades.set(related_trades_data)
-        return trade
+    # def update(self, instance, validated_data):
+    #     related_trades_data = validated_data.pop('related_trades', [])
+    #     trade = super().update(instance, validated_data)
+    #     if related_trades_data:
+    #         trade.related_trades.set(related_trades_data)
+    #     return trade
 
     ## additional related info
     def get_company_details(self, obj):
@@ -129,7 +135,7 @@ class TradeSerializer(serializers.ModelSerializer):
             return None
     def get_container_details(self, obj):
         try:
-            instance = ShipmentSize.objects.get(id=obj.payment_term)
+            instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
             return ShipmentSizeSerializer(instance).data
         except ShipmentSize.DoesNotExist:
             return None
@@ -152,12 +158,12 @@ class TradeSerializer(serializers.ModelSerializer):
 class PrintSerializer(serializers.ModelSerializer):
     trade_products = TradeProductSerializer(many=True, read_only=True)
     trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
-    related_trades = serializers.PrimaryKeyRelatedField(
-        queryset=Trade.objects.all(),
-        many=True,
-        required=False,
+    # related_trades = serializers.PrimaryKeyRelatedField(
+    #     queryset=Trade.objects.all(),
+    #     many=True,
+    #     required=False,
         
-    )
+    # )
     
     class Meta:
         model = Trade
@@ -564,7 +570,7 @@ class PurchasePendingSerializer(serializers.ModelSerializer):
     
     def get_trade_details(self, obj):
         try:
-            instance = Trade.objects.get(id=obj.payment_term)
+            instance = Trade.objects.get(trn=obj.trn)
             return TradeSerializer(instance).data
         except Trade.DoesNotExist:
             return None
@@ -592,7 +598,7 @@ class SalesPendingSerializer(serializers.ModelSerializer):
 
     def get_trade_details(self, obj):
         try:
-            instance = Trade.objects.get(id=obj.payment_term)
+            instance = Trade.objects.get(trn=obj.trn)
             return TradeSerializer(instance).data
         except Trade.DoesNotExist:
             return None

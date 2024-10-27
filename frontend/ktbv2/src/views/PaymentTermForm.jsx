@@ -42,10 +42,18 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+  
+    setFormData(prevState => {
+      let updatedFormData = { ...prevState, [name]: value };
+  
+      // Check if advance_in_percentage is being updated to 0
+      if (name === 'advance_in_percentage' && parseFloat(value) === 0) {
+        // Automatically set advance_within to 'N/A' when advance_in_percentage is 0
+        updatedFormData.advance_within = 'NA';
+      }
+  
+      return updatedFormData;
+    });
   };
 
   const handleSubmit = (e) => {

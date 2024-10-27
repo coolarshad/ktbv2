@@ -24,6 +24,7 @@ class TradeFilter(django_filters.FilterSet):
             'logistic_provider': ['exact', 'icontains'],
             'bank_name_address': ['exact', 'icontains'],
             'approved': ['exact'],
+            'reviewed': ['exact'],
             'commission_value': ['exact', 'gte', 'lte'],
         }
 
@@ -165,7 +166,9 @@ class KycFilter(django_filters.FilterSet):
             'banker': ['exact', 'icontains'],
             'address': ['exact', 'icontains'],
             'swiftCode': ['exact', 'icontains'],
-            'accountNumber': ['exact', 'icontains']
+            'accountNumber': ['exact', 'icontains'],
+            'approve1': ['exact'],
+            'approve2': ['exact']
         }
 
 class InventoryFilter(django_filters.FilterSet):
@@ -180,21 +183,19 @@ class InventoryFilter(django_filters.FilterSet):
         }
 
 class SalesProductTraceFilter(django_filters.FilterSet):
-    # date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
-    # date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+   
     class Meta:
         model = SalesProductTrace
         fields = {
-            'product_code': ['exact', 'icontains'],  # Filter by Trade TRN
-          
+            'product_code': ['exact'],  # Filter by Trade TRN
+            'first_trn': ['exact'],
         }
 
 class PurchaseProductTraceFilter(django_filters.FilterSet):
-    # date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
-    # date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+   
     class Meta:
         model = PurchaseProductTrace
         fields = {
-            'product_code': ['exact', 'icontains'],  # Filter by Trade TRN
-          
+            'product_code': ['exact'],  # Filter by Trade TRN
+            'first_trn': ['exact'],
         }

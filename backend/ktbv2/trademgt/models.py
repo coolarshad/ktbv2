@@ -48,11 +48,13 @@ class Trade(models.Model):
     bl_fee_remarks=models.CharField(_("bl_fee_remarks"), max_length=150)
 
     approved=models.BooleanField(_("approved"),default=False)
+    reviewed=models.BooleanField(_("reviewed"),default=False)
 
     approved_by=models.CharField(_("approved_by"), max_length=50, null=True, blank=True)
+    reviewed_by=models.CharField(_("reviewed_by"), max_length=50, null=True, blank=True)
 
     # Self-referential many-to-many relationship (symmetrical)
-    related_trades = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='related_trades')
+    # related_trades = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='related_trades')
 
     class Meta:
         verbose_name = _("Trade")
@@ -89,6 +91,9 @@ class TradeProduct(models.Model):
     total_packing_cost=models.FloatField(_("total_packing_cost"))
     commission_rate=models.FloatField(_("commission_rate"))
     total_commission=models.FloatField(_("total_commission"))
+    ref_type=models.CharField(_("ref_type"), max_length=50)
+    ref_trn=models.CharField(_("ref_trn"), max_length=50)
+    product_code_ref=models.CharField(_("ref_trn"), max_length=50)
 
 
     class Meta:
@@ -531,6 +536,7 @@ class PurchaseProductTrace(models.Model):
     total_contract_qty=models.FloatField(null=True)
     trade_qty=models.FloatField(null=True)
     contract_balance_qty=models.FloatField(null=True)
+    ref_balance_qty=models.FloatField(null=True)
     first_trn=models.CharField(max_length=15,null=True,blank=True)
     
 
@@ -539,7 +545,7 @@ class PurchaseProductTrace(models.Model):
         verbose_name_plural = _("PurchaseProductTraces")
 
     def __str__(self):
-        return self.name
+        return self.product_code
 
     def get_absolute_url(self):
         return reverse("PurchaseProductTrace_detail", kwargs={"pk": self.pk})
@@ -550,6 +556,7 @@ class SalesProductTrace(models.Model):
     total_contract_qty=models.FloatField(null=True)
     trade_qty=models.FloatField(null=True)
     contract_balance_qty=models.FloatField(null=True)
+    ref_balance_qty=models.FloatField(null=True)
     first_trn=models.CharField(max_length=15,null=True,blank=True)
     
 
@@ -558,7 +565,7 @@ class SalesProductTrace(models.Model):
         verbose_name_plural = _("SalesProductTraces")
 
     def __str__(self):
-        return self.name
+        return self.product_code
 
     def get_absolute_url(self):
         return reverse("SalesProductTrace_detail", kwargs={"pk": self.pk})
@@ -586,7 +593,7 @@ class PurchasePending(models.Model):
         verbose_name_plural = _("PurchasePendings")
 
     def __str__(self):
-        return self.name
+        return self.product_code
 
     def get_absolute_url(self):
         return reverse("PurchasePending_detail", kwargs={"pk": self.pk})
@@ -612,7 +619,7 @@ class SalesPending(models.Model):
         verbose_name_plural = _("SalesPendings")
 
     def __str__(self):
-        return self.name
+        return self.product_code
 
     def get_absolute_url(self):
         return reverse("SalesPending_detail", kwargs={"pk": self.pk})

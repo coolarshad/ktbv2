@@ -45,6 +45,7 @@ urlpatterns = [
     path('trades/', TradeView.as_view(), name='trades'),
     path('trades/<int:pk>/', TradeView.as_view(), name='trade-detail'),
     path('tradeapprove/<int:pk>/', TradeApproveView.as_view(), name='trade-approve'),
+    path('tradereview/<int:pk>/', TradeReviewView.as_view(), name='trade-review'),
 
     path('pre-sales-purchases/', PreSalePurchaseView.as_view(), name='pre-sales-purchases'),
     path('pre-sales-purchases/<int:pk>/', PreSalePurchaseView.as_view(), name='pre-sales-purchases-detail'),
@@ -68,6 +69,9 @@ urlpatterns = [
 
     path('kyc-approve-one/<int:pk>/', KycApproveOneView.as_view(), name='kyc-approve1'),
     path('kyc-approve-two/<int:pk>/', KycApproveTwoView.as_view(), name='kyc-approve2'),
+
+
+    path('product-balance', RefBalanceView.as_view(), name='product-balance'),
 ]+ router.urls
 
 # urlpatterns = [

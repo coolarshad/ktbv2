@@ -70,23 +70,24 @@ const Kyc = () => {
 
     const approveKycOne = async () => {
       try {
-        const response = await axios.get(`/trademgt/kyc-approve-one/${selectedKyc.id}/`);
-       
+        await axios.get(`/trademgt/kyc-approve-one/${selectedKyc.id}/`);
         setIsModalOpen(false);
-        setSelectedTrade(null);
-  
+        setSelectedKyc(null);
+        // Reload the page
+        window.location.reload();
       } catch (error) {
         console.error('Error approving Kyc:', error);
         // Optionally, handle the error (e.g., show a user-friendly error message)
       }
     };
+    
     const approveKycTwo = async () => {
       try {
-        const response = await axios.get(`/trademgt/kyc-approve-two/${selectedKyc.id}/`);
-       
+        await axios.get(`/trademgt/kyc-approve-two/${selectedKyc.id}/`);
         setIsModalOpen(false);
-        setSelectedTrade(null);
-  
+        setSelectedKyc(null);
+        // Reload the page
+        window.location.reload();
       } catch (error) {
         console.error('Error approving Kyc:', error);
         // Optionally, handle the error (e.g., show a user-friendly error message)
