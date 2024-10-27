@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import Modal from '../components/Modal';
 import FilterComponent from "../components/FilterComponent";
+import { BASE_URL } from "../utils";
 
 function TradeApproval() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ function TradeApproval() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+  const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
 
   useEffect(() => {
@@ -333,7 +334,7 @@ function TradeApproval() {
                       </div>
                       <div className="flex flex-col">
                         <span className="font-medium">LOI:</span>
-                        <span><a href={`http://localhost:8000${product?.loi}`}>View</a></span>
+                        <span><a href={`${BACKEND_URL}${product?.loi}`}>View</a></span>
                       </div>
                       <div className="flex flex-col">
                         <span className="font-medium">HS Code:</span>

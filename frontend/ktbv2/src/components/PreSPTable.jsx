@@ -9,6 +9,7 @@ import PrintModal from './PrintModal';
 import axios from '../axiosConfig';
 import { toWords } from 'number-to-words';
 import { today, addDaysToDate } from '../dateUtils';
+import { BASE_URL } from '../utils';
 
 const PreSPTable = ({ data, onDelete }) => {
   const navigate = useNavigate();  
@@ -21,7 +22,7 @@ const PreSPTable = ({ data, onDelete }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   // const [textAmount, setTextAmount] = useState(0);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+  const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
 
   const closeModal = () => {
