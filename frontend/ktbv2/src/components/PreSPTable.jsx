@@ -174,7 +174,7 @@ const PreSPTable = ({ data, onDelete }) => {
                         {/* Col 3 with 6 Rows */}
                         <div className="flex flex-col justify-between border-r border-black">
                           <div className="border-b border-black p-2 ">
-                            <p className='font-bold text-sm '>TRADE REFERANCE NO.</p>
+                            <p className='font-bold text-sm '>TRADE REFERENCE NO.</p>
                             <p className='uppercase'>{selectedTrade.trn}</p>
                           </div>
                           <div className="border-b border-black p-2 ">
@@ -229,12 +229,12 @@ const PreSPTable = ({ data, onDelete }) => {
                           <tr>
                             <th className="border border-black p-2 text-sm">SN</th>
                             <th className="border border-black p-2 text-sm">Description of Goods</th>
-                            <th className="border border-black p-2 text-sm">HS CODE</th>
+                            <th className="border border-black p-2 text-sm">HS Code</th>
                             <th className="border border-black p-2 text-sm">Trade Quantity</th>
-                            <th className="border border-black p-2 text-sm">UNIT</th>
+                            <th className="border border-black p-2 text-sm">Unit</th>
                             <th className="border border-black p-2 text-sm">Rate</th>
-                            <th className="border border-black p-2 text-sm">CURRENCY</th>
-                            <th className="border border-black p-2 text-sm">TOLERANE</th>
+                            <th className="border border-black p-2 text-sm">Currency</th>
+                            <th className="border border-black p-2 text-sm">Tolerance</th>
                             <th className="border border-black p-2 text-sm">Amount</th>
                           </tr>
                         </thead>
@@ -316,7 +316,7 @@ const PreSPTable = ({ data, onDelete }) => {
                       </div>
                     </div>
                     <div className="text-center pb-2 mt-1">
-                      <h1 className="text-sm font-md text-sm">This is a Computer Generated Invoice</h1>
+                      <h1 className="text-sm font-md text-sm">This is a computer generated invoice</h1>
                     </div>
                   </div>
                 </div>
@@ -366,7 +366,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           {/* Col 3 with 6 Rows */}
                           <div className="flex flex-col justify-between border-r border-black">
                             <div className="border-b border-black p-2 ">
-                              <p className='font-bold'>TRADE REFERANCE NO.</p>
+                              <p className='font-bold'>TRADE REFERENCE NO.</p>
                               <p className='uppercase'>{selectedTrade.trn}</p>
                             </div>
                             <div className="border-b border-black p-2">
@@ -428,12 +428,12 @@ const PreSPTable = ({ data, onDelete }) => {
                             <tr>
                               <th className="border border-black p-1">SN</th>
                               <th className="border border-black p-1">Description of Goods</th>
-                              <th className="border border-black p-1">HS CODE</th>
+                              <th className="border border-black p-1">HS Code</th>
                               <th className="border border-black p-1">Trade Quantity</th>
-                              <th className="border border-black p-1">UNIT</th>
+                              <th className="border border-black p-1">Unit</th>
                               <th className="border border-black p-1">Rate</th>
-                              <th className="border border-black p-1">CURRENCY</th>
-                              <th className="border border-black p-1">TOLERANE</th>
+                              <th className="border border-black p-1">Currency</th>
+                              <th className="border border-black p-1">Tolerance</th>
                               <th className="border border-black p-1">Amount</th>
                             </tr>
                           </thead>
@@ -516,7 +516,7 @@ const PreSPTable = ({ data, onDelete }) => {
                         </div>
                       </div>
                       <div className="text-center pb-0 mt-1">
-                        <h1 className="text-sm font-md">This is a Computer Generated Invoice</h1>
+                        <h1 className="text-sm font-md">This is a computer generated invoice</h1>
                       </div>
                     </div>
                 </div>
@@ -583,15 +583,15 @@ const PreSPTable = ({ data, onDelete }) => {
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date</td>
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance/LC Due Date</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</td>
                   </tr>
                  
                   
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Due Date </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.bank_name_address.name}</td>

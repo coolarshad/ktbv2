@@ -274,19 +274,19 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                 <div className="overflow-x-auto">
                   {selectedTrade.trade_products.map((product, index) => (
                     <div key={index} className="grid grid-cols-3 gap-2 mb-4 p-4 border border-gray-200 rounded-md shadow-sm bg-white">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Code Ref:</span>
                         <span>{product.product_code_ref}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Code:</span>
                         <span>{product.product_code}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Name:</span>
                         <span>{product.productName.name}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Name for Client:</span>
                         <span>{product.product_name_for_client || '-'}</span>
                       </div>
@@ -294,87 +294,87 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                         <span className="font-medium">LOI:</span>
                         <span>{product.loi || '-'}</span>
                       </div> */}
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">HS Code:</span>
                         <span>{product.hs_code}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Total Contract Qty:</span>
                         <span>{product.total_contract_qty}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Total Contract Qty Unit:</span>
                         <span>{product.total_contract_qty_unit}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Tolerance(%):</span>
                         <span>{product.tolerance}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Contract Balance Qty:</span>
                         <span>{product.contract_balance_qty}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Contract Balance Qty Unit:</span>
                         <span>{product.contract_balance_qty_unit}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Trade Qty:</span>
                         <span>{product.trade_qty}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Trade Qty Unit:</span>
                         <span>{product.trade_qty_unit}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Selected Currency Rate:</span>
                         <span>{product.selected_currency_rate}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Rate in USD:</span>
                         <span>{product.rate_in_usd}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Value:</span>
                         <span>{product.product_value}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Mode of Packing:</span>
                         <span>{product.packing.name}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Rate of Each Packing:</span>
                         <span>{product.rate_of_each_packing}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Qty of Packing:</span>
                         <span>{product.qty_of_packing}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Total Packing Cost:</span>
                         <span>{product.total_packing_cost}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Packaging Supplier:</span>
                         <span>{product.supplier.name}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Markings in Packaging:</span>
                         <span>{product.markings_in_packaging}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Commission Rate:</span>
                         <span>{product.commission_rate}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Total Commission:</span>
                         <span>{product.total_commission}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Reference Type:</span>
                         <span>{product.ref_type}</span>
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col ">
                         <span className="font-medium">Reference TRN:</span>
                         <span>{product.refTrn}</span>
                       </div>

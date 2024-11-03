@@ -226,7 +226,7 @@ class DocumentsRequired(models.Model):
 
 class PrePayment(models.Model):
     trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
-    adv_due_date=models.DateField(_("adv_due_date"), auto_now=False, auto_now_add=False,null=True)
+    adv_due_date=models.CharField(_("adv_due_date"), max_length=50)
     as_per_pi_advance=models.CharField(_("as_per_pi_advance"), max_length=50)
     lc_number=models.CharField(_("lc_number"), max_length=50)
     lc_opening_bank=models.CharField(_("lc_opening_bank"), max_length=100)

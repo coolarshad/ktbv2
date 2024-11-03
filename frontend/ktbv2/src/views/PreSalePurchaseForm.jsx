@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../axiosConfig';
+import { capitalizeKey } from '../utils';
 
 const PreSalePurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    const [validationErrors, setValidationErrors] = useState({});
+
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
 
-    const addDaysToDate = (days) => {
-        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
-        const resultDate = new Date(today);
+    const addDaysToDate = (days, doc_date) => {
+        // Use doc_date if provided; otherwise, use today's date in 'en-CA' format.
+        const baseDate = doc_date 
+            ? new Date(doc_date) 
+            : new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+            
+        const resultDate = new Date(baseDate);
         resultDate.setDate(resultDate.getDate() + parseInt(days, 10));
-
+    
         const year = resultDate.getFullYear();
         const month = String(resultDate.getMonth() + 1).padStart(2, '0');
         const day = String(resultDate.getDate()).padStart(2, '0');
@@ -133,8 +140,44 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         });
     };
 
+    // Dynamically apply red border to invalid fields
+    const getFieldErrorClass = (fieldName) => {
+        return validationErrors[fieldName] ? 'border-red-500' : '';
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        let errors = {};
+
+        // Define fields to skip validation for
+        const skipValidation = [];
+
+        // Check each regular field for empty value (except files and those in skipValidation)
+        for (const [key, value] of Object.entries(formData)) {
+            if (!skipValidation.includes(key) && value === '') {
+                errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+            }
+        }
+
+         // Validate tradeExtraCosts array fields (validate all or selectively skip some)
+         formData.documentRequired.forEach((doc, index) => {
+            for (const [key, value] of Object.entries(doc)) {
+                if (!skipValidation.includes(key) && value === '') {
+                    errors[`documentRequired[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+            }
+        });
+
+        setValidationErrors(errors);
+    
+        if (Object.keys(errors).length > 0) {
+            console.log(errors)
+            return; // Don't proceed if there are validation errors
+        }else{
+             setValidationErrors({});  
+        }
+
+
         const formDataToSend = new FormData();
 
         for (const [key, value] of Object.entries(formData)) {
@@ -189,8 +232,8 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         { label: 'Customer Company Name', text: data.customer_company_name?.name || '' },
         { label: 'Address', text: data.address || '' },
         { label: 'Payment Term', text: data.paymentTerm.name || '' },
-        { label: 'Advance Due Date', text: data.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.paymentTerm.advance_within) || '' },
-        { label: 'LC Due Date', text: data.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.paymentTerm.advance_within) || '' },
+        { label: 'Advance/LC Due Date', text: data.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.paymentTerm.advance_within,formData.doc_issuance_date) || '' },
+        // { label: 'LC Due Date', text: data.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.paymentTerm.advance_within,formData.doc_issuance_date) || '' },
         { label: 'Bank Name Address', text: data.bank_name_address?.name || '' },
         { label: 'Account Number', text: data.bank_name_address?.account_number || '' },
         { label: 'SWIFT Code', text: data.bank_name_address?.swift_code || '' },
@@ -210,6 +253,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+            <h2 className="text-2xl mb-2 text-center">Pre Sales/Purchase Document</h2>
             {data && (
                 <>
             <div className="grid grid-cols-4 gap-1 p-2">
@@ -267,7 +311,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         name="trn"
                         value={formData.trn}
                         onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('trn')}`}
                     >
                         <option value="">Select TRN</option>
                         {trnOptions.map(option => (
@@ -276,6 +320,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                             </option>
                         ))}
                     </select>
+                    {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
                 <div>
                     <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
@@ -285,8 +330,9 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.date}
                         onChange={e => setFormData({ ...formData, date: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('date')}`}
                     />
+                    {validationErrors.date && <p className="text-red-500">{validationErrors.date}</p>}
                 </div>
                 <div>
                     <label htmlFor="doc_issuance_date" className="block text-sm font-medium text-gray-700">Document Issuance Date</label>
@@ -296,8 +342,9 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.doc_issuance_date}
                         onChange={e => setFormData({ ...formData, doc_issuance_date: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('doc_issuance_date')}`}
                     />
+                    {validationErrors.doc_issuance_date && <p className="text-red-500">{validationErrors.doc_issuance_date}</p>}
                 </div>
                
             
@@ -308,8 +355,9 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                         name="remarks"
                         value={formData.remarks}
                         onChange={e => setFormData({ ...formData, remarks: e.target.value })}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('remarks')}`}
                     />
+                    {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
                 </div>
             </div>
             <div className="mt-0 p-4">
@@ -333,7 +381,13 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                     </option>
                                 ))}
                             </select>
+                            {validationErrors[`documentRequired[${index}].name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`documentRequired[${index}].name`]}
+                                    </p>
+                                )}
                         </div>
+                        
                         <div className="flex items-end">
 
                             <button

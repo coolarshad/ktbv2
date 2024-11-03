@@ -126,8 +126,9 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   ];
   const paymentWithinOptions = [
     { value: 'BL DATE' },
-    { value: 'SALES BILL DATE' },
+    { value: 'CLEAN SHIPPING DOCUMENTS AS PER CONTRACT / PURCHASE ORDER'},
     { value: 'PURCHASE BILL DATE' },
+    { value: 'SALES BILL DATE' },
     { value: 'NA' },
   ];
   return (

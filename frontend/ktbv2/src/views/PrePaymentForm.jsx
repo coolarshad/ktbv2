@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
+import { capitalizeKey } from '../utils';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate=useNavigate()
+
+    const [validationErrors, setValidationErrors] = useState({});
     // Sample options for TRN dropdown
     const [trnOptions, setTrnOptions] = useState([]); 
     const [data, setData] = useState(null); 
@@ -62,6 +65,20 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             });
         }
       }, [mode, id]);
+    
+      useEffect(() => {
+        if (data) {
+            const calculatedAdvance = data.trade_type === 'Sales'
+                ? advanceToReceive(data)
+                : advanceToPay(data);
+    
+            setFormData(prevState => ({
+                ...prevState,
+                as_per_pi_advance: calculatedAdvance || '',
+                adv_due_date: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)
+            }));
+        }
+    }, [data]);
 
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
@@ -110,6 +127,28 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        let errors = {};
+
+        // Define fields to skip validation for
+        const skipValidation = [];
+
+        // Check each regular field for empty value (except files and those in skipValidation)
+        for (const [key, value] of Object.entries(formData)) {
+            if (!skipValidation.includes(key) && value === '') {
+                errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+            }
+        }
+
+        setValidationErrors(errors);
+    
+        if (Object.keys(errors).length > 0) {
+            console.log(errors)
+            return; // Don't proceed if there are validation errors
+        }else{
+             setValidationErrors({});  
+        }
+
         // console.log(formData);
         const formDataToSend = new FormData();
 
@@ -167,7 +206,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         { label: 'Value of Contract', text: data.presp.trade.contract_value || '' },
         { label: 'Advance to Pay', text: advanceToPay(data) || '' },
         { label: 'Advance to Receive', text: advanceToReceive(data) || '' },
-        { label: 'Advance Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
+        // { label: 'Advance Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
     
@@ -177,6 +216,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+            <h2 className="text-2xl mb-2 text-center">Prepayment Document</h2>
             {data && (
 
                 <div className="grid grid-cols-4 gap-1 p-2">
@@ -205,17 +245,19 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                             </option>
                         ))}
                     </select>
+                    {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
                 <div>
                     <label htmlFor='adv_due_date' className="block text-sm font-medium text-gray-700">Advance Due Date</label>
                     <input
                         id="adv_due_date"
                         name="adv_due_date"
-                        type="date"
+                        type="text"
                         value={formData.adv_due_date}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.adv_due_date && <p className="text-red-500">{validationErrors.adv_due_date}</p>}
                 </div>
                 <div>
                     <label htmlFor='as_per_pi_advance' className="block text-sm font-medium text-gray-700">As Per PI Cash/TT/Advance</label>
@@ -227,7 +269,9 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.as_per_pi_advance && <p className="text-red-500">{validationErrors.as_per_pi_advance}</p>}
                 </div>
+                
                 <div>
                     <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">LC Number</label>
                     <input
@@ -238,7 +282,9 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.lc_number && <p className="text-red-500">{validationErrors.lc_number}</p>}
                 </div>
+               
                 <div>
                     <label htmlFor="lc_opening_bank" className="block text-sm font-medium text-gray-700">LC Opening Bank</label>
                     <input
@@ -249,6 +295,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.lc_opening_bank && <p className="text-red-500">{validationErrors.lc_opening_bank}</p>}
                 </div>
                 <div>
                     <label htmlFor="advance_received" className="block text-sm font-medium text-gray-700">Advance Received</label>
@@ -260,6 +307,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.advance_received && <p className="text-red-500">{validationErrors.advance_received}</p>}
                 </div>
                 <div>
                     <label htmlFor="date_of_receipt" className="block text-sm font-medium text-gray-700">Date of Receipt</label>
@@ -271,6 +319,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.date_of_receipt && <p className="text-red-500">{validationErrors.date_of_receipt}</p>}
                 </div>
                 <div>
                     <label htmlFor="advance_paid" className="block text-sm font-medium text-gray-700">Advance Paid</label>
@@ -282,6 +331,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.advance_paid && <p className="text-red-500">{validationErrors.advance_paid}</p>}
                 </div>
                 <div>
                     <label htmlFor="date_of_payment" className="block text-sm font-medium text-gray-700">Date of Payment</label>
@@ -293,6 +343,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.date_of_payment && <p className="text-red-500">{validationErrors.date_of_payment}</p>}
                 </div>
                 <div>
                     <label htmlFor="lc_expiry_date" className="block text-sm font-medium text-gray-700">LC Expiry Date</label>
@@ -304,6 +355,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                     {validationErrors.lc_expiry_date && <p className="text-red-500">{validationErrors.lc_expiry_date}</p>}
                 </div>
                 <div>
                     <label htmlFor="latest_shipment_date_in_lc" className="block text-sm font-medium text-gray-700">Latest Shipment Date in LC</label>
@@ -315,6 +367,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                     {validationErrors.latest_shipment_date_in_lc && <p className="text-red-500">{validationErrors.latest_shipment_date_in_lc}</p>}
                 </div>
                 {/* Remarks field spanning across all columns */}
                 <div className="md:col-span-3">
@@ -327,6 +380,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                     {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
                 </div>
             </div>
 

@@ -135,7 +135,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.payment_term.name}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.paymentTerm.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Buyer/Seller Name </td>

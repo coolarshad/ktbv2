@@ -298,7 +298,7 @@ function TradeApproved() {
                       </div>
                       <div className="flex flex-col">
                         <span className="font-medium">LOI:</span>
-                        <span><a href={`${BACKEND_URL}${product?.loi}`}>View</a></span>
+                        <span><a href={`${BACKEND_URL}${product.loi}`}>View</a></span>
                       </div>
                       <div className="flex flex-col">
                         <span className="font-medium">HS Code:</span>

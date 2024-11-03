@@ -212,7 +212,7 @@ class PrintSerializer(serializers.ModelSerializer):
     
     def get_container_details(self, obj):
         try:
-            instance = ShipmentSize.objects.get(id=obj.payment_term)
+            instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
             return ShipmentSizeSerializer(instance).data
         except ShipmentSize.DoesNotExist:
             return None

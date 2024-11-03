@@ -187,7 +187,7 @@ const TradeForm = ({ mode = 'add' }) => {
     const fetchProductDetails = useCallback(
         
         debounce(async (index,product_code_ref, productCode) => {
-            console.log('========',product_code_ref,productCode)
+            // console.log('========',product_code_ref,productCode)
           try {
             let response;
       
@@ -235,7 +235,7 @@ const TradeForm = ({ mode = 'add' }) => {
             const prod_name = product?.product_name;
 
             if (name === 'ref_trn' && value !== 'NA') {
-                console.log('here:', prod_code, prod_name, value)
+                // console.log('here:', prod_code, prod_name, value)
                 try {
                     // Call the API with ref_trn, product_code, and product_name as query params
                     const response = await axios.get(`/trademgt/product-balance`, {
