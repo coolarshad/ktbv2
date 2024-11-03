@@ -809,7 +809,7 @@ class PreSalePurchaseView(APIView):
         while f'acknowledgedPI[{i}].ackn_pi_name' in data:
             pi_data = {
                 'ackn_pi_name': data.get(f'acknowledgedPI[{i}].ackn_pi_name'),
-                'ackn_pi': data.get(f'acknowledgedPI[{i}].ackn_pi'),  # Handle binary data as needed
+                'ackn_pi': request.FILES.get(f'acknowledgedPI[{i}].ackn_pi',None),  # Handle binary data as needed
             }
             acknowledged_pi_data.append(pi_data)
             i += 1
@@ -818,7 +818,7 @@ class PreSalePurchaseView(APIView):
         while f'acknowledgedPO[{j}].ackn_po_name' in data:
             po_data = {
                 'ackn_po_name': data.get(f'acknowledgedPO[{j}].ackn_po_name'),
-                'ackn_po': data.get(f'acknowledgedPO[{j}].ackn_po'),
+                'ackn_po': request.FILES.get(f'acknowledgedPO[{j}].ackn_po',None),
             }
             acknowledged_po_data.append(po_data)
             j += 1
@@ -888,7 +888,7 @@ class PreSalePurchaseView(APIView):
         while f'acknowledgedPI[{i}].ackn_pi_name' in data:
             pi_data = {
                 'ackn_pi_name': data.get(f'acknowledgedPI[{i}].ackn_pi_name'),
-                'ackn_pi': data.get(f'acknowledgedPI[{i}].ackn_pi'),  # Handle binary data as needed
+                'ackn_pi': request.FILES.get(f'acknowledgedPI[{i}].ackn_pi',None),  # Handle binary data as needed
             }
             acknowledged_pi_data.append(pi_data)
             i += 1
@@ -897,7 +897,7 @@ class PreSalePurchaseView(APIView):
         while f'acknowledgedPO[{j}].ackn_po_name' in data:
             po_data = {
                 'ackn_po_name': data.get(f'acknowledgedPO[{j}].ackn_po_name'),
-                'ackn_po': data.get(f'acknowledgedPO[{j}].ackn_po'),
+                'ackn_po': request.FILES.get(f'acknowledgedPO[{j}].ackn_po',None),
             }
             acknowledged_po_data.append(po_data)
             j += 1
@@ -1016,8 +1016,8 @@ class PrePaymentView(APIView):
         # Prepare trade data separately
         prepayment_data = {
             'trn': data.get('trn'),
-            'adv_due_date':data.get('adv_due_date'),
-            'as_per_pi_advance': data.get('as_per_pi_advance'),
+            # 'adv_due_date':data.get('adv_due_date'),
+            # 'as_per_pi_advance': data.get('as_per_pi_advance'),
             'lc_number': data.get('lc_number'),
             'lc_opening_bank': data.get('lc_opening_bank'),
             'advance_received': data.get('advance_received'),
@@ -1037,7 +1037,7 @@ class PrePaymentView(APIView):
         while f'lcCopies[{i}].name' in data:
             lc_copy_data = {
                 'name': data.get(f'lcCopies[{i}].name'),
-                'lc_copy': data.get(f'lcCopies[{i}].lc_copy'),  # Handle binary data as needed
+                'lc_copy': request.FILES.get(f'lcCopies[{i}].lc_copy',None),  # Handle binary data as needed
             }
             lc_copies_data.append(lc_copy_data)
             i += 1
@@ -1046,7 +1046,7 @@ class PrePaymentView(APIView):
         while f'lcAmmendments[{j}].name' in data:
             lc_ammend_data = {
                 'name': data.get(f'lcAmmendments[{j}].name'),
-                'lc_ammendment': data.get(f'lcAmmendments[{j}].lc_ammendment'),
+                'lc_ammendment': request.FILES.get(f'lcAmmendments[{j}].lc_ammendment',None),
             }
             lc_ammendments_data.append(lc_ammend_data)
             j += 1
@@ -1055,7 +1055,7 @@ class PrePaymentView(APIView):
         while f'advanceTTCopies[{k}].name' in data:
             advance_tt_copies = {
                 'name': data.get(f'advanceTTCopies[{k}].name'),
-                'advance_tt_copy': data.get(f'advanceTTCopies[{k}].advance_tt_copy'),
+                'advance_tt_copy': request.FILES.get(f'advanceTTCopies[{k}].advance_tt_copy',None),
             }
             advance_tt_copies_data.append(advance_tt_copies)
             k += 1
@@ -1103,8 +1103,8 @@ class PrePaymentView(APIView):
         # Prepare trade data separately
         prepayment_data = {
             'trn': data.get('trn'),
-            'adv_due_date':data.get('adv_due_date'),
-            'as_per_pi_advance': data.get('as_per_pi_advance'),
+            # 'adv_due_date':data.get('adv_due_date'),
+            # 'as_per_pi_advance': data.get('as_per_pi_advance'),
             'lc_number': data.get('lc_number'),
             'lc_opening_bank': data.get('lc_opening_bank'),
             'advance_received': data.get('advance_received'),
@@ -1124,7 +1124,7 @@ class PrePaymentView(APIView):
         while f'lcCopies[{i}].name' in data:
             lc_copy_data = {
                 'name': data.get(f'lcCopies[{i}].name'),
-                'lc_copy': data.get(f'lcCopies[{i}].lc_copy'),  # Handle binary data as needed
+                'lc_copy': request.FILES.get(f'lcCopies[{i}].lc_copy',None),  # Handle binary data as needed
             }
             lc_copies_data.append(lc_copy_data)
             i += 1
@@ -1133,7 +1133,7 @@ class PrePaymentView(APIView):
         while f'lcAmmendments[{j}].name' in data:
             lc_ammend_data = {
                 'name': data.get(f'lcAmmendments[{j}].name'),
-                'lc_ammendment': data.get(f'lcAmmendments[{j}].lc_ammendment'),
+                'lc_ammendment': request.FILES.get(f'lcAmmendments[{j}].lc_ammendment',None),
             }
             lc_ammendments_data.append(lc_ammend_data)
             j += 1
@@ -1142,7 +1142,7 @@ class PrePaymentView(APIView):
         while f'advanceTTCopies[{j}].name' in data:
             advance_tt_copies = {
                 'name': data.get(f'advanceTTCopies[{j}].name'),
-                'advance_tt_copy': data.get(f'advanceTTCopies[{j}].advance_tt_copy'),
+                'advance_tt_copy': request.FILES.get(f'advanceTTCopies[{j}].advance_tt_copy',None),
             }
             advance_tt_copies_data.append(advance_tt_copies)
             k += 1

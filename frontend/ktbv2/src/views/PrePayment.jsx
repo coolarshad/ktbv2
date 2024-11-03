@@ -5,7 +5,8 @@ import React, { useEffect, useState } from 'react';
 import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
-
+import { addDaysToDate } from "../dateUtils";
+import { BASE_URL } from '../utils';
 
 function PrePayment() {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ function PrePayment() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrePayment, setSelectedPrePayment] = useState(null);
+
+  const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -146,17 +149,21 @@ function PrePayment() {
                     <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.contract_value}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Receive/Pay </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.advance_value_to_receive}</td>
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Receive </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trade_type=='Sales'?selectedPrePayment.trn.advance_value_to_receive:'NA'}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Pay </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trade_type=='Purchase'?selectedPrePayment.trn.advance_value_to_receive:'NA'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.adv_due_date}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPrePayment.presp.doc_issuance_date,selectedPrePayment.presp.trade.paymentTerm.advance_within)}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">As Per PI Cash/TT/Advance </td>
                     <td className="py-2 px-4 text-gray-800">{selectedPrePayment.as_per_pi_advance}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Number </td>
                     <td className="py-2 px-4 text-gray-800">{selectedPrePayment.lc_number}</td>
@@ -208,7 +215,7 @@ function PrePayment() {
                 {selectedPrePayment.lcCopies && (
                   selectedPrePayment.lcCopies.map((item, index) => (
                     <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={item.lc_copy}>{item.name}</a></p>
+                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_copy}`}>{item.name}</a></p>
 
                     </div>
                   )))}
@@ -216,7 +223,7 @@ function PrePayment() {
                 {selectedPrePayment.lcAmmendments && (
                   selectedPrePayment.lcAmmendments.map((item, index) => (
                     <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={item.lc_ammendment}>{item.name}</a></p>
+                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_ammendment}`}>{item.name}</a></p>
 
                     </div>
                   )))}
@@ -224,7 +231,7 @@ function PrePayment() {
                 {selectedPrePayment.advanceTTCopies && (
                   selectedPrePayment.advanceTTCopies.map((item, index) => (
                     <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={item.advance_tt_copy}>{item.name}</a></p>
+                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.advance_tt_copy}`}>{item.name}</a></p>
 
                     </div>
                   )))}

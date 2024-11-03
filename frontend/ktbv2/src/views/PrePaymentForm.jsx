@@ -206,11 +206,11 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         { label: 'Value of Contract', text: data.presp.trade.contract_value || '' },
         { label: 'Advance to Pay', text: advanceToPay(data) || '' },
         { label: 'Advance to Receive', text: advanceToReceive(data) || '' },
-        // { label: 'Advance Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
+        { label: 'Advance Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
     
-        { label: 'Remarks', text: data.remarks || '' },
+        // { label: 'Remarks', text: data.remarks || '' },
       ]
     : [];
 
@@ -247,7 +247,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     </select>
                     {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
-                <div>
+                {/* <div>
                     <label htmlFor='adv_due_date' className="block text-sm font-medium text-gray-700">Advance Due Date</label>
                     <input
                         id="adv_due_date"
@@ -258,8 +258,8 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                     {validationErrors.adv_due_date && <p className="text-red-500">{validationErrors.adv_due_date}</p>}
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                     <label htmlFor='as_per_pi_advance' className="block text-sm font-medium text-gray-700">As Per PI Cash/TT/Advance</label>
                     <input
                         id="as_per_pi_advance"
@@ -270,7 +270,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                     {validationErrors.as_per_pi_advance && <p className="text-red-500">{validationErrors.as_per_pi_advance}</p>}
-                </div>
+                </div> */}
                 
                 <div>
                     <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">LC Number</label>
