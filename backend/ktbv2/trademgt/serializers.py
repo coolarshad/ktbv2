@@ -411,7 +411,39 @@ class AdvanceTTCopySerializer(serializers.ModelSerializer):
         model = AdvanceTTCopy
         fields = '__all__'
 
+
+class SalesPurchaseProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesPurchaseProduct
+        fields = '__all__'
+
+class SalesPurchaseExtraChargeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesPurchaseExtraCharge
+        fields = '__all__'
+
+class PackingListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PackingList
+        fields = '__all__'
+
+class BL_CopySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BL_Copy
+        fields = '__all__'
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = '__all__'
+
+class COASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = COA
+        fields = '__all__'
+
 class SalesPurchaseSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = SalesPurchase
         fields = '__all__'
@@ -444,37 +476,12 @@ class SalesPurchaseSerializer(serializers.ModelSerializer):
         
         return ret
         
-class SalesPurchaseProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalesPurchaseProduct
-        fields = '__all__'
 
-class SalesPurchaseExtraChargeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalesPurchaseExtraCharge
-        fields = '__all__'
-
-class PackingListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PackingList
-        fields = '__all__'
-
-class BL_CopySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BL_Copy
-        fields = '__all__'
-
-class InvoiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Invoice
-        fields = '__all__'
-
-class COASerializer(serializers.ModelSerializer):
-    class Meta:
-        model = COA
-        fields = '__all__'
 
 class SPSerializer(serializers.ModelSerializer):
+    trade_products = TradeProductSerializer(many=True, read_only=True)
+    trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Trade
         fields = '__all__'    
@@ -623,6 +630,19 @@ class InventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventory
         fields = '__all__'
+    
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+       
+        ret['productName'] = self.get_product_details(instance)
+        return ret
 
 class PackingSerializer(serializers.ModelSerializer):
     class Meta:

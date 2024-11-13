@@ -64,9 +64,25 @@ function SalesPurchases() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedPrePayment(null);
+    setSP(null);
   };
 
+  const getSPData=(data,product_name)=>{
+    return data.find((item)=>item.product_name==product_name) || ''
+  }
+
+  const approveSP = async () => {
+    try {
+      await axios.get(`/trademgt/sales-purchases-approve/${selectedSP.id}/`);
+      setIsModalOpen(false);
+      setSP(null);
+      // Reload the page
+      window.location.reload();
+    } catch (error) {
+      console.error('Error approving Sales/Purchase:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
 
   const fieldOptions = [
     { value: 'trn__trn', label: 'TRN' },  // Trade TRN field in PreSalePurchase filter
@@ -137,10 +153,10 @@ function SalesPurchases() {
                       <td className="py-2 px-4 text-gray-800">{selectedSP.trn.trade_type}</td>
                     </tr>
 
-                    <tr className="border-b border-gray-200">
+                    {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Markings </td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.trn.markings_in_packaging}</td>
-                    </tr>
+                    </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Buyer/Seller </td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.prepayment.kyc.name}</td>
@@ -167,7 +183,7 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.commission_value}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedSP.trn.commission_value}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Number </td>
@@ -190,17 +206,17 @@ function SalesPurchases() {
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Date</td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.bl_date}</td>
                     </tr>
-                    <tr className="border-b border-gray-200">
+                    {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Packing Cost </td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.total_packing_cost}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packaging Supplier</td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.packaging_supplier}</td>
-                    </tr>
+                    </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.logistic_supplier}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedSP.trn.logistic_provider}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost </td>
@@ -264,16 +280,27 @@ function SalesPurchases() {
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch Number</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Marking</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
+                   
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedSP.salesPurchaseProducts.map(product => (
+                  {selectedSP.trn.trade_products.map(product => (
                     <tr key={product.id}>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).trade_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).trade_qty_unit}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).batch_number}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).production_date}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -289,12 +316,12 @@ function SalesPurchases() {
                 </thead>
                 <tbody>
                   {selectedSP.extraCharges.map((cost, index) =>
-                    cost.name && cost.charge ? ( // Check if both fields exist
+                    cost.name &&  ( // Check if both fields exist
                       <tr key={index}>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.name}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.charge}</td>
                       </tr>
-                    ) : null
+                    )
                   )}
                 </tbody>
               </table>
@@ -383,7 +410,11 @@ function SalesPurchases() {
                 </tbody>
               </table>
 
-
+              {selectedSP.reviewed ? '' :
+                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                      <button onClick={approveSP} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                    </div>
+                  }
             </div>
           </div>
         )}

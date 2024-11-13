@@ -42,6 +42,7 @@ import ProductName from './views/ProductName';
 import ShipmentSize from './views/ShipmentSize';
 import Currency from './views/Currency';
 import TradePacking from './views/TradePacking';
+import Inventory from './views/Inventory';
 
 function App() {
  
@@ -105,6 +106,8 @@ function App() {
           <Route path="/shipments-size" element={<ShipmentSize />} />
           <Route path="/currency" element={<Currency />} />
           <Route path="/trade-packings" element={<TradePacking />} />
+
+          <Route path="/inventory" element={<Inventory />} />
         </Routes>
       </div>
     </Router>

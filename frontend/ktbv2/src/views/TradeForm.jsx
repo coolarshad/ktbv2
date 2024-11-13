@@ -1598,7 +1598,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     {validationErrors.estimated_logistic_cost && <p className="text-red-500">{validationErrors.estimated_logistic_cost}</p>}
                 </div>
                 <div>
-                    <label htmlFor="logistic_cost_tolerence" className="block text-sm font-medium text-gray-700">Logistic Cost Tolerance</label>
+                    <label htmlFor="logistic_cost_tolerence" className="block text-sm font-medium text-gray-700">Logistic Cost Tolerance(%)</label>
                     <input
                         type="number"
                         name="logistic_cost_tolerence"

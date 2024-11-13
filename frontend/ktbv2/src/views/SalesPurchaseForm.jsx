@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
+import { capitalizeKey } from '../utils';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const [trnOptions, setTrnOptions] = useState([]); 
-    
+    const [validationErrors, setValidationErrors] = useState({});
     const [data, setData] = useState(null); 
     const navigate = useNavigate();
 
@@ -15,15 +16,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         invoice_date: '',
         invoice_number: '',
         invoice_amount: '',
-        commission_value: '',
+        // commission_value: '',
         bl_number: '',
+        purchase_bl_number: '',
         bl_qty: '',
         bl_fees: '',
         bl_collection_cost: '',
         bl_date: '',
-        total_packing_cost: '',
-        packaging_supplier: '',
-        logistic_supplier: '',
+        // total_packing_cost: '',
+        // packaging_supplier: '',
+        // logistic_supplier: '',
         
         logistic_cost: '',
         logistic_cost_due_date: '',
@@ -65,15 +67,15 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         invoice_date: data.invoice_date,
                         invoice_number: data.invoice_number,
                         invoice_amount: data.invoice_amount,
-                        commission_value: data.commission_value,
+                        // commission_value: data.commission_value,
                         bl_number: data.bl_number,
                         bl_qty: data.bl_qty,
                         bl_fees: data.bl_fees,
                         bl_collection_cost: data.bl_collection_cost,
                         bl_date: data.bl_date,
-                        total_packing_cost: data.total_packing_cost,
-                        packaging_supplier: data.packaging_supplier,
-                        logistic_supplier: data.logistic_supplier,
+                        // total_packing_cost: data.total_packing_cost,
+                        // packaging_supplier: data.packaging_supplier,
+                        // logistic_supplier: data.logistic_supplier,
                         logistic_cost: data.logistic_cost,
                         logistic_cost_due_date: data.logistic_cost_due_date,
                         liner: data.liner,
@@ -113,6 +115,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
       }, [mode, id]);
 
     const [unitOptions, setUnitOptions] = useState([]);
+    const [productOptions, setProductOptions] = useState([]);
+    const [purchaseBLOptions, setPurchaseBLOptions] = useState([]);
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
             const response = await axios.get(url, { params });  // Pass params to axios.get
@@ -126,6 +130,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     useEffect(() => {
         fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
         fetchData('/trademgt/unit',{}, setUnitOptions);
+        fetchData('/trademgt/product-names',{}, setProductOptions);
+        fetchData('/trademgt/sp-purchase-bl',{}, setPurchaseBLOptions);
     }, []);
 
       const handleChange = async (e, arrayName = null, index = null) => {
@@ -164,7 +170,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         if (name === 'trn') {
           try {
             const response = await axios.get(`/trademgt/sp/${value}`);
-            setData(response.data);
+            response.data.prepayment? setData(response.data):alert('No Prepayment Found !');
+          
+
+            // Update salesPurchaseProducts in formData with trade_products from fetched data
+            setFormData((prev) => ({
+                ...prev,
+                salesPurchaseProducts: response.data.trade_products || [] // Fallback to empty array if no products
+            }));
           } catch (error) {
             console.error('Error fetching TRN data:', error);
           }
@@ -216,7 +229,45 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(formData);
+        
+        let errors = {};
+
+        // Define fields to skip validation for
+        const skipValidation = ['purchase_bl_number'];
+
+        // Check each regular field for empty value (except files and those in skipValidation)
+        for (const [key, value] of Object.entries(formData)) {
+            if (!skipValidation.includes(key) && value === '') {
+                errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+            }
+        }
+
+         // Validate tradeProducts array fields but skip 'loi'
+         formData.salesPurchaseProducts.forEach((product, index) => {
+            for (const [key, value] of Object.entries(product)) { 
+                if (!skipValidation.includes(key) && value === '') {
+                    errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+            }
+        });
+
+         // Validate tradeProducts array fields but skip 'loi'
+         formData.extraCharges.forEach((product, index) => {
+            for (const [key, value] of Object.entries(product)) { 
+                if (!skipValidation.includes(key) && value === '') {
+                    errors[`extraCharges[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+            }
+        });
+
+        setValidationErrors(errors);
+    
+        if (Object.keys(errors).length > 0) {
+            console.log(errors)
+            return; // Don't proceed if there are validation errors
+        }else{
+             setValidationErrors({});  
+        }
 
         const formDataToSend = new FormData();
 
@@ -268,12 +319,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     const tradeData = data
     ? [
         { label: 'Trade Type', text: data.trade_type || '' },
-        { label: 'Markings', text: data.markings_in_packaging || '' },
+        // { label: 'Markings', text: data.markings_in_packaging || '' },
         
-        { label: 'Customer Company Name', text: data.prepayment.kyc?.name || '' },
+        { label: 'Buyer/Seller Name', text: data.prepayment.kyc?.name || '' },
         { label: 'LC Details', text: data.prepayment.lc_number || '' },
         { label: 'Commission Agent', text: data.commission_agent || '' },
-      
+        { label: 'Commission Value', text: data.commission_value || 0 },
+        // { label: 'Tolerance', text: data.commission_value || '' },
+        { label: 'Logistic Provider', text: data.logistic_provider || '' },
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
         
@@ -283,8 +336,10 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+            <h2 className="text-2xl mb-2 text-center">Sales / Purchase Document</h2>
             {data && (
-
+                <>
+                
                 <div className="grid grid-cols-4 gap-1 py-2">
                     {tradeData.map((item, index) => (
                         <div key={index} className="p-2 border rounded shadow-sm">
@@ -293,6 +348,48 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         </div>
                     ))}
                 </div>
+                <table className="min-w-full bg-white">
+               <thead>
+                 <tr>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
+                   {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name for Client</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LOI</th> */}
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty Unit</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
+                 
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Marking</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {data.trade_products.map(product => (
+                   <tr key={product.id}>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
+                    
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
+                     
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+                </>
             )}
             {/* SalesPurchase Fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 ">
@@ -312,6 +409,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                             </option>
                         ))}
                     </select>
+                    {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
                 <div>
                     <label htmlFor="invoice_date" className="block text-sm font-medium text-gray-700">Invoice Date</label>
@@ -323,6 +421,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.invoice_date && <p className="text-red-500">{validationErrors.invoice_date}</p>}
                 </div>
                 <div>
                     <label htmlFor="invoice_number" className="block text-sm font-medium text-gray-700">Invoice Number</label>
@@ -334,6 +433,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.invoice_number && <p className="text-red-500">{validationErrors.invoice_number}</p>}
                 </div>
            
             <div>
@@ -346,8 +446,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.invoice_amount && <p className="text-red-500">{validationErrors.invoice_amount}</p>}
             </div>
-            <div>
+            {/* <div>
                 <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
                 <input
                     id="commission_value"
@@ -357,7 +458,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, commission_value: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
-            </div>
+            </div> */}
             <div>
                 <label htmlFor="bl_number" className="block text-sm font-medium text-gray-700">BL Number</label>
                 <input
@@ -368,6 +469,26 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, bl_number: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.bl_number && <p className="text-red-500">{validationErrors.bl_number}</p>}
+            </div>
+            <div>
+                <label htmlFor="purchase_bl_number" className="block text-sm font-medium text-gray-700">Purchase BL Number</label>
+                <select
+                        id="purchase_bl_number"
+                        name="purchase_bl_number"
+                        value={formData.purchase_bl_number}
+                        onChange={(e) => handleChange(e)}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        disabled={data?.trade_type=='Purchase'?true:false}
+                    >
+                        <option value="">Select BL Number</option>
+                        {purchaseBLOptions.map(option => (
+                            <option key={option.id} value={option.bl_number}>
+                                {option.bl_number}
+                            </option>
+                        ))}
+                    </select>
+                   
             </div>
             <div>
                 <label htmlFor="bl_qty" className="block text-sm font-medium text-gray-700">BL Quantity</label>
@@ -379,6 +500,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, bl_qty: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                {validationErrors.bl_qty && <p className="text-red-500">{validationErrors.bl_qty}</p>}
             </div>
             <div>
                 <label htmlFor="bl_fees" className="block text-sm font-medium text-gray-700">BL Fees</label>
@@ -390,6 +512,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.bl_fees && <p className="text-red-500">{validationErrors.bl_fees}</p>}
             </div>
             <div>
                 <label htmlFor="bl_collection_cost" className="block text-sm font-medium text-gray-700">BL Collection Cost</label>
@@ -401,6 +524,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, bl_collection_cost: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.bl_collection_cost && <p className="text-red-500">{validationErrors.bl_collection_cost}</p>}
             </div>
             <div>
                 <label htmlFor="bl_date" className="block text-sm font-medium text-gray-700">BL Date</label>
@@ -412,8 +536,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, bl_date: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.bl_date && <p className="text-red-500">{validationErrors.bl_date}</p>}
             </div>
-            <div>
+            {/* <div>
                 <label htmlFor="total_packing_cost" className="block text-sm font-medium text-gray-700">Total Packing Cost</label>
                 <input
                     id="total_packing_cost"
@@ -423,8 +548,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, total_packing_cost: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
-            </div>
-            <div>
+            </div> */}
+            {/* <div>
                 <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
                 <input
                     id="packaging_supplier"
@@ -434,9 +559,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, packaging_supplier: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
-            </div>
+            </div> */}
            
-                <div>
+                {/* <div>
                     <label htmlFor="logistic_supplier" className="block text-sm font-medium text-gray-700">Logistic Provider</label>
                     <input
                         id="logistic_supplier"
@@ -446,7 +571,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         onChange={(e) => setFormData({ ...formData, logistic_supplier: e.target.value })}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                </div>
+                </div> */}
            
             <div>
                 <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
@@ -458,6 +583,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, logistic_cost: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.logistic_cost && <p className="text-red-500">{validationErrors.logistic_cost}</p>}
             </div>
             <div>
                 <label htmlFor="logistic_cost_due_date" className="block text-sm font-medium text-gray-700">Logistic Cost Due Date</label>
@@ -469,6 +595,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, logistic_cost_due_date: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                  {validationErrors.logistic_cost_due_date && <p className="text-red-500">{validationErrors.logistic_cost_due_date}</p>}
             </div>
             <div>
                 <label htmlFor="liner" className="block text-sm font-medium text-gray-700">Liner</label>
@@ -480,6 +607,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, liner: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.liner && <p className="text-red-500">{validationErrors.liner}</p>}
             </div>
 
             <div>
@@ -492,6 +620,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, pod: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                  {validationErrors.pod && <p className="text-red-500">{validationErrors.pod}</p>}
             </div>
             <div>
                 <label htmlFor="pol" className="block text-sm font-medium text-gray-700">POL</label>
@@ -503,6 +632,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, pol: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                  {validationErrors.pol && <p className="text-red-500">{validationErrors.pol}</p>}
             </div>
             <div>
                 <label htmlFor="etd" className="block text-sm font-medium text-gray-700">ETD</label>
@@ -514,6 +644,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, etd: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                  {validationErrors.etd && <p className="text-red-500">{validationErrors.etd}</p>}
             </div>
 
 
@@ -528,6 +659,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, eta: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                  {validationErrors.eta && <p className="text-red-500">{validationErrors.eta}</p>}
             </div>
             <div>
                 <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
@@ -539,6 +671,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, shipment_status: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                 {validationErrors.shipment_status && <p className="text-red-500">{validationErrors.shipment_status}</p>}
             </div>
             <div>
                 <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
@@ -550,6 +683,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
+                  {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
             </div>
             </div>
 
@@ -560,18 +694,37 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             <h3 className="text-lg font-medium text-gray-900">Products</h3>
                 {formData.salesPurchaseProducts.map((product, index) => (
                     <>
-                        <div key={index} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-10 gap-1 mb-4 justify-between items-end px-4 py-2">
+                        <div key={index} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-1 mb-4 justify-between items-end px-4 py-2">
                             {/* Product Name */}
-                            <div className="col-span-1 sm:col-span-2">
+                            <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                                <input
+                                {/* <input
                                     type="text"
                                     name="product_name"
                                     value={product.product_name}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Product Name"
                                     className="border border-gray-300 p-2 rounded w-full"
-                                />
+                                /> */}
+                                <select
+                                    id="product_name"
+                                    name="product_name"
+                                    value={product.product_name}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                >
+                                    <option value="">Select Product</option>
+                                    {productOptions.map(option => (
+                                        <option key={option.id} value={option.id}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {validationErrors[`salesPurchaseProducts[${index}].product_name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].product_name`]}
+                                    </p>
+                                )}
                             </div>
 
                             {/* HS Code */}
@@ -585,6 +738,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     placeholder="HS Code"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
+                                {validationErrors[`salesPurchaseProducts[${index}].hs_code`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].hs_code`]}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Tolerance */}
@@ -598,6 +756,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     placeholder="Tolerance"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
+                                {validationErrors[`salesPurchaseProducts[${index}].tolerance`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].tolerance`]}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Batch Number */}
@@ -611,10 +774,15 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     placeholder="Batch Number"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
+                                 {validationErrors[`salesPurchaseProducts[${index}].batch_number`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].batch_number`]}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Production Date */}
-                            <div className="col-span-1 sm:col-span-2">
+                            <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
                                 <input
                                     type="date"
@@ -623,6 +791,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
+                                 {validationErrors[`salesPurchaseProducts[${index}].production_date`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].production_date`]}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Trade Quantity */}
@@ -636,6 +809,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     placeholder="Trade Quantity"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
+                                 {validationErrors[`salesPurchaseProducts[${index}].trade_qty`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].trade_qty`]}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Trade Qty Unit */}
@@ -654,6 +832,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                         </option>
                                     ))}
                                 </select>
+                                {validationErrors[`salesPurchaseProducts[${index}].trade_qty_unit`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].trade_qty_unit`]}
+                                    </p>
+                                )}
                             </div>
                             <div>
                                 <button
@@ -696,6 +879,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'extraCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
+                             {validationErrors[`extraCharges[${index}].name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`extraCharges[${index}].name`]}
+                                    </p>
+                                )}
                         </div>
                         <div>
                             <label htmlFor={`extra_charge_${index}`} className="block text-sm font-medium text-gray-700">Charge</label>
@@ -707,6 +895,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'extraCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
+                             {validationErrors[`extraCharges[${index}].charge`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`extraCharges[${index}].charge`]}
+                                    </p>
+                                )}
                         </div>
                         <div className="flex items-end">
                             <button type="button" onClick={() => handleRemoveRow('extraCharges', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">

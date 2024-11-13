@@ -55,6 +55,8 @@ urlpatterns = [
 
     path('sales-purchases/', SalesPurchaseView.as_view(), name='sales-purchases'),
     path('sales-purchases/<int:pk>/', SalesPurchaseView.as_view(), name='sales-purchases-detail'),
+    path('sales-purchases-approve/<int:pk>/', SalesPurchaseApprove.as_view(), name='sales-purchases-approve'),
+    path('sp-purchase-bl/', SalesPurchaseBLView.as_view(), name='sales-purchases-bl'),
 
     path('payment-finances/', PaymentFinanceView.as_view(), name='payment-finances'),
     path('payment-finances/<int:pk>/', PaymentFinanceView.as_view(), name='payment-finances-detail'),

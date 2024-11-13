@@ -304,15 +304,15 @@ class SalesPurchase(models.Model):
     invoice_date=models.DateField(_("invoice_date"), auto_now=False, auto_now_add=False)
     invoice_number=models.CharField(_("invoice_number"), max_length=50)
     invoice_amount=models.FloatField(_("invoice_amount"))
-    commission_value=models.FloatField(_("commission_value"))
+    # commission_value=models.FloatField(_("commission_value"))
     bl_number=models.CharField(_("bl_number"), max_length=50)
     bl_qty=models.FloatField(_("bl_qty"))
     bl_fees=models.FloatField(_("bl_fees"))
     bl_collection_cost=models.FloatField(_("bl_collection_cost"))
     bl_date=models.DateField(_("bl_date"), auto_now=False, auto_now_add=False)
-    total_packing_cost=models.FloatField(_("total_packing_cost"))
-    packaging_supplier=models.CharField(_("packaging_supplier"), max_length=50)
-    logistic_supplier=models.CharField(_("logistic_supplier"), max_length=50)
+    # total_packing_cost=models.FloatField(_("total_packing_cost"))
+    # packaging_supplier=models.CharField(_("packaging_supplier"), max_length=50)
+    # logistic_supplier=models.CharField(_("logistic_supplier"), max_length=50)
     # batch_number=models.CharField(_("batch_number"), max_length=50)
     # production_date=models.DateField(_("production_date"))
     logistic_cost=models.FloatField(_("logistic_cost"))
@@ -324,6 +324,7 @@ class SalesPurchase(models.Model):
     eta=models.DateField(_("eta"), auto_now=False, auto_now_add=False)
     shipment_status=models.CharField(_("shipment_status"), max_length=50)
     remarks=models.CharField(_("remarks"), max_length=50)
+    reviewed=models.BooleanField(_("reviewed"),default=False)
     
 
     class Meta:
@@ -331,7 +332,7 @@ class SalesPurchase(models.Model):
         verbose_name_plural = _("SalesPurchases")
 
     def __str__(self):
-        return self.name
+        return self.invoice_number
 
     def get_absolute_url(self):
         return reverse("SalePurchase_detail", kwargs={"pk": self.pk})

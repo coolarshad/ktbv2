@@ -108,7 +108,8 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         if (name === "trn") {
             try {
                 const response = await axios.get(`/trademgt/prepay/${value}`);
-                setData(response.data)
+                response.data.presp? setData(response.data):alert('No Pre Sale/Purchase Found !');
+                
             } catch (error) {
                 console.error("Error fetching TRN data:", error);
             }

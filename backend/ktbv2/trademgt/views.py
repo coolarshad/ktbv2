@@ -1269,15 +1269,15 @@ class SalesPurchaseView(APIView):
             'invoice_date': data.get('invoice_date'),
             'invoice_number': data.get('invoice_number'),
             'invoice_amount': data.get('invoice_amount'),
-            'commission_value': data.get('commission_value'),
+            # 'commission_value': data.get('commission_value'),
             'bl_number': data.get('bl_number'),
             'bl_qty': data.get('bl_qty'),
             'bl_fees': data.get('bl_fees'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'bl_date': data.get('bl_date'),
-            'total_packing_cost': data.get('total_packing_cost'),
-            'packaging_supplier': data.get('packaging_supplier'),
-            'logistic_supplier': data.get('logistic_supplier'),
+            # 'total_packing_cost': data.get('total_packing_cost'),
+            # 'packaging_supplier': data.get('packaging_supplier'),
+            # 'logistic_supplier': data.get('logistic_supplier'),
             # 'batch_number': data.get('batch_number'),
             # 'production_date': data.get('production_date'),
             'logistic_cost': data.get('logistic_cost'),
@@ -1422,15 +1422,15 @@ class SalesPurchaseView(APIView):
             'invoice_date': data.get('invoice_date'),
             'invoice_number': data.get('invoice_number'),
             'invoice_amount': data.get('invoice_amount'),
-            'commission_value': data.get('commission_value'),
+            # 'commission_value': data.get('commission_value'),
             'bl_number': data.get('bl_number'),
             'bl_qty': data.get('bl_qty'),
             'bl_fees': data.get('bl_fees'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'bl_date': data.get('bl_date'),
-            'total_packing_cost': data.get('total_packing_cost'),
-            'packaging_supplier': data.get('packaging_supplier'),
-            'logistic_supplier': data.get('logistic_supplier'),
+            # 'total_packing_cost': data.get('total_packing_cost'),
+            # 'packaging_supplier': data.get('packaging_supplier'),
+            # 'logistic_supplier': data.get('logistic_supplier'),
             # 'batch_number': data.get('batch_number'),
             # 'production_date': data.get('production_date'),
             'logistic_cost': data.get('logistic_cost'),
@@ -1512,6 +1512,40 @@ class SalesPurchaseView(APIView):
             m += 1
        
         with transaction.atomic():
+            spProducts=SalesPurchaseProduct.objects.filter(sp=sp)
+
+            if sp.trn.trade_type.lower() == "sales":
+                for product in spProducts:
+                    try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+            
+                        if existing_inv:
+                            existing_inv.quantity = float(existing_inv.quantity)+float(product.trade_qty)
+                            existing_inv.save()
+                       
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating Inventory: {e}")
+                        raise
+                    
+            
+            if sp.trn.trade_type.lower() == "purchase":
+                for product in spProducts:
+                    try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+            
+                        if existing_inv:
+                            # If it exists, update only the fields you want to update
+                            existing_inv.quantity = float(existing_inv.quantity)-float(product.trade_qty)
+                            existing_inv.save()
+                        
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating Inventory: {e}")
+                        raise
+
             sp_serializer = SalesPurchaseSerializer(sp, data=sp_data, partial=True)
             if sp_serializer.is_valid():
                 sp = sp_serializer.save()
@@ -1574,6 +1608,51 @@ class SalesPurchaseView(APIView):
                     BL_Copy.objects.bulk_create(bl_copies)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+            salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
+            if sp.trn.trade_type.lower() == "sales":
+                for product in salesPurchaseProducts:
+                    try:
+                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                        if existing_inv:
+                            # If it exists, update only the fields you want to update
+                            existing_inv.quantity-= product.trade_qty
+                            existing_inv.save()
+                        else:
+                            # If it doesn't exist, create a new record with all fields
+                            Inventory.objects.create(
+                            product_name=product.product_name,
+                            batch_number=product.batch_number,
+                            production_date=product.production_date,    
+                            quantity=0-float(product.trade_qty),
+                            unit=product.trade_qty_unit
+                            )
+                    except Exception as e:
+                            # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating Inventory: {e}")
+                        raise
+
+            if sp.trn.trade_type.lower() == "purchase":
+                for product in salesPurchaseProducts:
+                    try:
+                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                        if existing_inv:
+                            # If it exists, update only the fields you want to update
+                            existing_inv.quantity+= product.trade_qty
+                            existing_inv.save()
+                        else:
+                            # If it doesn't exist, create a new record with all fields
+                            Inventory.objects.create(
+                            product_name=product.product_name,
+                            batch_number=product.batch_number,
+                            production_date=product.production_date,    
+                            quantity=float(product.trade_qty),
+                            unit=product.trade_qty_unit
+                            )
+                    except Exception as e:
+                            # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating Inventory: {e}")
+                        raise
 
         return Response(sp_serializer.data, status=status.HTTP_200_OK)
 
@@ -1586,6 +1665,33 @@ class SalesPurchaseView(APIView):
             return Response({'error': 'SalesPurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
         with transaction.atomic():
+            salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
+            if sp.trn.trade_type.lower() == "sales":
+                for product in salesPurchaseProducts:
+                    try:
+                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                        if existing_inv:
+                                # If it exists, update only the fields you want to update
+                            existing_inv.quantity+= product.trade_qty
+                            existing_inv.save()
+                    except Exception as e:
+                            # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating Inventory: {e}")
+                        raise
+
+            if sp.trn.trade_type.lower() == "purchase":
+                for product in salesPurchaseProducts:
+                    try:
+                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                        if existing_inv:
+                            # If it exists, update only the fields you want to update
+                            existing_inv.quantity-= product.trade_qty
+                            existing_inv.save()
+                           
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating or creating Inventory: {e}")
+                        raise
             # Delete related trade products and extra costs
             SalesPurchaseProduct.objects.filter(sp=sp).delete()
             SalesPurchaseExtraCharge.objects.filter(sp=sp).delete()
@@ -1617,6 +1723,82 @@ class COAViewSet(viewsets.ModelViewSet):
     queryset = COA.objects.all()
     serializer_class = COASerializer
 
+class SalesPurchaseApprove(APIView):
+    def get(self, request, *args, **kwargs):
+        sp_id = kwargs.get('pk')
+    
+        if not sp_id:
+            return Response({'detail': 'Sales/Purchase ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                sp = SalesPurchase.objects.get(id=sp_id)
+                sp.reviewed = True
+                sp.save()
+                salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
+                if sp.trn.trade_type.lower() == "sales":
+                    for product in salesPurchaseProducts:
+                        try:
+                            existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                            if existing_inv:
+                                # If it exists, update only the fields you want to update
+                                existing_inv.quantity-= product.trade_qty
+                                existing_inv.save()
+                            else:
+                                # If it doesn't exist, create a new record with all fields
+                                Inventory.objects.create(
+                                product_name=product.product_name,
+                                batch_number=product.batch_number,
+                                production_date=product.production_date,    
+                                quantity=0-float(product.trade_qty),
+                                unit=product.trade_qty_unit
+                                )
+                        except Exception as e:
+                            # Handle specific exception for SalesProductTrace
+                            print(f"Error updating or creating Inventory: {e}")
+                            raise
+
+                if sp.trn.trade_type.lower() == "purchase":
+                    for product in salesPurchaseProducts:
+                        try:
+                            existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                            if existing_inv:
+                                # If it exists, update only the fields you want to update
+                                existing_inv.quantity+= product.trade_qty
+                                existing_inv.save()
+                            else:
+                                # If it doesn't exist, create a new record with all fields
+                                Inventory.objects.create(
+                                product_name=product.product_name,
+                                batch_number=product.batch_number,
+                                production_date=product.production_date,    
+                                quantity=float(product.trade_qty),
+                                unit=product.trade_qty_unit
+                                )
+                        except Exception as e:
+                            # Handle specific exception for SalesProductTrace
+                            print(f"Error updating or creating Inventory: {e}")
+                            raise
+
+                serializer = SalesPurchaseSerializer(sp)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except SalesPurchase.DoesNotExist:
+            return Response({'detail': 'Sales/Purchase not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SalesPurchaseBLView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            sp = SalesPurchase.objects.filter(trn__trade_type='Purchase')
+            serializer = SalesPurchaseSerializer(sp,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except SalesPurchase.DoesNotExist:
+            return Response({'detail': 'Sales/Purchase not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+           
 class PaymentFinanceView(APIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = PaymentFinanceFilter
