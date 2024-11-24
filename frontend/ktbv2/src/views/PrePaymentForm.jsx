@@ -16,7 +16,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     const [formData, setFormData] = useState({
         trn: '',
         adv_due_date:'',
-        as_per_pi_advance: '',
+        // as_per_pi_advance: '',
         lc_number: '',
         lc_opening_bank: '',
         advance_received: '',
@@ -40,7 +40,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         ...prevState,
                         trn: data.trn.id,
                         adv_due_date: data.adv_due_date,
-                        as_per_pi_advance: data.as_per_pi_advance,
+                        // as_per_pi_advance: data.as_per_pi_advance,
                         lc_number: data.lc_number,
                         lc_opening_bank: data.lc_opening_bank,
                         advance_received: data.advance_received,
@@ -74,7 +74,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     
             setFormData(prevState => ({
                 ...prevState,
-                as_per_pi_advance: calculatedAdvance || '',
+                // as_per_pi_advance: calculatedAdvance || '',
                 adv_due_date: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)
             }));
         }
