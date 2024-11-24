@@ -991,7 +991,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].product_code_ref`)}`}
                                 >
-                                    {/* <option value="">Select Type</option> */}
+                                    <option value="">Select---</option>
                                     <option value="NA">NA</option>
                                     {formData.trade_type === 'Sales'
                                         ? salesTrace.map((option) => (
