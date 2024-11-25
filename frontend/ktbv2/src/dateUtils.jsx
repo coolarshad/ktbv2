@@ -22,3 +22,11 @@ export const advanceToReceive = (trade) => {
     ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100) || ''
     : 'NA';
 };
+
+export const paymentDueDate = (data) => {
+  const payment_within=data.sp.trn.paymentTerm.payment_within;
+  const payment_from=data.sp.trn.paymentTerm.payment_from;
+  // print(data.sp.bl_date,payment_from)
+  
+  return addDaysToDate(data.sp.bl_date,payment_within)
+};

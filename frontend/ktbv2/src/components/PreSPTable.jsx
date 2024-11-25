@@ -210,6 +210,10 @@ const PreSPTable = ({ data, onDelete }) => {
                             <p className='text-sm uppercase'>{selectedTrade.paymentTerm.name}</p>
                           </div>
                           <div className="border-b border-black p-2">
+                              <p className='font-bold'>ADVANCE/LC DUE DATE</p>
+                              <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
+                            </div>
+                          <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>Port of Loading</p>
                             <p className='text-sm uppercase'>{selectedTrade.pol}</p>
                           </div>
@@ -245,15 +249,13 @@ const PreSPTable = ({ data, onDelete }) => {
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
                                   {product.product_name_for_client ? product.product_name_for_client : product.productName.name}
                                 </td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.hs_code}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty_unit}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.selected_currency_rate}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency.name}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.tolerance}</td>
-                                <td className="border-l border-r border-black p-1 text-right text-sm">
-                                  {product.product_value}
-                                </td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center ">{product.trade_qty_unit}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.selected_currency_rate.toFixed(2)}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{selectedTrade.currency.name}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.tolerance}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-right">{product.product_value.toFixed(2)}</td>
                             </tr>
                           ))}
                           {Array.from({ length: 18 - selectedTrade.trade_products.length }, (_, index) => (
@@ -272,13 +274,13 @@ const PreSPTable = ({ data, onDelete }) => {
                           <tr>
                             <td className="border border-black p-2"></td>
                             <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2 text-sm">Total</td>
-                            <td className="border border-black p-2 text-sm">{totalTradeQuantity}</td>
+                            <td className="border border-black p-2 text-sm text-center">Total</td>
+                            <td className="border border-black p-2 text-sm text-center">{totalTradeQuantity}</td>
                             <td className="border border-black p-2"></td>
                             <td className="border border-black p-2"></td>
                             <td className="border border-black p-2"></td>
                             <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2 text-right text-sm">{totalAmount}</td>
+                            <td className="border border-black p-2 text-right text-sm">{totalAmount.toFixed(2)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -289,8 +291,8 @@ const PreSPTable = ({ data, onDelete }) => {
                       {/* Row 1 */}
                       <div className=" p-2">
                         <p className='text-sm'>Amount Chargeable (in words)</p>
-                        <p className='font-bold mb-2 text-sm uppercase'>{selectedTrade.currency_selection} {toWords(totalAmount)} Only</p>
-                        <p className='text-sm'>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
+                        <p className='font-bold mb-2 text-sm uppercase'>{selectedTrade.currency.name} {toWords(totalAmount)} Only</p>
+                        <p className='text-sm'>DOUMENTS REQUIRED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
                             <div key={index}>
@@ -402,13 +404,13 @@ const PreSPTable = ({ data, onDelete }) => {
                               <p className='uppercase'>{selectedTrade.paymentTerm.name}</p>
                             </div>
                             <div className="border-b border-black p-2">
-                              <p className='font-bold'>ADVANCE DUE DATE /</p>
+                              <p className='font-bold'>ADVANCE/LC DUE DATE</p>
                               <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
                             </div>
-                            <div className="border-b border-black p-2">
+                            {/* <div className="border-b border-black p-2">
                               <p className='font-bold'>LC DUE DATE</p>
                               <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
-                            </div>
+                            </div> */}
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>Port of Loading</p>
                               <p className='uppercase'>{selectedTrade.pol}</p>
@@ -444,14 +446,14 @@ const PreSPTable = ({ data, onDelete }) => {
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
                                   {product.product_name_for_client ? product.product_name_for_client : product.productName.name}
                                 </td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.hs_code}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.trade_qty_unit}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.selected_currency_rate}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{selectedTrade.currency.name}</td>
-                                <td className="border-l border-r border-black p-1 text-sm">{product.tolerance}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty_unit}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.selected_currency_rate.toFixed(2)}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{selectedTrade.currency.name}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-center">{product.tolerance}</td>
                                 <td className="border-l border-r border-black p-1 text-right text-sm">
-                                  {product.product_value}
+                                  {product.product_value.toFixed(2)}
                                 </td>
                               </tr>
                             ))}
@@ -471,13 +473,13 @@ const PreSPTable = ({ data, onDelete }) => {
                             <tr>
                               <td className="border border-black p-2"></td>
                               <td className="border border-black p-2"></td>
-                              <td className="border border-black p-2 text-sm">Total</td>
-                              <td className="border border-black p-2 text-sm">{totalTradeQuantity}</td>
+                              <td className="border border-black p-2 text-sm text-center">Total</td>
+                              <td className="border border-black p-2 text-sm text-center">{totalTradeQuantity}</td>
                               <td className="border border-black p-2"></td>
                               <td className="border border-black p-2"></td>
                               <td className="border border-black p-2"></td>
                               <td className="border border-black p-2"></td>
-                              <td className="border border-black p-2 text-right text-sm">{totalAmount}</td>
+                              <td className="border border-black p-2 text-right text-sm">{totalAmount.toFixed(2)}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -500,12 +502,12 @@ const PreSPTable = ({ data, onDelete }) => {
                         ) : (
                           <p>No Document data available.</p>
                         )}
-                          <p className='mt-3 underline'>Declaration</p>
+                          <p className='mt-2 underline'>Declaration</p>
                           <p>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</p>
                         </div>
                         {/* Row 2 with 2 Columns */}
                         <div className="grid grid-cols-2">
-                          <div className=" px-2 py-1">
+                          <div className=" px-2 py-0">
                             <p className='mb-8 font-bold'>Acknowledged By</p>
                             <p className='font-bold'>Authorized Signatory with Seal</p>
                           </div>

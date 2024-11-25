@@ -5,6 +5,7 @@ import axios from '../axiosConfig';
 import React, { useEffect, useState } from 'react';
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
+import { BASE_URL } from '../utils';
 
 function SalesPurchases() {
 
@@ -14,6 +15,8 @@ function SalesPurchases() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSP, setSP] = useState(null);
+
+  const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,9 +70,11 @@ function SalesPurchases() {
     setSP(null);
   };
 
-  const getSPData=(data,product_name)=>{
-    return data.find((item)=>item.product_name==product_name) || ''
-  }
+  const getSPData = (data, product_name, product_code) => {
+    return data.find(
+        item => item.product_name === product_name && item.product_code === product_code
+    ) || '';
+};
 
   const approveSP = async () => {
     try {
@@ -189,10 +194,10 @@ function SalesPurchases() {
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Number </td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.bl_number}</td>
                     </tr>
-                    <tr className="border-b border-gray-200">
+                    {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Quantity </td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.bl_qty}</td>
-                    </tr>
+                    </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fees</td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.bl_fees}</td>
@@ -282,6 +287,8 @@ function SalesPurchases() {
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch Number</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Qty</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Value</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Marking</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
@@ -294,10 +301,12 @@ function SalesPurchases() {
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).trade_qty}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).trade_qty_unit}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).batch_number}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name).production_date}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).bl_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).trade_qty_unit}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).batch_number}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).production_date}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).bl_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).bl_value.toFixed(2)}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
@@ -328,27 +337,20 @@ function SalesPurchases() {
 
               {/* Packing Lists Table */}
               <h3 className="text-lg mt-4 text-center">Packing Lists</h3>
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing List</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedSP.packingLists.map((item, index) =>
-                    item.name && item.packing_list ? ( // Check if both fields exist
-                      <tr key={index}>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.packing_list}</td>
-                      </tr>
-                    ) : null
-                  )}
-                </tbody>
-              </table>
+              {selectedSP.packingLists &&
+                    selectedSP.packingLists.map((item, index) =>
+                      item.name !== '' ? (
+                        <div key={index}>
+                          <p className="text-sm">
+                            {index + 1}. <a href={`${BACKEND_URL}${item.packing_list}`}>{item.name}</a>
+                          </p>
+                        </div>
+                      ) : null
+                    )}
+              
 
               {/* Invoices Table */}
-              <h3 className="text-lg mt-4 text-center">Invoices</h3>
+              {/* <h3 className="text-lg mt-4 text-center">Invoices</h3>
               <table className="min-w-full bg-white">
                 <thead>
                   <tr>
@@ -366,10 +368,10 @@ function SalesPurchases() {
                     ) : null
                   )}
                 </tbody>
-              </table>
+              </table> */}
 
               {/* BL Copies Table */}
-              <h3 className="text-lg mt-4 text-center">BL Copies</h3>
+              {/* <h3 className="text-lg mt-4 text-center">BL Copies</h3>
               <table className="min-w-full bg-white">
                 <thead>
                   <tr>
@@ -387,10 +389,10 @@ function SalesPurchases() {
                     ) : null
                   )}
                 </tbody>
-              </table>
+              </table> */}
 
               {/* COAs Table */}
-              <h3 className="text-lg mt-4 text-center">COAs</h3>
+              {/* <h3 className="text-lg mt-4 text-center">COAs</h3>
               <table className="min-w-full bg-white">
                 <thead>
                   <tr>
@@ -408,7 +410,7 @@ function SalesPurchases() {
                     ) : null
                   )}
                 </tbody>
-              </table>
+              </table> */}
 
               {selectedSP.reviewed ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>

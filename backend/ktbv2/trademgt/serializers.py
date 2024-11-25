@@ -240,29 +240,6 @@ class PaymentTermSerializer(serializers.ModelSerializer):
         model = PaymentTerm
         fields = '__all__'
 
-
-class PreSalePurchaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PreSalePurchase
-        fields = '__all__'
-
-    def get_trade_details(self, obj):
-        try:
-            instance = Trade.objects.get(id=obj.trn.id)
-            return TradeSerializer(instance).data
-        except Trade.DoesNotExist:
-            return None
-    
-
-    def to_representation(self, instance):
-        # Call the parent's `to_representation` method
-        ret = super().to_representation(instance)
-        
-        # Add the serialized company details to the response
-        ret['trade'] = self.get_trade_details(instance)
-       
-        return ret
-
 class PreDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PreDocument
@@ -283,6 +260,34 @@ class PreDocumentSerializer(serializers.ModelSerializer):
         ret['doc'] = self.get_doc_details(instance)
         
         return ret
+    
+class PreSalePurchaseSerializer(serializers.ModelSerializer):
+    documentRequired = PreDocumentSerializer(many=True, read_only=True)
+    class Meta:
+        model = PreSalePurchase
+        fields = '__all__'
+
+    def get_trade_details(self, obj):
+        try:
+            instance = Trade.objects.get(id=obj.trn.id)
+            return TradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None
+    def get_doc_details(self, obj):
+        try:
+            instance = PreDocument.objects.filter(presalepurchase=obj)
+            return PreDocumentSerializer(instance,many=True).data
+        except PreDocument.DoesNotExist:
+            return None
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['trade'] = self.get_trade_details(instance)
+        ret['documentRequired'] = self.get_doc_details(instance)
+       
+        return ret
+
+
 
 class AcknowledgedPISerializer(serializers.ModelSerializer):
     class Meta:
@@ -318,7 +323,7 @@ class PrePaymentSerializer(serializers.ModelSerializer):
         # Fetch company details manually
         try:
             # Assuming `company` field in `Trade` contains company name or ID
-            instance = PaymentTerm.objects.get(name=obj.trn.payment_term)  # or use another field to identify the company
+            instance = PaymentTerm.objects.get(id=obj.trn.payment_term)  # or use another field to identify the company
             return PaymentTermSerializer(instance).data
         except PaymentTerm.DoesNotExist:
             return None  # Or handle it as needed
@@ -417,6 +422,18 @@ class SalesPurchaseProductSerializer(serializers.ModelSerializer):
         model = SalesPurchaseProduct
         fields = '__all__'
 
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['productName'] = self.get_product_details(instance)
+        return ret
+
 class SalesPurchaseExtraChargeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesPurchaseExtraCharge
@@ -443,7 +460,8 @@ class COASerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SalesPurchaseSerializer(serializers.ModelSerializer):
-    
+    sp_product = SalesPurchaseProductSerializer(many=True, read_only=True)
+    sp_extra_charges = SalesPurchaseExtraChargeSerializer(many=True, read_only=True)
     class Meta:
         model = SalesPurchase
         fields = '__all__'

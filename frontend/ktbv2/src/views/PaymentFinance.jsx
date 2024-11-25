@@ -5,6 +5,8 @@ import React, { useEffect, useState } from 'react';
 import PFTable from "../components/PFTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
+import { BASE_URL } from '../utils';
+import { paymentDueDate } from '../dateUtils';
 
 function PaymentFinance() {
   const navigate = useNavigate();
@@ -13,6 +15,8 @@ function PaymentFinance() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPF, setPF] = useState(null);
+
+  const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -154,10 +158,7 @@ function PaymentFinance() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Number </td>
                     <td className="py-2 px-4 text-gray-800">{selectedPF.sp.bl_number}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Quantity </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPF.sp.bl_qty}</td>
-                  </tr>
+                 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Recived</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPF.sp.prepayment.advance_received}</td>
@@ -172,11 +173,11 @@ function PaymentFinance() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPF.balance_payment}</td>
+                    <td className="py-2 px-4 text-gray-800">{(parseFloat(selectedPF.sp.trn.contract_value) - parseFloat(selectedPF.sp.invoice_amount)) ?? '' }</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Due Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPF.sp.prepayment.adv_due_date}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.paymentTerm.payment_within=='NA'?'NA':paymentDueDate(selectedPF)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Received </td>
@@ -204,7 +205,7 @@ function PaymentFinance() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPF.logistic_cost}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPF.sp.logistic_cost}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
@@ -221,7 +222,7 @@ function PaymentFinance() {
                 
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent Value </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPF.sp.commission_value}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.commission_value}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fees</td>
@@ -231,10 +232,10 @@ function PaymentFinance() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Collection Cost</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPF.bl_collection_cost}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Other Charges</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPF.shipment_status}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Status of Shipment</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPF.shipment_status}</td>
@@ -267,6 +268,50 @@ function PaymentFinance() {
                  
                 </tbody>
                 </table>
+                <h3 className="text-lg mt-4 text-center">S&P Products</h3>
+                <table className="min-w-full bg-white border">
+                        <thead>
+                            <tr>
+                             
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Quantity</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Unit</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch number</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {selectedPF.sp.sp_product?.map(product => (
+                                <tr key={product.id}>
+                        
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_qty}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.batch_number}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.production_date}</td>
+                                    
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <h3 className="text-lg mt-4 text-center">S&P Extra Charges</h3>
+                    <table className="min-w-full bg-white border">
+                        <thead>
+                            <tr>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Charge Name</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Charge</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {selectedPF.sp.sp_extra_charges?.map(product => (
+                                <tr key={product.id}>
+                        
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.name}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.charge}</td>            
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
 
                 <h3 className="text-lg mt-4 text-center">P&F Extra Charges</h3>
                 <table className="min-w-full bg-white">
@@ -287,24 +332,17 @@ function PaymentFinance() {
                 </table>
 
                 <h3 className="text-lg mt-4 text-center">TT Copy</h3>
-                <table className="min-w-full bg-white">
-                  <thead>
-                    <tr>
-                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Charge</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedPF.ttCopies.map((copy, index) => {
-                      return copy.name ? ( // Ensure to return valid JSX
-                        <tr key={index}> {/* Use `index` as a fallback if `copy.id` is not available */}
-                          <td className="py-2 px-4 border-b border-gray-200 text-sm">{copy.name}</td>
-                          <td className="py-2 px-4 border-b border-gray-200 text-sm">{copy.tt_copy}</td>
-                        </tr>
-                      ) : null; // Return `null` if `copy.name` is falsy
-                    })}
-                  </tbody>
-                </table>
+                {selectedPF.ttCopies &&
+                    selectedPF.ttCopies.map((item, index) =>
+                      item.name !== '' ? (
+                        <div key={index}>
+                          <p className="text-center text-sm">
+                            {index + 1}. <a href={`${BACKEND_URL}${item.tt_copy}`}>{item.name}</a>
+                          </p>
+                        </div>
+                      ) : null
+                    )}
+               
               </div>
 
      

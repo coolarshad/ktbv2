@@ -1,15 +1,18 @@
 import NavBar from "../components/NavBar"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import { addDaysToDate } from "../dateUtils";
 import { BASE_URL } from '../utils';
+import ReactToPrint from 'react-to-print';
 
 function PrePayment() {
   const navigate = useNavigate();
+  const componentRef = useRef();
+
   const [prePaymentData, setPrePaymentData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -111,6 +114,9 @@ function PrePayment() {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
+             <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+             <div className="p-4 max-w-7xl mx-auto" ref={componentRef}>
+
              <h2 className="text-2xl mb-2 text-center">Pre-Payments/ LC's Details</h2>
              <hr className='mb-2' />
              <div className="overflow-x-auto">
@@ -228,17 +234,21 @@ function PrePayment() {
                     </div>
                   )))}
                 <p className='my-2 underline'>Advance TT Copy</p>
-                {selectedPrePayment.advanceTTCopies && (
-                  selectedPrePayment.advanceTTCopies.map((item, index) => (
-                    <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.advance_tt_copy}`}>{item.name}</a></p>
+                  {selectedPrePayment.advanceTTCopies &&
+                    selectedPrePayment.advanceTTCopies.map((item, index) =>
+                      item.name !== '' ? (
+                        <div key={index}>
+                          <p className="text-sm">
+                            {index + 1}. <a href={`${BACKEND_URL}${item.advance_tt_copy}`}>{item.name}</a>
+                          </p>
+                        </div>
+                      ) : null
+                    )}
 
-                    </div>
-                  )))}
               </div>
              
      
-           
+           </div>
      
             
             

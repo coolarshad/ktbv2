@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse
 
 # Create your models here.
 class Trade(models.Model):
@@ -158,7 +159,7 @@ class PreSalePurchase(models.Model):
         verbose_name_plural = _("PreSalePurchases")
 
     def __str__(self):
-        return self.name
+        return self.trn.trn
 
     def get_absolute_url(self):
         return reverse("PreSalePurchase_detail", kwargs={"pk": self.pk})
@@ -306,7 +307,7 @@ class SalesPurchase(models.Model):
     invoice_amount=models.FloatField(_("invoice_amount"))
     # commission_value=models.FloatField(_("commission_value"))
     bl_number=models.CharField(_("bl_number"), max_length=50)
-    bl_qty=models.FloatField(_("bl_qty"))
+    # bl_qty=models.FloatField(_("bl_qty"))
     bl_fees=models.FloatField(_("bl_fees"))
     bl_collection_cost=models.FloatField(_("bl_collection_cost"))
     bl_date=models.DateField(_("bl_date"), auto_now=False, auto_now_add=False)
@@ -345,8 +346,14 @@ class SalesPurchaseProduct(models.Model):
     tolerance=models.FloatField(_("tolerance"))
     batch_number=models.CharField(_("batch_number"), max_length=50)
     production_date=models.DateField(_("production_date"))
-    trade_qty=models.FloatField(_("trade_qty"))
+    bl_qty=models.FloatField(_("bl_qty"))
     trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
+    bl_value=models.FloatField(_("bl_value"))
+    product_code = models.CharField(_("product_code"), max_length=50)
+    selected_currency_rate = models.FloatField(_("selected_currency_rate"))
+    rate_in_usd = models.FloatField(_("selected_currency_rate"))
+
+
    
     class Meta:
         verbose_name = _("SalesPurchaseProduct")
@@ -359,7 +366,7 @@ class SalesPurchaseProduct(models.Model):
         return reverse("SalesPurchaseProduct_detail", kwargs={"pk": self.pk})
 
 class SalesPurchaseExtraCharge(models.Model):
-    sp=models.ForeignKey("SalesPurchase", verbose_name=_("sp"), on_delete=models.CASCADE)
+    sp=models.ForeignKey("SalesPurchase",related_name='sp_extra_charges', on_delete=models.CASCADE)
     name=models.CharField(_("name"), max_length=50)
     charge=models.FloatField(_("charge"),null=True, blank=True)
     
@@ -438,15 +445,15 @@ class COA(models.Model):
 
 class PaymentFinance(models.Model):
     trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
-    balance_payment=models.FloatField(_("balance_payment"),null=True)
+    # balance_payment=models.FloatField(_("balance_payment"),null=True)
     balance_payment_received=models.FloatField(_("balance_payment_received"),null=True)
     balance_payment_made=models.FloatField(_("balance_payment_made"),null=True)
     balance_payment_date=models.DateField(_("balance_payment_date"), auto_now=False, auto_now_add=False)
     net_due_in_this_trade=models.FloatField(_("net_due_in_this_trade"),null=True)
     payment_mode=models.CharField(_("payment_mode"), max_length=50)
     status_of_payment=models.CharField(_("status_of_payment"), max_length=50)
-    logistic_cost=models.FloatField(_("logistic_cost"),null=True)
-    commission_value=models.FloatField(_("commission_value"),null=True)
+    # logistic_cost=models.FloatField(_("logistic_cost"),null=True)
+    # commission_value=models.FloatField(_("commission_value"),null=True)
     bl_fee=models.FloatField(_("bl_fee"),null=True)
     bl_collection_cost=models.FloatField(_("bl_collection_cost"),null=True)
     shipment_status=models.CharField(_("shipment_status"), max_length=50)
@@ -465,7 +472,7 @@ class PaymentFinance(models.Model):
         return reverse("PaymentFinance_detail", kwargs={"pk": self.pk})
 
 class TTCopy(models.Model):
-    payment_finance=models.ForeignKey("PaymentFinance", verbose_name=_("payment_finance"), on_delete=models.CASCADE)
+    payment_finance=models.ForeignKey("PaymentFinance",related_name='pf_ttcopy', on_delete=models.CASCADE)
     name=models.CharField(_("name"), max_length=50)
     tt_copy=models.FileField(_("tt_copy"), upload_to='uploads/pf_tt_copy', max_length=100)
 
@@ -480,7 +487,7 @@ class TTCopy(models.Model):
         return reverse("TTCopy_detail", kwargs={"pk": self.pk})
 
 class PFCharges(models.Model):
-    payment_finance=models.ForeignKey("PaymentFinance", verbose_name=_("payment_finance"), on_delete=models.CASCADE)
+    payment_finance=models.ForeignKey("PaymentFinance",related_name='pf_charges', on_delete=models.CASCADE)
     name=models.CharField(_("name"), max_length=50)
     charge=models.FloatField(_("charge"),null=True,default=0)
     

@@ -886,18 +886,28 @@ class PreSalePurchaseView(APIView):
 
         i = 0
         while f'acknowledgedPI[{i}].ackn_pi_name' in data:
+            pi_file = request.FILES.get(f'acknowledgedPI[{i}].ackn_pi',None)
+            if not pi_file:
+                existing_pi = AcknowledgedPI.objects.filter(presalepurchase=pre_sp, ackn_pi_name=data.get(f'acknowledgedPI[{i}].ackn_pi_name')).first()
+                if existing_pi:
+                    pi_file = existing_pi.ackn_pi  # retain existing file
             pi_data = {
                 'ackn_pi_name': data.get(f'acknowledgedPI[{i}].ackn_pi_name'),
-                'ackn_pi': request.FILES.get(f'acknowledgedPI[{i}].ackn_pi',None),  # Handle binary data as needed
+                'ackn_pi': pi_file,  # Handle binary data as needed
             }
             acknowledged_pi_data.append(pi_data)
             i += 1
 
         j = 0
         while f'acknowledgedPO[{j}].ackn_po_name' in data:
+            po_file = request.FILES.get(f'acknowledgedPO[{j}].ackn_po',None)
+            if not po_file:
+                existing_po = AcknowledgedPO.objects.filter(presalepurchase=pre_sp, ackn_po_name=data.get(f'acknowledgedPO[{j}].ackn_po_name')).first()
+                if existing_po:
+                    po_file = existing_po.ackn_po  # retain existing file
             po_data = {
                 'ackn_po_name': data.get(f'acknowledgedPO[{j}].ackn_po_name'),
-                'ackn_po': request.FILES.get(f'acknowledgedPO[{j}].ackn_po',None),
+                'ackn_po': po_file,
             }
             acknowledged_po_data.append(po_data)
             j += 1
@@ -1122,27 +1132,44 @@ class PrePaymentView(APIView):
 
         i = 0
         while f'lcCopies[{i}].name' in data:
+            doc_file1 = request.FILES.get(f'lcCopies[{i}].lc_copy',None)
+            if not doc_file1:
+                existing_doc = LcCopy.objects.filter(prepayment=prepayment, name=data.get(f'lcCopies[{i}].name')).first()
+                if existing_doc:
+                    doc_file1 = existing_doc.lc_copy  # retain existing file
+
             lc_copy_data = {
                 'name': data.get(f'lcCopies[{i}].name'),
-                'lc_copy': request.FILES.get(f'lcCopies[{i}].lc_copy',None),  # Handle binary data as needed
+                'lc_copy': doc_file1,  # Handle binary data as needed
             }
             lc_copies_data.append(lc_copy_data)
             i += 1
 
         j = 0
         while f'lcAmmendments[{j}].name' in data:
+            doc_file2 = request.FILES.get(f'lcAmmendments[{j}].lc_ammendment',None)
+            if not doc_file2:
+                existing_doc = LcAmmendment.objects.filter(prepayment=prepayment, name=data.get(f'lcAmmendments[{j}].name')).first()
+                if existing_doc:
+                    doc_file2 = existing_doc.lc_ammendment  # retain existing file
+
             lc_ammend_data = {
                 'name': data.get(f'lcAmmendments[{j}].name'),
-                'lc_ammendment': request.FILES.get(f'lcAmmendments[{j}].lc_ammendment',None),
+                'lc_ammendment': doc_file2,
             }
             lc_ammendments_data.append(lc_ammend_data)
             j += 1
         
         k = 0
-        while f'advanceTTCopies[{j}].name' in data:
+        while f'advanceTTCopies[{k}].name' in data:
+            doc_file3 = request.FILES.get(f'advanceTTCopies[{k}].advance_tt_copy',None)
+            if not doc_file3:
+                existing_doc = AdvanceTTCopy.objects.filter(prepayment=prepayment, name=data.get(f'advanceTTCopies[{k}].name')).first()
+                if existing_doc:
+                    doc_file3 = existing_doc.advance_tt_copy  # retain existing file
             advance_tt_copies = {
-                'name': data.get(f'advanceTTCopies[{j}].name'),
-                'advance_tt_copy': request.FILES.get(f'advanceTTCopies[{j}].advance_tt_copy',None),
+                'name': data.get(f'advanceTTCopies[{k}].name'),
+                'advance_tt_copy': doc_file3,
             }
             advance_tt_copies_data.append(advance_tt_copies)
             k += 1
@@ -1271,7 +1298,7 @@ class SalesPurchaseView(APIView):
             'invoice_amount': data.get('invoice_amount'),
             # 'commission_value': data.get('commission_value'),
             'bl_number': data.get('bl_number'),
-            'bl_qty': data.get('bl_qty'),
+            # 'bl_qty': data.get('bl_qty'),
             'bl_fees': data.get('bl_fees'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'bl_date': data.get('bl_date'),
@@ -1293,9 +1320,9 @@ class SalesPurchaseView(APIView):
         sp_products_data = []
         sp_extra_charges_data = []
         packing_list_data = []
-        invoices_data = []
-        coas_data = []
-        bl_copies_data = []
+        # invoices_data = []
+        # coas_data = []
+        # bl_copies_data = []
 
         h = 0
         while f'salesPurchaseProducts[{h}].product_name' in data:
@@ -1305,8 +1332,12 @@ class SalesPurchaseView(APIView):
                 'tolerance': data.get(f'salesPurchaseProducts[{h}].tolerance'),  
                 'batch_number': data.get(f'salesPurchaseProducts[{h}].batch_number'),  
                 'production_date': data.get(f'salesPurchaseProducts[{h}].production_date'),  
-                'trade_qty': data.get(f'salesPurchaseProducts[{h}].trade_qty'),  
+                'bl_qty': data.get(f'salesPurchaseProducts[{h}].bl_qty'),  
                 'trade_qty_unit': data.get(f'salesPurchaseProducts[{h}].trade_qty_unit'),  
+                'bl_value': data.get(f'salesPurchaseProducts[{h}].bl_value'), 
+                'product_code': data.get(f'salesPurchaseProducts[{h}].product_code'), 
+                'selected_currency_rate': data.get(f'salesPurchaseProducts[{h}].selected_currency_rate'),  
+                'rate_in_usd': data.get(f'salesPurchaseProducts[{h}].rate_in_usd'), 
             }
             sp_products_data.append(sp_product)
             h += 1
@@ -1324,37 +1355,37 @@ class SalesPurchaseView(APIView):
         while f'packingLists[{j}].name' in data:
             packing_lists = {
                 'name': data.get(f'packingLists[{j}].name'),
-                'packing_list': data.get(f'packingLists[{j}].packing_list'),
+                'packing_list': request.FILES.get(f'packingLists[{j}].packing_list',None),
             }
             packing_list_data.append(packing_lists)
             j += 1
         
         k = 0
-        while f'blCopies[{k}].name' in data:
-            bl_copy_data = {
-                'name': data.get(f'blCopies[{k}].name'),
-                'bl_copy': data.get(f'blCopies[{k}].bl_copy'),
-            }
-            bl_copies_data.append(bl_copy_data)
-            k += 1
+        # while f'blCopies[{k}].name' in data:
+        #     bl_copy_data = {
+        #         'name': data.get(f'blCopies[{k}].name'),
+        #         'bl_copy': data.get(f'blCopies[{k}].bl_copy'),
+        #     }
+        #     bl_copies_data.append(bl_copy_data)
+        #     k += 1
         
-        l = 0
-        while f'invoices[{l}].name' in data:
-            invoice_data = {
-                'name': data.get(f'invoices[{l}].name'),
-                'invoice': data.get(f'invoices[{l}].invoice'),
-            }
-            invoices_data.append(invoice_data)
-            l += 1
+        # l = 0
+        # while f'invoices[{l}].name' in data:
+        #     invoice_data = {
+        #         'name': data.get(f'invoices[{l}].name'),
+        #         'invoice': data.get(f'invoices[{l}].invoice'),
+        #     }
+        #     invoices_data.append(invoice_data)
+        #     l += 1
         
-        m = 0
-        while f'coas[{m}].name' in data:
-            coa_data = {
-                'name': data.get(f'coas[{m}].name'),
-                'coa': data.get(f'coas[{m}].coa'),
-            }
-            coas_data.append(coa_data)
-            m += 1
+        # m = 0
+        # while f'coas[{m}].name' in data:
+        #     coa_data = {
+        #         'name': data.get(f'coas[{m}].name'),
+        #         'coa': data.get(f'coas[{m}].coa'),
+        #     }
+        #     coas_data.append(coa_data)
+        #     m += 1
 
         with transaction.atomic():
             sp_serializer = SalesPurchaseSerializer(data=sp_data)
@@ -1384,26 +1415,26 @@ class SalesPurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
-            if invoices_data:
-                try:
-                    invoices = [Invoice(**item, sp=sp) for item in invoices_data]
-                    Invoice.objects.bulk_create(invoices)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # if invoices_data:
+            #     try:
+            #         invoices = [Invoice(**item, sp=sp) for item in invoices_data]
+            #         Invoice.objects.bulk_create(invoices)
+            #     except Exception as e:
+            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
-            if coas_data:
-                try:
-                    coas = [COA(**item, sp=sp) for item in coas_data]
-                    COA.objects.bulk_create(coas)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # if coas_data:
+            #     try:
+            #         coas = [COA(**item, sp=sp) for item in coas_data]
+            #         COA.objects.bulk_create(coas)
+            #     except Exception as e:
+            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
-            if bl_copies_data:
-                try:
-                    bl_copies = [BL_Copy(**item, sp=sp) for item in bl_copies_data]
-                    BL_Copy.objects.bulk_create(bl_copies)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # if bl_copies_data:
+            #     try:
+            #         bl_copies = [BL_Copy(**item, sp=sp) for item in bl_copies_data]
+            #         BL_Copy.objects.bulk_create(bl_copies)
+            #     except Exception as e:
+            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(sp_serializer.data, status=status.HTTP_201_CREATED)
     
@@ -1424,7 +1455,7 @@ class SalesPurchaseView(APIView):
             'invoice_amount': data.get('invoice_amount'),
             # 'commission_value': data.get('commission_value'),
             'bl_number': data.get('bl_number'),
-            'bl_qty': data.get('bl_qty'),
+            # 'bl_qty': data.get('bl_qty'),
             'bl_fees': data.get('bl_fees'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'bl_date': data.get('bl_date'),
@@ -1447,9 +1478,9 @@ class SalesPurchaseView(APIView):
         sp_products_data = []
         sp_extra_charges_data = []
         packing_list_data = []
-        invoices_data = []
-        coas_data = []
-        bl_copies_data = []
+        # invoices_data = []
+        # coas_data = []
+        # bl_copies_data = []
 
 
         h = 0
@@ -1460,8 +1491,12 @@ class SalesPurchaseView(APIView):
                 'tolerance': data.get(f'salesPurchaseProducts[{h}].tolerance'),  
                 'batch_number': data.get(f'salesPurchaseProducts[{h}].batch_number'),  
                 'production_date': data.get(f'salesPurchaseProducts[{h}].production_date'),  
-                'trade_qty': data.get(f'salesPurchaseProducts[{h}].trade_qty'),  
+                'bl_qty': data.get(f'salesPurchaseProducts[{h}].bl_qty'),  
                 'trade_qty_unit': data.get(f'salesPurchaseProducts[{h}].trade_qty_unit'),  
+                'bl_value': data.get(f'salesPurchaseProducts[{h}].bl_value'),  
+                'product_code': data.get(f'salesPurchaseProducts[{h}].product_code'), 
+                'selected_currency_rate': data.get(f'salesPurchaseProducts[{h}].selected_currency_rate'),  
+                'rate_in_usd': data.get(f'salesPurchaseProducts[{h}].rate_in_usd'), 
             }
             sp_products_data.append(sp_product)
             h += 1
@@ -1477,39 +1512,45 @@ class SalesPurchaseView(APIView):
 
         j = 0
         while f'packingLists[{j}].name' in data:
+            doc_file = request.FILES.get(f'packingLists[{j}].packing_list',None)
+            if not doc_file:
+                existing_doc = PackingList.objects.filter(sp=sp, name=data.get(f'packingLists[{j}].name')).first()
+                if existing_doc:
+                    doc_file = existing_doc.packing_list  # retain existing file
+
             packing_lists = {
                 'name': data.get(f'packingLists[{j}].name'),
-                'packing_list': data.get(f'packingLists[{j}].packing_list'),
+                'packing_list': doc_file,
             }
             packing_list_data.append(packing_lists)
             j += 1
         
-        k = 0
-        while f'blCopies[{k}].name' in data:
-            bl_copy_data = {
-                'name': data.get(f'blCopies[{k}].name'),
-                'bl_copy': data.get(f'blCopies[{k}].bl_copy'),
-            }
-            bl_copies_data.append(bl_copy_data)
-            k += 1
+        # k = 0
+        # while f'blCopies[{k}].name' in data:
+        #     bl_copy_data = {
+        #         'name': data.get(f'blCopies[{k}].name'),
+        #         'bl_copy': data.get(f'blCopies[{k}].bl_copy'),
+        #     }
+        #     bl_copies_data.append(bl_copy_data)
+        #     k += 1
         
-        l = 0
-        while f'invoices[{l}].name' in data:
-            invoice_data = {
-                'name': data.get(f'invoices[{l}].name'),
-                'invoice': data.get(f'invoices[{l}].invoice'),
-            }
-            invoices_data.append(invoice_data)
-            l += 1
+        # l = 0
+        # while f'invoices[{l}].name' in data:
+        #     invoice_data = {
+        #         'name': data.get(f'invoices[{l}].name'),
+        #         'invoice': data.get(f'invoices[{l}].invoice'),
+        #     }
+        #     invoices_data.append(invoice_data)
+        #     l += 1
         
-        m = 0
-        while f'coas[{m}].name' in data:
-            coa_data = {
-                'name': data.get(f'coas[{m}].name'),
-                'coa': data.get(f'coas[{m}].coa'),
-            }
-            coas_data.append(coa_data)
-            m += 1
+        # m = 0
+        # while f'coas[{m}].name' in data:
+        #     coa_data = {
+        #         'name': data.get(f'coas[{m}].name'),
+        #         'coa': data.get(f'coas[{m}].coa'),
+        #     }
+        #     coas_data.append(coa_data)
+        #     m += 1
        
         with transaction.atomic():
             spProducts=SalesPurchaseProduct.objects.filter(sp=sp)
@@ -1521,7 +1562,7 @@ class SalesPurchaseView(APIView):
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
             
                         if existing_inv:
-                            existing_inv.quantity = float(existing_inv.quantity)+float(product.trade_qty)
+                            existing_inv.quantity = float(existing_inv.quantity)+float(product.bl_qty)
                             existing_inv.save()
                        
                     except Exception as e:
@@ -1538,7 +1579,7 @@ class SalesPurchaseView(APIView):
             
                         if existing_inv:
                             # If it exists, update only the fields you want to update
-                            existing_inv.quantity = float(existing_inv.quantity)-float(product.trade_qty)
+                            existing_inv.quantity = float(existing_inv.quantity)-float(product.bl_qty)
                             existing_inv.save()
                         
                     except Exception as e:
@@ -1582,32 +1623,32 @@ class SalesPurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
-            if invoices_data:
-                # Clear existing trade extra costs and add new ones
-                Invoice.objects.filter(sp=sp).delete()
-                try:
-                    invoices = [Invoice(**item, sp=sp) for item in invoices_data]
-                    Invoice.objects.bulk_create(invoices)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # if invoices_data:
+            #     # Clear existing trade extra costs and add new ones
+            #     Invoice.objects.filter(sp=sp).delete()
+            #     try:
+            #         invoices = [Invoice(**item, sp=sp) for item in invoices_data]
+            #         Invoice.objects.bulk_create(invoices)
+            #     except Exception as e:
+            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            if coas_data:
-                # Clear existing trade extra costs and add new ones
-                COA.objects.filter(sp=sp).delete()
-                try:
-                    coas = [COA(**item, sp=sp) for item in coas_data]
-                    COA.objects.bulk_create(coas)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # if coas_data:
+            #     # Clear existing trade extra costs and add new ones
+            #     COA.objects.filter(sp=sp).delete()
+            #     try:
+            #         coas = [COA(**item, sp=sp) for item in coas_data]
+            #         COA.objects.bulk_create(coas)
+            #     except Exception as e:
+            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
-            if bl_copies_data:
-                # Clear existing trade extra costs and add new ones
-                BL_Copy.objects.filter(sp=sp).delete()
-                try:
-                    bl_copies = [BL_Copy(**item, sp=sp) for item in bl_copies_data]
-                    BL_Copy.objects.bulk_create(bl_copies)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # if bl_copies_data:
+            #     # Clear existing trade extra costs and add new ones
+            #     BL_Copy.objects.filter(sp=sp).delete()
+            #     try:
+            #         bl_copies = [BL_Copy(**item, sp=sp) for item in bl_copies_data]
+            #         BL_Copy.objects.bulk_create(bl_copies)
+            #     except Exception as e:
+            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
             salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
             if sp.trn.trade_type.lower() == "sales":
@@ -1638,7 +1679,7 @@ class SalesPurchaseView(APIView):
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                         if existing_inv:
                             # If it exists, update only the fields you want to update
-                            existing_inv.quantity+= product.trade_qty
+                            existing_inv.quantity+= product.bl_qty
                             existing_inv.save()
                         else:
                             # If it doesn't exist, create a new record with all fields
@@ -1646,7 +1687,7 @@ class SalesPurchaseView(APIView):
                             product_name=product.product_name,
                             batch_number=product.batch_number,
                             production_date=product.production_date,    
-                            quantity=float(product.trade_qty),
+                            quantity=float(product.bl_qty),
                             unit=product.trade_qty_unit
                             )
                     except Exception as e:
@@ -1672,7 +1713,7 @@ class SalesPurchaseView(APIView):
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                         if existing_inv:
                                 # If it exists, update only the fields you want to update
-                            existing_inv.quantity+= product.trade_qty
+                            existing_inv.quantity+= product.bl_qty
                             existing_inv.save()
                     except Exception as e:
                             # Handle specific exception for SalesProductTrace
@@ -1685,7 +1726,7 @@ class SalesPurchaseView(APIView):
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                         if existing_inv:
                             # If it exists, update only the fields you want to update
-                            existing_inv.quantity-= product.trade_qty
+                            existing_inv.quantity-= product.bl_qty
                             existing_inv.save()
                            
                     except Exception as e:
@@ -1696,9 +1737,9 @@ class SalesPurchaseView(APIView):
             SalesPurchaseProduct.objects.filter(sp=sp).delete()
             SalesPurchaseExtraCharge.objects.filter(sp=sp).delete()
             PackingList.objects.filter(sp=sp).delete()
-            BL_Copy.objects.filter(sp=sp).delete()
-            Invoice.objects.filter(sp=sp).delete()
-            COA.objects.filter(sp=sp).delete()
+            # BL_Copy.objects.filter(sp=sp).delete()
+            # Invoice.objects.filter(sp=sp).delete()
+            # COA.objects.filter(sp=sp).delete()
             sp.delete()
 
         return Response({'message': 'SalesPurchase deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
@@ -1742,7 +1783,7 @@ class SalesPurchaseApprove(APIView):
                             existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                             if existing_inv:
                                 # If it exists, update only the fields you want to update
-                                existing_inv.quantity-= product.trade_qty
+                                existing_inv.quantity-= product.bl_qty
                                 existing_inv.save()
                             else:
                                 # If it doesn't exist, create a new record with all fields
@@ -1750,7 +1791,7 @@ class SalesPurchaseApprove(APIView):
                                 product_name=product.product_name,
                                 batch_number=product.batch_number,
                                 production_date=product.production_date,    
-                                quantity=0-float(product.trade_qty),
+                                quantity=0-float(product.bl_qty),
                                 unit=product.trade_qty_unit
                                 )
                         except Exception as e:
@@ -1764,7 +1805,7 @@ class SalesPurchaseApprove(APIView):
                             existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                             if existing_inv:
                                 # If it exists, update only the fields you want to update
-                                existing_inv.quantity+= product.trade_qty
+                                existing_inv.quantity+= product.bl_qty
                                 existing_inv.save()
                             else:
                                 # If it doesn't exist, create a new record with all fields
@@ -1772,7 +1813,7 @@ class SalesPurchaseApprove(APIView):
                                 product_name=product.product_name,
                                 batch_number=product.batch_number,
                                 production_date=product.production_date,    
-                                quantity=float(product.trade_qty),
+                                quantity=float(product.bl_qty),
                                 unit=product.trade_qty_unit
                                 )
                         except Exception as e:
@@ -1839,15 +1880,15 @@ class PaymentFinanceView(APIView):
         # Prepare trade data separately
         pf_data = {
             'trn': data.get('trn'),
-            'balance_payment': data.get('balance_payment'),
+            # 'balance_payment': data.get('balance_payment'),
             'balance_payment_received': data.get('balance_payment_received'),
             'balance_payment_made': data.get('balance_payment_made'),
             'balance_payment_date': data.get('balance_payment_date'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
             'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
-            'logistic_cost': data.get('logistic_cost'),
-            'commission_value': data.get('commission_value'),
+            # 'logistic_cost': data.get('logistic_cost'),
+            # 'commission_value': data.get('commission_value'),
             'bl_fee': data.get('bl_fee'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'shipment_status': data.get('shipment_status'),
@@ -1914,15 +1955,15 @@ class PaymentFinanceView(APIView):
         # Prepare trade data separately
         pf_data = {
             'trn': data.get('trn'),
-            'balance_payment': data.get('balance_payment'),
+            # 'balance_payment': data.get('balance_payment'),
             'balance_payment_received': data.get('balance_payment_received'),
             'balance_payment_made': data.get('balance_payment_made'),
             'balance_payment_date': data.get('balance_payment_date'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
             'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
-            'logistic_cost': data.get('logistic_cost'),
-            'commission_value': data.get('commission_value'),
+            # 'logistic_cost': data.get('logistic_cost'),
+            # 'commission_value': data.get('commission_value'),
             'bl_fee': data.get('bl_fee'),
             'bl_collection_cost': data.get('bl_collection_cost'),
             'shipment_status': data.get('shipment_status'),
@@ -1945,9 +1986,14 @@ class PaymentFinanceView(APIView):
 
         i = 0
         while f'ttCopies[{i}].name' in data:
+            doc_file = request.FILES.get(f'ttCopies[{i}].tt_copy',None)
+            if not doc_file:
+                existing_doc = TTCopy.objects.filter(payment_finance=pf, name=data.get(f'ttCopies[{i}].name')).first()
+                if existing_doc:
+                    doc_file = existing_doc.tt_copy  # retain existing file
             tt_copy_data = {
                 'name': data.get(f'ttCopies[{i}].name'),
-                'tt_copy': data.get(f'ttCopies[{i}].tt_copy'),  # Handle binary data as needed
+                'tt_copy': doc_file,  # Handle binary data as needed
             }
             tt_copies_data.append(tt_copy_data)
             i += 1

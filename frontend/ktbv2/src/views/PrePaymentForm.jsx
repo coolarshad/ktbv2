@@ -94,27 +94,56 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
       }, []);
 
-    const handleChange = async (e, section, index) => {
+      const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
+    
         if (section) {
             const updatedSection = formData[section].map((item, i) =>
                 i === index ? { ...item, [name]: files ? files[0] : value } : item
             );
             setFormData({ ...formData, [section]: updatedSection });
         } else {
-            setFormData({ ...formData, [name]: value });
+            let updatedFormData = { ...formData, [name]: value };
+    
+            // Check for lc_number being 'na' or 'NA'
+            if (name === "lc_number" && value.toLowerCase() === "na") {
+                updatedFormData = {
+                    ...updatedFormData,
+                    lc_opening_bank: "NA",
+                    lc_expiry_date: "NA",
+                    latest_shipment_date_in_lc: "NA",
+                };
+            }
+    
+            // Mutually exclusive logic for advance_received and advance_paid
+            if (name === "advance_received" && parseFloat(value) == 0) {
+                updatedFormData = {
+                    ...updatedFormData,
+                    date_of_receipt: 'NA'
+                };
+            } else if (name === "advance_paid" && parseFloat(value) == 0) {
+                updatedFormData = {
+                    ...updatedFormData,
+                    date_of_payment: 'NA'
+                };
+            }
+    
+            setFormData(updatedFormData);
         }
-
+    
+        // Handle TRN-specific logic
         if (name === "trn") {
             try {
                 const response = await axios.get(`/trademgt/prepay/${value}`);
-                response.data.presp? setData(response.data):alert('No Pre Sale/Purchase Found !');
-                
+                response.data.presp
+                    ? setData(response.data)
+                    : alert("No Pre Sale/Purchase Found!");
             } catch (error) {
                 console.error("Error fetching TRN data:", error);
             }
         }
     };
+    
 
     const handleAddRow = (section) => {
         const newRow = { name: '', [section === 'lcCopies' ? 'lc_copy' : section === 'lcAmmendments' ? 'lc_ammendment' : 'advance_tt_copy']: null };
@@ -141,6 +170,33 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             }
         }
 
+        if(formData.lc_number.toLocaleLowerCase()!=='na'){
+
+        formData.lcCopies.forEach((product, index) => {
+            for (const [key, value] of Object.entries(product)) {
+                if (!skipValidation.includes(key) && (value === '' || value === null)) {
+                    errors[`lcCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+            }
+        });
+
+        formData.lcAmmendments.forEach((product, index) => {
+            for (const [key, value] of Object.entries(product)) {
+                if (!skipValidation.includes(key) && (value === '' || value === null)) {
+                    errors[`lcAmmendments[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+            }
+        });
+        }
+        if (formData.advance_paid != 0 || formData.advance_received != 0) {
+            formData.advanceTTCopies.forEach((product, index) => {
+                for (const [key, value] of Object.entries(product)) {
+                    if (!skipValidation.includes(key) && (value === '' || value === null)) {
+                        errors[`advanceTTCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                    }
+                }
+            });
+        }
         setValidationErrors(errors);
     
         if (Object.keys(errors).length > 0) {
@@ -205,8 +261,8 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         { label: 'Payment Term', text: data.presp.trade.paymentTerm.name || '' },
         { label: 'Buyer/Seller Name', text: data.presp.trade.customer.name || '' },
         { label: 'Value of Contract', text: data.presp.trade.contract_value || '' },
-        { label: 'Advance to Pay', text: advanceToPay(data) || '' },
-        { label: 'Advance to Receive', text: advanceToReceive(data) || '' },
+        { label: 'Advance to Pay', text: advanceToPay(data) || '0' },
+        { label: 'Advance to Receive', text: advanceToReceive(data) || '0' },
         { label: 'Advance Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
@@ -295,6 +351,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.lc_opening_bank}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        disabled={formData.lc_number.toLowerCase() === "na"}
                     />
                     {validationErrors.lc_opening_bank && <p className="text-red-500">{validationErrors.lc_opening_bank}</p>}
                 </div>
@@ -307,6 +364,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.advance_received}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        
                     />
                     {validationErrors.advance_received && <p className="text-red-500">{validationErrors.advance_received}</p>}
                 </div>
@@ -355,6 +413,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.lc_expiry_date}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        disabled={formData.lc_number.toLowerCase() === "na"}
                     />
                      {validationErrors.lc_expiry_date && <p className="text-red-500">{validationErrors.lc_expiry_date}</p>}
                 </div>
@@ -367,6 +426,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.latest_shipment_date_in_lc}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        disabled={formData.lc_number.toLowerCase() === "na"}
                     />
                      {validationErrors.latest_shipment_date_in_lc && <p className="text-red-500">{validationErrors.latest_shipment_date_in_lc}</p>}
                 </div>
@@ -402,7 +462,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 value={lcCopy.name}
                                 onChange={(e) => handleChange(e, 'lcCopies', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                disabled={formData.lc_number.toLowerCase() === "na"}
                             />
+                             {validationErrors[`lcCopies[${index}].name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`lcCopies[${index}].name`]}
+                                    </p>
+                                )}
                         </div>
                         <div>
                             <label htmlFor={`lc_copy_${index}`} className="block text-sm font-medium text-gray-700">LC Copy</label>
@@ -412,7 +478,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 type="file"
                                 onChange={(e) => handleChange(e, 'lcCopies', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                disabled={formData.lc_number.toLowerCase() === "na"}
                             />
+                            {validationErrors[`lcCopies[${index}].lc_copy`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`lcCopies[${index}].lc_copy`]}
+                                    </p>
+                                )}
                         </div>
                         <div className="flex items-end">
                             <button type="button" onClick={() => handleRemoveRow('lcCopies', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -443,7 +515,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 value={lcAmmendment.name}
                                 onChange={(e) => handleChange(e, 'lcAmmendments', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                disabled={formData.lc_number.toLowerCase() === "na"}
                             />
+                             {validationErrors[`lcAmmendments[${index}].name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`lcAmmendments[${index}].name`]}
+                                    </p>
+                                )}
                         </div>
                         <div>
                             <label htmlFor={`lc_ammendment_${index}`} className="block text-sm font-medium text-gray-700">LC Ammendment</label>
@@ -453,7 +531,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 type="file"
                                 onChange={(e) => handleChange(e, 'lcAmmendments', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                disabled={formData.lc_number.toLowerCase() === "na"}
                             />
+                            {validationErrors[`lcAmmendments[${index}].lc_ammendment`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`lcAmmendments[${index}].lc_ammendment`]}
+                                    </p>
+                                )}
                         </div>
                         <div className="flex items-end">
                             <button type="button" onClick={() => handleRemoveRow('lcAmmendments', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -484,7 +568,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 value={advanceTTCopy.name}
                                 onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                disabled={formData.lc_number.toLowerCase() !== "na"}
                             />
+                            {validationErrors[`advanceTTCopies[${index}].name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`advanceTTCopies[${index}].name`]}
+                                    </p>
+                                )}
                         </div>
                         <div>
                             <label htmlFor={`advance_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">Advance TT Copy</label>
@@ -494,7 +584,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                                 type="file"
                                 onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                disabled={formData.lc_number.toLowerCase() !== "na"}
                             />
+                            {validationErrors[`advanceTTCopies[${index}].advance_tt_copy`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`advanceTTCopies[${index}].advance_tt_copy`]}
+                                    </p>
+                                )}
                         </div>
                         <div className="flex items-end">
                             <button type="button" onClick={() => handleRemoveRow('advanceTTCopies', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">

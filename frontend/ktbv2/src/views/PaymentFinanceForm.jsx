@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
+import { paymentDueDate } from '../dateUtils';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -11,7 +12,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
     const [formData, setFormData] = useState({
         trn: '',
-        balance_payment: '',
+        // balance_payment: '',
         balance_payment_received: '',
         balance_payment_made: '',
         balance_payment_date: '',
@@ -40,7 +41,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     setFormData(prevState => ({
                         ...prevState,
                         trn: data.trn,
-                        balance_payment: data.balance_payment,
+                        // balance_payment: data.balance_payment,
                         balance_payment_received: data.balance_payment_received,
                         balance_payment_made: data.balance_payment_made,
                         balance_payment_date: data.balance_payment_date,
@@ -168,16 +169,22 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         { label: 'Invoice Number', text: data.sp.invoice_number || '' },
         { label: 'Invoice Date', text: data.sp.invoice_date || '' },
         { label: 'BL Number', text: data.sp.bl_number || '' },
-        { label: 'BL Quantity', text: data.sp.bl_qty || '' },
-        { label: 'Advance Received', text: data.sp.prepayment.advance_received || '' },
-        { label: 'Advance Paid', text: data.sp.prepayment.advance_paid || '' },
-        { label: 'Advance Received/Paid Date', text: data.sp.prepayment.date_of_receipt || '' },
-        { label: 'Balance Payment Due Date', text: data.sp.prepayment.adv_due_date || '' },
+        
+        { label: 'Advance Received', text: data.sp.prepayment.advance_received || '0' },
+        { label: 'Advance Paid', text: data.sp.prepayment.advance_paid || '0' },
+        { label: 'Advance Received Date', text: data.sp.prepayment.date_of_receipt || '' },
+        { label: 'Advance Paid Date', text: data.sp.prepayment.date_of_payment || '' },
+        { 
+            label: 'Balance Payment', 
+            text: (parseFloat(data.sp.trn.contract_value) - parseFloat(data.sp.invoice_amount)) ?? '' 
+        },
+        { label: 'Balance Payment Due Date',text: data.sp.trn.paymentTerm.payment_within=='NA'?'NA':paymentDueDate(data)},
+
         { label: 'Logistic Cost', text: data.estimated_logistic_cost || '' },
         { label: 'Logistic Provider', text: data.logistic_provider || '' },
         { label: 'Logistic Cost Due Date', text: data.sp.logistic_cost_due_date || '' },
         { label: 'Commission Agent', text: data.commission_agent || '' },
-        { label: 'Commission Value', text: data.sp.commission_value || '' },
+        { label: 'Commission Value', text: data.sp.trn.commission_value || '' },
         { label: 'Other Charges', text: data.commission_agent || '' },
         { label: 'Remarks from S&P', text: data.sp.remarks || '' },
         { label: 'Trader Name', text: data.trader_name || '' },
@@ -189,16 +196,62 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+            <h2 className="text-2xl mb-2 text-center">Payment / Finance Document</h2>
             {data && (
+                <>
+                    <div className="grid grid-cols-4 gap-1 py-2">
+                        {tradeData.map((item, index) => (
+                            <div key={index} className="p-2 border rounded shadow-sm">
+                                <div className="font-semibold">{item.label}</div>
+                                <div>{item.text}</div>
+                            </div>
+                        ))}
+                    </div>
 
-                <div className="grid grid-cols-4 gap-1 py-2">
-                    {tradeData.map((item, index) => (
-                        <div key={index} className="p-2 border rounded shadow-sm">
-                            <div className="font-semibold">{item.label}</div>
-                            <div>{item.text}</div>
-                        </div>
-                    ))}
-                </div>
+                    <table className="min-w-full bg-white border">
+                        <thead>
+                            <tr>
+                             
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Quantity</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Unit</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch number</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data?.sp.sp_product?.map(product => (
+                                <tr key={product.id}>
+                        
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_qty}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.batch_number}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.production_date}</td>
+                                    
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <table className="min-w-full bg-white border">
+                        <thead>
+                            <tr>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Charge Name</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Charge</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data?.sp.sp_extra_charges?.map(product => (
+                                <tr key={product.id}>
+                        
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.name}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.charge}</td>            
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </>
+                
             )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div>
@@ -220,7 +273,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 </div>
                 
             
-                <div>
+                {/* <div>
                     <label htmlFor="balance_payment" className="block text-sm font-medium text-gray-700">Balance Payment</label>
                     <input
                         id="balance_payment"
@@ -230,18 +283,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                </div>
-                <div>
-                    <label htmlFor="balance_payment_date" className="block text-sm font-medium text-gray-700">Balance Payment Due Date</label>
-                    <input
-                        id="balance_payment_date"
-                        name="balance_payment_date"
-                        type="date"
-                        value={formData.balance_payment_date}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
+                </div> */}
+               
                 <div>
                     <label htmlFor="balance_payment_received" className="block text-sm font-medium text-gray-700">Balance Payment Received</label>
                     <input
@@ -264,7 +307,17 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-            
+                <div>
+                    <label htmlFor="balance_payment_date" className="block text-sm font-medium text-gray-700">Balance Payment Date</label>
+                    <input
+                        id="balance_payment_date"
+                        name="balance_payment_date"
+                        type="date"
+                        value={formData.balance_payment_date}
+                        onChange={(e) => handleChange(e)}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
                 <div>
                     <label htmlFor="net_due_in_this_trade" className="block text-sm font-medium text-gray-700">Net Due in This Trade</label>
                     <input
@@ -299,7 +352,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     />
                 </div>
             
-                <div>
+                {/* <div>
                     <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
                     <input
                         id="logistic_cost"
@@ -309,8 +362,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                     <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Agent Value</label>
                     <input
                         id="commission_value"
@@ -320,7 +373,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                </div>
+                </div> */}
                 <div>
                     <label htmlFor="bl_fee" className="block text-sm font-medium text-gray-700">BL Fee</label>
                     <input
