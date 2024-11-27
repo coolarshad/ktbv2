@@ -43,6 +43,7 @@ import ShipmentSize from './views/ShipmentSize';
 import Currency from './views/Currency';
 import TradePacking from './views/TradePacking';
 import Inventory from './views/Inventory';
+import PLForm from './views/PLForm';
 
 function App() {
  
@@ -59,6 +60,8 @@ function App() {
           <Route path="/sales-purchases" element={<SalesPurchases />} />
           <Route path="/payment-finance" element={<PaymentFinance />} />
           <Route path="/pl" element={<PL />} />
+          <Route path="/pl-form" element={<PLForm />} />
+          <Route path="/pl-form/:id" element={<PLForm  mode="update"/>} />
           <Route path="/trade-form" element={<TradeForm />} />
           <Route path="/trade-form/:id" element={<TradeForm mode="update" />} />
           <Route path="/payment-term-form" element={<PaymentTermForm />} />

@@ -236,7 +236,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 navigate(`/pre-payment`);
             })
             .catch(error => {
-                console.error('There was an error adding the trade!', error);
+                console.error('There was an error adding the prepayment!', error);
             });
         } else if (mode === 'update') {
             axios.put(`/trademgt/pre-payments/${id}/`, formDataToSend, {
@@ -249,7 +249,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 navigate(`/pre-payment`);
             })
             .catch(error => {
-                console.error('There was an error updating the trade!', error);
+                console.error('There was an error updating the prepayment!', error);
             });
         }
     };

@@ -2287,3 +2287,26 @@ class RefBalanceView(APIView):
         return Response({'ref_balance':balance})
 
       
+class ProfitLossViewSet(viewsets.ModelViewSet):
+    queryset = PL.objects.all()
+    serializer_class = ProfitLossSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PLFilter
+
+class PLView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if trade_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                trade = Trade.objects.get(id=trade_id)
+            except Trade.DoesNotExist:
+                return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            trade_serializer = PLSerializer(trade)
+            response_data = trade_serializer.data
+            return Response(response_data)
+        else:  # If `pk` is not provided, list all trades
+            trades = Trade.objects.all()
+            serializer = PLSerializer(trades, many=True)
+            return Response(serializer.data)

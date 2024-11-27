@@ -199,3 +199,17 @@ class PurchaseProductTraceFilter(django_filters.FilterSet):
             'product_code': ['exact'],  # Filter by Trade TRN
             'first_trn': ['exact'],
         }
+
+
+class PLFilter(django_filters.FilterSet):
+    date_from = django_filters.DateFilter(field_name='sales_trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='sales_trn__trd', lookup_expr='lte') 
+    class Meta:
+        model = PL
+        fields = {
+            'sales_trn__trn': ['exact', 'icontains'],
+            'purchase_trn__trn': ['exact', 'icontains'],
+            # 'sales_trn__trade_type': ['exact', 'icontains'],
+            
+            'remarks': ['exact', 'icontains'],
+        }

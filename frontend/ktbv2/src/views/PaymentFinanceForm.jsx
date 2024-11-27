@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { paymentDueDate } from '../dateUtils';
+import { capitalizeKey } from '../utils';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
+
+    const [validationErrors, setValidationErrors] = useState({});
 
     const [trnOptions, setTrnOptions] = useState([]); 
     const [data, setData] = useState(null); 
@@ -19,8 +22,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         net_due_in_this_trade: '',
         payment_mode: '',
         status_of_payment: '',
-        logistic_cost: '',
-        commission_value: '',
+        // logistic_cost: '',
+        // commission_value: '',
         bl_fee: '',
         bl_collection_cost: '',
         shipment_status: '',
@@ -28,7 +31,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         release_docs_date: '',
         remarks: '',
         ttCopies: [{ name: '', tt_copy: null }],
-        pfCharges: [{ name: '', charge: null }],
+        pfCharges: [{ name: '', charge: '' }],
     });
 
     useEffect(() => {
@@ -48,8 +51,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         net_due_in_this_trade: data.net_due_in_this_trade,
                         payment_mode: data.payment_mode,
                         status_of_payment: data.status_of_payment,
-                        logistic_cost: data.logistic_cost,
-                        commission_value: data.commission_value,
+                        // logistic_cost: data.logistic_cost,
+                        // commission_value: data.commission_value,
                         bl_fee: data.bl_fee,
                         bl_collection_cost: data.bl_collection_cost,
                         shipment_status: data.shipment_status,
@@ -89,24 +92,43 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
     const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
+      
         if (section) {
-            const updatedSection = formData[section].map((item, i) =>
-                i === index ? { ...item, [name]: files ? files[0] : value } : item
-            );
-            setFormData({ ...formData, [section]: updatedSection });
+          // Update the specific section
+          const updatedSection = formData[section].map((item, i) =>
+            i === index ? { ...item, [name]: files ? files[0] : value } : item
+          );
+      
+          setFormData({ ...formData, [section]: updatedSection });
         } else {
-            setFormData({ ...formData, [name]: value });
-        }
-
-        if (name === 'trn') {
-            try {
-              const response = await axios.get(`/trademgt/pf/${value}`);
-              setData(response.data);
-            } catch (error) {
-              console.error('Error fetching TRN data:', error);
-            }
+          // Update the main form fields
+          const updatedFormData = { ...formData, [name]: files ? files[0] : value };
+      
+          // Handle balance_payment_made or balance_payment_received
+          if (name === 'balance_payment_made' || name === 'balance_payment_received') {
+            const remainingValue = parseFloat(calculateRemainingContractValue(data)) - parseFloat(value || 0);
+            updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2); // Ensure consistent formatting
           }
-    };
+      
+          setFormData(updatedFormData);
+        }
+      
+        // Handle TRN field change
+        if (name === 'trn') {
+          try {
+            const response = await axios.get(`/trademgt/pf/${value}`);
+            if (response.data.sp && response.data.sp.reviewed) {
+              setData(response.data);
+            } else {
+              alert('S&P Not Found or Not Reviewed!');
+            }
+          } catch (error) {
+            console.error('Error fetching TRN data:', error);
+          }
+        }
+      };
+      
+      
     
     const handleAddRow = (section) => {
         const newRow = section === 'pfCharges' ? { name: '', charge: '' } : { name: '', tt_copy: null };
@@ -121,6 +143,46 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        let errors = {};
+
+        // Define fields to skip validation for
+        const skipValidation = [];
+
+        // Check each regular field for empty value (except files and those in skipValidation)
+        for (const [key, value] of Object.entries(formData)) {
+            if (!skipValidation.includes(key) && value === '') {
+                errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+            }
+        }
+
+         // Validate tradeProducts array fields but skip 'loi'
+         formData.pfCharges.forEach((product, index) => {
+            for (const [key, value] of Object.entries(product)) { 
+                if (!skipValidation.includes(key) && (value === '' || value==null)) {
+                    errors[`pfCharges[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+            }
+        });
+
+         // Validate tradeProducts array fields but skip 'loi'
+         formData.ttCopies.forEach((product, index) => {
+            for (const [key, value] of Object.entries(product)) { 
+                if (!skipValidation.includes(key) && (value === '' || value==null)) {
+                    errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+            }
+        });
+
+        setValidationErrors(errors);
+    
+        if (Object.keys(errors).length > 0) {
+            console.log(errors)
+            return; // Don't proceed if there are validation errors
+        }else{
+             setValidationErrors({});  
+        }
+
         const formDataToSend = new FormData();
 
         for (const [key, value] of Object.entries(formData)) {
@@ -159,7 +221,23 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 });
         }
     };
-
+    
+    const calculateRemainingContractValue = (data) => {
+        const contractValue = parseFloat(data.sp.trn.contract_value);
+        let advance=0;
+        if(data.sp.trn.trade_type=='Sales'){
+           advance = parseFloat(data.sp.prepayment.advance_received);
+        }
+        if(data.sp.trn.trade_type=='Purchase'){
+            advance = parseFloat(data.sp.prepayment.advance_paid);
+        }
+      
+        if (isNaN(contractValue) || isNaN(advance)) {
+          throw new Error('Invalid input: contract_value and invoice_amount must be valid numbers');
+        }
+      
+        return contractValue - advance;
+      };
 
     const tradeData = data
     ? [
@@ -176,7 +254,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         { label: 'Advance Paid Date', text: data.sp.prepayment.date_of_payment || '' },
         { 
             label: 'Balance Payment', 
-            text: (parseFloat(data.sp.trn.contract_value) - parseFloat(data.sp.invoice_amount)) ?? '' 
+            text: calculateRemainingContractValue(data)
         },
         { label: 'Balance Payment Due Date',text: data.sp.trn.paymentTerm.payment_within=='NA'?'NA':paymentDueDate(data)},
 
@@ -270,6 +348,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                             </option>
                         ))}
                     </select>
+                    {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
                 
             
@@ -295,6 +374,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.balance_payment_received && <p className="text-red-500">{validationErrors.balance_payment_received}</p>}
                 </div>
                 <div>
                     <label htmlFor="balance_payment_made" className="block text-sm font-medium text-gray-700">Balance Payment Made</label>
@@ -306,6 +386,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.balance_payment_made && <p className="text-red-500">{validationErrors.balance_payment_made}</p>}
                 </div>
                 <div>
                     <label htmlFor="balance_payment_date" className="block text-sm font-medium text-gray-700">Balance Payment Date</label>
@@ -317,6 +398,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                     {validationErrors.balance_payment_date && <p className="text-red-500">{validationErrors.balance_payment_date}</p>}
                 </div>
                 <div>
                     <label htmlFor="net_due_in_this_trade" className="block text-sm font-medium text-gray-700">Net Due in This Trade</label>
@@ -328,6 +410,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                     {validationErrors.net_due_in_this_trade && <p className="text-red-500">{validationErrors.net_due_in_this_trade}</p>}
                 </div>
                 <div>
                     <label htmlFor="payment_mode" className="block text-sm font-medium text-gray-700">Payment Mode</label>
@@ -339,6 +422,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                     {validationErrors.payment_mode && <p className="text-red-500">{validationErrors.payment_mode}</p>}
                 </div>
                 <div>
                     <label htmlFor="status_of_payment" className="block text-sm font-medium text-gray-700">Status of Payment</label>
@@ -350,6 +434,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                     {validationErrors.status_of_payment && <p className="text-red-500">{validationErrors.status_of_payment}</p>}
                 </div>
             
                 {/* <div>
@@ -384,6 +469,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                       {validationErrors.bl_fee && <p className="text-red-500">{validationErrors.bl_fee}</p>}
                 </div>
            
                 <div>
@@ -396,6 +482,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                      {validationErrors.bl_collection_cost && <p className="text-red-500">{validationErrors.bl_collection_cost}</p>}
                 </div>
                 <div>
                     <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
@@ -407,6 +494,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                        {validationErrors.shipment_status && <p className="text-red-500">{validationErrors.shipment_status}</p>}
                 </div>
                 <div>
                     <label htmlFor="release_docs" className="block text-sm font-medium text-gray-700">Release Docs</label>
@@ -418,6 +506,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                      {validationErrors.release_docs && <p className="text-red-500">{validationErrors.release_docs}</p>}
                 </div>
            
                 <div>
@@ -430,6 +519,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                      {validationErrors.release_docs_date && <p className="text-red-500">{validationErrors.release_docs_date}</p>}
                 </div>
                 <div>
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
@@ -441,6 +531,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                      {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
                 </div>
             </div>
             <hr className="my-6" />
@@ -458,6 +549,11 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'pfCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
+                              {validationErrors[`pfCharges[${index}].name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`pfCharges[${index}].name`]}
+                                    </p>
+                                )}
                         </div>
                         <div>
                             <label htmlFor={`ttcopy_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">Charge</label>
@@ -469,6 +565,11 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'pfCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
+                             {validationErrors[`pfCharges[${index}].charge`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`pfCharges[${index}].charge`]}
+                                    </p>
+                                )}
                         </div>
                         <div className="flex items-end">
                             <button
@@ -507,6 +608,11 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'ttCopies', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
+                            {validationErrors[`ttCopies[${index}].name`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`ttCopies[${index}].name`]}
+                                    </p>
+                                )}
                         </div>
                         <div>
                             <label htmlFor={`ttcopy_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">TT Copy</label>
@@ -517,6 +623,11 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'ttCopies', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
+                            {validationErrors[`ttCopies[${index}].tt_copy`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`ttCopies[${index}].tt_copy`]}
+                                    </p>
+                                )}
                         </div>
                         <div className="flex items-end">
                             <button

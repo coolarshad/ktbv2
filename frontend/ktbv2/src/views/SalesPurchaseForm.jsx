@@ -142,6 +142,12 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         fetchData('/trademgt/sp-purchase-bl',{}, setPurchaseBLOptions);
     }, []);
 
+    function calculateTotalWithTolerance(qty, tolerance) {
+        const toleranceValue = (tolerance / 100) * qty;
+        console.log(qty + toleranceValue)
+        return qty + toleranceValue;
+      }
+
     // const handleChange = async (e, arrayName = null, index = null) => {
     //     const { name, value, type, files } = e.target;
 
@@ -218,6 +224,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
                         const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
                         updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2); // Calculate and format to 2 decimals
+
+                        
                     }
     
                     updatedFormData = { ...prev, [arrayName]: updatedArray };
@@ -263,7 +271,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 } else {
                     alert('No Prepayment Found!');
                 }
-                console.log(response.data.prepayment);
+                // console.log(response.data.prepayment);
             } catch (error) {
                 console.error('Error fetching TRN data:', error);
             }
@@ -336,9 +344,26 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
          // Validate tradeProducts array fields but skip 'loi'
          formData.salesPurchaseProducts.forEach((product, index) => {
-            for (const [key, value] of Object.entries(product)) { 
+            for (const [key, value] of Object.entries(product)) {
                 if (!skipValidation.includes(key) && value === '') {
                     errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                }
+        
+                // Validation specific to `bl_qty`
+                if (key === 'bl_qty') {
+                    const trade = data?.trade_products?.find(
+                        item =>
+                            item.product_name === product.product_name &&
+                            item.product_code === product.product_code
+                    );
+        
+                    if (trade) {
+                        const maxAllowedQty = calculateTotalWithTolerance(trade.trade_qty, trade.tolerance);
+                        if (value > maxAllowedQty) {
+                            alert(`BL Quantity exceeds tolerance for ${trade.product_code || 'this product'}`);
+                            errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
+                        }
+                    }
                 }
             }
         });
@@ -1037,7 +1062,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             <hr className="my-6" />
             {/* PackingList Section */}
             <div className="space-y-4 px-4">
-                <h3 className="text-lg font-medium text-gray-900">Packing Lists</h3>
+                <h3 className="text-lg font-medium text-gray-900">Add Addititional Documents</h3>
                 {formData.packingLists.map((packingList, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -1057,7 +1082,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 )}
                         </div>
                         <div>
-                            <label htmlFor={`packing_list_file_${index}`} className="block text-sm font-medium text-gray-700">Packing List</label>
+                            <label htmlFor={`packing_list_file_${index}`} className="block text-sm font-medium text-gray-700">Document</label>
                             <input
                                 id={`packing_list_file_${index}`}
                                 name="packing_list"

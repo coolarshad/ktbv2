@@ -770,3 +770,18 @@ class Packing(models.Model):
         return reverse("Packing_detail", kwargs={"pk": self.pk})
 
 
+
+class PL(models.Model):
+    sales_trn=models.ForeignKey("Trade",related_name='sales_trn', verbose_name=_("sales_trn"), on_delete=models.CASCADE)
+    purchase_trn=models.ForeignKey("Trade",related_name='purchase_trn', verbose_name=_("purchase_trn"), on_delete=models.CASCADE)
+    remarks=models.CharField(_("100"), max_length=50)
+
+    class Meta:
+        verbose_name = _("PL")
+        verbose_name_plural = _("PLs")
+
+    def __str__(self):
+        return self.sales_trn.trn
+
+    def get_absolute_url(self):
+        return reverse("PL_detail", kwargs={"pk": self.pk})

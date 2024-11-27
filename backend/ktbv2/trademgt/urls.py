@@ -37,6 +37,7 @@ router.register(r'packings', PackingViewSet)
 router.register(r'shipment-sizes', ShipmentSizeViewSet)
 router.register(r'currencies', CurrencyViewSet)
 router.register(r'product-names', ProductNameViewSet)
+router.register(r'profitloss', ProfitLossViewSet)
 
 
 
@@ -67,7 +68,7 @@ urlpatterns = [
     path('prepay/<int:pk>/', PrePayView.as_view(), name='prepay'),
     path('sp/<int:pk>/', SPView.as_view(), name='sp'),
     path('pf/<int:pk>/', PFView.as_view(), name='pf'),
-
+    path('pl/<int:pk>/', PLView.as_view(), name='pl'),  
 
     path('kyc-approve-one/<int:pk>/', KycApproveOneView.as_view(), name='kyc-approve1'),
     path('kyc-approve-two/<int:pk>/', KycApproveTwoView.as_view(), name='kyc-approve2'),

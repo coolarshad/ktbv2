@@ -521,7 +521,19 @@ class SPSerializer(serializers.ModelSerializer):
         ret['prepayment'] = self.get_prepay_details(instance)
         return ret
 
+class PFChargesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PFCharges
+        fields = '__all__'
+
+class TTCopySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TTCopy
+        fields = '__all__'
+
 class PaymentFinanceSerializer(serializers.ModelSerializer):
+    pf_charges = PFChargesSerializer(many=True, read_only=True)
+    pf_ttcopy = TTCopySerializer(many=True, read_only=True)
     class Meta:
         model = PaymentFinance
         fields = '__all__'
@@ -544,15 +556,7 @@ class PaymentFinanceSerializer(serializers.ModelSerializer):
         
         return ret
 
-class PFChargesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PFCharges
-        fields = '__all__'
 
-class TTCopySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TTCopy
-        fields = '__all__'
 
 class PFSerializer(serializers.ModelSerializer):
     class Meta:
@@ -681,3 +685,59 @@ class ProductNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductName
         fields = '__all__'
+
+
+class ProfitLossSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PL
+        fields = '__all__'
+    
+    # def get_sales_trn_details(self, obj):
+    #     try:
+    #         instance = Trade.objects.get(id=obj.trn.id)  
+    #         return TradeSerializer(instance).data
+    #     except Trade.DoesNotExist:
+    #         return None  
+
+    def get_sales_trn_details(self, obj):
+        try:
+            instance = PaymentFinance.objects.get(trn=obj.sales_trn)
+            return PaymentFinanceSerializer(instance).data
+        except PaymentFinance.DoesNotExist:
+            return None  # Or handle it as needed
+    
+    def get_purchase_trn_details(self, obj):
+        try:
+            instance = PaymentFinance.objects.get(trn=obj.purchase_trn)
+            return PaymentFinanceSerializer(instance).data
+        except PaymentFinance.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['salesPF'] = self.get_sales_trn_details(instance)
+        ret['purchasePF'] = self.get_purchase_trn_details(instance)
+        return ret
+
+
+class PLSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trade
+        fields = '__all__'
+
+    def get_pf_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PaymentFinance.objects.get(trn=obj.id)  # or use another field to identify the company
+            return PaymentFinanceSerializer(instance).data
+        except PaymentFinance.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['pf'] = self.get_pf_details(instance)
+        return ret

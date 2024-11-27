@@ -2,13 +2,14 @@ import NavBar from "../components/NavBar"
 import SPTable from "../components/SPTable"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
-import { BASE_URL } from '../utils';
+import ReactToPrint from 'react-to-print';
+import { BASE_URL } from '../utils'; 
 
 function SalesPurchases() {
-
+  const componentRef = useRef();
   const navigate = useNavigate();
   const [spData, setSPData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -135,7 +136,10 @@ function SalesPurchases() {
         {selectedSP && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
-              <button onClick={closeModal} className="float-right text-red-500">Close</button>
+            <button onClick={closeModal} className="float-right text-red-500">Close</button>
+              <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              <div className="p-3 max-w-8xl mx-auto" ref={componentRef}>
+
               <h2 className="text-2xl mb-2 text-center">Sales/Purchase Details</h2>
               <hr className='mb-2' />
               <div className="overflow-x-auto">
@@ -347,70 +351,6 @@ function SalesPurchases() {
                         </div>
                       ) : null
                     )}
-              
-
-              {/* Invoices Table */}
-              {/* <h3 className="text-lg mt-4 text-center">Invoices</h3>
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedSP.packingLists.map((item, index) =>
-                    item.name && item.invoice ? ( // Check if both fields exist
-                      <tr key={index}>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.invoice}</td>
-                      </tr>
-                    ) : null
-                  )}
-                </tbody>
-              </table> */}
-
-              {/* BL Copies Table */}
-              {/* <h3 className="text-lg mt-4 text-center">BL Copies</h3>
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Copy</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedSP.blCopies.map((item, index) =>
-                    item.name && item.bl_copy ? ( // Check if both fields exist
-                      <tr key={index}>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.bl_copy}</td>
-                      </tr>
-                    ) : null
-                  )}
-                </tbody>
-              </table> */}
-
-              {/* COAs Table */}
-              {/* <h3 className="text-lg mt-4 text-center">COAs</h3>
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">COA</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedSP.coas.map((item, index) =>
-                    item.name && item.coa ? ( // Check if both fields exist
-                      <tr key={index}>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.coa}</td>
-                      </tr>
-                    ) : null
-                  )}
-                </tbody>
-              </table> */}
 
               {selectedSP.reviewed ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
@@ -418,6 +358,7 @@ function SalesPurchases() {
                     </div>
                   }
             </div>
+          </div>
           </div>
         )}
       </Modal>
