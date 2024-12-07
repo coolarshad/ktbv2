@@ -587,12 +587,12 @@ class PurchasePending(models.Model):
     product_code=models.CharField(_("product_code"), max_length=50)
     product_name=models.CharField(_("product_code"), max_length=50)
     hs_code=models.CharField(_("product_code"), max_length=50)
-    total_contract_qty=models.FloatField(_("total_contract_qty"))
-    total_contract_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
-    contract_balance_qty=models.FloatField(_("contract_balance_qty"))
-    contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=15)
-    trade_qty=models.FloatField(_("total_contract_qty"))
-    trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+    contract_qty=models.FloatField(_("contract_qty"))
+    contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
+    balance_qty=models.FloatField(_("balance_qty"))
+    balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
+    # trade_qty=models.FloatField(_("total_contract_qty"))
+    # trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
     
     
 
@@ -615,12 +615,12 @@ class SalesPending(models.Model):
     product_code=models.CharField(_("product_code"), max_length=50)
     product_name=models.CharField(_("product_code"), max_length=50)
     hs_code=models.CharField(_("product_code"), max_length=50)
-    total_contract_qty=models.FloatField(_("total_contract_qty"))
-    total_contract_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
-    contract_balance_qty=models.FloatField(_("contract_balance_qty"))
-    contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=15)
-    trade_qty=models.FloatField(_("total_contract_qty"))
-    trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+    contract_qty=models.FloatField(_("contract_qty"))
+    contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
+    balance_qty=models.FloatField(_("balance_qty"))
+    balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
+    # trade_qty=models.FloatField(_("total_contract_qty"))
+    # trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
 
     class Meta:
         verbose_name = _("SalesPending")
@@ -632,6 +632,47 @@ class SalesPending(models.Model):
     def get_absolute_url(self):
         return reverse("SalesPending_detail", kwargs={"pk": self.pk})
 
+# class PurchaseSPTracing(models.Model):
+#     trn=models.ForeignKey(Trade, related_name='purchase_sp_tracing', on_delete=models.CASCADE)
+#     product_code=models.CharField(_("product_code"), max_length=50)
+#     product_name=models.CharField(_("product_code"), max_length=50)
+#     hs_code=models.CharField(_("product_code"), max_length=50)
+#     trade_qty=models.FloatField(_("total_contract_qty"))
+#     trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+#     bill_balance_qty=models.FloatField(null=True)
+#     first_sp=models.CharField(max_length=15,null=True,blank=True)
+
+
+#     class Meta:
+#         verbose_name = _("PurchaseSPTracing")
+#         verbose_name_plural = _("PurchaseSPTracings")
+
+#     def __str__(self):
+#         return self.product_name
+
+#     def get_absolute_url(self):
+#         return reverse("PurchaseSPTracing_detail", kwargs={"pk": self.pk})
+
+# class SalesSPTracing(models.Model):
+#     trn=models.ForeignKey(Trade, related_name='sales_sp_tracing', on_delete=models.CASCADE)
+#     product_code=models.CharField(_("product_code"), max_length=50)
+#     product_name=models.CharField(_("product_code"), max_length=50)
+#     hs_code=models.CharField(_("product_code"), max_length=50)
+#     trade_qty=models.FloatField(_("total_contract_qty"))
+#     trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+#     bill_balance_qty=models.FloatField(null=True)
+#     first_sp=models.CharField(max_length=15,null=True,blank=True)
+
+
+#     class Meta:
+#         verbose_name = _("SalesSPTracing")
+#         verbose_name_plural = _("SalesSPTracings")
+
+#     def __str__(self):
+#         return self.product_name
+
+#     def get_absolute_url(self):
+#         return reverse("SalesSPTracing_detail", kwargs={"pk": self.pk})
 
 class Company(models.Model):
     name = models.CharField(max_length=255)
