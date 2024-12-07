@@ -88,6 +88,7 @@ const PreSPTable = ({ data, onDelete }) => {
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Doc Issuance Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Payment Term</th>
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Due Date</th> */}
@@ -105,6 +106,7 @@ const PreSPTable = ({ data, onDelete }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.doc_issuance_date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trade_type}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.customer.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.paymentTerm.name}</td>
              

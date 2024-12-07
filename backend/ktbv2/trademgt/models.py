@@ -347,6 +347,7 @@ class SalesPurchaseProduct(models.Model):
     batch_number=models.CharField(_("batch_number"), max_length=50)
     production_date=models.DateField(_("production_date"))
     bl_qty=models.FloatField(_("bl_qty"))
+    pending_qty=models.FloatField(_("bl_qty"))
     trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
     bl_value=models.FloatField(_("bl_value"))
     product_code = models.CharField(_("product_code"), max_length=50)
@@ -591,9 +592,9 @@ class PurchasePending(models.Model):
     contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
     balance_qty=models.FloatField(_("balance_qty"))
     balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
-    # trade_qty=models.FloatField(_("total_contract_qty"))
-    # trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
-    
+    selected_currency_rate=models.FloatField(_("selected_currency_rate"))
+    rate_in_usd=models.FloatField(_("rate_in_usd"))
+    tolerance=models.FloatField(_("tolerance"))
     
 
     class Meta:
@@ -619,8 +620,10 @@ class SalesPending(models.Model):
     contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
     balance_qty=models.FloatField(_("balance_qty"))
     balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
-    # trade_qty=models.FloatField(_("total_contract_qty"))
-    # trade_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+    selected_currency_rate=models.FloatField(_("selected_currency_rate"))
+    rate_in_usd=models.FloatField(_("rate_in_usd"))
+    tolerance=models.FloatField(_("tolerance"))
+    
 
     class Meta:
         verbose_name = _("SalesPending")

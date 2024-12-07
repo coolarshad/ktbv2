@@ -71,7 +71,7 @@ function SalesPurchases() {
     setSP(null);
   };
 
-  const getSPData = (data, product_name, product_code) => {
+  const getSPData = (data, product_code, product_name) => {
     return data.find(
         item => item.product_name === product_name && item.product_code === product_code
     ) || '';
@@ -284,14 +284,14 @@ function SalesPurchases() {
               <table className="min-w-full bg-white">
                 <thead>
                   <tr>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Qty</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Qty Unit</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch Number</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Qty</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Value</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Marking</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
@@ -300,20 +300,20 @@ function SalesPurchases() {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedSP.trn.trade_products.map(product => (
+                  {selectedSP.sp_product.map(product => (
                     <tr key={product.id}>
+                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).bl_qty}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).trade_qty_unit}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).batch_number}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).production_date}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).bl_qty}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.salesPurchaseProducts,product.product_name,product.product_code).bl_value.toFixed(2)}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.batch_number}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.production_date}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_value.toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).markings_in_packaging}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).total_packing_cost}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).supplier.name}</td>
                     </tr>
                   ))}
                 </tbody>

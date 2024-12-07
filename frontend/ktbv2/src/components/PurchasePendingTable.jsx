@@ -17,12 +17,14 @@ const PurchasePendingTable = ({ data , onDelete, onView }) => { // Default value
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Unit</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Balance Qty</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Balance Unit</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Unit</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Balance Qty</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Balance Unit</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in USD</th>
+          
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -38,12 +40,13 @@ const PurchasePendingTable = ({ data , onDelete, onView }) => { // Default value
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.hs_code}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty_unit}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_balance_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_balance_qty_unit}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_qty_unit}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_qty}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_qty_unit}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_qty}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_qty_unit}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.tolerance}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.selected_currency_rate}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.rate_in_usd}</td>
              
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">

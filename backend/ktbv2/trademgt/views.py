@@ -656,12 +656,13 @@ class TradeReviewView(APIView):
                             product_code=product.product_code,
                             product_name=product.product_name,
                             hs_code=product.hs_code,
-                            total_contract_qty=product.total_contract_qty,
-                            total_contract_qty_unit=product.total_contract_qty_unit,
-                            contract_balance_qty=product.contract_balance_qty,
-                            contract_balance_qty_unit=product.contract_balance_qty_unit,
-                            trade_qty=product.trade_qty,
-                            trade_qty_unit=product.trade_qty_unit
+                            balance_qty=product.trade_qty,
+                            balance_qty_unit=product.trade_qty_unit,
+                            contract_qty=product.trade_qty,
+                            contract_qty_unit=product.trade_qty_unit,
+                            selected_currency_rate=product.selected_currency_rate,
+                            rate_in_usd=product.rate_in_usd,
+                            tolerance=product.tolerance
                         )
                         sales_pending_instances.append(sales_pending)
 
@@ -683,12 +684,14 @@ class TradeReviewView(APIView):
                             product_code=product.product_code,
                             product_name=product.product_name,
                             hs_code=product.hs_code,
-                            total_contract_qty=product.total_contract_qty,
-                            total_contract_qty_unit=product.total_contract_qty_unit,
-                            contract_balance_qty=product.contract_balance_qty,
-                            contract_balance_qty_unit=product.contract_balance_qty_unit,
-                            trade_qty=product.trade_qty,
-                            trade_qty_unit=product.trade_qty_unit
+                            balance_qty=product.trade_qty,
+                            balance_qty_unit=product.trade_qty_unit,
+                            contract_qty=product.trade_qty,
+                            contract_qty_unit=product.trade_qty_unit,
+                            selected_currency_rate=product.selected_currency_rate,
+                            rate_in_usd=product.rate_in_usd,
+                            tolerance=product.tolerance
+                           
                         )
                         purchase_pending_instances.append(purchase_pending)
 
@@ -1332,7 +1335,8 @@ class SalesPurchaseView(APIView):
                 'tolerance': data.get(f'salesPurchaseProducts[{h}].tolerance'),  
                 'batch_number': data.get(f'salesPurchaseProducts[{h}].batch_number'),  
                 'production_date': data.get(f'salesPurchaseProducts[{h}].production_date'),  
-                'bl_qty': data.get(f'salesPurchaseProducts[{h}].bl_qty'),  
+                'bl_qty': data.get(f'salesPurchaseProducts[{h}].bl_qty'),
+                'pending_qty': data.get(f'salesPurchaseProducts[{h}].pending_qty'),   
                 'trade_qty_unit': data.get(f'salesPurchaseProducts[{h}].trade_qty_unit'),  
                 'bl_value': data.get(f'salesPurchaseProducts[{h}].bl_value'), 
                 'product_code': data.get(f'salesPurchaseProducts[{h}].product_code'), 
@@ -1360,32 +1364,7 @@ class SalesPurchaseView(APIView):
             packing_list_data.append(packing_lists)
             j += 1
         
-        k = 0
-        # while f'blCopies[{k}].name' in data:
-        #     bl_copy_data = {
-        #         'name': data.get(f'blCopies[{k}].name'),
-        #         'bl_copy': data.get(f'blCopies[{k}].bl_copy'),
-        #     }
-        #     bl_copies_data.append(bl_copy_data)
-        #     k += 1
-        
-        # l = 0
-        # while f'invoices[{l}].name' in data:
-        #     invoice_data = {
-        #         'name': data.get(f'invoices[{l}].name'),
-        #         'invoice': data.get(f'invoices[{l}].invoice'),
-        #     }
-        #     invoices_data.append(invoice_data)
-        #     l += 1
-        
-        # m = 0
-        # while f'coas[{m}].name' in data:
-        #     coa_data = {
-        #         'name': data.get(f'coas[{m}].name'),
-        #         'coa': data.get(f'coas[{m}].coa'),
-        #     }
-        #     coas_data.append(coa_data)
-        #     m += 1
+       
 
         with transaction.atomic():
             sp_serializer = SalesPurchaseSerializer(data=sp_data)
@@ -1415,26 +1394,19 @@ class SalesPurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
-            # if invoices_data:
-            #     try:
-            #         invoices = [Invoice(**item, sp=sp) for item in invoices_data]
-            #         Invoice.objects.bulk_create(invoices)
-            #     except Exception as e:
-            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
-            # if coas_data:
-            #     try:
-            #         coas = [COA(**item, sp=sp) for item in coas_data]
-            #         COA.objects.bulk_create(coas)
-            #     except Exception as e:
-            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # if bl_copies_data:
-            #     try:
-            #         bl_copies = [BL_Copy(**item, sp=sp) for item in bl_copies_data]
-            #         BL_Copy.objects.bulk_create(bl_copies)
-            #     except Exception as e:
-            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            if sp.trn.trade_type.lower() == "sales":
+                for product in sp_products:
+                    pending_product=SalesPending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                    pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                    pending_product.save()
+                       
+                  
+            elif sp.trn.trade_type.lower() == "purchase":
+                for product in sp_products:
+                    pending_product=PurchasePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                    pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                    pending_product.save()
 
         return Response(sp_serializer.data, status=status.HTTP_201_CREATED)
     
@@ -1478,11 +1450,7 @@ class SalesPurchaseView(APIView):
         sp_products_data = []
         sp_extra_charges_data = []
         packing_list_data = []
-        # invoices_data = []
-        # coas_data = []
-        # bl_copies_data = []
-
-
+       
         h = 0
         while f'salesPurchaseProducts[{h}].product_name' in data:
             sp_product = {
@@ -1492,6 +1460,7 @@ class SalesPurchaseView(APIView):
                 'batch_number': data.get(f'salesPurchaseProducts[{h}].batch_number'),  
                 'production_date': data.get(f'salesPurchaseProducts[{h}].production_date'),  
                 'bl_qty': data.get(f'salesPurchaseProducts[{h}].bl_qty'),  
+                'pending_qty': data.get(f'salesPurchaseProducts[{h}].pending_qty'),  
                 'trade_qty_unit': data.get(f'salesPurchaseProducts[{h}].trade_qty_unit'),  
                 'bl_value': data.get(f'salesPurchaseProducts[{h}].bl_value'),  
                 'product_code': data.get(f'salesPurchaseProducts[{h}].product_code'), 
@@ -1525,38 +1494,24 @@ class SalesPurchaseView(APIView):
             packing_list_data.append(packing_lists)
             j += 1
         
-        # k = 0
-        # while f'blCopies[{k}].name' in data:
-        #     bl_copy_data = {
-        #         'name': data.get(f'blCopies[{k}].name'),
-        #         'bl_copy': data.get(f'blCopies[{k}].bl_copy'),
-        #     }
-        #     bl_copies_data.append(bl_copy_data)
-        #     k += 1
-        
-        # l = 0
-        # while f'invoices[{l}].name' in data:
-        #     invoice_data = {
-        #         'name': data.get(f'invoices[{l}].name'),
-        #         'invoice': data.get(f'invoices[{l}].invoice'),
-        #     }
-        #     invoices_data.append(invoice_data)
-        #     l += 1
-        
-        # m = 0
-        # while f'coas[{m}].name' in data:
-        #     coa_data = {
-        #         'name': data.get(f'coas[{m}].name'),
-        #         'coa': data.get(f'coas[{m}].coa'),
-        #     }
-        #     coas_data.append(coa_data)
-        #     m += 1
        
         with transaction.atomic():
             spProducts=SalesPurchaseProduct.objects.filter(sp=sp)
 
             if sp.trn.trade_type.lower() == "sales":
                 for product in spProducts:
+                    try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_pending = SalesPending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
+            
+                        if existing_pending:
+                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
+                            existing_pending.save()
+                       
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating SalesPending: {e}")
+                        raise
                     try:
                         # Check if a SalesProductTrace with the given product_code exists
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
@@ -1573,6 +1528,19 @@ class SalesPurchaseView(APIView):
             
             if sp.trn.trade_type.lower() == "purchase":
                 for product in spProducts:
+                    try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_pending = PurchasePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
+            
+                        if existing_pending:
+                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
+                            existing_pending.save()
+                       
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating PurchasePending: {e}")
+                        raise
+
                     try:
                         # Check if a SalesProductTrace with the given product_code exists
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
@@ -1623,36 +1591,17 @@ class SalesPurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
-            # if invoices_data:
-            #     # Clear existing trade extra costs and add new ones
-            #     Invoice.objects.filter(sp=sp).delete()
-            #     try:
-            #         invoices = [Invoice(**item, sp=sp) for item in invoices_data]
-            #         Invoice.objects.bulk_create(invoices)
-            #     except Exception as e:
-            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-            # if coas_data:
-            #     # Clear existing trade extra costs and add new ones
-            #     COA.objects.filter(sp=sp).delete()
-            #     try:
-            #         coas = [COA(**item, sp=sp) for item in coas_data]
-            #         COA.objects.bulk_create(coas)
-            #     except Exception as e:
-            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-                
-            # if bl_copies_data:
-            #     # Clear existing trade extra costs and add new ones
-            #     BL_Copy.objects.filter(sp=sp).delete()
-            #     try:
-            #         bl_copies = [BL_Copy(**item, sp=sp) for item in bl_copies_data]
-            #         BL_Copy.objects.bulk_create(bl_copies)
-            #     except Exception as e:
-            #         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
             salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
             if sp.trn.trade_type.lower() == "sales":
                 for product in salesPurchaseProducts:
+                    try:
+                        pending_product=SalesPending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                        pending_product.save()
+                    except Exception as e:
+                            # Handle specific exception for SalesProductTrace
+                        print(f"Error updating SalesPending: {e}")
+                        raise
                     try:
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                         if existing_inv:
@@ -1675,6 +1624,15 @@ class SalesPurchaseView(APIView):
 
             if sp.trn.trade_type.lower() == "purchase":
                 for product in salesPurchaseProducts:
+                    try:
+                        pending_product=PurchasePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                        pending_product.save()
+                    except Exception as e:
+                            # Handle specific exception for SalesProductTrace
+                        print(f"Error updating PurchasePending: {e}")
+                        raise
+
                     try:
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                         if existing_inv:
@@ -1737,9 +1695,7 @@ class SalesPurchaseView(APIView):
             SalesPurchaseProduct.objects.filter(sp=sp).delete()
             SalesPurchaseExtraCharge.objects.filter(sp=sp).delete()
             PackingList.objects.filter(sp=sp).delete()
-            # BL_Copy.objects.filter(sp=sp).delete()
-            # Invoice.objects.filter(sp=sp).delete()
-            # COA.objects.filter(sp=sp).delete()
+           
             sp.delete()
 
         return Response({'message': 'SalesPurchase deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
@@ -2310,3 +2266,50 @@ class PLView(APIView):
             trades = Trade.objects.all()
             serializer = PLSerializer(trades, many=True)
             return Response(serializer.data)
+        
+
+class PendingBalanceView(APIView):
+    def get(self, request, *args, **kwargs):
+        trn = request.query_params.get('trn')
+        product_code = request.query_params.get('product_code')
+        product_name = request.query_params.get('product_name')
+        hs_code = request.query_params.get('hs_code')
+        
+        try:
+            trade = Trade.objects.get(id=trn)
+            
+            if not trade:
+                return Response({'error': 'Trade not found'}, status=404)
+            
+            if trade.trade_type == 'Purchase':
+                product = PurchasePending.objects.filter(
+                    trn=trade,
+                    product_code=product_code,
+                    product_name=product_name,
+                    hs_code=hs_code
+                ).first()
+               
+                if product:
+                    # Serialize and return the product data
+                    serialized_product = PurchasePendingSerializer(product)
+                    return Response({'pending_balance': serialized_product.data})
+                else:
+                    return Response({'pending_balance': 0})
+            
+            else:  # Sales trade type
+                product = SalesPending.objects.filter(
+                    trn=trade,
+                    product_code=product_code,
+                    product_name=product_name,
+                    hs_code=hs_code
+                ).first()
+                
+                if product:
+                    # Serialize and return the product data
+                    serialized_product = SalesPendingSerializer(product)
+                    return Response({'pending_balance': serialized_product.data})
+                else:
+                    return Response({'pending_balance': 0})
+
+        except Trade.DoesNotExist:
+            return Response({'error': 'Trade not found'}, status=404)

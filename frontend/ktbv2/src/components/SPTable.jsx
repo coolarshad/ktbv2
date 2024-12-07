@@ -15,6 +15,7 @@ const SPTable = ({ data,onDelete,onView }) => {
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Number</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Number</th>
@@ -30,6 +31,7 @@ const SPTable = ({ data,onDelete,onView }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
       
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_number}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_number}</td>

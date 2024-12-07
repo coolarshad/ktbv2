@@ -16,6 +16,7 @@ const PFTable = ({ data, onDelete, onView }) => {
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Payment Mode</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status Of Payment</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Shipment Status</th>
@@ -31,6 +32,7 @@ const PFTable = ({ data, onDelete, onView }) => {
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trade_type}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.payment_mode}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.status_of_payment}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.shipment_status}</td>

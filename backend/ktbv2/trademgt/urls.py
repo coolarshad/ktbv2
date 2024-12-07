@@ -75,6 +75,7 @@ urlpatterns = [
 
 
     path('product-balance', RefBalanceView.as_view(), name='product-balance'),
+    path('pending-balance', PendingBalanceView.as_view(), name='pending-balance'),
 ]+ router.urls
 
 # urlpatterns = [

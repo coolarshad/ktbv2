@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
 import { capitalizeKey } from '../utils';
+import debounce from 'lodash.debounce';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -38,11 +39,13 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         remarks: '',
         salesPurchaseProducts: [
             {
+                product_code: '',
                 product_name: '',
                 hs_code: '',
                 tolerance: '',
                 batch_number: '',
                 production_date: '',
+                pending_qty: '',
                 bl_qty: '',
                 trade_qty_unit: '',
                 bl_value: '',
@@ -91,11 +94,13 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         remarks: data.remarks,
                         salesPurchaseProducts: data.salesPurchaseProducts || [
                             {
+                                product_code: '',
                                 product_name: '',
                                 hs_code: '',
                                 tolerance: '',
                                 batch_number: '',
                                 production_date: '',
+                                pending_qty: '',
                                 bl_qty: '',
                                 trade_qty_unit: '',
                                 bl_value: '',
@@ -106,9 +111,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         ],
                         extraCharges: data.extraCharges || [{ name: '', charge: '' }],
                         packingLists: data.packingLists || [{ name: '', packing_list: null }],
-                        // blCopies: data.blCopies || [{ name: '', bl_copy: null }],
-                        // invoices: data.invoices || [{ name: '', invoice: null }],
-                        // coas: data.coas || [{ name: '', coa: null }]
+                        
                     }));
                 // Call the second API after the first one is complete
               return axios.get(`/trademgt/sp/${data.trn.id}`);
@@ -144,7 +147,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
     function calculateTotalWithTolerance(qty, tolerance) {
         const toleranceValue = (tolerance / 100) * qty;
-        console.log(qty + toleranceValue)
+        // console.log(qty + toleranceValue)
         return qty + toleranceValue;
       }
 
@@ -194,90 +197,136 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     //         }
     //     }
     // };
-    const handleChange = async (e, arrayName = null, index = null) => {
-        const { name, value, type, files } = e.target;
     
-        setFormData((prev) => {
-            let updatedFormData;
-    
-            // Handle file input
-            if (type === 'file' && arrayName !== null && index !== null) {
-                if (Array.isArray(prev[arrayName])) {
+    // Function to debounce API calls
+   // Debounced API call function
+   const debouncedApiCall = useCallback(
+    debounce(async (trn, product_code, product_name, hs_code, index, arrayName) => {
+        try {
+            const response = await axios.get('/trademgt/pending-balance', {
+                params: {
+                    trn,
+                    product_code,
+                    product_name,
+                    hs_code,
+                },
+            });
+            const result = response.data;
+            // if (pending_balance !== undefined) {
+                setFormData((prev) => {
                     const updatedArray = [...prev[arrayName]];
-                    updatedArray[index][name] = files[0];
-                    updatedFormData = { ...prev, [arrayName]: updatedArray };
-                } else {
-                    console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
-                    return prev;
-                }
-            }
-            // Handle array input
-            else if (arrayName !== null && index !== null) {
-                if (Array.isArray(prev[arrayName])) {
-                    const updatedArray = [...prev[arrayName]];
-    
-                    // Update the specific field
-                    updatedArray[index][name] = value;
-    
-                    // Automatically calculate `bl_value` if `bl_qty` is updated
-                    if (name === 'bl_qty') {
-                        const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
-                        const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
-                        updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2); // Calculate and format to 2 decimals
+                    updatedArray[index].pending_qty = result.pending_balance.balance_qty; 
+                    updatedArray[index].selected_currency_rate = result.pending_balance.selected_currency_rate;
+                    updatedArray[index].rate_in_usd = result.pending_balance.rate_in_usd;
+                    updatedArray[index].trade_qty_unit = result.pending_balance.balance_qty_unit;
+                    updatedArray[index].tolerance = result.pending_balance.tolerance;
+                    return { ...prev, [arrayName]: updatedArray };
+                });
+            // }
+        } catch (error) {
+            console.error('Error fetching pending balance:', error);
+        }
+    }, 1500), [] // Adjust the debounce delay as needed
+);
 
-                        
-                    }
-    
-                    updatedFormData = { ...prev, [arrayName]: updatedArray };
-                } else {
-                    console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
-                    return prev;
-                }
-            }
-            // Handle non-array input
-            else {
-                updatedFormData = { ...prev, [name]: value };
-            }
-    
-            // Automatically sum `bl_value` fields and update `invoice_amount`
-            if (arrayName === 'salesPurchaseProducts') {
-                const totalBlValue = updatedFormData.salesPurchaseProducts.reduce(
-                    (sum, product) => sum + (parseFloat(product.bl_value) || 0),
-                    0
-                );
-                updatedFormData.invoice_amount = totalBlValue.toFixed(2); // Keep it as a string with 2 decimals
-            }
-    
-            return updatedFormData;
-        });
-    
-        // Fetch TRN data when 'trn' changes
-        if (name === 'trn') {
-            try {
-                const response = await axios.get(`/trademgt/sp/${value}`);
-                if (response.data.prepayment) {
-                    setData(response.data);
-    
-                    // Update formData with TRN data
-                    setFormData((prev) => ({
-                        ...prev,
-                        logistic_cost: response.data.estimated_logistic_cost,
-                        salesPurchaseProducts: response.data.trade_products || [],
-                        packingLists: response.data.prepayment.presp.documentRequired.map((doc) => ({
-                            name: doc.doc.name || '',
-                            packing_list: doc.packing_list || null,
-                        })),
-                    }));
-                } else {
-                    alert('No Prepayment Found!');
-                }
-                // console.log(response.data.prepayment);
-            } catch (error) {
-                console.error('Error fetching TRN data:', error);
+
+const handleChange = async (e, arrayName = null, index = null) => {
+    const { name, value, type, files } = e.target;
+
+    setFormData((prev) => {
+        let updatedFormData;
+
+        // Handle file input
+        if (type === 'file' && arrayName !== null && index !== null) {
+            if (Array.isArray(prev[arrayName])) {
+                const updatedArray = [...prev[arrayName]];
+                updatedArray[index][name] = files[0];
+                updatedFormData = { ...prev, [arrayName]: updatedArray };
+            } else {
+                console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
+                return prev;
             }
         }
-    };
-    
+        // Handle array input
+        else if (arrayName !== null && index !== null) {
+            if (Array.isArray(prev[arrayName])) {
+                const updatedArray = [...prev[arrayName]];
+
+                // Update the specific field
+                updatedArray[index][name] = value;
+
+                // Automatically calculate `bl_value` if `bl_qty` is updated
+                if (name === 'product_code' || name === 'product_name' || name === 'hs_code') {
+                    // Trigger the debounced API call
+                    debouncedApiCall(formData.trn, updatedArray[index].product_code, updatedArray[index].product_name, updatedArray[index].hs_code, index, arrayName);
+                }
+                
+                if (name === 'bl_qty') {
+                    const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
+                    const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
+                    updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2); // Calculate and format to 2 decimals
+
+                    // if (value>calculateTotalWithTolerance(updatedArray[index].pending_qty,updatedArray[index].tolerance)){
+                    //     alert(`BL Qty exceeding at Product ${index+1} `)
+                        
+                    // }
+                }
+
+                updatedFormData = { ...prev, [arrayName]: updatedArray };
+            } else {
+                console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
+                return prev;
+            }
+        }
+        // Handle non-array input
+        else {
+            if (name === 'purchase_bl_number') {
+                const bl=purchaseBLOptions.find((bl)=>bl.bl_number=value)
+                console.log(bl)
+                // If 'purchase_bl_number' is changed, update 'bl_number' in formData
+                updatedFormData = { ...prev,purchase_bl_number:value, bl_number: value, bl_date:bl.bl_date, bl_collection_cost:bl.bl_collection_cost, bl_fees:bl.bl_fees };
+            } else {
+                updatedFormData = { ...prev, [name]: value };
+            }
+        }
+
+        // Automatically sum `bl_value` fields and update `invoice_amount`
+        if (arrayName === 'salesPurchaseProducts') {
+            const totalBlValue = updatedFormData.salesPurchaseProducts.reduce(
+                (sum, product) => sum + (parseFloat(product.bl_value) || 0),
+                0
+            );
+            updatedFormData.invoice_amount = totalBlValue.toFixed(2); // Keep it as a string with 2 decimals
+        }
+        return updatedFormData;
+    });
+    // Fetch TRN data when 'trn' changes (existing logic)
+    if (name === 'trn') {
+        try {
+            const response = await axios.get(`/trademgt/sp/${value}`);
+            if (response.data.prepayment) {
+                setData(response.data);
+
+                // Update formData with TRN data
+                setFormData((prev) => ({
+                    ...prev,
+                    logistic_cost: response.data.estimated_logistic_cost,
+                    // salesPurchaseProducts: response.data.trade_products || [],
+                    packingLists: response.data.prepayment.presp.documentRequired.map((doc) => ({
+                        name: doc.doc.name || '',
+                        packing_list: doc.packing_list || null,
+                    })),
+                }));
+            } else {
+                alert('No Prepayment Found!');
+            }
+        } catch (error) {
+            console.error('Error fetching TRN data:', error);
+        }
+    }
+};
+
+
     
     
       const handleAddProduct = () => {
@@ -286,11 +335,13 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
           salesPurchaseProducts: [
             ...prevState.salesPurchaseProducts,
             {
+                    product_code: '',
                     product_name: '',
                     hs_code: '',
                     tolerance: '',
                     batch_number: '',
                     production_date: '',
+                    pending_qty: '',
                     bl_qty: '',
                     trade_qty_unit: '',
                     bl_value: '',
@@ -333,7 +384,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         let errors = {};
 
         // Define fields to skip validation for
-        const skipValidation = ['purchase_bl_number','product_code','selected_currency_rate','rate_in_usd'];
+        const skipValidation = ['purchase_bl_number'];
 
         // Check each regular field for empty value (except files and those in skipValidation)
         for (const [key, value] of Object.entries(formData)) {
@@ -351,19 +402,13 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         
                 // Validation specific to `bl_qty`
                 if (key === 'bl_qty') {
-                    const trade = data?.trade_products?.find(
-                        item =>
-                            item.product_name === product.product_name &&
-                            item.product_code === product.product_code
-                    );
-        
-                    if (trade) {
-                        const maxAllowedQty = calculateTotalWithTolerance(trade.trade_qty, trade.tolerance);
-                        if (value > maxAllowedQty) {
-                            alert(`BL Quantity exceeds tolerance for ${trade.product_code || 'this product'}`);
+                    
+                        const maxAllowedQty = calculateTotalWithTolerance(product.pending_qty, product.tolerance);
+                        if (value > maxAllowedQty && value<0) {
+                            alert(`BL Quantity exceeds tolerance for ${product.product_code || 'this product'}`);
                             errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
                         }
-                    }
+                    
                 }
             }
         });
@@ -816,21 +861,30 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
             <hr className="my-6" />
             <div>
-            <h3 className="text-lg font-medium text-gray-900">Products</h3>
+                <h3 className="text-lg font-medium text-gray-900">Products</h3>
                 {formData.salesPurchaseProducts.map((product, index) => (
                     <>
-                        <div key={index} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-1 mb-4 justify-between items-end px-4 py-2">
-                            {/* Product Name */}
+                        <div key={index} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-1 mb-4 justify-between items-end py-2">
+                            <div className="col-span-1 sm:col-span-1">
+                                <label htmlFor="product_code" className="block text-sm font-medium text-gray-700">Product Code</label>
+                                <input
+                                    type="text"
+                                    name="product_code"
+                                    value={product.product_code}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Product Code"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+
+                                {validationErrors[`salesPurchaseProducts[${index}].product_code`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].product_code`]}
+                                    </p>
+                                )}
+                            </div>
+                           
                             <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                                {/* <input
-                                    type="text"
-                                    name="product_name"
-                                    value={product.product_name}
-                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                    placeholder="Product Name"
-                                    className="border border-gray-300 p-2 rounded w-full"
-                                /> */}
                                 <select
                                     id="product_name"
                                     name="product_name"
@@ -852,7 +906,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 )}
                             </div>
 
-                            {/* HS Code */}
+                         
                             <div>
                                 <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
                                 <input
@@ -870,7 +924,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 )}
                             </div>
 
-                            {/* Tolerance */}
+                           
                             <div>
                                 <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
                                 <input
@@ -888,7 +942,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 )}
                             </div>
 
-                            {/* Batch Number */}
+                           
                             <div>
                                 <label htmlFor="batch_number" className="block text-sm font-medium text-gray-700">Batch Number</label>
                                 <input
@@ -899,14 +953,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     placeholder="Batch Number"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
-                                 {validationErrors[`salesPurchaseProducts[${index}].batch_number`] && (
+                                {validationErrors[`salesPurchaseProducts[${index}].batch_number`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`salesPurchaseProducts[${index}].batch_number`]}
                                     </p>
                                 )}
                             </div>
 
-                            {/* Production Date */}
+                           
                             <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
                                 <input
@@ -916,14 +970,30 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
-                                 {validationErrors[`salesPurchaseProducts[${index}].production_date`] && (
+                                {validationErrors[`salesPurchaseProducts[${index}].production_date`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`salesPurchaseProducts[${index}].production_date`]}
                                     </p>
                                 )}
                             </div>
-
-                            {/* Trade Quantity */}
+                            <div>
+                                <label htmlFor="pending_qty" className="block text-sm font-medium text-gray-700">Pending Quantity</label>
+                                <input
+                                    type="text"
+                                    name="pending_qty"
+                                    value={product.pending_qty}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Pending Quantity"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
+                                />
+                                {validationErrors[`salesPurchaseProducts[${index}].pending_qty`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].pending_qty`]}
+                                    </p>
+                                )}
+                            </div>
+                           
                             <div>
                                 <label htmlFor="bl_qty" className="block text-sm font-medium text-gray-700">BL Quantity</label>
                                 <input
@@ -934,14 +1004,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     placeholder="Trade Quantity"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
-                                 {validationErrors[`salesPurchaseProducts[${index}].bl_qty`] && (
+                                {validationErrors[`salesPurchaseProducts[${index}].bl_qty`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`salesPurchaseProducts[${index}].bl_qty`]}
                                     </p>
                                 )}
                             </div>
 
-                            {/* Trade Qty Unit */}
+                           
                             <div>
                                 <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
                                 <select
@@ -963,6 +1033,38 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
+                            <div>
+                                <label htmlFor="selected_currency_rate" className="block text-sm font-medium text-gray-700">Selected Currency Rate</label>
+                                <input
+                                    type="text"
+                                    name="selected_currency_rate"
+                                    value={product.selected_currency_rate}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="selected currency rate"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                                {validationErrors[`salesPurchaseProducts[${index}].selected_currency_rate`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].selected_currency_rate`]}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label htmlFor="rate_in_usd" className="block text-sm font-medium text-gray-700">Rate in USD</label>
+                                <input
+                                    type="text"
+                                    name="rate_in_usd"
+                                    value={product.rate_in_usd}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Rate in USD"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                                {validationErrors[`salesPurchaseProducts[${index}].rate_in_usd`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].rate_in_usd`]}
+                                    </p>
+                                )}
+                            </div>
 
                             <div>
                                 <label htmlFor="bl_value" className="block text-sm font-medium text-gray-700">Product Value</label>
@@ -974,14 +1076,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     placeholder="Product Value"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
-                                 {validationErrors[`salesPurchaseProducts[${index}].bl_value`] && (
+                                {validationErrors[`salesPurchaseProducts[${index}].bl_value`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`salesPurchaseProducts[${index}].bl_value`]}
                                     </p>
                                 )}
                             </div>
 
-                            
+
                             <div>
                                 <button
                                     type="button"
@@ -993,19 +1095,19 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                             </div>
                         </div>
 
-                    <hr />
-                </>
-            ))}
-            <div className="text-right">
-                <button
-                    type="button"
-                    onClick={handleAddProduct}
-                    className="bg-green-500 text-white p-2 rounded mt-2"
-                >
-                    Add Product
-                </button>
+                        <hr />
+                    </>
+                ))}
+                <div className="text-right">
+                    <button
+                        type="button"
+                        onClick={handleAddProduct}
+                        className="bg-green-500 text-white p-2 rounded mt-2"
+                    >
+                        Add Product
+                    </button>
+                </div>
             </div>
-        </div>
             <hr className="my-6" />
                         
             {/* SalesPurchaseExtraCharge Section */}
@@ -1111,129 +1213,6 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                
             </div>
             <hr className="my-6" />
-            {/* BL_Copy Section */}
-            {/* <div className="space-y-4 px-4">
-                <h3 className="text-lg font-medium text-gray-900">BL Copies</h3>
-                {formData.blCopies.map((blCopy, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label htmlFor={`bl_copy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                id={`bl_copy_name_${index}`}
-                                name="name"
-                                type="text"
-                                value={blCopy.name}
-                                onChange={(e) => handleChange(e, 'blCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor={`bl_copy_file_${index}`} className="block text-sm font-medium text-gray-700">BL Copy</label>
-                            <input
-                                id={`bl_copy_file_${index}`}
-                                name="bl_copy"
-                                type="file"
-                                onChange={(e) => handleChange(e, 'blCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div className="flex items-end">
-                            <button type="button" onClick={() => handleRemoveRow('blCopies', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                Remove
-                            </button>
-                        </div>
-                    </div>
-                ))}
-                <div className="text-right">
-                <button type="button" onClick={() => handleAddRow('blCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add BL Copy
-                </button>
-                </div>
-                
-            </div> */}
-            {/* <hr className="my-6" /> */}
-            {/* Invoice Section */}
-            {/* <div className="space-y-4 px-4">
-                <h3 className="text-lg font-medium text-gray-900">Invoices</h3>
-                {formData.invoices.map((invoice, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label htmlFor={`invoice_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                id={`invoice_name_${index}`}
-                                name="name"
-                                type="text"
-                                value={invoice.name}
-                                onChange={(e) => handleChange(e, 'invoices', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor={`invoice_file_${index}`} className="block text-sm font-medium text-gray-700">Invoice</label>
-                            <input
-                                id={`invoice_file_${index}`}
-                                name="invoice"
-                                type="file"
-                                onChange={(e) => handleChange(e, 'invoices', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div className="flex items-end">
-                            <button type="button" onClick={() => handleRemoveRow('invoices', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                Remove
-                            </button>
-                        </div>
-                    </div>
-                ))}
-                <div className="text-right">
-                <button type="button" onClick={() => handleAddRow('invoices')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add Invoice
-                </button>
-                </div>
-                
-            </div> */}
-            {/* <hr className="my-6" /> */}
-            {/* COA Section */}
-            {/* <div className="space-y-4 px-4">
-                <h3 className="text-lg font-medium text-gray-900">COAs</h3>
-                {formData.coas.map((coa, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label htmlFor={`coa_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                id={`coa_name_${index}`}
-                                name="name"
-                                type="text"
-                                value={coa.name}
-                                onChange={(e) => handleChange(e, 'coas', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor={`coa_file_${index}`} className="block text-sm font-medium text-gray-700">COA</label>
-                            <input
-                                id={`coa_file_${index}`}
-                                name="coa"
-                                type="file"
-                                onChange={(e) => handleChange(e, 'coas', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                        </div>
-                        <div className="flex items-end">
-                            <button type="button" onClick={() => handleRemoveRow('coas', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                Remove
-                            </button>
-                        </div>
-                    </div>
-                ))}
-                <div className="text-right">
-                <button type="button" onClick={() => handleAddRow('coas')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add COA
-                </button>
-                </div>
-                
-            </div> */}
-            {/* <hr className="my-6" /> */}
             <div className='grid grid-cols-3 gap-4 mb-4'>
             <button
                     type="submit"
