@@ -313,6 +313,25 @@ const TradeForm = ({ mode = 'add' }) => {
 
                 }));
 
+            } else if (name === 'logistic_provider') {
+                if(value.toLowerCase()=='na'){
+                    setFormData((prevState) => ({
+                        ...prevState,
+                        [name]: value,
+                        estimated_logistic_cost:0,
+                        logistic_cost_tolerence:0,
+                        logistic_cost_remarks:'NA',
+                        bl_fee:0,
+                        bl_fee_remarks:'NA'
+                    }));
+                }
+                else{
+                    setFormData((prevState) => ({
+                    ...prevState,
+                    [name]: value
+                }));
+            }
+
             } else if (name === 'bank_name_address') {
                 const selectedBank = bankNameOptions.find((bank) => bank.id == value);
 
@@ -366,7 +385,12 @@ const TradeForm = ({ mode = 'add' }) => {
                         const selected_currency_rate = parseFloat(updatedProducts[index].selected_currency_rate) || 0;
 
                         updatedProducts[index].rate_in_usd = selected_currency_rate * parseFloat(prevState.exchange_rate);
-                        updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
+                        
+                        if(formData.trade_type.toLocaleLowerCase()=='sales'){
+                            updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
+                        }else{
+                            updatedProducts[index].product_value = (selected_currency_rate * trade_qty).toFixed(2);
+                        }
                     }
 
                     const totalContractValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
@@ -1594,6 +1618,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Estimated Logistic Cost"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('estimated_logistic_cost')}`}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
                     />
                     {validationErrors.estimated_logistic_cost && <p className="text-red-500">{validationErrors.estimated_logistic_cost}</p>}
                 </div>
@@ -1606,6 +1631,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Logistic Cost Tolerance"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('logistic_cost_tolerence')}`}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
                     />
                      {validationErrors.logistic_cost_tolerence && <p className="text-red-500">{validationErrors.logistic_cost_tolerence}</p>}
                 </div>
@@ -1618,6 +1644,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Logistic Cost Remarks"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('logistic_cost_remarks')}`}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
                     />
                     {validationErrors.logistic_cost_remarks && <p className="text-red-500">{validationErrors.logistic_cost_remarks}</p>}
                 </div>
@@ -1630,6 +1657,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="BL Fee"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('bl_fee')}`}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
                     />
                     {validationErrors.bl_fee && <p className="text-red-500">{validationErrors.bl_fee}</p>}
                 </div>
@@ -1642,6 +1670,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="BL Fee Remarks"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('bl_fee_remarks')}`}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
                     />
                     {validationErrors.bl_fee_remarks && <p className="text-red-500">{validationErrors.bl_fee_remarks}</p>}
                 </div>

@@ -332,10 +332,21 @@ function TradeApproval() {
                         <span className="font-medium">Product Name for Client:</span>
                         <span>{product.product_name_for_client || '-'}</span>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-medium">LOI:</span>
-                        <span><a href={`${BACKEND_URL}${product?.loi}`}>View</a></span>
-                      </div>
+                      {product?.loi && (
+                        <div className="flex flex-col">
+                          <span className="font-medium">LOI:</span>
+                          <span>
+                            <a
+                              href={`${BACKEND_URL}${product.loi}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-800 border px-2 hover:underline"
+                            >
+                              View
+                            </a>
+                          </span>
+                        </div>
+                      )}
                       <div className="flex flex-col">
                         <span className="font-medium">HS Code:</span>
                         <span>{product.hs_code}</span>

@@ -1668,6 +1668,18 @@ class SalesPurchaseView(APIView):
             if sp.trn.trade_type.lower() == "sales":
                 for product in salesPurchaseProducts:
                     try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_pending = SalesPending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
+            
+                        if existing_pending:
+                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
+                            existing_pending.save()
+                       
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating SalesPending: {e}")
+                        raise
+                    try:
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                         if existing_inv:
                                 # If it exists, update only the fields you want to update
@@ -1680,6 +1692,18 @@ class SalesPurchaseView(APIView):
 
             if sp.trn.trade_type.lower() == "purchase":
                 for product in salesPurchaseProducts:
+                    try:
+                        # Check if a SalesProductTrace with the given product_code exists
+                        existing_pending = PurchasePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
+            
+                        if existing_pending:
+                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
+                            existing_pending.save()
+                       
+                    except Exception as e:
+                        # Handle specific exception for SalesProductTrace
+                        print(f"Error updating PurchasePending: {e}")
+                        raise
                     try:
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                         if existing_inv:
