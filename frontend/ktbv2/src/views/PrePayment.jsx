@@ -5,7 +5,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
-import { addDaysToDate } from "../dateUtils";
+import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
 import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
 
@@ -156,11 +156,11 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Receive </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trade_type=='Sales'?selectedPrePayment.trn.advance_value_to_receive:'NA'}</td>
+                    <td className="py-2 px-4 text-gray-800">{advanceToReceive(selectedPrePayment)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Pay </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trade_type=='Purchase'?selectedPrePayment.trn.advance_value_to_receive:'NA'}</td>
+                    <td className="py-2 px-4 text-gray-800">{advanceToPay(selectedPrePayment)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date </td>
@@ -221,7 +221,8 @@ function PrePayment() {
                 {selectedPrePayment.lcCopies && (
                   selectedPrePayment.lcCopies.map((item, index) => (
                     <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_copy}`}>{item.name}</a></p>
+                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_copy}`} target="_blank"
+                              rel="noopener noreferrer">{item.name}</a></p>
 
                     </div>
                   )))}
@@ -229,7 +230,8 @@ function PrePayment() {
                 {selectedPrePayment.lcAmmendments && (
                   selectedPrePayment.lcAmmendments.map((item, index) => (
                     <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_ammendment}`}>{item.name}</a></p>
+                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_ammendment}`} target="_blank"
+                              rel="noopener noreferrer">{item.name}</a></p>
 
                     </div>
                   )))}
@@ -239,7 +241,8 @@ function PrePayment() {
                       item.name !== '' ? (
                         <div key={index}>
                           <p className="text-sm">
-                            {index + 1}. <a href={`${BACKEND_URL}${item.advance_tt_copy}`}>{item.name}</a>
+                            {index + 1}. <a href={`${BACKEND_URL}${item.advance_tt_copy}`} target="_blank"
+                              rel="noopener noreferrer">{item.name}</a>
                           </p>
                         </div>
                       ) : null

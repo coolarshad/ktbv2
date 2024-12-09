@@ -45,7 +45,7 @@ const PreSPTable = ({ data, onDelete }) => {
   
       // Calculate sums directly from the fetched data
       const totalQuantity = response.data.trade_products?.reduce((sum, product) => sum + Number(product.trade_qty), 0);
-      const totalAmountSum = response.data.trade_products?.reduce((sum, product) => sum + Number(product.product_value), 0);
+      const totalAmountSum = response.data.trade_products?.reduce((sum, product) => sum + Number(parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)), 0);
   
       // Update state with the calculated sums
       setTotalTradeQuantity(totalQuantity);
@@ -212,7 +212,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             <p className='text-sm uppercase'>{selectedTrade.paymentTerm.name}</p>
                           </div>
                           <div className="border-b border-black p-2">
-                              <p className='font-bold'>ADVANCE/LC DUE DATE</p>
+                              <p className='font-bold text-sm'>ADVANCE/LC DUE DATE</p>
                               <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
                             </div>
                           <div className="border-b border-black p-2">
@@ -257,7 +257,7 @@ const PreSPTable = ({ data, onDelete }) => {
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.selected_currency_rate.toFixed(2)}</td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{selectedTrade.currency.name}</td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.tolerance}</td>
-                                <td className="border-l border-r border-black p-1 text-sm text-right">{product.product_value.toFixed(2)}</td>
+                                <td className="border-l border-r border-black p-1 text-sm text-right">{parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)}</td>
                             </tr>
                           ))}
                           {Array.from({ length: 18 - selectedTrade.trade_products.length }, (_, index) => (
@@ -455,7 +455,7 @@ const PreSPTable = ({ data, onDelete }) => {
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{selectedTrade.currency.name}</td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.tolerance}</td>
                                 <td className="border-l border-r border-black p-1 text-right text-sm">
-                                  {product.product_value.toFixed(2)}
+                                  {parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)}
                                 </td>
                               </tr>
                             ))}

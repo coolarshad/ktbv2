@@ -12,13 +12,13 @@ export const addDaysToDate = (date, days) => {
 };
 
 export const advanceToPay = (trade) => {
-  return trade.trade_type === 'Purchase'
-    ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100) || ''
+  return trade.presp.trade.trade_type === 'Purchase'
+    ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100)
     : 'NA';
 };
 
 export const advanceToReceive = (trade) => {
-  return trade.trade_type === 'Sales'
+  return trade.presp.trade.trade_type === 'Sales'
     ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100) || ''
     : 'NA';
 };

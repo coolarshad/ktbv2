@@ -183,6 +183,31 @@ const TradeForm = ({ mode = 'add' }) => {
         }
     }, [mode, id]);
 
+    useEffect(() => {
+        // Calculate contract value and product value whenever exchange_rate changes
+        
+
+        if (formData.exchange_rate) {
+            const updatedTradeProducts = formData.tradeProducts.map(product => ({
+                ...product,
+                product_value: product.trade_qty*product.rate_in_usd
+            }));
+
+            const selectedTerm = paymentTermOptions?.find((term) => term.id == formData.payment_term);
+
+            const updatedContractValue = updatedTradeProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
+            const commissionValue = updatedTradeProducts.reduce((acc, product) => acc + (parseFloat(product.total_commission) || 0), 0);
+    
+            setFormData(prevState => ({
+                ...prevState,
+                contract_value: updatedContractValue,
+                commission_value: commissionValue,
+                tradeProducts: updatedTradeProducts,
+                advance_value_to_receive: ((selectedTerm?.advance_in_percentage / 100) * updatedContractValue).toFixed(2) || 0
+            }));
+        }
+    }, [formData.exchange_rate]);
+
     // Debounced function to call the API
     const fetchProductDetails = useCallback(
         
@@ -385,12 +410,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         const selected_currency_rate = parseFloat(updatedProducts[index].selected_currency_rate) || 0;
 
                         updatedProducts[index].rate_in_usd = selected_currency_rate * parseFloat(prevState.exchange_rate);
-                        
-                        if(formData.trade_type.toLocaleLowerCase()=='sales'){
-                            updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
-                        }else{
-                            updatedProducts[index].product_value = (selected_currency_rate * trade_qty).toFixed(2);
-                        }
+                        updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
                     }
 
                     const totalContractValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
