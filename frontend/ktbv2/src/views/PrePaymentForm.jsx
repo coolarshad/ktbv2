@@ -66,7 +66,20 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         }
       }, [mode, id]);
     
-      useEffect(() => {
+    //   useEffect(() => {
+    //     if (data) {
+    //         const calculatedAdvance = data.trade_type === 'Sales'
+    //             ? advanceToReceive(data)
+    //             : advanceToPay(data);
+    
+    //         setFormData(prevState => ({
+    //             ...prevState,
+    //             // as_per_pi_advance: calculatedAdvance || '',
+    //             adv_due_date: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)
+    //         }));
+    //     }
+    // }, [data]);
+    useEffect(() => {
         if (data) {
             const calculatedAdvance = data.trade_type === 'Sales'
                 ? advanceToReceive(data)
@@ -74,11 +87,20 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     
             setFormData(prevState => ({
                 ...prevState,
-                // as_per_pi_advance: calculatedAdvance || '',
-                adv_due_date: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)
+                adv_due_date: data.presp.trade.paymentTerm.advance_within === 'NA' ? 'NA' : addDaysToDate(data.presp.doc_issuance_date, data.presp.trade.paymentTerm.advance_within),
+                ...(data.trade_type === 'Purchase'
+                    ? {
+                        advance_received: '0',
+                        date_of_receipt: 'NA'
+                    }
+                    : {
+                        advance_paid: '0',
+                        date_of_payment:'NA'
+                    })
             }));
         }
     }, [data]);
+    
 
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
@@ -364,6 +386,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.advance_received}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trade_type === 'Purchase'}
                         
                     />
                     {validationErrors.advance_received && <p className="text-red-500">{validationErrors.advance_received}</p>}
@@ -377,6 +400,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.date_of_receipt}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trade_type === 'Purchase'}
                     />
                     {validationErrors.date_of_receipt && <p className="text-red-500">{validationErrors.date_of_receipt}</p>}
                 </div>
@@ -389,6 +413,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.advance_paid}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trade_type === 'Sales'}
                     />
                     {validationErrors.advance_paid && <p className="text-red-500">{validationErrors.advance_paid}</p>}
                 </div>
@@ -401,6 +426,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.date_of_payment}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trade_type === 'Sales'}
                     />
                     {validationErrors.date_of_payment && <p className="text-red-500">{validationErrors.date_of_payment}</p>}
                 </div>
