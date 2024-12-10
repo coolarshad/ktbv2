@@ -404,7 +404,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 if (key === 'bl_qty') {
                     
                         const maxAllowedQty = calculateTotalWithTolerance(product.pending_qty, product.tolerance);
-                        if (value > maxAllowedQty && value>0) {
+                        if (value > maxAllowedQty || value <= 0) {
                             alert(`BL Quantity exceeds tolerance for ${product.product_code || 'this product'}`);
                             errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
                         }
