@@ -14,6 +14,7 @@ const SPTable = ({ data,onDelete,onView }) => {
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Date</th>
@@ -29,7 +30,7 @@ const SPTable = ({ data,onDelete,onView }) => {
           {data.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-      
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index.id}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_date}</td>
