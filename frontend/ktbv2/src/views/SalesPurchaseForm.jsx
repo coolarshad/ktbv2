@@ -49,7 +49,6 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 bl_qty: '',
                 trade_qty_unit: '',
                 bl_value: '',
-                product_code: '',
                 selected_currency_rate: '',
                 rate_in_usd: '',
             }
@@ -104,7 +103,6 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 bl_qty: '',
                                 trade_qty_unit: '',
                                 bl_value: '',
-                                product_code: '',
                                 selected_currency_rate: '',
                                 rate_in_usd: '',
                             }
@@ -345,7 +343,6 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     bl_qty: '',
                     trade_qty_unit: '',
                     bl_value: '',
-                    product_code: '',
                     selected_currency_rate: '',
                     rate_in_usd: '',
 
@@ -934,6 +931,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Tolerance"
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].tolerance`] && (
                                     <p className="text-red-500">
@@ -1019,6 +1017,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     value={product.trade_qty_unit}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
                                 >
                                     <option value="">Select Trade Unit</option>
                                     {unitOptions?.map((option) => (
@@ -1042,6 +1041,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="selected currency rate"
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].selected_currency_rate`] && (
                                     <p className="text-red-500">
@@ -1058,6 +1058,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Rate in USD"
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].rate_in_usd`] && (
                                     <p className="text-red-500">
@@ -1075,6 +1076,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Product Value"
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].bl_value`] && (
                                     <p className="text-red-500">
@@ -1164,7 +1166,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
             <hr className="my-6" />
             {/* PackingList Section */}
             <div className="space-y-4 px-4">
-                <h3 className="text-lg font-medium text-gray-900">Add Addititional Documents</h3>
+                <h3 className="text-lg font-medium text-gray-900">Add Documents</h3>
                 {formData.packingLists.map((packingList, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -1176,6 +1178,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 value={packingList.name}
                                 onChange={(e) => handleChange(e, 'packingLists', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                readOnly={true}
                             />
                             {validationErrors[`packingLists[${index}].name`] && (
                                     <p className="text-red-500">
@@ -1198,11 +1201,11 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     </p>
                                 )}
                         </div>
-                        <div className="flex items-end">
+                        {/* <div className="flex items-end">
                             <button type="button" onClick={() => handleRemoveRow('packingLists', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                                 Remove
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 ))}
                 <div className="text-right">

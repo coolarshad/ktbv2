@@ -256,10 +256,6 @@ function SalesPurchases() {
                       <td className="py-2 px-4 text-gray-800">{selectedSP.eta}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETA</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.eta}</td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.trn.trader_name}</td>
                     </tr>
@@ -340,13 +336,14 @@ function SalesPurchases() {
               </table>
 
               {/* Packing Lists Table */}
-              <h3 className="text-lg mt-4 text-center">Packing Lists</h3>
+              <h3 className="text-lg mt-4 text-center">Documents List</h3>
               {selectedSP.packingLists &&
                     selectedSP.packingLists.map((item, index) =>
                       item.name !== '' ? (
                         <div key={index}>
                           <p className="text-sm">
-                            {index + 1}. <a href={`${BACKEND_URL}${item.packing_list}`}>{item.name}</a>
+                            {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.packing_list}`} target="_blank"
+                              rel="noopener noreferrer">{item.name}</a>
                           </p>
                         </div>
                       ) : null

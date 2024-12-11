@@ -128,12 +128,31 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             let updatedFormData = { ...formData, [name]: value };
     
             // Check for lc_number being 'na' or 'NA'
+            // if (name === "lc_number" && value.toLowerCase() === "na") {
+            //     updatedFormData = {
+            //         ...updatedFormData,
+            //         lc_opening_bank: "NA",
+            //         lc_expiry_date: "NA",
+            //         latest_shipment_date_in_lc: "NA",
+            //     };
+            // }
             if (name === "lc_number" && value.toLowerCase() === "na") {
                 updatedFormData = {
                     ...updatedFormData,
                     lc_opening_bank: "NA",
                     lc_expiry_date: "NA",
                     latest_shipment_date_in_lc: "NA",
+                    lcCopies: [{ name: '', lc_copy: null }],
+                    lcAmmendments: [{ name: '', lc_ammendment: null }],
+                };
+            } else if (name === "lc_number" && value.toLowerCase() != "na") {
+                updatedFormData = {
+                    ...updatedFormData,
+                    advance_received:0,
+                    advance_paid:0,
+                    date_of_receipt: 'NA',
+                    date_of_payment: 'NA',
+                    advanceTTCopies: [{ name: '', advance_tt_copy: null }],
                 };
             }
     
@@ -192,32 +211,47 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             }
         }
 
-        if(formData.lc_number.toLocaleLowerCase()!=='na'){
+        if (formData.lc_number.toLocaleLowerCase() !== 'na') {
 
-        formData.lcCopies.forEach((product, index) => {
-            for (const [key, value] of Object.entries(product)) {
-                if (!skipValidation.includes(key) && (value === '' || value === null)) {
-                    errors[`lcCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
-                }
+            if (formData.lcCopies.length === 0) {
+                alert('LC Copies cannot be empty!');
+                return; // Stop form submission
+            } else {
+                formData.lcCopies.forEach((item, index) => {
+                    for (const [key, value] of Object.entries(item)) {
+                        if (!skipValidation.includes(key) && (value === '' || value === null)) {
+                            errors[`lcCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                        }
+                    }
+                });
             }
-        });
-
-        formData.lcAmmendments.forEach((product, index) => {
-            for (const [key, value] of Object.entries(product)) {
-                if (!skipValidation.includes(key) && (value === '' || value === null)) {
-                    errors[`lcAmmendments[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
-                }
+    
+            if (formData.lcAmmendments.length === 0) {
+                alert('LC Amendments cannot be empty!');
+                return;
+            } else {
+                formData.lcAmmendments.forEach((item, index) => {
+                    for (const [key, value] of Object.entries(item)) {
+                        if (!skipValidation.includes(key) && (value === '' || value === null)) {
+                            errors[`lcAmmendments[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                        }
+                    }
+                });
             }
-        });
         }
         if (formData.advance_paid != 0 || formData.advance_received != 0) {
-            formData.advanceTTCopies.forEach((product, index) => {
-                for (const [key, value] of Object.entries(product)) {
-                    if (!skipValidation.includes(key) && (value === '' || value === null)) {
-                        errors[`advanceTTCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+            if (formData.advanceTTCopies.length === 0) {
+                alert('Advance TT Copies cannot be empty!');
+                return;
+            } else {
+                formData.advanceTTCopies.forEach((item, index) => {
+                    for (const [key, value] of Object.entries(item)) {
+                        if (!skipValidation.includes(key) && (value === '' || value === null)) {
+                            errors[`advanceTTCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                        }
                     }
-                }
-            });
+                });
+            }
         }
         setValidationErrors(errors);
     
@@ -326,30 +360,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     </select>
                     {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
-                {/* <div>
-                    <label htmlFor='adv_due_date' className="block text-sm font-medium text-gray-700">Advance Due Date</label>
-                    <input
-                        id="adv_due_date"
-                        name="adv_due_date"
-                        type="text"
-                        value={formData.adv_due_date}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.adv_due_date && <p className="text-red-500">{validationErrors.adv_due_date}</p>}
-                </div> */}
-                {/* <div>
-                    <label htmlFor='as_per_pi_advance' className="block text-sm font-medium text-gray-700">As Per PI Cash/TT/Advance</label>
-                    <input
-                        id="as_per_pi_advance"
-                        name="as_per_pi_advance"
-                        type="text"
-                        value={formData.as_per_pi_advance}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.as_per_pi_advance && <p className="text-red-500">{validationErrors.as_per_pi_advance}</p>}
-                </div> */}
+                
                 
                 <div>
                     <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">LC Number</label>

@@ -221,7 +221,7 @@ function PrePayment() {
                 {selectedPrePayment.lcCopies && (
                   selectedPrePayment.lcCopies.map((item, index) => (
                     <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_copy}`} target="_blank"
+                      <p className='text-sm'>{index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.lc_copy}`} target="_blank"
                               rel="noopener noreferrer">{item.name}</a></p>
 
                     </div>
@@ -230,7 +230,7 @@ function PrePayment() {
                 {selectedPrePayment.lcAmmendments && (
                   selectedPrePayment.lcAmmendments.map((item, index) => (
                     <div key={index}>
-                      <p className='text-sm'>{index + 1}. <a href={`${BACKEND_URL}${item.lc_ammendment}`} target="_blank"
+                      <p className='text-sm'>{index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.lc_ammendment}`} target="_blank"
                               rel="noopener noreferrer">{item.name}</a></p>
 
                     </div>
@@ -241,7 +241,7 @@ function PrePayment() {
                       item.name !== '' ? (
                         <div key={index}>
                           <p className="text-sm">
-                            {index + 1}. <a href={`${BACKEND_URL}${item.advance_tt_copy}`} target="_blank"
+                            {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.advance_tt_copy}`} target="_blank"
                               rel="noopener noreferrer">{item.name}</a>
                           </p>
                         </div>

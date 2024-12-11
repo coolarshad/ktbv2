@@ -19,7 +19,7 @@ export const advanceToPay = (trade) => {
 
 export const advanceToReceive = (trade) => {
   return trade.presp.trade.trade_type === 'Sales'
-    ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100) || ''
+    ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100)
     : 'NA';
 };
 
