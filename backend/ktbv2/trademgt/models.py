@@ -445,7 +445,7 @@ class COA(models.Model):
 
 
 class PaymentFinance(models.Model):
-    trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
+    sp=models.ForeignKey("SalesPurchase",related_name='pfs', on_delete=models.CASCADE)
     # balance_payment=models.FloatField(_("balance_payment"),null=True)
     balance_payment_received=models.FloatField(_("balance_payment_received"),null=True)
     balance_payment_made=models.FloatField(_("balance_payment_made"),null=True)

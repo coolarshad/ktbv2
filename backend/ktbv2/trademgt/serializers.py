@@ -542,7 +542,7 @@ class PaymentFinanceSerializer(serializers.ModelSerializer):
         # Fetch company details manually
         try:
             # Assuming `company` field in `Trade` contains company name or ID
-            instance = SalesPurchase.objects.get(trn=obj.trn)  # or use another field to identify the company
+            instance = SalesPurchase.objects.get(id=obj.sp.id)  # or use another field to identify the company
             return SalesPurchaseSerializer(instance).data
         except SalesPurchase.DoesNotExist:
             return None  # Or handle it as needed

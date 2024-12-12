@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import { paymentDueDate } from '../dateUtils';
+import { paymentDueDate,calculatePFCommissionValue } from '../dateUtils';
 import { capitalizeKey } from '../utils';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
@@ -14,7 +14,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     const [data, setData] = useState(null); 
 
     const [formData, setFormData] = useState({
-        trn: '',
+        sp: '',
         // balance_payment: '',
         balance_payment_received: '',
         balance_payment_made: '',
@@ -43,7 +43,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     // Update formData with data from the first API call
                     setFormData(prevState => ({
                         ...prevState,
-                        trn: data.trn,
+                        sp: data.sp.id,
                         // balance_payment: data.balance_payment,
                         balance_payment_received: data.balance_payment_received,
                         balance_payment_made: data.balance_payment_made,
@@ -63,7 +63,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         pfCharges: data.pfCharges || [{ name: '', charge: null }]
                     }));
                     // Return a promise for the second API call
-                    return axios.get(`/trademgt/pf/${data.trn}`);  // Replace with your actual endpoint
+                    return axios.get(`/trademgt/sales-purchases/${data.sp.id}`);  // Replace with your actual endpoint
                 })
                 .then(response => {
                     setData(response.data)
@@ -86,9 +86,31 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     };
 
     // Combined useEffect for all API calls
+    // useEffect(() => {
+    //     fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
+    // }, []);
     useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
+        fetchData('/trademgt/sales-purchases', { reviewed: true }, setTrnOptions);  // Example with params
     }, []);
+
+    useEffect(() => {
+        if (data) {
+           
+    
+            setFormData(prevState => ({
+                ...prevState,
+                ...(data.trn.trade_type === 'Purchase'
+                    ? {
+                        balance_payment_received:'0'
+                    }
+                    : {
+                        balance_payment_made:'0'
+                    })
+            }));
+        }
+    }, [data]);
+
+
 
     const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
@@ -114,10 +136,11 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         }
       
         // Handle TRN field change
-        if (name === 'trn') {
+        if (name === 'sp') {
+            setData(null);
           try {
-            const response = await axios.get(`/trademgt/pf/${value}`);
-            if (response.data.sp && response.data.sp.reviewed) {
+            const response = await axios.get(`/trademgt/sales-purchases/${value}`);
+            if (response.data && response.data.reviewed) {
               setData(response.data);
             } else {
               alert('S&P Not Found or Not Reviewed!');
@@ -223,13 +246,13 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     };
     
     const calculateRemainingContractValue = (data) => {
-        const contractValue = parseFloat(data.sp.trn.contract_value);
+        const contractValue = parseFloat(data.trn.contract_value);
         let advance=0;
-        if(data.sp.trn.trade_type=='Sales'){
-           advance = parseFloat(data.sp.prepayment.advance_received);
+        if(data.trn.trade_type=='Sales'){
+           advance = parseFloat(data.prepayment.advance_received);
         }
-        if(data.sp.trn.trade_type=='Purchase'){
-            advance = parseFloat(data.sp.prepayment.advance_paid);
+        if(data.trn.trade_type=='Purchase'){
+            advance = parseFloat(data.prepayment.advance_paid);
         }
       
         if (isNaN(contractValue) || isNaN(advance)) {
@@ -241,32 +264,34 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
     const tradeData = data
     ? [
-        { label: 'Trade Type', text: data.trade_type || '' },
-        { label: 'Buyer/Seller Name', text: data.sp.prepayment.kyc.name || '' },
-        { label: 'Invoice Amount', text: data.sp.invoice_amount || '' },
-        { label: 'Invoice Number', text: data.sp.invoice_number || '' },
-        { label: 'Invoice Date', text: data.sp.invoice_date || '' },
-        { label: 'BL Number', text: data.sp.bl_number || '' },
+        { label: 'Trade Type', text: data.trn.trade_type || '' },
+        { label: 'Buyer/Seller Name', text: data.prepayment.kyc.name || '' },
+        { label: 'Invoice Amount', text: data.invoice_amount || '' },
+        { label: 'Invoice Number', text: data.invoice_number || '' },
+        { label: 'Invoice Date', text: data.invoice_date || '' },
+        { label: 'BL Number', text: data.bl_number || '' },
         
-        { label: 'Advance Received', text: data.sp.prepayment.advance_received || '0' },
-        { label: 'Advance Paid', text: data.sp.prepayment.advance_paid || '0' },
-        { label: 'Advance Received Date', text: data.sp.prepayment.date_of_receipt || '' },
-        { label: 'Advance Paid Date', text: data.sp.prepayment.date_of_payment || '' },
+        { label: 'Advance Received', text: data.prepayment.advance_received || '0' },
+        { label: 'Advance Paid', text: data.prepayment.advance_paid || '0' },
+        { label: 'Advance Received Date', text: data.prepayment.date_of_receipt || '' },
+        { label: 'Advance Paid Date', text: data.prepayment.date_of_payment || '' },
         { 
             label: 'Balance Payment', 
             text: calculateRemainingContractValue(data)
         },
-        { label: 'Balance Payment Due Date',text: data.sp.trn.paymentTerm.payment_within=='NA'?'NA':paymentDueDate(data)},
+        { label: 'Balance Payment Due Date',text: data.trn.paymentTerm.payment_within=='NA'?'NA':paymentDueDate(data)},
 
-        { label: 'Logistic Cost', text: data.estimated_logistic_cost || '' },
-        { label: 'Logistic Provider', text: data.logistic_provider || '' },
-        { label: 'Logistic Cost Due Date', text: data.sp.logistic_cost_due_date || '' },
-        { label: 'Commission Agent', text: data.commission_agent || '' },
-        { label: 'Commission Value', text: data.sp.trn.commission_value || '' },
-        { label: 'Other Charges', text: data.commission_agent || '' },
-        { label: 'Remarks from S&P', text: data.sp.remarks || '' },
-        { label: 'Trader Name', text: data.trader_name || '' },
-        { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
+        { label: 'Logistic Cost', text: data.trn.estimated_logistic_cost || '0' },
+        { label: 'Logistic Provider', text: data.trn.logistic_provider || '' },
+        { label: 'Logistic Cost Due Date', text: data.logistic_cost_due_date || '' },
+        { label: 'Commission Agent', text: data.trn.commission_agent },
+        // { label: 'Commission Value', text: data.trn.commission_value || '0' },
+        // { label: 'Other Charges', text: data.trn.commission_agent || '' },
+        
+        { label: 'Commission Value', text: calculatePFCommissionValue(data) || '0' },
+        { label: 'Remarks from S&P', text: data.remarks || '' },
+        { label: 'Trader Name', text: data.trn.trader_name || '' },
+        { label: 'Insurance Policy Number', text: data.trn.insurance_policy_number || '' },
         
         
       ]
@@ -298,7 +323,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data?.sp.sp_product?.map(product => (
+                            {data?.sp_product?.map(product => (
                                 <tr key={product.id}>
                         
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
@@ -319,7 +344,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data?.sp.sp_extra_charges?.map(product => (
+                            {data?.sp_extra_charges?.map(product => (
                                 <tr key={product.id}>
                         
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.name}</td>
@@ -333,18 +358,18 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div>
-                    <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
+                    <label htmlFor="sp" className="block text-sm font-medium text-gray-700">TRN (S&P)</label>
                     <select
-                        id="trn"
-                        name="trn"
-                        value={formData.trn}
+                        id="sp"
+                        name="sp"
+                        value={formData.sp}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     >
-                        <option value="">Select TRN</option>
+                        <option value="">Select S&P</option>
                         {trnOptions.map(option => (
                             <option key={option.id} value={option.id}>
-                                {option.trn}
+                                {option.trn.trn} ({option.id})
                             </option>
                         ))}
                     </select>
@@ -373,6 +398,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         value={formData.balance_payment_received}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trn.trade_type === 'Purchase'}
                     />
                     {validationErrors.balance_payment_received && <p className="text-red-500">{validationErrors.balance_payment_received}</p>}
                 </div>
@@ -385,6 +411,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         value={formData.balance_payment_made}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trn.trade_type === 'Sales'}
                     />
                     {validationErrors.balance_payment_made && <p className="text-red-500">{validationErrors.balance_payment_made}</p>}
                 </div>

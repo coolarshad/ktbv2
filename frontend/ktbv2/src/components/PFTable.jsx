@@ -1,6 +1,7 @@
 // src/components/TradeTable.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { calculateRemainingContractValue } from '../dateUtils';
 
 const PFTable = ({ data, onDelete, onView }) => {
   const navigate = useNavigate(); 
@@ -36,7 +37,7 @@ const PFTable = ({ data, onDelete, onView }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.payment_mode}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.status_of_payment}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.shipment_status}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{(parseFloat(item.sp.trn.contract_value) - parseFloat(item.sp.invoice_amount)) || '' }</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{calculateRemainingContractValue(item.sp)}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_payment_made}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.net_due_in_this_trade}</td>
              

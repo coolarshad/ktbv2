@@ -6,7 +6,7 @@ import PFTable from "../components/PFTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import { BASE_URL } from '../utils';
-import { paymentDueDate,calculateRemainingContractValue } from '../dateUtils';
+import { paymentDueDate,calculateRemainingContractValue, calculatePFCommissionValue } from '../dateUtils';
 import ReactToPrint from 'react-to-print';
 
 function PaymentFinance() {
@@ -71,15 +71,15 @@ function PaymentFinance() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedPrePayment(null);
+    setPF(null);
   };
 
 
 
   const fieldOptions = [
-    { value: 'trn__trn', label: 'TRN' },  // Trade TRN field in PreSalePurchase filter
-    { value: 'trn__company', label: 'Company' },
-    { value: 'trn__trade_type', label: 'Trade Type' },
+    { value: 'sp__trn__trn', label: 'S&P' },  // Trade TRN field in PreSalePurchase filter
+    // { value: 'trn__company', label: 'Company' },
+    // { value: 'trn__trade_type', label: 'Trade Type' },
     { value: 'batch_number', label: 'Batch Number' },
     { value: 'payment_mode', label: 'Payment Mode' },
     { value: 'status_of_payment', label: 'Status Of Payment' },
@@ -137,6 +137,10 @@ function PaymentFinance() {
                       <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.trn}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">S&P ID </td>
+                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.id}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.trade_type}</td>
                     </tr>
@@ -175,11 +179,11 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment </td>
-                      <td className="py-2 px-4 text-gray-800">{calculateRemainingContractValue(selectedPF)}</td>
+                      <td className="py-2 px-4 text-gray-800">{calculateRemainingContractValue(selectedPF.sp)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Due Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.paymentTerm.payment_within == 'NA' ? 'NA' : paymentDueDate(selectedPF)}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.paymentTerm.payment_within == 'NA' ? 'NA' : paymentDueDate(selectedPF.sp)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Received </td>
@@ -224,7 +228,7 @@ function PaymentFinance() {
 
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent Value </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.commission_value}</td>
+                      <td className="py-2 px-4 text-gray-800">{calculatePFCommissionValue(selectedPF)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fees</td>
@@ -333,13 +337,15 @@ function PaymentFinance() {
                   </tbody>
                 </table>
 
-                <h3 className="text-lg mt-4 text-center">TT Copy</h3>
+                <h3 className="text-lg mt-4 text-center underline">TT Copy</h3>
                 {selectedPF.ttCopies &&
                   selectedPF.ttCopies.map((item, index) =>
                     item.name !== '' ? (
                       <div key={index}>
                         <p className="text-center text-sm">
-                          {index + 1}. <a href={`${BACKEND_URL}${item.tt_copy}`}>{item.name}</a>
+                          {index + 1}. <a href={`${BACKEND_URL}${item.tt_copy}`} target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-800 border px-2 hover:underline">{item.name}</a>
                         </p>
                       </div>
                     ) : null

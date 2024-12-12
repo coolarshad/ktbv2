@@ -1859,7 +1859,7 @@ class PaymentFinanceView(APIView):
         data = request.data
         # Prepare trade data separately
         pf_data = {
-            'trn': data.get('trn'),
+            'sp': data.get('sp'),
             # 'balance_payment': data.get('balance_payment'),
             'balance_payment_received': data.get('balance_payment_received'),
             'balance_payment_made': data.get('balance_payment_made'),

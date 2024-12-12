@@ -116,30 +116,23 @@ class SalesPurchaseFilter(django_filters.FilterSet):
         }
 
 class PaymentFinanceFilter(django_filters.FilterSet):
-    date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
-    date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+    date_from = django_filters.DateFilter(field_name='sp__trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='sp__trn__trd', lookup_expr='lte') 
     class Meta:
         model = PaymentFinance
         fields = {
-            'trn__trn': ['exact', 'icontains'],
-            'trn__trade_type': ['exact', 'icontains'],
-            'trn__company': ['exact', 'icontains'],
+            # 'sp__trn': ['exact', 'icontains'],
+            # 'trn__trade_type': ['exact', 'icontains'],
+            # 'trn__company': ['exact', 'icontains'],
            
-            # 'balance_payment': ['exact', 'gte', 'lte'],
+            'sp__trn__trn': ['exact','icontains'],
             'balance_payment_received': ['exact', 'gte', 'lte'],
             'balance_payment_made': ['exact', 'gte', 'lte'],
             'net_due_in_this_trade': ['exact', 'gte', 'lte'],
-            # 'logistic_cost': ['exact', 'gte', 'lte'],
-            # 'commission_value': ['exact', 'gte', 'lte'],
-            'bl_fee': ['exact', 'gte', 'lte'],
-            'bl_collection_cost': ['exact', 'gte', 'lte'],
-           
+    
             'payment_mode': ['exact', 'icontains'],
             'status_of_payment': ['exact', 'icontains'],
             'shipment_status': ['exact', 'icontains'],
-            'release_docs': ['exact', 'icontains'],
-            'release_docs_date': ['exact', 'icontains'],
-            'remarks': ['exact', 'icontains'],
         }
 
 

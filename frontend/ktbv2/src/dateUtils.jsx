@@ -24,17 +24,17 @@ export const advanceToReceive = (trade) => {
 };
 
 export const paymentDueDate = (data) => {
-  const payment_within = data.sp.trn.paymentTerm.payment_within;
-  const payment_from = data.sp.trn.paymentTerm.payment_from;
+  const payment_within = data.trn.paymentTerm.payment_within;
+  const payment_from = data.trn.paymentTerm.payment_from;
 
   if (payment_from === 'BL DATE') {
-    return addDaysToDate(data.sp.bl_date, payment_within);
+    return addDaysToDate(data.bl_date, payment_within);
   } else if (payment_from === 'CLEAN SHIPPING DOCUMENTS AS PER CONTRACT / PURCHASE ORDER') {
-    return addDaysToDate(data.sp.prepayment.presp.doc_issuance_date, payment_within);
+    return addDaysToDate(data.prepayment.presp.doc_issuance_date, payment_within);
   } else if (payment_from === 'PURCHASE BILL DATE') {
-    return addDaysToDate(data.sp.invoice_date, payment_within);
+    return addDaysToDate(data.invoice_date, payment_within);
   } else if (payment_from === 'SALES BILL DATE') {
-    return addDaysToDate(data.sp.invoice_date, payment_within);
+    return addDaysToDate(data.invoice_date, payment_within);
   } else {
     return 'NA';
   }
@@ -42,13 +42,13 @@ export const paymentDueDate = (data) => {
 
 
 export const calculateRemainingContractValue = (data) => {
-  const contractValue = parseFloat(data.sp.trn.contract_value);
+  const contractValue = parseFloat(data.trn.contract_value);
   let advance=0;
-  if(data.sp.trn.trade_type=='Sales'){
-     advance = parseFloat(data.sp.prepayment.advance_received);
+  if(data.trn.trade_type=='Sales'){
+     advance = parseFloat(data.prepayment.advance_received);
   }
-  if(data.sp.trn.trade_type=='Purchase'){
-      advance = parseFloat(data.sp.prepayment.advance_paid);
+  if(data.trn.trade_type=='Purchase'){
+      advance = parseFloat(data.prepayment.advance_paid);
   }
 
   if (isNaN(contractValue) || isNaN(advance)) {
@@ -56,4 +56,19 @@ export const calculateRemainingContractValue = (data) => {
   }
 
   return contractValue - advance;
+};
+
+export const calculatePFCommissionValue = (data) => {
+  const trade_products = data.sp?data.sp.trn.trade_products:data.trn.trade_products;
+  const sp_product = data.sp?data.sp.sp_product:data.sp_product;
+  let commissionValue = 0;
+
+  sp_product.forEach(item => {
+    const matchedProduct = trade_products.find(product => product.product_code === item.product_code);
+    if (matchedProduct) { // Ensure a matching product is found
+      commissionValue += item.bl_qty * matchedProduct.commission_rate;
+    }
+  });
+
+  return commissionValue;
 };

@@ -42,8 +42,9 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
+            
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th>
@@ -57,8 +58,9 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
             <tr key={index} onClick={() => onRowClick(trade.id)}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
+              
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trd}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
