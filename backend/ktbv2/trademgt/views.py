@@ -376,6 +376,16 @@ class TradeView(APIView):
             if trade.trade_type.lower() == "sales":
                 for product in tradeProducts:
                     try:
+                        existing = SalesPending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        if existing:
+                            existing.balance_qty = float(existing.balance_qty)-(float(existing.contract_qty)+(float(existing.tolerance)/100)*float(existing.contract_qty))
+                            existing.save()
+
+                    except Exception as e:
+                        print(f"Error updating or creating SalesPending: {e}")
+                        raise
+
+                    try:
                         # Check if a SalesProductTrace with the given product_code exists
                         existing_trace = SalesProductTrace.objects.filter(product_code=product.product_code,first_trn=product.product_code_ref).first()
             
@@ -402,6 +412,16 @@ class TradeView(APIView):
             
             if trade.trade_type.lower() == "purchase":
                 for product in tradeProducts:
+                    try:
+                        existing = PurchasePending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        if existing:
+                            existing.balance_qty = float(existing.balance_qty)-(float(existing.contract_qty)+(float(existing.tolerance)/100)*float(existing.contract_qty))
+                            existing.save()
+
+                    except Exception as e:
+                        print(f"Error updating or creating SalesPending: {e}")
+                        raise
+
                     try:
                         # Check if a SalesProductTrace with the given product_code exists
                         existing_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code,first_trn=product.product_code_ref).first()
@@ -455,6 +475,37 @@ class TradeView(APIView):
             if trade.trade_type.lower() == "sales":
                 for product in trade_products:
                     try:
+                        existing = SalesPending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        if existing:
+                            # existing.balance_qty = float(existing.balance_qty)-float(product.trade_qty)
+                            existing.balance_qty = float(existing.balance_qty)+(float(product.trade_qty)+(float(product.tolerance)/100)*float(product.trade_qty))
+                            existing.balance_qty_unit=product.trade_qty_unit
+                            existing.contract_qty=product.trade_qty
+                            existing.contract_qty_unit=product.trade_qty
+                            existing.save()
+                        else:
+                            SalesPending.objects.create(
+                            trn=trade,
+                            trd=trade.trd,
+                            company=trade.company,
+                            payment_term=trade.payment_term,
+                            product_code=product.product_code,
+                            product_name=product.product_name,
+                            hs_code=product.hs_code,
+                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
+                            balance_qty_unit=product.trade_qty_unit,
+                            contract_qty=product.trade_qty,
+                            contract_qty_unit=product.trade_qty_unit,
+                            selected_currency_rate=product.selected_currency_rate,
+                            rate_in_usd=product.rate_in_usd,
+                            tolerance=product.tolerance
+                            )
+
+                    except Exception as e:
+                        print(f"Error updating or creating SalesPending: {e}")
+                        raise
+
+                    try:
                         # Check if a SalesProductTrace with the given product_code exists
                         if product.product_code_ref=='NA':
                             first_trn=trade.trn
@@ -466,6 +517,7 @@ class TradeView(APIView):
                             # If it exists, update only the fields you want to update
                             existing_trace.trade_qty = product.trade_qty
                             existing_trace.contract_balance_qty = float(product.contract_balance_qty)-float(product.trade_qty)
+                            existing.contract_qty=product.trade_qty
                             existing_trace.save()
                         else:
                             # If it doesn't exist, create a new record with all fields
@@ -495,6 +547,37 @@ class TradeView(APIView):
             
             if trade.trade_type.lower() == "purchase":
                 for product in trade_products:
+                    try:
+                        existing = PurchasePending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        if existing:
+                            # existing.balance_qty = float(existing.balance_qty)-float(product.trade_qty)
+                            existing.balance_qty = float(existing.balance_qty)+(float(product.trade_qty)+(float(product.tolerance)/100)*float(product.trade_qty))
+                            existing.balance_qty_unit=product.trade_qty_unit
+                            existing.contract_qty=product.trade_qty
+                            existing.contract_qty_unit=product.trade_qty
+                            existing.save()
+                        else:
+                            PurchasePending.objects.create(
+                            trn=trade,
+                            trd=trade.trd,
+                            company=trade.company,
+                            payment_term=trade.payment_term,
+                            product_code=product.product_code,
+                            product_name=product.product_name,
+                            hs_code=product.hs_code,
+                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
+                            balance_qty_unit=product.trade_qty_unit,
+                            contract_qty=product.trade_qty,
+                            contract_qty_unit=product.trade_qty_unit,
+                            selected_currency_rate=product.selected_currency_rate,
+                            rate_in_usd=product.rate_in_usd,
+                            tolerance=product.tolerance
+                            )
+
+                    except Exception as e:
+                        print(f"Error updating or creating SalesPending: {e}")
+                        raise
+
                     try:
                         # Check if a SalesProductTrace with the given product_code exists
                         if product.product_code_ref=='NA':
@@ -656,7 +739,7 @@ class TradeReviewView(APIView):
                             product_code=product.product_code,
                             product_name=product.product_name,
                             hs_code=product.hs_code,
-                            balance_qty=product.trade_qty,
+                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
                             balance_qty_unit=product.trade_qty_unit,
                             contract_qty=product.trade_qty,
                             contract_qty_unit=product.trade_qty_unit,
@@ -684,7 +767,7 @@ class TradeReviewView(APIView):
                             product_code=product.product_code,
                             product_name=product.product_name,
                             hs_code=product.hs_code,
-                            balance_qty=product.trade_qty,
+                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
                             balance_qty_unit=product.trade_qty_unit,
                             contract_qty=product.trade_qty,
                             contract_qty_unit=product.trade_qty_unit,
@@ -1516,7 +1599,7 @@ class SalesPurchaseView(APIView):
                         # Check if a SalesProductTrace with the given product_code exists
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
             
-                        if existing_inv:
+                        if existing_inv and sp.reviewed:
                             existing_inv.quantity = float(existing_inv.quantity)+float(product.bl_qty)
                             existing_inv.save()
                        
@@ -1545,7 +1628,7 @@ class SalesPurchaseView(APIView):
                         # Check if a SalesProductTrace with the given product_code exists
                         existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
             
-                        if existing_inv:
+                        if existing_inv and sp.reviewed:
                             # If it exists, update only the fields you want to update
                             existing_inv.quantity = float(existing_inv.quantity)-float(product.bl_qty)
                             existing_inv.save()
@@ -1603,20 +1686,21 @@ class SalesPurchaseView(APIView):
                         print(f"Error updating SalesPending: {e}")
                         raise
                     try:
-                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
-                        if existing_inv:
-                            # If it exists, update only the fields you want to update
-                            existing_inv.quantity-= product.trade_qty
-                            existing_inv.save()
-                        else:
-                            # If it doesn't exist, create a new record with all fields
-                            Inventory.objects.create(
-                            product_name=product.product_name,
-                            batch_number=product.batch_number,
-                            production_date=product.production_date,    
-                            quantity=0-float(product.trade_qty),
-                            unit=product.trade_qty_unit
-                            )
+                        if sp.reviewed:
+                            existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                            if existing_inv:
+                                # If it exists, update only the fields you want to update
+                                existing_inv.quantity-= product.trade_qty
+                                existing_inv.save()
+                            else:
+                                # If it doesn't exist, create a new record with all fields
+                                Inventory.objects.create(
+                                product_name=product.product_name,
+                                batch_number=product.batch_number,
+                                production_date=product.production_date,    
+                                quantity=0-float(product.trade_qty),
+                                unit=product.trade_qty_unit
+                                )
                     except Exception as e:
                             # Handle specific exception for SalesProductTrace
                         print(f"Error updating or creating Inventory: {e}")
@@ -1634,20 +1718,21 @@ class SalesPurchaseView(APIView):
                         raise
 
                     try:
-                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
-                        if existing_inv:
-                            # If it exists, update only the fields you want to update
-                            existing_inv.quantity+= product.bl_qty
-                            existing_inv.save()
-                        else:
-                            # If it doesn't exist, create a new record with all fields
-                            Inventory.objects.create(
-                            product_name=product.product_name,
-                            batch_number=product.batch_number,
-                            production_date=product.production_date,    
-                            quantity=float(product.bl_qty),
-                            unit=product.trade_qty_unit
-                            )
+                        if sp.reviewed:
+                            existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                            if existing_inv:
+                                # If it exists, update only the fields you want to update
+                                existing_inv.quantity+= product.bl_qty
+                                existing_inv.save()
+                            else:
+                                # If it doesn't exist, create a new record with all fields
+                                Inventory.objects.create(
+                                product_name=product.product_name,
+                                batch_number=product.batch_number,
+                                production_date=product.production_date,    
+                                quantity=float(product.bl_qty),
+                                unit=product.trade_qty_unit
+                                )
                     except Exception as e:
                             # Handle specific exception for SalesProductTrace
                         print(f"Error updating or creating Inventory: {e}")

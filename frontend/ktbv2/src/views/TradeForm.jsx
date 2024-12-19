@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import debounce from 'lodash.debounce';
 import {capitalizeKey} from '../utils';
+import DateInputWithIcon from '../components/DateInputWithIcon';
 
 const TradeForm = ({ mode = 'add' }) => {
 
@@ -911,7 +912,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     {validationErrors.pod && <p className="text-red-500">{validationErrors.pod}</p>}
                 </div>
                
-                <div>
+                {/* <div>
                     <label htmlFor="etd" className="block text-sm font-medium text-gray-700">ETD</label>
                     <input
                         type="text"
@@ -922,8 +923,16 @@ const TradeForm = ({ mode = 'add' }) => {
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('etd')}`}
                     />
                     {validationErrors.etd && <p className="text-red-500">{validationErrors.etd}</p>}
-                </div>
-                <div>
+                </div> */}
+                 <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="etd"
+                    label="ETD"
+                    
+                />
+                {/* <div>
                     <label htmlFor="eta" className="block text-sm font-medium text-gray-700">ETA</label>
                     <input
                         type="text"
@@ -934,7 +943,15 @@ const TradeForm = ({ mode = 'add' }) => {
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('eta')}`}
                     />
                     {validationErrors.eta && <p className="text-red-500">{validationErrors.eta}</p>}
-                </div>
+                </div> */}
+                 <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="eta"
+                    label="ETA"
+                    
+                />
                 
                 <div>
                     <label htmlFor="trader_name" className="block text-sm font-medium text-gray-700">Trader Name</label>

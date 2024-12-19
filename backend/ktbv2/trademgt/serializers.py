@@ -420,7 +420,34 @@ class AdvanceTTCopySerializer(serializers.ModelSerializer):
 class SalesPurchaseProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesPurchaseProduct
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['pending_qty']
+    
+    def get_combined_pending_qty(self, obj):
+        # Determine the trade type from the associated Trade object
+        trade_type = obj.sp.trn.trade_type
+        
+        # Fetch the corresponding pending model based on trade type
+        try:
+            if trade_type == 'Sales':  # Example trade type for sales
+                pending_obj = SalesPending.objects.get(
+                    product_code=obj.product_code,
+                    product_name=obj.product_name,
+                    trn=obj.sp.trn
+                )
+            elif trade_type == 'Purchase':  # Example trade type for purchase
+                pending_obj = PurchasePending.objects.get(
+                    product_code=obj.product_code,
+                    product_name=obj.product_name,
+                    trn=obj.sp.trn
+                )
+            else:
+                return obj.pending_qty  # Return original pending_qty if trade_type is unknown
+           
+            # Add the balance_qty from the pending object
+            return  pending_obj.balance_qty + obj.bl_qty
+        except (SalesPending.DoesNotExist, PurchasePending.DoesNotExist):
+            return obj.pending_qty 
 
     def get_product_details(self, obj):
         try:
@@ -432,6 +459,7 @@ class SalesPurchaseProductSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['productName'] = self.get_product_details(instance)
+        ret['pending_qty'] = self.get_combined_pending_qty(instance)
         return ret
 
 class SalesPurchaseExtraChargeSerializer(serializers.ModelSerializer):

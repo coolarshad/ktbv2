@@ -49,7 +49,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
     };
 
     useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);
+        fetchData('/trademgt/trades', { approved: true,reviewed: true }, setTrnOptions);
         fetchData('/trademgt/documents', {}, setDocOptions);
     }, []);
 

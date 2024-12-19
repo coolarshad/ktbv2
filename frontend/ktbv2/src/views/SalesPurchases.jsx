@@ -283,7 +283,7 @@ function SalesPurchases() {
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
+                    {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th> */}
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Qty</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Qty Unit</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch Number</th>
@@ -301,7 +301,7 @@ function SalesPurchases() {
                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
+                      {/* <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td> */}
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_qty}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.batch_number}</td>

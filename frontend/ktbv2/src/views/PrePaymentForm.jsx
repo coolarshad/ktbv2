@@ -3,11 +3,12 @@ import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
 import { capitalizeKey } from '../utils';
+import DateInputWithIcon from '../components/DateInputWithIcon';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate=useNavigate()
-
+  
     const [validationErrors, setValidationErrors] = useState({});
     // Sample options for TRN dropdown
     const [trnOptions, setTrnOptions] = useState([]); 
@@ -113,7 +114,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     
       // Combined useEffect for all API calls
       useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
+        fetchData('/trademgt/trades', { approved: true,reviewed: true }, setTrnOptions);  // Example with params
       }, []);
 
       const handleChange = async (e, section, index) => {
@@ -196,6 +197,15 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         setFormData({ ...formData, [section]: updatedSection });
     };
 
+    const handleDateChange = (date) => {
+        const day = String(date.getDate()).padStart(2, "0"); // Ensure 2 digits
+            const month = String(date.getMonth() + 1).padStart(2, "0"); // Ensure 2 digits
+            const year = date.getFullYear();
+
+            const formattedDate = `${day}/${month}/${year}`;
+            setFormData((prev) => ({ ...prev, lc_expiry_date: formattedDate }));
+    };
+    
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -226,18 +236,18 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 });
             }
     
-            if (formData.lcAmmendments.length === 0) {
-                alert('LC Amendments cannot be empty!');
-                return;
-            } else {
-                formData.lcAmmendments.forEach((item, index) => {
-                    for (const [key, value] of Object.entries(item)) {
-                        if (!skipValidation.includes(key) && (value === '' || value === null)) {
-                            errors[`lcAmmendments[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
-                        }
-                    }
-                });
-            }
+            // if (formData.lcAmmendments.length === 0) {
+            //     alert('LC Amendments cannot be empty!');
+            //     return;
+            // } else {
+            //     formData.lcAmmendments.forEach((item, index) => {
+            //         for (const [key, value] of Object.entries(item)) {
+            //             if (!skipValidation.includes(key) && (value === '' || value === null)) {
+            //                 errors[`lcAmmendments[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+            //             }
+            //         }
+            //     });
+            // }
         }
         if (formData.advance_paid != 0 || formData.advance_received != 0) {
             if (formData.advanceTTCopies.length === 0) {
@@ -397,12 +407,12 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.advance_received}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly={data?.trade_type === 'Purchase'}
+                        readOnly={data?.trade_type === 'Purchase' || formData.lc_number.toLowerCase() != "na"}
                         
                     />
                     {validationErrors.advance_received && <p className="text-red-500">{validationErrors.advance_received}</p>}
                 </div>
-                <div>
+                {/* <div>
                     <label htmlFor="date_of_receipt" className="block text-sm font-medium text-gray-700">Date of Receipt</label>
                     <input
                         id="date_of_receipt"
@@ -411,10 +421,18 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.date_of_receipt}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly={data?.trade_type === 'Purchase'}
+                        readOnly={data?.trade_type === 'Purchase' || formData.lc_number.toLowerCase() != "na"}
                     />
                     {validationErrors.date_of_receipt && <p className="text-red-500">{validationErrors.date_of_receipt}</p>}
-                </div>
+                </div> */}
+                <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="date_of_receipt"
+                    label="Date of Receipt"
+                    block={data?.trade_type === 'Purchase' || formData.lc_number.toLowerCase() != "na"}
+                />
                 <div>
                     <label htmlFor="advance_paid" className="block text-sm font-medium text-gray-700">Advance Paid</label>
                     <input
@@ -424,11 +442,11 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.advance_paid}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly={data?.trade_type === 'Sales'}
+                        readOnly={data?.trade_type === 'Sales' || formData.lc_number.toLowerCase() != "na"}
                     />
                     {validationErrors.advance_paid && <p className="text-red-500">{validationErrors.advance_paid}</p>}
                 </div>
-                <div>
+                {/* <div>
                     <label htmlFor="date_of_payment" className="block text-sm font-medium text-gray-700">Date of Payment</label>
                     <input
                         id="date_of_payment"
@@ -437,11 +455,19 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         value={formData.date_of_payment}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly={data?.trade_type === 'Sales'}
+                        readOnly={data?.trade_type === 'Sales' || formData.lc_number.toLowerCase() != "na"}
                     />
                     {validationErrors.date_of_payment && <p className="text-red-500">{validationErrors.date_of_payment}</p>}
-                </div>
-                <div>
+                </div> */}
+                 <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="date_of_payment"
+                    label="Date of Payment"
+                    block={data?.trade_type === 'Sales' || formData.lc_number.toLowerCase() != "na"}
+                />
+                {/* <div>
                     <label htmlFor="lc_expiry_date" className="block text-sm font-medium text-gray-700">LC Expiry Date</label>
                     <input
                         id="lc_expiry_date"
@@ -453,8 +479,17 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         disabled={formData.lc_number.toLowerCase() === "na"}
                     />
                      {validationErrors.lc_expiry_date && <p className="text-red-500">{validationErrors.lc_expiry_date}</p>}
-                </div>
-                <div>
+                </div> */}
+                <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="lc_expiry_date"
+                    label="LC Expiry Date"
+                    block={formData.lc_number.toLowerCase() === "na"}
+                />
+
+                {/* <div>
                     <label htmlFor="latest_shipment_date_in_lc" className="block text-sm font-medium text-gray-700">Latest Shipment Date in LC</label>
                     <input
                         id="latest_shipment_date_in_lc"
@@ -466,7 +501,15 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         disabled={formData.lc_number.toLowerCase() === "na"}
                     />
                      {validationErrors.latest_shipment_date_in_lc && <p className="text-red-500">{validationErrors.latest_shipment_date_in_lc}</p>}
-                </div>
+                </div> */}
+                 <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="latest_shipment_date_in_lc"
+                    label="Latest Shipment Date in LC"
+                    block={formData.lc_number.toLowerCase() === "na"}
+                />
                 {/* Remarks field spanning across all columns */}
                 <div className="md:col-span-3">
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
@@ -484,168 +527,176 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
             {/* Horizontal Separator */}
             <hr className="my-6 border-t-2 border-gray-300" />
-
             {/* LcCopy Section */}
-            <div className="space-y-4 p-4">
-                <h3 className="text-lg font-medium text-gray-900">LC Copies</h3>
-                {formData.lcCopies.map((lcCopy, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <label htmlFor={`lc_copy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                id={`lc_copy_name_${index}`}
-                                name="name"
-                                type="text"
-                                value={lcCopy.name}
-                                onChange={(e) => handleChange(e, 'lcCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                disabled={formData.lc_number.toLowerCase() === "na"}
-                            />
-                             {validationErrors[`lcCopies[${index}].name`] && (
+            {formData.lc_number.toLowerCase() != "na" && (
+                <div className="space-y-4 p-4">
+                    <h3 className="text-lg font-medium text-gray-900">LC Copies</h3>
+                    {formData.lcCopies.map((lcCopy, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label htmlFor={`lc_copy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
+                                <input
+                                    id={`lc_copy_name_${index}`}
+                                    name="name"
+                                    type="text"
+                                    value={lcCopy.name}
+                                    onChange={(e) => handleChange(e, 'lcCopies', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={formData.lc_number.toLowerCase() === "na"}
+                                />
+                                {validationErrors[`lcCopies[${index}].name`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`lcCopies[${index}].name`]}
                                     </p>
                                 )}
-                        </div>
-                        <div>
-                            <label htmlFor={`lc_copy_${index}`} className="block text-sm font-medium text-gray-700">LC Copy</label>
-                            <input
-                                id={`lc_copy_${index}`}
-                                name="lc_copy"
-                                type="file"
-                                onChange={(e) => handleChange(e, 'lcCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                disabled={formData.lc_number.toLowerCase() === "na"}
-                            />
-                            {validationErrors[`lcCopies[${index}].lc_copy`] && (
+                            </div>
+                            <div>
+                                <label htmlFor={`lc_copy_${index}`} className="block text-sm font-medium text-gray-700">LC Copy</label>
+                                <input
+                                    id={`lc_copy_${index}`}
+                                    name="lc_copy"
+                                    type="file"
+                                    onChange={(e) => handleChange(e, 'lcCopies', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={formData.lc_number.toLowerCase() === "na"}
+                                />
+                                {validationErrors[`lcCopies[${index}].lc_copy`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`lcCopies[${index}].lc_copy`]}
                                     </p>
                                 )}
+                            </div>
+                            <div className="flex items-end">
+                                <button type="button" onClick={() => handleRemoveRow('lcCopies', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Remove
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-end">
-                            <button type="button" onClick={() => handleRemoveRow('lcCopies', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                Remove
-                            </button>
-                        </div>
+                    ))}
+                    <div className="text-right">
+                        <button type="button" onClick={() => handleAddRow('lcCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Add LC Copy
+                        </button>
                     </div>
-                ))}
-                <div className="text-right">
-                <button type="button" onClick={() => handleAddRow('lcCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add LC Copy
-                </button>
+
                 </div>
-                
-            </div>
+            )}
+
+
 
             {/* LcAmmendment Section */}
-            <div className="space-y-4 p-4">
-                <h3 className="text-lg font-medium text-gray-900">LC Ammendments</h3>
-                {formData.lcAmmendments.map((lcAmmendment, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <label htmlFor={`lc_ammendment_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                id={`lc_ammendment_name_${index}`}
-                                name="name"
-                                type="text"
-                                value={lcAmmendment.name}
-                                onChange={(e) => handleChange(e, 'lcAmmendments', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                disabled={formData.lc_number.toLowerCase() === "na"}
-                            />
-                             {validationErrors[`lcAmmendments[${index}].name`] && (
+            {formData.lc_number.toLowerCase() != "na" && (
+                <div className="space-y-4 p-4">
+                    <h3 className="text-lg font-medium text-gray-900">LC Ammendments</h3>
+                    {formData.lcAmmendments.map((lcAmmendment, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label htmlFor={`lc_ammendment_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
+                                <input
+                                    id={`lc_ammendment_name_${index}`}
+                                    name="name"
+                                    type="text"
+                                    value={lcAmmendment.name}
+                                    onChange={(e) => handleChange(e, 'lcAmmendments', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={formData.lc_number.toLowerCase() === "na"}
+                                />
+                                {validationErrors[`lcAmmendments[${index}].name`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`lcAmmendments[${index}].name`]}
                                     </p>
                                 )}
-                        </div>
-                        <div>
-                            <label htmlFor={`lc_ammendment_${index}`} className="block text-sm font-medium text-gray-700">LC Ammendment</label>
-                            <input
-                                id={`lc_ammendment_${index}`}
-                                name="lc_ammendment"
-                                type="file"
-                                onChange={(e) => handleChange(e, 'lcAmmendments', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                disabled={formData.lc_number.toLowerCase() === "na"}
-                            />
-                            {validationErrors[`lcAmmendments[${index}].lc_ammendment`] && (
+                            </div>
+                            <div>
+                                <label htmlFor={`lc_ammendment_${index}`} className="block text-sm font-medium text-gray-700">LC Ammendment</label>
+                                <input
+                                    id={`lc_ammendment_${index}`}
+                                    name="lc_ammendment"
+                                    type="file"
+                                    onChange={(e) => handleChange(e, 'lcAmmendments', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={formData.lc_number.toLowerCase() === "na"}
+                                />
+                                {validationErrors[`lcAmmendments[${index}].lc_ammendment`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`lcAmmendments[${index}].lc_ammendment`]}
                                     </p>
                                 )}
+                            </div>
+                            <div className="flex items-end">
+                                <button type="button" onClick={() => handleRemoveRow('lcAmmendments', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Remove
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-end">
-                            <button type="button" onClick={() => handleRemoveRow('lcAmmendments', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                Remove
-                            </button>
-                        </div>
+                    ))}
+                    <div className="text-right">
+                        <button type="button" onClick={() => handleAddRow('lcAmmendments')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Add LC Ammendment
+                        </button>
                     </div>
-                ))}
-                 <div className="text-right">
-                 <button type="button" onClick={() => handleAddRow('lcAmmendments')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add LC Ammendment
-                </button>
-                 </div>
-                
-            </div>
 
+                </div>
+            )}
             {/* AdvanceTTCopy Section */}
-            <div className="space-y-4 p-4">
-                <h3 className="text-lg font-medium text-gray-900">Advance TT Copies</h3>
-                {formData.advanceTTCopies.map((advanceTTCopy, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <label htmlFor={`advance_tt_copy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                id={`advance_tt_copy_name_${index}`}
-                                name="name"
-                                type="text"
-                                value={advanceTTCopy.name}
-                                onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                disabled={formData.lc_number.toLowerCase() !== "na"}
-                            />
-                            {validationErrors[`advanceTTCopies[${index}].name`] && (
+            {(formData.lc_number.toLowerCase() === "na"|| formData.lc_number === '') && (
+                <div className="space-y-4 p-4">
+                    <h3 className="text-lg font-medium text-gray-900">Advance TT Copies</h3>
+                    {formData.advanceTTCopies.map((advanceTTCopy, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label htmlFor={`advance_tt_copy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
+                                <input
+                                    id={`advance_tt_copy_name_${index}`}
+                                    name="name"
+                                    type="text"
+                                    value={advanceTTCopy.name}
+                                    onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={formData.lc_number.toLowerCase() !== "na"}
+                                />
+                                {validationErrors[`advanceTTCopies[${index}].name`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`advanceTTCopies[${index}].name`]}
                                     </p>
                                 )}
-                        </div>
-                        <div>
-                            <label htmlFor={`advance_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">Advance TT Copy</label>
-                            <input
-                                id={`advance_tt_copy_${index}`}
-                                name="advance_tt_copy"
-                                type="file"
-                                onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                disabled={formData.lc_number.toLowerCase() !== "na"}
-                            />
-                            {validationErrors[`advanceTTCopies[${index}].advance_tt_copy`] && (
+                            </div>
+                            <div>
+                                <label htmlFor={`advance_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">Advance TT Copy</label>
+                                <input
+                                    id={`advance_tt_copy_${index}`}
+                                    name="advance_tt_copy"
+                                    type="file"
+                                    onChange={(e) => handleChange(e, 'advanceTTCopies', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={formData.lc_number.toLowerCase() !== "na"}
+                                />
+                                {validationErrors[`advanceTTCopies[${index}].advance_tt_copy`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`advanceTTCopies[${index}].advance_tt_copy`]}
                                     </p>
                                 )}
+                            </div>
+                            <div className="flex items-end">
+                                <button type="button" onClick={() => handleRemoveRow('advanceTTCopies', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Remove
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-end">
-                            <button type="button" onClick={() => handleRemoveRow('advanceTTCopies', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                Remove
-                            </button>
-                        </div>
+                    ))}
+                    <div className="text-right">
+                        <button type="button" onClick={() => handleAddRow('advanceTTCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Add Advance TT Copy
+                        </button>
                     </div>
-                ))}
-                 <div className="text-right">
-                 <button type="button" onClick={() => handleAddRow('advanceTTCopies')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add Advance TT Copy
-                </button>
-                 </div>
-                
-            </div>
+
+                </div>
+            )}
+
+
 
             <div className="grid grid-cols-3 gap-4 mb-4">
-            <button
+                <button
                     type="submit"
                     className="bg-blue-500 text-white p-2 rounded col-span-3"
                 >

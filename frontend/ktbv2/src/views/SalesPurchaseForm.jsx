@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
 import { capitalizeKey } from '../utils';
 import debounce from 'lodash.debounce';
+import DateInputWithIcon from '../components/DateInputWithIcon';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -67,6 +68,21 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             axios.get(`/trademgt/sales-purchases/${id}`)
                 .then(response => {
                     const data = response.data;
+                  
+                    const newPackingLists = data.prepayment?.presp?.documentRequired || [];
+                    const savedPackingLists = data.packingLists || [];
+
+                    
+                    const mergedPackingLists = newPackingLists.map(newItem => {
+                        const match = savedPackingLists.find(savedItem => savedItem.name === newItem.doc.name);
+                        return {
+                            name: newItem.doc.name,
+                            packing_list: match ? match.packing_list : null, // Use the saved packing list if found, otherwise null
+                        };
+                    });
+
+                    // console.log(savedPackingLists)
+                  
                     setFormData(prevState => ({
                         ...prevState,
                         trn: data.trn.id,
@@ -108,7 +124,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                             }
                         ],
                         extraCharges: data.extraCharges || [{ name: '', charge: '' }],
-                        packingLists: data.packingLists || [{ name: '', packing_list: null }],
+                        packingLists: mergedPackingLists,
                         
                     }));
                 // Call the second API after the first one is complete
@@ -227,6 +243,27 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     }, 1500), [] // Adjust the debounce delay as needed
 );
 
+function debounce(func, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+const handleLogisticCostChange = debounce((value, prev) => {
+    const logisticCost = parseFloat(value) || 0;
+    if (logisticCost > data.estimated_logistic_cost || logisticCost < 0) {
+        alert(`Logistic cost cannot exceed the estimated logistic cost: ${data.estimated_logistic_cost}`);
+        setFormData({
+            ...prev,
+            logistic_cost: data.estimated_logistic_cost.toString(), // Reset the value
+        });
+    } else {
+        setFormData({ ...prev, logistic_cost: value });
+    }
+}, 250); 
+
 
 const handleChange = async (e, arrayName = null, index = null) => {
     const { name, value, type, files } = e.target;
@@ -249,25 +286,23 @@ const handleChange = async (e, arrayName = null, index = null) => {
         else if (arrayName !== null && index !== null) {
             if (Array.isArray(prev[arrayName])) {
                 const updatedArray = [...prev[arrayName]];
-
-                // Update the specific field
                 updatedArray[index][name] = value;
 
-                // Automatically calculate `bl_value` if `bl_qty` is updated
                 if (name === 'product_code' || name === 'product_name' || name === 'hs_code') {
-                    // Trigger the debounced API call
-                    debouncedApiCall(formData.trn, updatedArray[index].product_code, updatedArray[index].product_name, updatedArray[index].hs_code, index, arrayName);
+                    debouncedApiCall(
+                        formData.trn,
+                        updatedArray[index].product_code,
+                        updatedArray[index].product_name,
+                        updatedArray[index].hs_code,
+                        index,
+                        arrayName
+                    );
                 }
-                
+
                 if (name === 'bl_qty') {
                     const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
                     const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
-                    updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2); // Calculate and format to 2 decimals
-
-                    // if (value>calculateTotalWithTolerance(updatedArray[index].pending_qty,updatedArray[index].tolerance)){
-                    //     alert(`BL Qty exceeding at Product ${index+1} `)
-                        
-                    // }
+                    updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2);
                 }
 
                 updatedFormData = { ...prev, [arrayName]: updatedArray };
@@ -279,10 +314,18 @@ const handleChange = async (e, arrayName = null, index = null) => {
         // Handle non-array input
         else {
             if (name === 'purchase_bl_number') {
-                const bl=purchaseBLOptions.find((bl)=>bl.bl_number=value)
-                console.log(bl)
-                // If 'purchase_bl_number' is changed, update 'bl_number' in formData
-                updatedFormData = { ...prev,purchase_bl_number:value, bl_number: value, bl_date:bl.bl_date, bl_collection_cost:bl.bl_collection_cost, bl_fees:bl.bl_fees };
+                const bl = purchaseBLOptions.find((bl) => bl.bl_number === value);
+                updatedFormData = {
+                    ...prev,
+                    purchase_bl_number: value,
+                    bl_number: value,
+                    bl_date: bl.bl_date,
+                    bl_collection_cost: bl.bl_collection_cost,
+                    bl_fees: bl.bl_fees,
+                };
+            } else if (name === 'logistic_cost') {
+                handleLogisticCostChange(value, prev); // Use the debounced function
+                return prev; // Prevent immediate update
             } else {
                 updatedFormData = { ...prev, [name]: value };
             }
@@ -294,22 +337,22 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 (sum, product) => sum + (parseFloat(product.bl_value) || 0),
                 0
             );
-            updatedFormData.invoice_amount = totalBlValue.toFixed(2); // Keep it as a string with 2 decimals
+            updatedFormData.invoice_amount = totalBlValue.toFixed(2);
         }
+
         return updatedFormData;
     });
-    // Fetch TRN data when 'trn' changes (existing logic)
+
     if (name === 'trn') {
         try {
             const response = await axios.get(`/trademgt/sp/${value}`);
+        
             if (response.data.prepayment) {
                 setData(response.data);
-
-                // Update formData with TRN data
                 setFormData((prev) => ({
                     ...prev,
                     logistic_cost: response.data.estimated_logistic_cost,
-                    // salesPurchaseProducts: response.data.trade_products || [],
+                    bl_fees: response.data.bl_fee,
                     packingLists: response.data.prepayment.presp.documentRequired.map((doc) => ({
                         name: doc.doc.name || '',
                         packing_list: doc.packing_list || null,
@@ -400,7 +443,9 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 // Validation specific to `bl_qty`
                 if (key === 'bl_qty') {
                     
-                        const maxAllowedQty = calculateTotalWithTolerance(product.pending_qty, product.tolerance);
+                        // const maxAllowedQty = calculateTotalWithTolerance(product.pending_qty, product.tolerance);
+                        const maxAllowedQty = product.pending_qty;
+
                         if (value > maxAllowedQty || value <= 0) {
                             alert(`BL Quantity exceeds tolerance for ${product.product_code || 'this product'}`);
                             errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
@@ -423,7 +468,13 @@ const handleChange = async (e, arrayName = null, index = null) => {
         formData.packingLists.forEach((product, index) => {
             for (const [key, value] of Object.entries(product)) { 
                 if (!skipValidation.includes(key) && (value === '' || value==null)) {
-                    errors[`packingLists[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                    if(key=='name'){
+                        errors[`packingLists[${index}].${key}`] = `Document name cannot be empty!`;
+                    }
+                    if(key=='packing_list'){
+                        errors[`packingLists[${index}].${key}`] = `Please upload document!`;
+                    }
+                    // errors[`packingLists[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
                 }
             }
         });
@@ -612,6 +663,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     value={formData.invoice_amount}
                     onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    readOnly={true}
                 />
                  {validationErrors.invoice_amount && <p className="text-red-500">{validationErrors.invoice_amount}</p>}
             </div>
@@ -678,6 +730,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     value={formData.bl_fees}
                     onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    readOnly={true}
                 />
                  {validationErrors.bl_fees && <p className="text-red-500">{validationErrors.bl_fees}</p>}
             </div>
@@ -747,12 +800,12 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     name="logistic_cost"
                     type="number"
                     value={formData.logistic_cost}
-                    onChange={(e) => setFormData({ ...formData, logistic_cost: e.target.value })}
+                    onChange={(e) => handleChange(e)}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
                  {validationErrors.logistic_cost && <p className="text-red-500">{validationErrors.logistic_cost}</p>}
             </div>
-            <div>
+            {/* <div>
                 <label htmlFor="logistic_cost_due_date" className="block text-sm font-medium text-gray-700">Logistic Cost Due Date</label>
                 <input
                     id="logistic_cost_due_date"
@@ -763,7 +816,15 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
                   {validationErrors.logistic_cost_due_date && <p className="text-red-500">{validationErrors.logistic_cost_due_date}</p>}
-            </div>
+            </div> */}
+             <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="logistic_cost_due_date"
+                    label="Logistic Cost Due Date"
+                    
+                />
             <div>
                 <label htmlFor="liner" className="block text-sm font-medium text-gray-700">Liner</label>
                 <input
@@ -922,7 +983,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                             </div>
 
                            
-                            <div>
+                            {/* <div>
                                 <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
                                 <input
                                     type="number"
@@ -938,7 +999,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                         {validationErrors[`salesPurchaseProducts[${index}].tolerance`]}
                                     </p>
                                 )}
-                            </div>
+                            </div> */}
 
                            
                             <div>
