@@ -1590,6 +1590,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Commission Value"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('commission_value')}`}
+                        readOnly={true}
                     />
                     {validationErrors.commission_value && <p className="text-red-500">{validationErrors.commission_value}</p>}
                 </div>
@@ -1602,6 +1603,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Contract Value"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('contract_value')}`}
+                        readOnly={true}
                     />
                      {validationErrors.contract_value && <p className="text-red-500">{validationErrors.contract_value}</p>}
                 </div>
@@ -1631,6 +1633,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Advance Value to Receive"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('advance_value_to_receive')}`}
+                        readOnly={true}
                     />
                     {validationErrors.advance_value_to_receive && <p className="text-red-500">{validationErrors.advance_value_to_receive}</p>}
                 </div>

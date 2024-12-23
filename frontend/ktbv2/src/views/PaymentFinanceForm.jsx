@@ -24,9 +24,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         status_of_payment: '',
         // logistic_cost: '',
         // commission_value: '',
-        bl_fee: '',
-        bl_collection_cost: '',
-        shipment_status: '',
+        // bl_fee: '',
+        // bl_collection_cost: '',
+        // shipment_status: '',
         release_docs: '',
         release_docs_date: '',
         remarks: '',
@@ -53,9 +53,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         status_of_payment: data.status_of_payment,
                         // logistic_cost: data.logistic_cost,
                         // commission_value: data.commission_value,
-                        bl_fee: data.bl_fee,
-                        bl_collection_cost: data.bl_collection_cost,
-                        shipment_status: data.shipment_status,
+                        // bl_fee: data.bl_fee,
+                        // bl_collection_cost: data.bl_collection_cost,
+                        // shipment_status: data.shipment_status,
                         release_docs: data.release_docs,
                         release_docs_date: data.release_docs_date,
                         remarks: data.remarks,
@@ -90,7 +90,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     //     fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
     // }, []);
     useEffect(() => {
-        fetchData('/trademgt/sales-purchases', { reviewed: true }, setTrnOptions);  // Example with params
+        fetchData('/trademgt/sales-purchases/', { reviewed: true }, setTrnOptions);  // Example with params
     }, []);
 
     useEffect(() => {
@@ -188,14 +188,28 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             }
         });
 
-         // Validate tradeProducts array fields but skip 'loi'
-         formData.ttCopies.forEach((product, index) => {
-            for (const [key, value] of Object.entries(product)) { 
-                if (!skipValidation.includes(key) && (value === '' || value==null)) {
-                    errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
-                }
+        //  // Validate tradeProducts array fields but skip 'loi'
+        //  formData.ttCopies.forEach((product, index) => {
+        //     for (const [key, value] of Object.entries(product)) { 
+        //         if (!skipValidation.includes(key) && (value === '' || value==null)) {
+        //             errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+        //         }
+        //     }
+        // });
+        if (data?.prepayment.lc_number.toLowerCase() === "na") {
+            if (formData.ttCopies.length === 0) {
+                alert('TT Copy cannot be empty!');
+                return;
+            } else {
+                formData.ttCopies.forEach((item, index) => {
+                    for (const [key, value] of Object.entries(item)) {
+                        if (!skipValidation.includes(key) && (value === '' || value == null)) {
+                            errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                        }
+                    } 
+                });
             }
-        });
+        }
 
         setValidationErrors(errors);
     
@@ -246,7 +260,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     };
     
     const calculateRemainingContractValue = (data) => {
-        const contractValue = parseFloat(data.trn.contract_value);
+        // const contractValue = parseFloat(data.trn.contract_value);
+        const contractValue = parseFloat(data?.invoice_amount)
         let advance=0;
         if(data.trn.trade_type=='Sales'){
            advance = parseFloat(data.prepayment.advance_received);
@@ -285,9 +300,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         { label: 'Logistic Provider', text: data.trn.logistic_provider || '' },
         { label: 'Logistic Cost Due Date', text: data.logistic_cost_due_date || '' },
         { label: 'Commission Agent', text: data.trn.commission_agent },
-        // { label: 'Commission Value', text: data.trn.commission_value || '0' },
-        // { label: 'Other Charges', text: data.trn.commission_agent || '' },
-        
+        { label: 'BL Fees', text: data.bl_fee || '0' },
+        { label: 'BL Collection Cost', text: data.bl_collection_cost || '0' },
+        { label: 'Shipment Status', text: data.shipment_status || '' },
         { label: 'Commission Value', text: calculatePFCommissionValue(data) || '0' },
         { label: 'Remarks from S&P', text: data.remarks || '' },
         { label: 'Trader Name', text: data.trn.trader_name || '' },
@@ -436,6 +451,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         value={formData.net_due_in_this_trade}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={true}
                     />
                      {validationErrors.net_due_in_this_trade && <p className="text-red-500">{validationErrors.net_due_in_this_trade}</p>}
                 </div>
@@ -486,7 +502,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div> */}
-                <div>
+                {/* <div>
                     <label htmlFor="bl_fee" className="block text-sm font-medium text-gray-700">BL Fee</label>
                     <input
                         id="bl_fee"
@@ -497,9 +513,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                        {validationErrors.bl_fee && <p className="text-red-500">{validationErrors.bl_fee}</p>}
-                </div>
+                </div> */}
            
-                <div>
+                {/* <div>
                     <label htmlFor="bl_collection_cost" className="block text-sm font-medium text-gray-700">BL Collection Cost</label>
                     <input
                         id="bl_collection_cost"
@@ -510,8 +526,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                       {validationErrors.bl_collection_cost && <p className="text-red-500">{validationErrors.bl_collection_cost}</p>}
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                     <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
                     <input
                         id="shipment_status"
@@ -522,7 +538,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                         {validationErrors.shipment_status && <p className="text-red-500">{validationErrors.shipment_status}</p>}
-                </div>
+                </div> */}
                 <div>
                     <label htmlFor="release_docs" className="block text-sm font-medium text-gray-700">Release Docs</label>
                     <input
@@ -621,73 +637,78 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 
             </div>
             <hr className="my-6" />
-            <div className=''>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">TTCopy</h3>
-                {formData.ttCopies.map((ttCopy, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <label htmlFor={`ttcopy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                id={`ttcopy_name_${index}`}
-                                name="name"
-                                type="text"
-                                value={ttCopy.name}
-                                onChange={(e) => handleChange(e, 'ttCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                            {validationErrors[`ttCopies[${index}].name`] && (
+            {data?.prepayment.lc_number.toLowerCase() == "na" && (
+                <div className=''>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">TTCopy</h3>
+                    {formData.ttCopies.map((ttCopy, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label htmlFor={`ttcopy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
+                                <input
+                                    id={`ttcopy_name_${index}`}
+                                    name="name"
+                                    type="text"
+                                    value={ttCopy.name}
+                                    onChange={(e) => handleChange(e, 'ttCopies', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={data?.prepayment.lc_number.toLowerCase() !== "na"}
+                                />
+                                {validationErrors[`ttCopies[${index}].name`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`ttCopies[${index}].name`]}
                                     </p>
                                 )}
-                        </div>
-                        <div>
-                            <label htmlFor={`ttcopy_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">TT Copy</label>
-                            <input
-                                id={`ttcopy_tt_copy_${index}`}
-                                name="tt_copy"
-                                type="file"
-                                onChange={(e) => handleChange(e, 'ttCopies', index)}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
-                            />
-                            {validationErrors[`ttCopies[${index}].tt_copy`] && (
+                            </div>
+                            <div>
+                                <label htmlFor={`ttcopy_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">TT Copy</label>
+                                <input
+                                    id={`ttcopy_tt_copy_${index}`}
+                                    name="tt_copy"
+                                    type="file"
+                                    onChange={(e) => handleChange(e, 'ttCopies', index)}
+                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                    disabled={data?.prepayment.lc_number.toLowerCase() !== "na"}
+                                />
+                                {validationErrors[`ttCopies[${index}].tt_copy`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`ttCopies[${index}].tt_copy`]}
                                     </p>
                                 )}
+                            </div>
+                            <div className="flex items-end">
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveRow('ttCopies', index)}
+                                    className="text-red-600 hover:text-red-800"
+                                >
+                                    Remove
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-end">
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveRow('ttCopies', index)}
-                                className="text-red-600 hover:text-red-800"
-                            >
-                                Remove
-                            </button>
-                        </div>
+                    ))}
+                    <div className="text-right">
+                        <button
+                            type="button"
+                            onClick={() => handleAddRow('ttCopies')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            Add TTCopy
+                        </button>
                     </div>
-                ))}
-                <div className="text-right">
-                <button
-                    type="button"
-                    onClick={() => handleAddRow('ttCopies')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                    Add TTCopy
-                </button>
+
                 </div>
-                
-            </div>
+            )}
+
             <hr className="my-6" />
             <div className='grid grid-cols-3 gap-4 mb-4'>
-            <button
+                <button
                     type="submit"
                     className="bg-blue-500 text-white p-2 rounded col-span-3"
                 >
                     {mode === 'add' ? 'Add P&F' : 'Update P&F'}
                 </button>
             </div>
-            
+
         </form>
     );
 };

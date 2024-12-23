@@ -58,6 +58,18 @@ function PaymentFinance() {
     setPFData(filters)
   };
 
+  const reviewTrade = async () => {
+    try {
+      await axios.get(`/trademgt/payment-finances-review/${selectedPF.id}/`);
+     
+      setIsModalOpen(false);
+      setPF(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error reviewing trade:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
 
   const handleViewClick = async (tradeId) => {
     try {
@@ -230,22 +242,19 @@ function PaymentFinance() {
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent Value </td>
                       <td className="py-2 px-4 text-gray-800">{calculatePFCommissionValue(selectedPF)}</td>
                     </tr>
-                    <tr className="border-b border-gray-200">
+                    {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fees</td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.bl_fee}</td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
+                    </tr> */}
+                    {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Collection Cost</td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.bl_collection_cost}</td>
-                    </tr>
+                    </tr> */}
+                  
                     {/* <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Other Charges</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPF.shipment_status}</td>
-                  </tr> */}
-                    <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Status of Shipment</td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.shipment_status}</td>
-                    </tr>
+                    </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks From Sales/Purchase</td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.sp.remarks}</td>
@@ -266,11 +275,14 @@ function PaymentFinance() {
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Documents To Release Date </td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.release_docs_date}</td>
                     </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.remarks}</td>
-                    </tr>
-
+                      <tr className="border-b border-gray-200">
+                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
+                        <td className="py-2 px-4 text-gray-800">{selectedPF.remarks}</td>
+                      </tr>
+                      <tr className="border-b border-gray-200">
+                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Reviwed</td>
+                        <td className="py-2 px-4 text-gray-800">{selectedPF.reviewed ? 'Yes' : 'No'}</td>
+                      </tr>
 
                   </tbody>
                 </table>
@@ -352,6 +364,11 @@ function PaymentFinance() {
                   )}
               </div>
               </div>
+              {selectedPF.reviewed ? '' : 
+             <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+             <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
+             </div>
+             }
             </div>
           </div>
         )}

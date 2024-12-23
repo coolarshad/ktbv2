@@ -347,7 +347,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
         try {
             const response = await axios.get(`/trademgt/sp/${value}`);
         
-            if (response.data.prepayment) {
+            if (response.data.prepayment.reviewed) {
                 setData(response.data);
                 setFormData((prev) => ({
                     ...prev,
@@ -359,7 +359,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     })),
                 }));
             } else {
-                alert('No Prepayment Found!');
+                alert('No Prepayment Found or Prepayment not reviewed !');
             }
         } catch (error) {
             console.error('Error fetching TRN data:', error);

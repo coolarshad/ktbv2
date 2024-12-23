@@ -53,6 +53,7 @@ urlpatterns = [
 
     path('pre-payments/', PrePaymentView.as_view(), name='pre-payments'),
     path('pre-payments/<int:pk>/', PrePaymentView.as_view(), name='pre-payments-detail'),
+    path('pre-payments-review/<int:pk>/', PrePaymentReview.as_view(), name='pre-payments-review'),
 
     path('sales-purchases/', SalesPurchaseView.as_view(), name='sales-purchases'),
     path('sales-purchases/<int:pk>/', SalesPurchaseView.as_view(), name='sales-purchases-detail'),
@@ -61,6 +62,7 @@ urlpatterns = [
 
     path('payment-finances/', PaymentFinanceView.as_view(), name='payment-finances'),
     path('payment-finances/<int:pk>/', PaymentFinanceView.as_view(), name='payment-finances-detail'),
+    path('payment-finances-review/<int:pk>/', PFReview.as_view(), name='payment-finances-review'),
 
     path('companies/<int:company_id>/next-counter/', NextCounterView.as_view(), name='next-counter'),
 

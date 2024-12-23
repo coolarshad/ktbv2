@@ -51,6 +51,19 @@ function PrePayment() {
     setSelectedPrePayment(null);
   };
 
+  const reviewTrade = async () => {
+    try {
+      await axios.get(`/trademgt/pre-payments-review/${selectedPrePayment.id}/`);
+     
+      setIsModalOpen(false);
+      setSelectedPrePayment(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error reviewing trade:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
+
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this Pre Sale/Purchase?');
     if (confirmed) {
@@ -214,6 +227,10 @@ function PrePayment() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPrePayment.remarks}</td>
                   </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Reviwed</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.reviewed ? 'Yes' : 'No'}</td>
+                  </tr>
                   
                 </tbody>
                 </table>
@@ -253,7 +270,11 @@ function PrePayment() {
      
            </div>
      
-            
+           {selectedPrePayment.reviewed ? '' : 
+             <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+             <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
+             </div>
+             }
             
            </div>
          </div>

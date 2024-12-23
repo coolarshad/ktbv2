@@ -25,6 +25,7 @@ const PrePaymentTable = ({ data, onDelete, onView }) => {
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Expiry Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Shipment Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
         </thead>
@@ -43,7 +44,9 @@ const PrePaymentTable = ({ data, onDelete, onView }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_expiry_date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.latest_shipment_date_in_lc}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
-             
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />
+              </td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
                  

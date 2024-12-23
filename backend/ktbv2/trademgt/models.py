@@ -238,6 +238,7 @@ class PrePayment(models.Model):
     lc_expiry_date=models.CharField(_("lc_expiry_date"), max_length=50)
     latest_shipment_date_in_lc=models.CharField(_("lc_expiry_date"), max_length=50)
     remarks=models.CharField(_("lc_expiry_date"), max_length=100)
+    reviewed=models.BooleanField(_("reviewed"),default=False)
 
     class Meta:
         verbose_name = _("PrePayment")
@@ -455,12 +456,13 @@ class PaymentFinance(models.Model):
     status_of_payment=models.CharField(_("status_of_payment"), max_length=50)
     # logistic_cost=models.FloatField(_("logistic_cost"),null=True)
     # commission_value=models.FloatField(_("commission_value"),null=True)
-    bl_fee=models.FloatField(_("bl_fee"),null=True)
-    bl_collection_cost=models.FloatField(_("bl_collection_cost"),null=True)
-    shipment_status=models.CharField(_("shipment_status"), max_length=50)
+    # bl_fee=models.FloatField(_("bl_fee"),null=True)
+    # bl_collection_cost=models.FloatField(_("bl_collection_cost"),null=True)
+    # shipment_status=models.CharField(_("shipment_status"), max_length=50)
     release_docs=models.CharField(_("release_docs"), max_length=100)
     release_docs_date=models.CharField(_("release_docs_date"), max_length=50)
     remarks=models.CharField(_("remarks"), max_length=100)
+    reviewed=models.BooleanField(_("reviewed"),default=False)
 
     class Meta:
         verbose_name = _("PaymentFinance")

@@ -1326,6 +1326,25 @@ class AdvanceTTCopyViewSet(viewsets.ModelViewSet):
     queryset = AdvanceTTCopy.objects.all()
     serializer_class = AdvanceTTCopySerializer
 
+class PrePaymentReview(APIView):
+    def get(self, request, *args, **kwargs):
+        prepay_id = kwargs.get('pk')
+    
+        if not prepay_id:
+            return Response({'detail': 'Pre payment ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                prepay = PrePayment.objects.get(id=prepay_id)
+                prepay.reviewed = True
+                prepay.save()
+                serializer = PrePaymentSerializer(prepay)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except PrePayment.DoesNotExist:
+            return Response({'detail': 'Pre payment not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
+
 class SalesPurchaseView(APIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = SalesPurchaseFilter
@@ -1954,9 +1973,9 @@ class PaymentFinanceView(APIView):
             'status_of_payment': data.get('status_of_payment'),
             # 'logistic_cost': data.get('logistic_cost'),
             # 'commission_value': data.get('commission_value'),
-            'bl_fee': data.get('bl_fee'),
-            'bl_collection_cost': data.get('bl_collection_cost'),
-            'shipment_status': data.get('shipment_status'),
+            # 'bl_fee': data.get('bl_fee'),
+            # 'bl_collection_cost': data.get('bl_collection_cost'),
+            # 'shipment_status': data.get('shipment_status'),
             'release_docs': data.get('release_docs'),
             'release_docs_date': data.get('release_docs_date'),
             'remarks': data.get('remarks'),
@@ -2029,9 +2048,9 @@ class PaymentFinanceView(APIView):
             'status_of_payment': data.get('status_of_payment'),
             # 'logistic_cost': data.get('logistic_cost'),
             # 'commission_value': data.get('commission_value'),
-            'bl_fee': data.get('bl_fee'),
-            'bl_collection_cost': data.get('bl_collection_cost'),
-            'shipment_status': data.get('shipment_status'),
+            # 'bl_fee': data.get('bl_fee'),
+            # 'bl_collection_cost': data.get('bl_collection_cost'),
+            # 'shipment_status': data.get('shipment_status'),
             'release_docs': data.get('release_docs'),
             'release_docs_date': data.get('release_docs_date'),
             'remarks': data.get('remarks'),
@@ -2116,6 +2135,24 @@ class PFChargesViewSet(viewsets.ModelViewSet):
     queryset = PFCharges.objects.all()
     serializer_class = PFChargesSerializer
 
+class PFReview(APIView):
+    def get(self, request, *args, **kwargs):
+        pf_id = kwargs.get('pk')
+    
+        if not pf_id:
+            return Response({'detail': 'Paymnet/Finance ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                pf = PaymentFinance.objects.get(id=pf_id)
+                pf.reviewed = True
+                pf.save()
+                serializer = PaymentFinanceSerializer(pf)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except PaymentFinance.DoesNotExist:
+            return Response({'detail': 'Paymnet/Finance not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
 
 class KycViewSet(viewsets.ModelViewSet):
     queryset = Kyc.objects.all()

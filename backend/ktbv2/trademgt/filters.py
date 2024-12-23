@@ -79,6 +79,7 @@ class PrePaymentFilter(django_filters.FilterSet):
             'lc_expiry_date': ['exact', 'icontains'],
             'latest_shipment_date_in_lc': ['exact', 'icontains'],
             'remarks': ['exact', 'icontains'],
+            'reviewed': ['exact'],
         }
 
 class SalesPurchaseFilter(django_filters.FilterSet):
@@ -113,6 +114,7 @@ class SalesPurchaseFilter(django_filters.FilterSet):
             'eta': ['exact', 'gte', 'lte'],
             'shipment_status': ['exact', 'icontains'],
             'remarks': ['exact', 'icontains'],
+            'reviewed': ['exact'],
         }
 
 class PaymentFinanceFilter(django_filters.FilterSet):
@@ -124,7 +126,7 @@ class PaymentFinanceFilter(django_filters.FilterSet):
             # 'sp__trn': ['exact', 'icontains'],
             # 'trn__trade_type': ['exact', 'icontains'],
             # 'trn__company': ['exact', 'icontains'],
-           
+
             'sp__trn__trn': ['exact','icontains'],
             'balance_payment_received': ['exact', 'gte', 'lte'],
             'balance_payment_made': ['exact', 'gte', 'lte'],
@@ -132,7 +134,8 @@ class PaymentFinanceFilter(django_filters.FilterSet):
     
             'payment_mode': ['exact', 'icontains'],
             'status_of_payment': ['exact', 'icontains'],
-            'shipment_status': ['exact', 'icontains'],
+            'reviewed': ['exact'],
+            
         }
 
 

@@ -158,6 +158,10 @@ function SalesPurchases() {
                       <td className="py-2 px-4 text-gray-800">{selectedSP.trn.trn}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">ID </td>
+                      <td className="py-2 px-4 text-gray-800">{selectedSP.id}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
                       <td className="py-2 px-4 text-gray-800">{selectedSP.trn.trade_type}</td>
                     </tr>
