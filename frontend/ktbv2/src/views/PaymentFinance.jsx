@@ -215,7 +215,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Mode </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.payment_mode}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.paymentTerm.name}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Status of Payments/Maturity/Documents</td>

@@ -153,7 +153,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
     // Combined useEffect for all API calls
     useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
+        fetchData('/trademgt/trades', { approved: true,reviewed: true }, setTrnOptions);  // Example with params
         fetchData('/trademgt/unit',{}, setUnitOptions);
         fetchData('/trademgt/product-names',{}, setProductOptions);
         fetchData('/trademgt/sp-purchase-bl',{}, setPurchaseBLOptions);

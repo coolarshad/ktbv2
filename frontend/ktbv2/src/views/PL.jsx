@@ -117,19 +117,23 @@ function PL() {
     { field: 'Packaging Supplier', value: 'Supplier Y' },
     // { field: 'BL Quantity', value: '480' },
   ];
+
+  const findTrade=(sp,row)=>{
+   return sp.trn.trade_products.find((trade)=>trade.product_code==row.product_code && trade.product_name==row.product_name && trade.hs_code==row.hs_code)
+  }
   
   const MiniTable = ({ data }) => (
    <>
-      {data.sp.trn.trade_products.map((row, index) => (
+      {data.sp.sp_product.map((row, index) => (
         <div className="flex flex-col p-2">
         <div key={index}  className="border border-gray-300 rounded-md p-4 shadow-sm grid grid-cols-3 gap-4">
           <span className="text-sm border-gray-200">Product Code: {row.product_code}</span>
           <span className="text-sm border-gray-200">Product Name: {row.productName.name}</span>
-          <span className="text-sm border-gray-200">Trade Qty: {row.trade_qty}</span>
+          <span className="text-sm border-gray-200">Trade Qty: {row.bl_qty}</span>
           <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
           <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
-          <span className="text-sm border-gray-200">Commission Rate: {row.commission_rate}</span>
-          <span className="text-sm border-gray-200">Packaging Supplier: {row.supplier.name}</span>
+          <span className="text-sm border-gray-200">Commission Rate: {findTrade(data.sp,row).commission_rate}</span>
+          <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span>
           {/* <span>Product Code: {row.product_code}</span> */}
         </div>
         </div>
@@ -140,8 +144,8 @@ function PL() {
 
 
   const fieldOptions = [
-    { value: 'sales_trn__trn', label: 'Sales TRN' },  // Trade TRN field in PreSalePurchase filter
-    { value: 'purchase_trn__trn', label: 'Purchase TRN' },
+    { value: 'sales_trn__trn__trn', label: 'Sales TRN' },  // Trade TRN field in PreSalePurchase filter
+    { value: 'purchase_trn__trn__trn', label: 'Purchase TRN' },
     { value: 'remarks', label: 'Remarks' },
   ];
 
@@ -329,10 +333,7 @@ function PL() {
                     </tbody>
                     
                   </table>
-                  <div className="p-4 text-center mb-4">
-                    <p>GROSS PROFIT: {parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))}</p>
-                    <p>PROFIT PMT: {(parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))) > 0 ? (parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))) / sumBLQty(selectedPL.salesPF) : 0}</p>
-                    </div>
+                  
                   <div className="flex justify-around p-4">
                     <div>
                       <h3 className="text-lg font-bold text-gray-800">Sales Products</h3>
@@ -344,7 +345,10 @@ function PL() {
                       <MiniTable data={selectedPL.purchasePF} />
                     </div>
                   </div>
-                  
+                  <div className="p-4 text-center mb-4">
+                    <p>GROSS PROFIT: {parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))}</p>
+                    <p>PROFIT PMT: {(parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))) > 0 ? (parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))) / sumBLQty(selectedPL.salesPF) : 0}</p>
+                  </div>
                 </div>
 
 

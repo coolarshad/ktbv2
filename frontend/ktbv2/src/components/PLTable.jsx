@@ -14,8 +14,8 @@ const PLTable = ({ data,onDelete,onView }) => {
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sales TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Purchase TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sales TRN & ID</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Purchase TRN & ID</th>
       
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             
@@ -26,8 +26,8 @@ const PLTable = ({ data,onDelete,onView }) => {
           {data.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.salesPF.sp.trn.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.purchasePF.sp.trn.trn}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.salesPF.sp.trn.trn} ({item.salesPF.sp.id})</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.purchasePF.sp.trn.trn} ({item.purchasePF.sp.id})</td>
             
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
               

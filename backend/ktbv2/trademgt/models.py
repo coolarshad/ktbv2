@@ -153,6 +153,7 @@ class PreSalePurchase(models.Model):
     # advance_due_date=models.DateField(_("advance_due_date"), auto_now=False, auto_now_add=False)
     # lc_due_date=models.DateField(_("lc_due_date"), auto_now=False, auto_now_add=False)
     remarks=models.CharField(_("payment_term"), max_length=100)
+    approved=models.BooleanField(_("approved"),default=False)
 
     class Meta:
         verbose_name = _("PreSalePurchase")
@@ -452,7 +453,7 @@ class PaymentFinance(models.Model):
     balance_payment_made=models.FloatField(_("balance_payment_made"),null=True)
     balance_payment_date=models.DateField(_("balance_payment_date"), auto_now=False, auto_now_add=False)
     net_due_in_this_trade=models.FloatField(_("net_due_in_this_trade"),null=True)
-    payment_mode=models.CharField(_("payment_mode"), max_length=50)
+    # payment_mode=models.CharField(_("payment_mode"), max_length=50)
     status_of_payment=models.CharField(_("status_of_payment"), max_length=50)
     # logistic_cost=models.FloatField(_("logistic_cost"),null=True)
     # commission_value=models.FloatField(_("commission_value"),null=True)
@@ -818,8 +819,8 @@ class Packing(models.Model):
 
 
 class PL(models.Model):
-    sales_trn=models.ForeignKey("Trade",related_name='sales_trn', verbose_name=_("sales_trn"), on_delete=models.CASCADE)
-    purchase_trn=models.ForeignKey("Trade",related_name='purchase_trn', verbose_name=_("purchase_trn"), on_delete=models.CASCADE)
+    sales_trn=models.ForeignKey("SalesPurchase",related_name='sales_trn', verbose_name=_("sales_trn"), on_delete=models.CASCADE)
+    purchase_trn=models.ForeignKey("SalesPurchase",related_name='purchase_trn', verbose_name=_("purchase_trn"), on_delete=models.CASCADE)
     remarks=models.CharField(_("100"), max_length=50)
 
     class Meta:
@@ -827,7 +828,7 @@ class PL(models.Model):
         verbose_name_plural = _("PLs")
 
     def __str__(self):
-        return self.sales_trn.trn
+        return self.sales_trn.id
 
     def get_absolute_url(self):
         return reverse("PL_detail", kwargs={"pk": self.pk})

@@ -28,8 +28,8 @@ const PLForm = ({ mode = 'add' }) => {
     };
 
     useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true }, setSalesTrnOptions);
-        fetchData('/trademgt/trades', { approved: true }, setPurchaseTrnOptions);
+        fetchData('/trademgt/sales-purchases/', { reviewed: true }, setSalesTrnOptions);
+        fetchData('/trademgt/sales-purchases/', { reviewed: true }, setPurchaseTrnOptions);
 
     }, []);
 
@@ -168,7 +168,7 @@ const PLForm = ({ mode = 'add' }) => {
           <hr />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 <div>
-                    <label htmlFor="trn" className="block text-sm font-medium text-gray-700">Sales TRN</label>
+                    <label htmlFor="trn" className="block text-sm font-medium text-gray-700">Sales TRN & ID</label>
                     <select
                         id="sales_trn"
                         name="sales_trn"
@@ -179,7 +179,7 @@ const PLForm = ({ mode = 'add' }) => {
                         <option value="">Select TRN</option>
                         {salesTrnOptions.map(option => (
                             <option key={option.id} value={option.id}>
-                                {option.trn}
+                                {option.trn.trn} ({option.id})
                             </option>
                         ))}
                     </select>
@@ -187,7 +187,7 @@ const PLForm = ({ mode = 'add' }) => {
                 </div>
 
                 <div>
-                    <label htmlFor="purchase_trn" className="block text-sm font-medium text-gray-700">Purchase TRN</label>
+                    <label htmlFor="purchase_trn" className="block text-sm font-medium text-gray-700">Purchase TRN & ID</label>
                     <select
                         id="purchase_trn"
                         name="purchase_trn"
@@ -198,7 +198,7 @@ const PLForm = ({ mode = 'add' }) => {
                         <option value="">Select TRN</option>
                         {purchaseTrnOptions.map(option => (
                             <option key={option.id} value={option.id}>
-                                {option.trn}
+                                {option.trn.trn} ({option.id})
                             </option>
                         ))}
                     </select>

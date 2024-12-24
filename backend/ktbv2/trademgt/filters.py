@@ -57,7 +57,7 @@ class PreSalePurchaseFilter(django_filters.FilterSet):
             'trn__company': ['exact', 'icontains'],
             'date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
             'doc_issuance_date': ['exact', 'year__gt', 'year__lt', 'year__gte', 'year__lte'],
-           
+            'approved': ['exact'],
             'remarks': ['exact', 'icontains'],
         }
 
@@ -132,7 +132,7 @@ class PaymentFinanceFilter(django_filters.FilterSet):
             'balance_payment_made': ['exact', 'gte', 'lte'],
             'net_due_in_this_trade': ['exact', 'gte', 'lte'],
     
-            'payment_mode': ['exact', 'icontains'],
+            # 'payment_mode': ['exact', 'icontains'],
             'status_of_payment': ['exact', 'icontains'],
             'reviewed': ['exact'],
             
@@ -198,14 +198,13 @@ class PurchaseProductTraceFilter(django_filters.FilterSet):
 
 
 class PLFilter(django_filters.FilterSet):
-    date_from = django_filters.DateFilter(field_name='sales_trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
-    date_to = django_filters.DateFilter(field_name='sales_trn__trd', lookup_expr='lte') 
+    date_from = django_filters.DateFilter(field_name='sales_trn__trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    date_to = django_filters.DateFilter(field_name='sales_trn__trn__trd', lookup_expr='lte') 
     class Meta:
         model = PL
         fields = {
-            'sales_trn__trn': ['exact', 'icontains'],
-            'purchase_trn__trn': ['exact', 'icontains'],
-            # 'sales_trn__trade_type': ['exact', 'icontains'],
+            'sales_trn__trn__trn': ['exact', 'icontains'],
+            'purchase_trn__trn__trn': ['exact', 'icontains'],
             
             'remarks': ['exact', 'icontains'],
         }

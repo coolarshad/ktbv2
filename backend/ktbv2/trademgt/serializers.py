@@ -729,14 +729,14 @@ class ProfitLossSerializer(serializers.ModelSerializer):
 
     def get_sales_trn_details(self, obj):
         try:
-            instance = PaymentFinance.objects.get(trn=obj.sales_trn)
+            instance = PaymentFinance.objects.get(sp=obj.sales_trn)
             return PaymentFinanceSerializer(instance).data
         except PaymentFinance.DoesNotExist:
             return None  # Or handle it as needed
     
     def get_purchase_trn_details(self, obj):
         try:
-            instance = PaymentFinance.objects.get(trn=obj.purchase_trn)
+            instance = PaymentFinance.objects.get(sp=obj.purchase_trn)
             return PaymentFinanceSerializer(instance).data
         except PaymentFinance.DoesNotExist:
             return None  # Or handle it as needed
@@ -749,15 +749,35 @@ class ProfitLossSerializer(serializers.ModelSerializer):
 
 
 class PLSerializer(serializers.ModelSerializer):
+    sp_product = SalesPurchaseProductSerializer(many=True, read_only=True)
+    sp_extra_charges = SalesPurchaseExtraChargeSerializer(many=True, read_only=True)
     class Meta:
-        model = Trade
+        model = SalesPurchase
         fields = '__all__'
+    
+    # def get_trade_details(self, obj):
+    #     # Fetch company details manually
+    #     try:
+    #         # Assuming `company` field in `Trade` contains company name or ID
+    #         instance = Trade.objects.get(id=obj.trn.id)  # or use another field to identify the company
+    #         return TradeSerializer(instance).data
+    #     except Trade.DoesNotExist:
+    #         return None  # Or handle it as needed
+
+    def get_prepay_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PrePayment.objects.get(trn=obj.trn)  # or use another field to identify the company
+            return PrePaymentSerializer(instance).data
+        except PrePayment.DoesNotExist:
+            return None  # Or handle it as needed
 
     def get_pf_details(self, obj):
         # Fetch company details manually
         try:
             # Assuming `company` field in `Trade` contains company name or ID
-            instance = PaymentFinance.objects.get(trn=obj.id)  # or use another field to identify the company
+            instance = PaymentFinance.objects.get(sp=obj.id)  # or use another field to identify the company
             return PaymentFinanceSerializer(instance).data
         except PaymentFinance.DoesNotExist:
             return None  # Or handle it as needed
@@ -767,5 +787,7 @@ class PLSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         
         # Add the serialized company details to the response
+        # ret['trn'] = self.get_trade_details(instance)
+        ret['prepay'] = self.get_prepay_details(instance)
         ret['pf'] = self.get_pf_details(instance)
         return ret

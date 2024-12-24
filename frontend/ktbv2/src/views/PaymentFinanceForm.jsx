@@ -20,7 +20,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         balance_payment_made: '',
         balance_payment_date: '',
         net_due_in_this_trade: '',
-        payment_mode: '',
+        // payment_mode: '',
         status_of_payment: '',
         // logistic_cost: '',
         // commission_value: '',
@@ -49,7 +49,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         balance_payment_made: data.balance_payment_made,
                         balance_payment_date: data.balance_payment_date,
                         net_due_in_this_trade: data.net_due_in_this_trade,
-                        payment_mode: data.payment_mode,
+                        // payment_mode: data.payment_mode,
                         status_of_payment: data.status_of_payment,
                         // logistic_cost: data.logistic_cost,
                         // commission_value: data.commission_value,
@@ -308,7 +308,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         { label: 'Trader Name', text: data.trn.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.trn.insurance_policy_number || '' },
         
-        
+        { label: 'Payment Mode', text: data.trn.paymentTerm.name || '' },
       ]
     : [];
 
@@ -455,7 +455,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     />
                      {validationErrors.net_due_in_this_trade && <p className="text-red-500">{validationErrors.net_due_in_this_trade}</p>}
                 </div>
-                <div>
+                {/* <div>
                     <label htmlFor="payment_mode" className="block text-sm font-medium text-gray-700">Payment Mode</label>
                     <input
                         id="payment_mode"
@@ -466,7 +466,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                      {validationErrors.payment_mode && <p className="text-red-500">{validationErrors.payment_mode}</p>}
-                </div>
+                </div> */}
                 <div>
                     <label htmlFor="status_of_payment" className="block text-sm font-medium text-gray-700">Status of Payment</label>
                     <input

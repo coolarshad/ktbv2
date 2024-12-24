@@ -50,6 +50,7 @@ urlpatterns = [
 
     path('pre-sales-purchases/', PreSalePurchaseView.as_view(), name='pre-sales-purchases'),
     path('pre-sales-purchases/<int:pk>/', PreSalePurchaseView.as_view(), name='pre-sales-purchases-detail'),
+    path('pre-sales-purchases-approve/<int:pk>/', PreSalePurchaseApprove.as_view(), name='pre-sales-purchases-approve'),
 
     path('pre-payments/', PrePaymentView.as_view(), name='pre-payments'),
     path('pre-payments/<int:pk>/', PrePaymentView.as_view(), name='pre-payments-detail'),

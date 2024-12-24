@@ -1068,6 +1068,25 @@ class DocumentsRequiredViewSet(viewsets.ModelViewSet):
     queryset = DocumentsRequired.objects.all()
     serializer_class = DocumentsRequiredSerializer
 
+class PreSalePurchaseApprove(APIView):
+    def get(self, request, *args, **kwargs):
+        presp_id = kwargs.get('pk')
+    
+        if not presp_id:
+            return Response({'detail': 'Pre Sales/Purchase ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                presp = PreSalePurchase.objects.get(id=presp_id)
+                presp.approved = True
+                presp.save()
+                serializer = PreSalePurchaseSerializer(presp)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except PrePayment.DoesNotExist:
+            return Response({'detail': 'Pre Sales/Purchase not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
+
 class PrePaymentView(APIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = PrePaymentFilter
@@ -1969,7 +1988,7 @@ class PaymentFinanceView(APIView):
             'balance_payment_made': data.get('balance_payment_made'),
             'balance_payment_date': data.get('balance_payment_date'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
-            'payment_mode': data.get('payment_mode'),
+            # 'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
             # 'logistic_cost': data.get('logistic_cost'),
             # 'commission_value': data.get('commission_value'),
@@ -2044,7 +2063,7 @@ class PaymentFinanceView(APIView):
             'balance_payment_made': data.get('balance_payment_made'),
             'balance_payment_date': data.get('balance_payment_date'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
-            'payment_mode': data.get('payment_mode'),
+            # 'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
             # 'logistic_cost': data.get('logistic_cost'),
             # 'commission_value': data.get('commission_value'),
@@ -2401,15 +2420,15 @@ class PLView(APIView):
         
         if trade_id:  # If `pk` is provided, retrieve a specific trade
             try:
-                trade = Trade.objects.get(id=trade_id)
-            except Trade.DoesNotExist:
+                trade = SalesPurchase.objects.get(id=trade_id)
+            except SalesPurchase.DoesNotExist:
                 return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
 
             trade_serializer = PLSerializer(trade)
             response_data = trade_serializer.data
             return Response(response_data)
         else:  # If `pk` is not provided, list all trades
-            trades = Trade.objects.all()
+            trades = SalesPurchase.objects.all()
             serializer = PLSerializer(trades, many=True)
             return Response(serializer.data)
         

@@ -58,6 +58,18 @@ const PreSPTable = ({ data, onDelete }) => {
     }
   };
 
+  const reviewTrade = async () => {
+    try {
+      await axios.get(`/trademgt/pre-sales-purchases-approve/${selectedPresp.id}/`);
+     
+      setIsModalOpen(false);
+      setSelectedPresp(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error approving pre sales/purchase:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
 
   const handleViewClick = async (presp) => {
     setSelectedPresp(presp)
@@ -95,7 +107,7 @@ const PreSPTable = ({ data, onDelete }) => {
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th> */}
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th> */}
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th> */}
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approved</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
         </thead>
@@ -113,12 +125,15 @@ const PreSPTable = ({ data, onDelete }) => {
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.lc_due_date}</td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.remarks}</td>
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.reviewed} onChange={() => {}} />
-              </td> */}
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={presp.approved} onChange={() => {}} />
+              </td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
               <div className="space-x-2">
-                  <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(presp)}>Print</button>
+                {presp.approved && (
+                    <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(presp)}>Print</button>
+                )}
+                 
                   <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp)}>View</button>
                   <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
                   <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
@@ -644,7 +659,11 @@ const PreSPTable = ({ data, onDelete }) => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.remarks}</td>
                   </tr>
-
+                  
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPresp.approved ? 'Yes' : 'No'}</td>
+                  </tr>
                 </tbody>
                 </table>
              </div>
@@ -716,6 +735,12 @@ const PreSPTable = ({ data, onDelete }) => {
 
                   </div>
                 )))}
+                
+                {selectedPresp.approved ? '' : 
+             <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+             <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+             </div>
+             }
            </div>
          </div>
         )}
