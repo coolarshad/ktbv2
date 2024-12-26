@@ -393,7 +393,7 @@ function TradeApproved() {
                       </div>
                       <div className="flex flex-col">
                         <span className="font-medium">Reference TRN:</span>
-                        <span>{product.refTrn}</span>
+                        <span>{product.ref_trn}</span>
                       </div>
                     </div>
                   ))}

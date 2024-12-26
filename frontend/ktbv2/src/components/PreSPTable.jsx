@@ -722,7 +722,8 @@ const PreSPTable = ({ data, onDelete }) => {
               {selectedPresp.acknowledgedPI && (
                 selectedPresp.acknowledgedPI.map((product, index) => (
                   <div key={index}>
-                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_pi}`}>{product.ackn_pi_name}</a></p>
+                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_pi}`} target="_blank"
+                              rel="noopener noreferrer">{product.ackn_pi_name}</a></p>
 
                   </div>
                 )))}
@@ -731,7 +732,8 @@ const PreSPTable = ({ data, onDelete }) => {
               {selectedPresp.acknowledgedPO && (
                 selectedPresp.acknowledgedPO.map((product, index) => (
                   <div key={index}>
-                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_po}`}>{product.ackn_po_name}</a></p>
+                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_po}`} target="_blank"
+                              rel="noopener noreferrer">{product.ackn_po_name}</a></p>
 
                   </div>
                 )))}

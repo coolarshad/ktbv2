@@ -515,6 +515,32 @@ const TradeForm = ({ mode = 'add' }) => {
         }));
     };
 
+    const debouncedSubmit = useCallback(
+        debounce((formDataToSend, config) => {
+            if (mode === 'add') {
+                axios.post('/trademgt/trades/', formDataToSend, config)
+                    .then(response => {
+                        console.log('Trade added successfully!', response.data);
+                        localStorage.removeItem('tradeDraft');
+                        navigate(-1);
+                    })
+                    .catch(error => {
+                        console.error('There was an error adding the trade!', error);
+                    });
+            } else if (mode === 'update') {
+                axios.put(`/trademgt/trades/${id}/`, formDataToSend, config)
+                    .then(response => {
+                        console.log('Trade updated successfully!', response.data);
+                        navigate(-1);
+                    })
+                    .catch(error => {
+                        console.error('There was an error updating the trade!', error);
+                    });
+            }
+        }, 1000, { leading: true, trailing: false }), // 1 second delay, only execute first call
+        [mode, id, navigate]
+    );
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -587,7 +613,6 @@ const TradeForm = ({ mode = 'add' }) => {
             return Number(product.ref_balance) < Number(product.trade_qty);
         });
         
-
         if (invalidRefBalanceProduct) {
             alert(`Trade Quantity cannot exceed Ref Balance for product index: ${formData.tradeProducts.indexOf(invalidRefBalanceProduct) + 1}`);
             return; // Stop form submission
@@ -612,44 +637,22 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         }
 
-        // Append related trades (array of IDs)
-        // if (Array.isArray(formData.relatedTrades)) {
-        //     formData.relatedTrades.forEach((tradeId, index) => {
-        //         formDataToSend.append(`relatedTrades[${index}]`, tradeId);
-        //     });
-        // }
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        };
 
-        // Post new trade data to API
-        if (mode === 'add') {
-            axios.post('/trademgt/trades/', formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-                .then(response => {
-                    console.log('Trade added successfully!', response.data);
-                    localStorage.removeItem('tradeDraft'); 
-                    navigate(-1);
-
-                })
-                .catch(error => {
-                    console.error('There was an error adding the trade!', error);
-                });
-        } else if (mode === 'update') {
-            axios.put(`/trademgt/trades/${id}/`, formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-                .then(response => {
-                    console.log('Trade updated successfully!', response.data);
-                    navigate(-1);
-                })
-                .catch(error => {
-                    console.error('There was an error updating the trade!', error);
-                });
-        }
+        // Call the debounced submit function instead of direct axios calls
+        debouncedSubmit(formDataToSend, config);
     };
+
+    // Clean up the debounced function when component unmounts
+    useEffect(() => {
+        return () => {
+            debouncedSubmit.cancel();
+        };
+    }, [debouncedSubmit]);
 
     // Dynamically apply red border to invalid fields
     const getFieldErrorClass = (fieldName) => {

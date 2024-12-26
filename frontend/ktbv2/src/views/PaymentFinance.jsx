@@ -210,6 +210,10 @@ function PaymentFinance() {
                       <td className="py-2 px-4 text-gray-800">{selectedPF.balance_payment_date}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Adjusted </td>
+                      <td className="py-2 px-4 text-gray-800">{selectedPF.advance_adjusted}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Net Due In This Trade </td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.net_due_in_this_trade}</td>
                     </tr>

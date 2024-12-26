@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
 import { capitalizeKey } from '../utils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
+import debounce from 'lodash/debounce';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -177,9 +178,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         if (name === "trn") {
             try {
                 const response = await axios.get(`/trademgt/prepay/${value}`);
-                response.data.presp
-                    ? setData(response.data)
-                    : alert("No Pre Sale/Purchase Found!");
+                response.data.presp?.approved ? setData(response.data) : alert("Pre Sale/Purchase not found or not approved!");
             } catch (error) {
                 console.error("Error fetching TRN data:", error);
             }
@@ -206,6 +205,31 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             setFormData((prev) => ({ ...prev, lc_expiry_date: formattedDate }));
     };
     
+    const debouncedSubmit = useCallback(
+        debounce((formDataToSend, config) => {
+            if (mode === 'add') {
+                axios.post('/trademgt/pre-payments/', formDataToSend, config)
+                    .then(response => {
+                        console.log('Prepayment added successfully!', response.data);
+                        navigate(`/pre-payment`);
+                    })
+                    .catch(error => {
+                        console.error('There was an error adding the prepayment!', error);
+                    });
+            } else if (mode === 'update') {
+                axios.put(`/trademgt/pre-payments/${id}/`, formDataToSend, config)
+                    .then(response => {
+                        console.log('Prepayment updated successfully!', response.data);
+                        navigate(`/pre-payment`);
+                    })
+                    .catch(error => {
+                        console.error('There was an error updating the prepayment!', error);
+                    });
+            }
+        }, 1000, { leading: true, trailing: false }), // 1 second delay, only execute first call
+        [mode, id, navigate]
+    );
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -290,34 +314,14 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 formDataToSend.append(key, value);
             }
         }
-        // console.log(formDataToSend)
-        if (mode === 'add') {
-            axios.post('/trademgt/pre-payments/', formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('Prepayment added successfully!', response.data);
-                navigate(`/pre-payment`);
-            })
-            .catch(error => {
-                console.error('There was an error adding the prepayment!', error);
-            });
-        } else if (mode === 'update') {
-            axios.put(`/trademgt/pre-payments/${id}/`, formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('Prepayment updated successfully!', response.data);
-                navigate(`/pre-payment`);
-            })
-            .catch(error => {
-                console.error('There was an error updating the prepayment!', error);
-            });
-        }
+
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        };
+
+        debouncedSubmit(formDataToSend, config);
     };
 
     const tradeData = data

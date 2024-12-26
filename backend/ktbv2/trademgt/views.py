@@ -1142,6 +1142,7 @@ class PrePaymentView(APIView):
             'lc_expiry_date': data.get('lc_expiry_date'),
             'latest_shipment_date_in_lc': data.get('latest_shipment_date_in_lc'),
             'remarks': data.get('remarks'),
+            'advance_amount': data.get('advance_amount'),
         }
 
         lc_copies_data = []
@@ -1203,6 +1204,12 @@ class PrePaymentView(APIView):
                     AdvanceTTCopy.objects.bulk_create(advance_tt_copies)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+           
+            if prepayment.trn.trade_type.lower() == 'purchase':
+                prepayment.advance_amount= prepayment.advance_paid
+            elif prepayment.trn.trade_type.lower() == 'sales':  
+                prepayment.advance_amount= prepayment.advance_received
+            prepayment.save()
 
         return Response(prepayment_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -1280,6 +1287,13 @@ class PrePaymentView(APIView):
             k += 1
        
         with transaction.atomic():
+
+            if prepayment.trn.trade_type.lower() == 'purchase':
+                prepayment.advance_amount-= prepayment.advance_paid
+            elif prepayment.trn.trade_type.lower() == 'sales':  
+                prepayment.advance_amount-= prepayment.advance_received
+            prepayment.save()
+
             prepayment_serializer = PrePaymentSerializer(prepayment, data=prepayment_data, partial=True)
             if prepayment_serializer.is_valid():
                 prepayment = prepayment_serializer.save()
@@ -1313,6 +1327,12 @@ class PrePaymentView(APIView):
                     AdvanceTTCopy.objects.bulk_create(advance_tt_copies)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if prepayment.trn.trade_type.lower() == 'purchase':
+                prepayment.advance_amount+= prepayment.advance_paid
+            elif prepayment.trn.trade_type.lower() == 'sales':  
+                prepayment.advance_amount+= prepayment.advance_received
+            prepayment.save()
 
         return Response(prepayment_serializer.data, status=status.HTTP_200_OK)
     
@@ -1987,6 +2007,7 @@ class PaymentFinanceView(APIView):
             'balance_payment_received': data.get('balance_payment_received'),
             'balance_payment_made': data.get('balance_payment_made'),
             'balance_payment_date': data.get('balance_payment_date'),
+            'advance_adjusted': data.get('advance_adjusted'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
             # 'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
@@ -2027,7 +2048,10 @@ class PaymentFinanceView(APIView):
                 pf = pf_serializer.save()
             else:
                 return Response(pf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
+            prepayment = PrePayment.objects.filter(trn=pf.sp.trn).first()
+            if prepayment:
+                prepayment.advance_amount-= pf.advance_adjusted
+                prepayment.save()
             if charges_data:
                 try:
                     
@@ -2062,6 +2086,7 @@ class PaymentFinanceView(APIView):
             'balance_payment_received': data.get('balance_payment_received'),
             'balance_payment_made': data.get('balance_payment_made'),
             'balance_payment_date': data.get('balance_payment_date'),
+            'advance_adjusted': data.get('advance_adjusted'),
             'net_due_in_this_trade': data.get('net_due_in_this_trade'),
             # 'payment_mode': data.get('payment_mode'),
             'status_of_payment': data.get('status_of_payment'),
@@ -2102,12 +2127,22 @@ class PaymentFinanceView(APIView):
             i += 1
        
         with transaction.atomic():
+            prepayment = PrePayment.objects.filter(trn=pf.sp.trn).first()
+            if prepayment:
+                prepayment.advance_amount+= pf.advance_adjusted
+                prepayment.save()
+
             pf_serializer = PaymentFinanceSerializer(pf, data=pf_data, partial=True)
             if pf_serializer.is_valid():
                 pf = pf_serializer.save()
             else:
                 return Response(pf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+            prepayment = PrePayment.objects.filter(trn=pf.sp.trn).first()
+            if prepayment:
+                prepayment.advance_amount-= pf.advance_adjusted
+                prepayment.save()
+                
             if charges_data:
                 # Clear existing trade products and add new ones
                 PFCharges.objects.filter(payment_finance=pf).delete()
@@ -2142,6 +2177,11 @@ class PaymentFinanceView(APIView):
             # Delete related trade products and extra costs
             PFCharges.objects.filter(payment_finance=pf).delete()
             TTCopy.objects.filter(payment_finance=pf).delete()
+            prepayment = PrePayment.objects.filter(trn=pf.sp.trn).first()
+            if prepayment:
+                prepayment.advance_amount+= pf.advance_adjusted
+                prepayment.save()
+
             pf.delete()
 
         return Response({'message': 'PaymentFinance deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
@@ -2478,3 +2518,24 @@ class PendingBalanceView(APIView):
 
         except Trade.DoesNotExist:
             return Response({'error': 'Trade not found'}, status=404)
+
+class AdvanceAmountView(APIView):
+    def get(self, request, *args, **kwargs):
+        sp_id = request.query_params.get('sp')
+        
+        try:
+            # Get the SalesPurchase instance
+            sp = SalesPurchase.objects.get(id=sp_id)
+            # Get the PrePayment instance using the Trade from SalesPurchase
+            prepayment = PrePayment.objects.filter(trn=sp.trn).first()
+            
+            if prepayment:
+                return Response({'advance_amount': prepayment.advance_amount})
+            else:
+                return Response({'advance_amount': 0})
+
+        except SalesPurchase.DoesNotExist:
+            return Response({'error': 'Sales/Purchase record not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

@@ -36,7 +36,7 @@ const PFTable = ({ data, onDelete, onView }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.id}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trade_type}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.payment_mode}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.paymentTerm.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.status_of_payment}</td>
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.shipment_status}</td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{calculateRemainingContractValue(item.sp)}</td>

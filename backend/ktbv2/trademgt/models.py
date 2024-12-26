@@ -240,6 +240,7 @@ class PrePayment(models.Model):
     latest_shipment_date_in_lc=models.CharField(_("lc_expiry_date"), max_length=50)
     remarks=models.CharField(_("lc_expiry_date"), max_length=100)
     reviewed=models.BooleanField(_("reviewed"),default=False)
+    advance_amount=models.FloatField(_("advance_amount"),null=True,default=0)
 
     class Meta:
         verbose_name = _("PrePayment")
@@ -452,6 +453,7 @@ class PaymentFinance(models.Model):
     balance_payment_received=models.FloatField(_("balance_payment_received"),null=True)
     balance_payment_made=models.FloatField(_("balance_payment_made"),null=True)
     balance_payment_date=models.DateField(_("balance_payment_date"), auto_now=False, auto_now_add=False)
+    advance_adjusted=models.FloatField(_("advance_adjusted"),null=True,default=0)
     net_due_in_this_trade=models.FloatField(_("net_due_in_this_trade"),null=True)
     # payment_mode=models.CharField(_("payment_mode"), max_length=50)
     status_of_payment=models.CharField(_("status_of_payment"), max_length=50)

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { paymentDueDate,calculatePFCommissionValue } from '../dateUtils';
 import { capitalizeKey } from '../utils';
+import debounce from 'lodash/debounce';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -19,6 +20,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         balance_payment_received: '',
         balance_payment_made: '',
         balance_payment_date: '',
+        advance_adjusted: '',
         net_due_in_this_trade: '',
         // payment_mode: '',
         status_of_payment: '',
@@ -48,6 +50,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         balance_payment_received: data.balance_payment_received,
                         balance_payment_made: data.balance_payment_made,
                         balance_payment_date: data.balance_payment_date,
+                        advance_adjusted: data.advance_adjusted,
                         net_due_in_this_trade: data.net_due_in_this_trade,
                         // payment_mode: data.payment_mode,
                         status_of_payment: data.status_of_payment,
@@ -110,46 +113,77 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         }
     }, [data]);
 
+    // Create debounced function for advance amount check
+    const debouncedAdvanceCheck = useCallback(
+        debounce(async (spId, value, updateFormData) => {
+            try {
+                const response = await axios.get(`/trademgt/advance-amount/`, {
+                    params: { sp: spId }
+                });
+                
+                const advanceAmount = parseFloat(response.data.advance_amount);
+                const enteredAmount = parseFloat(value);
 
+                if (enteredAmount > advanceAmount) {
+                    alert(`Warning: Advance adjusted amount (${enteredAmount}) cannot be greater than available advance amount (${advanceAmount})`);
+                    updateFormData(''); // Reset the value
+                }
+                
+                console.log('Advance amount response:', response.data);
+            } catch (error) {
+                console.error('Error fetching advance amount:', error);
+            }
+        }, 1000), // 500ms delay
+        [] // Empty dependency array since we don't need any dependencies
+    );
 
     const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
       
         if (section) {
-          // Update the specific section
-          const updatedSection = formData[section].map((item, i) =>
-            i === index ? { ...item, [name]: files ? files[0] : value } : item
-          );
+            // Update the specific section
+            const updatedSection = formData[section].map((item, i) =>
+                i === index ? { ...item, [name]: files ? files[0] : value } : item
+            );
       
-          setFormData({ ...formData, [section]: updatedSection });
+            setFormData({ ...formData, [section]: updatedSection });
         } else {
-          // Update the main form fields
-          const updatedFormData = { ...formData, [name]: files ? files[0] : value };
+            // Update the main form fields
+            const updatedFormData = { ...formData, [name]: files ? files[0] : value };
       
-          // Handle balance_payment_made or balance_payment_received
-          if (name === 'balance_payment_made' || name === 'balance_payment_received') {
-            const remainingValue = parseFloat(calculateRemainingContractValue(data)) - parseFloat(value || 0);
-            updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2); // Ensure consistent formatting
-          }
+            // Handle balance_payment_made or balance_payment_received
+            if (name === 'balance_payment_made' || name === 'balance_payment_received') {
+                const remainingValue = parseFloat(calculateRemainingContractValue(data)) - parseFloat(value || 0);
+                updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2);
+            }
+
+            // Handle advance_adjusted change with debouncing
+            if (name === 'advance_adjusted' && formData.sp) {
+                debouncedAdvanceCheck(
+                    formData.sp, 
+                    value, 
+                    (newValue) => setFormData(prev => ({ ...prev, advance_adjusted: newValue }))
+                );
+            }
       
-          setFormData(updatedFormData);
+            setFormData(updatedFormData);
         }
       
         // Handle TRN field change
         if (name === 'sp') {
             setData(null);
-          try {
-            const response = await axios.get(`/trademgt/sales-purchases/${value}`);
-            if (response.data && response.data.reviewed) {
-              setData(response.data);
-            } else {
-              alert('S&P Not Found or Not Reviewed!');
+            try {
+                const response = await axios.get(`/trademgt/sales-purchases/${value}`);
+                if (response.data && response.data.reviewed) {
+                    setData(response.data);
+                } else {
+                    alert('S&P Not Found or Not Reviewed!');
+                }
+            } catch (error) {
+                console.error('Error fetching TRN data:', error);
             }
-          } catch (error) {
-            console.error('Error fetching TRN data:', error);
-          }
         }
-      };
+    };
       
       
     
@@ -163,6 +197,32 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         setFormData({ ...formData, [section]: updatedSection });
     };
     
+
+    // Create a debounced submit handler
+    const debouncedSubmit = useCallback(
+        debounce((formDataToSend, config) => {
+            if (mode === 'add') {
+                axios.post('/trademgt/payment-finances/', formDataToSend, config)
+                    .then(response => {
+                        console.log('Payment/Finance added successfully!', response.data);
+                        navigate(`/payment-finance`);
+                    })
+                    .catch(error => {
+                        console.error('There was an error adding the Payment/Finance!', error);
+                    });
+            } else if (mode === 'update') {
+                axios.put(`/trademgt/payment-finances/${id}/`, formDataToSend, config)
+                    .then(response => {
+                        console.log('Payment/Finance updated successfully!', response.data);
+                        navigate(`/payment-finance`);
+                    })
+                    .catch(error => {
+                        console.error('There was an error updating the Payment/Finance!', error);
+                    });
+            }
+        }, 1000, { leading: true, trailing: false }), // 1 second delay, only execute first call
+        [mode, id, navigate]
+    );
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -238,27 +298,17 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             headers: { 'Content-Type': 'multipart/form-data' },
         };
 
-        if (mode === 'add') {
-            axios.post('/trademgt/payment-finances/', formDataToSend, config)
-                .then(response => {
-                    console.log('Payment/Finance added successfully!', response.data);
-                    navigate(`/payment-finance`);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Payment/Finance!', error);
-                });
-        } else if (mode === 'update') {
-            axios.put(`/trademgt/payment-finances/${id}/`, formDataToSend, config)
-                .then(response => {
-                    console.log('Payment/Finance updated successfully!', response.data);
-                    navigate(`/payment-finance`);
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Payment/Finance!', error);
-                });
-        }
+        // Call the debounced submit function instead of direct axios calls
+        debouncedSubmit(formDataToSend, config);
     };
-    
+
+    // Clean up the debounced function when component unmounts
+    useEffect(() => {
+        return () => {
+            debouncedSubmit.cancel();
+        };
+    }, [debouncedSubmit]);
+
     const calculateRemainingContractValue = (data) => {
         // const contractValue = parseFloat(data.trn.contract_value);
         const contractValue = parseFloat(data?.invoice_amount)
@@ -311,6 +361,13 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         { label: 'Payment Mode', text: data.trn.paymentTerm.name || '' },
       ]
     : [];
+
+    // Cleanup debounced function on component unmount
+    useEffect(() => {
+        return () => {
+            debouncedAdvanceCheck.cancel();
+        };
+    }, [debouncedAdvanceCheck]);
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
@@ -442,6 +499,18 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     />
                      {validationErrors.balance_payment_date && <p className="text-red-500">{validationErrors.balance_payment_date}</p>}
                 </div>
+                 <div>
+                    <label htmlFor="advance_adjusted" className="block text-sm font-medium text-gray-700">Advance Adjusted</label>
+                    <input
+                        id="advance_adjusted"
+                        name="advance_adjusted"
+                        type="text"
+                        value={formData.advance_adjusted}
+                        onChange={(e) => handleChange(e)}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                     {validationErrors.advance_adjusted && <p className="text-red-500">{validationErrors.advance_adjusted}</p>}
+                </div>
                 <div>
                     <label htmlFor="net_due_in_this_trade" className="block text-sm font-medium text-gray-700">Net Due in This Trade</label>
                     <input
@@ -455,18 +524,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     />
                      {validationErrors.net_due_in_this_trade && <p className="text-red-500">{validationErrors.net_due_in_this_trade}</p>}
                 </div>
-                {/* <div>
-                    <label htmlFor="payment_mode" className="block text-sm font-medium text-gray-700">Payment Mode</label>
-                    <input
-                        id="payment_mode"
-                        name="payment_mode"
-                        type="text"
-                        value={formData.payment_mode}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                     {validationErrors.payment_mode && <p className="text-red-500">{validationErrors.payment_mode}</p>}
-                </div> */}
+               
                 <div>
                     <label htmlFor="status_of_payment" className="block text-sm font-medium text-gray-700">Status of Payment</label>
                     <input

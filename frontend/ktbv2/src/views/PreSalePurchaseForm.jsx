@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { capitalizeKey } from '../utils';
@@ -8,6 +8,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
     const navigate = useNavigate();
 
     const [validationErrors, setValidationErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
 
@@ -145,8 +146,15 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         return validationErrors[fieldName] ? 'border-red-500' : '';
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = useCallback((e) => {
         e.preventDefault();
+        
+        // Prevent multiple submissions
+        if (isSubmitting) {
+            return;
+        }
+        
+        setIsSubmitting(true);
         let errors = {};
 
         // Define fields to skip validation for
@@ -171,12 +179,12 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         setValidationErrors(errors);
     
         if (Object.keys(errors).length > 0) {
-            console.log(errors)
-            return; // Don't proceed if there are validation errors
-        }else{
-             setValidationErrors({});  
+            console.log(errors);
+            setIsSubmitting(false);
+            return;
+        } else {
+            setValidationErrors({});
         }
-
 
         const formDataToSend = new FormData();
 
@@ -208,6 +216,9 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
             })
             .catch(error => {
                 console.error('There was an error adding the trade!', error);
+            })
+            .finally(() => {
+                setIsSubmitting(false);
             });
         } else if (mode === 'update') {
             axios.put(`/trademgt/pre-sales-purchases/${id}/`, formDataToSend, {
@@ -221,9 +232,13 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
             })
             .catch(error => {
                 console.error('There was an error updating the trade!', error);
+            })
+            .finally(() => {
+                setIsSubmitting(false);
             });
         }
-    };
+    }, [formData, mode, id, isSubmitting, navigate]); // Add all dependencies
+
     const tradeData = data
     ? [
         { label: 'Trade Type', text: data.trade_type || '' },
@@ -520,9 +535,15 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
             <div className='grid grid-cols-3 gap-4 mb-4'>
             <button
                 type="submit"
-                className="bg-blue-500 text-white p-2 rounded col-span-3"
+                disabled={isSubmitting}
+                className={`${
+                    isSubmitting ? 'bg-gray-400' : 'bg-blue-500'
+                } text-white p-2 rounded col-span-3`}
             >
-                {mode === 'add' ? 'Add' : 'Update'} PreSalePurchase
+                {isSubmitting 
+                    ? 'Processing...' 
+                    : `${mode === 'add' ? 'Add' : 'Update'} PreSalePurchase`
+                }
             </button>
             </div>
            

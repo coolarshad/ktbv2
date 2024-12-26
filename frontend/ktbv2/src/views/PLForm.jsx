@@ -17,6 +17,7 @@ const PLForm = ({ mode = 'add' }) => {
     const [purchaseData, setPurchaseData] = useState(null);
     const [salesTrnOptions, setSalesTrnOptions] = useState([]);
     const [purchaseTrnOptions, setPurchaseTrnOptions] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
@@ -89,6 +90,10 @@ const PLForm = ({ mode = 'add' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Prevent multiple submissions
+        if (isSubmitting) return;
+        setIsSubmitting(true);
 
         let errors = {};
 
@@ -105,10 +110,9 @@ const PLForm = ({ mode = 'add' }) => {
         setValidationErrors(errors);
     
         if (Object.keys(errors).length > 0) {
-            console.log(errors)
-            return; // Don't proceed if there are validation errors
-        }else{
-             setValidationErrors({});  
+            console.log(errors);
+            setIsSubmitting(false); // Re-enable submit if validation fails
+            return;
         }
 
         // console.log(formData);
@@ -142,6 +146,7 @@ const PLForm = ({ mode = 'add' }) => {
             })
             .catch(error => {
                 console.error('There was an error adding the profit & loss!', error);
+                setIsSubmitting(false); // Re-enable submit on error
             });
         } else if (mode === 'update') {
             axios.put(`/trademgt/profitloss/${id}/`, formDataToSend, {
@@ -155,6 +160,7 @@ const PLForm = ({ mode = 'add' }) => {
             })
             .catch(error => {
                 console.error('There was an error updating the profit & loss!', error);
+                setIsSubmitting(false); // Re-enable submit on error
             });
         }
 
@@ -223,9 +229,12 @@ const PLForm = ({ mode = 'add' }) => {
             <div className='grid grid-cols-3 gap-4 mb-4'>
             <button
                 type="submit"
-                className="bg-blue-500 text-white p-2 rounded col-span-3"
+                disabled={isSubmitting}
+                className={`${
+                    isSubmitting ? 'bg-gray-400' : 'bg-blue-500'
+                } text-white p-2 rounded col-span-3`}
             >
-                {mode === 'add' ? 'Add' : 'Update'} P&L
+                {isSubmitting ? 'Processing...' : `${mode === 'add' ? 'Add' : 'Update'} P&L`}
             </button>
             </div>
            

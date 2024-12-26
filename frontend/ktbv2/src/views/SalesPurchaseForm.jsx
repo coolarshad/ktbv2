@@ -61,7 +61,39 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         // coas: [{ name: '', coa: null }],
     });
 
-   
+    // Move the debounced submit logic to component level
+    const debouncedSubmit = useCallback(
+        debounce((formDataToSend, mode, id) => {
+            if (mode === 'add') {
+                axios.post('/trademgt/sales-purchases/', formDataToSend, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+                .then(response => {
+                    console.log('Sales/Purchase added successfully!', response.data);
+                    navigate(`/sales-purchases`);
+                })
+                .catch(error => {
+                    console.error('There was an error adding the trade!', error);
+                });
+            } else if (mode === 'update') {
+                axios.put(`/trademgt/sales-purchases/${id}/`, formDataToSend, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+                .then(response => {
+                    console.log('Sales/Purchase updated successfully!', response.data);
+                    navigate(`/sales-purchases`);
+                })
+                .catch(error => {
+                    console.error('There was an error updating the trade!', error);
+                });
+            }
+        }, 1000),
+        [navigate]
+    );
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -506,33 +538,8 @@ const handleChange = async (e, arrayName = null, index = null) => {
             }
         }
 
-        if (mode === 'add') {
-            axios.post('/trademgt/sales-purchases/', formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('Sales/Purchase added successfully!', response.data);
-                navigate(`/sales-purchases`);
-            })
-            .catch(error => {
-                console.error('There was an error adding the trade!', error);
-            });
-        } else if (mode === 'update') {
-            axios.put(`/trademgt/sales-purchases/${id}/`, formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('Sales/Purchase updated successfully!', response.data);
-                navigate(`/sales-purchases`);
-            })
-            .catch(error => {
-                console.error('There was an error updating the trade!', error);
-            });
-        }
+        // Call the debounced submit function
+        debouncedSubmit(formDataToSend, mode, id);
     };
 
     const tradeData = data
