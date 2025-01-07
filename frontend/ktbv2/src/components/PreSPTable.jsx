@@ -219,7 +219,7 @@ const PreSPTable = ({ data, onDelete }) => {
                         <div className="flex flex-col ">
                           <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>Dated</p>
-                            <p className='text-sm uppercase'>{selectedTrade.trd}</p>
+                            <p className='text-sm uppercase'>{selectedTrade.approval_date}</p>
 
                           </div>
                           <div className="border-b border-black p-2">
@@ -275,7 +275,7 @@ const PreSPTable = ({ data, onDelete }) => {
                                 <td className="border-l border-r border-black p-1 text-sm text-right">{parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)}</td>
                             </tr>
                           ))}
-                          {Array.from({ length: 18 - selectedTrade.trade_products.length }, (_, index) => (
+                          {Array.from({ length: 15 - selectedTrade.trade_products.length }, (_, index) => (
                             <tr key={index}>
                               <td className="border-l border-r border-black p-2"></td>
                               <td className="border-l border-r border-black p-2"></td>
@@ -320,9 +320,10 @@ const PreSPTable = ({ data, onDelete }) => {
                         ) : (
                           <p>No Document data available.</p>
                         )}
-
+                        <p className='mt-2 underline text-sm'>Declaration</p>
+                        <p className="text-sm font-md">We declare that this purchase order shows the actual price of the goods described and that all particulars are true and correct.The tolerance quantity to be provided shall be on buyer's option.</p>
                       </div>
-                      {/* Row 2 with 2 Columns */}
+                      { }
                       <div className="grid grid-cols-2">
                         <div className=" p-2">
                           <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
@@ -413,7 +414,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           <div className="flex flex-col justify-between">
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>Dated</p>
-                              <p className='uppercase'>{selectedTrade.trd}</p>
+                              <p className='uppercase'>{selectedTrade.approval_date}</p>
 
                             </div>
                             <div className="border-b border-black p-2">
@@ -520,7 +521,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           <p>No Document data available.</p>
                         )}
                           <p className='mt-2 underline'>Declaration</p>
-                          <p>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</p>
+                          <p>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.The tolerance quantity to be provided shall be on seller's option.</p>
                         </div>
                         {/* Row 2 with 2 Columns */}
                         <div className="grid grid-cols-2">

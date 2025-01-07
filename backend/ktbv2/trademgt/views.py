@@ -12,6 +12,7 @@ from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
 import logging
 import pandas as pd
+from datetime import date
 logger = logging.getLogger(__name__)
 
 class TradeView(APIView):
@@ -722,6 +723,7 @@ class TradeReviewView(APIView):
 
                 # Update trade approval status
                 trade.reviewed = True
+                trade.approval_date = date.today()
                 trade.save()
 
                 # Check if trade_type is "sales" and create SalesPending instances
@@ -1954,7 +1956,7 @@ class SalesPurchaseApprove(APIView):
 class SalesPurchaseBLView(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            sp = SalesPurchase.objects.filter(trn__trade_type='Purchase')
+            sp = SalesPurchase.objects.filter(trn__trade_type='Purchase',reviewed=True)
             serializer = SalesPurchaseSerializer(sp,many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except SalesPurchase.DoesNotExist:

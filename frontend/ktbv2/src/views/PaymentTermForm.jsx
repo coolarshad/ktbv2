@@ -163,7 +163,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
           </div>
           <div>
             <label htmlFor="advance_within" className="block text-sm font-medium text-gray-700">
-              Advance Within (days)
+              Advance/LC Within (days)
             </label>
             <input
               type="text"

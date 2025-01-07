@@ -58,7 +58,7 @@ const DateInputWithIcon = ({ formData, handleChange, validationErrors, fieldName
       </div>
       
       {/* Show calendar if visible */}
-      {isCalendarVisible && (
+       {isCalendarVisible && !block && (
         <div
           ref={calendarRef} // Attach ref to the calendar container
           className="absolute z-10 mt-2"

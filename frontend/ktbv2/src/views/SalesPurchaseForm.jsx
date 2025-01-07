@@ -694,6 +694,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     value={formData.bl_number}
                     onChange={(e) => setFormData({ ...formData, bl_number: e.target.value })}
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    readOnly={data?.trade_type=='Sales'?true:false}
                 />
                  {validationErrors.bl_number && <p className="text-red-500">{validationErrors.bl_number}</p>}
             </div>

@@ -226,7 +226,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         console.error('There was an error updating the prepayment!', error);
                     });
             }
-        }, 1000, { leading: true, trailing: false }), // 1 second delay, only execute first call
+        }, 3000, { leading: true, trailing: false }), // 1 second delay, only execute first call
         [mode, id, navigate]
     );
 

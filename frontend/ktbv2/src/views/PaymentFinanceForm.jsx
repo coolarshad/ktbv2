@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import { paymentDueDate,calculatePFCommissionValue } from '../dateUtils';
 import { capitalizeKey } from '../utils';
 import debounce from 'lodash/debounce';
+import DateInputWithIcon from '../components/DateInputWithIcon';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -603,25 +604,42 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         id="release_docs"
                         name="release_docs"
                         type="text"
-                        value={formData.release_docs}
+                        value={data?.trn.trade_type === "Purchase" ? "NA" : formData.release_docs}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trn.trade_type === "Purchase"}
                     />
                       {validationErrors.release_docs && <p className="text-red-500">{validationErrors.release_docs}</p>}
                 </div>
            
-                <div>
+                {/* <div>
                     <label htmlFor="release_docs_date" className="block text-sm font-medium text-gray-700">Release Docs Date</label>
                     <input
                         id="release_docs_date"
                         name="release_docs_date"
                         type="date"
-                        value={formData.release_docs_date}
+                        value={data?.trn.trade_type === "Purchase" ? "NA" : formData.release_docs_date}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trn.trade_type === "Purchase"}
                     />
                       {validationErrors.release_docs_date && <p className="text-red-500">{validationErrors.release_docs_date}</p>}
-                </div>
+                </div> */}
+                <DateInputWithIcon
+                    formData={{
+                        ...formData,
+                        release_docs_date: data?.trn.trade_type === "Purchase" ? "NA" : formData.release_docs_date,
+                    }}
+                    handleChange={(e) => {
+                        if (formData.trade_type !== "Purchase") {
+                            handleChange(e);
+                        }
+                    }}
+                    validationErrors={validationErrors}
+                    fieldName="release_docs_date"
+                    label="Release Docs Date"
+                    block={data?.trn.trade_type === "Purchase"} // Disable the input when trade_type is "Purchase"
+                />
                 <div>
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
                     <input

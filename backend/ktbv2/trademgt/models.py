@@ -5,7 +5,7 @@ from django.urls import reverse
 # Create your models here.
 class Trade(models.Model):
     company=models.CharField(_("company"), max_length=100)
-    trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
+    trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)  #actual trade entry date
     trn=models.CharField(_("trn"), max_length=50)
     trade_type=models.CharField(_("trade_type"), max_length=50)
     trade_category = models.CharField(_("trade_category"), max_length=50)
@@ -50,7 +50,7 @@ class Trade(models.Model):
 
     approved=models.BooleanField(_("approved"),default=False)
     reviewed=models.BooleanField(_("reviewed"),default=False)
-
+    approval_date = models.DateField(_("approval date"), auto_now=False, auto_now_add=False, null=True, blank=True) #actual trade ref date
     approved_by=models.CharField(_("approved_by"), max_length=50, null=True, blank=True)
     reviewed_by=models.CharField(_("reviewed_by"), max_length=50, null=True, blank=True)
 

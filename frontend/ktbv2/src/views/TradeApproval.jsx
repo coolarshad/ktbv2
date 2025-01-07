@@ -157,6 +157,14 @@ function TradeApproval() {
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.trn}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trd}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRD</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.approval_date ? selectedTrade.approval_date : 'Not Approved'}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.trade_type}</td>
                   </tr>
@@ -300,11 +308,11 @@ function TradeApproval() {
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_fee_remarks}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved 1</td>
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Reviewed</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.approved ? 'Yes' : 'No'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved 2</td>
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.reviewed ? 'Yes' : 'No'}</td>
                   </tr>
                 </tbody>
@@ -455,12 +463,12 @@ function TradeApproval() {
              </table>
              {selectedTrade.approved ? '' : 
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-             <button onClick={approveTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>
+             <button onClick={approveTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
              </div>
              }
              {selectedTrade.reviewed ? '' : 
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-             <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 2</button>
+             <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
              </div>
              }
            </div>
