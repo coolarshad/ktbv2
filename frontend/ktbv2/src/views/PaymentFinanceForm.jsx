@@ -105,7 +105,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 ...prevState,
                 ...(data.trn.trade_type === 'Purchase'
                     ? {
-                        balance_payment_received:'0'
+                        balance_payment_received:'0',
+                        release_docs: 'NA',
+                        release_docs_date: 'NA'
                     }
                     : {
                         balance_payment_made:'0'
@@ -153,10 +155,24 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             const updatedFormData = { ...formData, [name]: files ? files[0] : value };
       
             // Handle balance_payment_made or balance_payment_received
-            if (name === 'balance_payment_made' || name === 'balance_payment_received') {
-                const remainingValue = parseFloat(calculateRemainingContractValue(data)) - parseFloat(value || 0);
+            // if (name === 'balance_payment_made' || name === 'balance_payment_received' || name === 'advance_adjusted') {
+            //     const remainingValue = parseFloat(calculateRemainingContractValue(data)) - parseFloat(value || 0);
+            //     updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2);
+            // }
+            if (
+                name === 'balance_payment_made' || 
+                name === 'balance_payment_received' || 
+                name === 'advance_adjusted'
+              ) {
+                const advanceAdjusted = parseFloat(updatedFormData.advance_adjusted) || 0;
+                const balancePaymentMade = parseFloat(updatedFormData.balance_payment_made) || 0;
+                const balancePaymentReceived = parseFloat(updatedFormData.balance_payment_received) || 0;
+                const currentValue = parseFloat(value || 0);
+              
+                const remainingValue = parseFloat(calculateRemainingContractValue(data)) - advanceAdjusted - balancePaymentMade - balancePaymentReceived ;
+              
                 updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2);
-            }
+              }
 
             // Handle advance_adjusted change with debouncing
             if (name === 'advance_adjusted' && formData.sp) {
@@ -339,6 +355,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         
         { label: 'Advance Received', text: data.prepayment.advance_received || '0' },
         { label: 'Advance Paid', text: data.prepayment.advance_paid || '0' },
+        { label: 'Advance For Adjustment', text: data.prepayment.advance_amount || '0' },
         { label: 'Advance Received Date', text: data.prepayment.date_of_receipt || '' },
         { label: 'Advance Paid Date', text: data.prepayment.date_of_payment || '' },
         { 
@@ -461,6 +478,18 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div> */}
+                  <div>
+                    <label htmlFor="advance_adjusted" className="block text-sm font-medium text-gray-700">Advance Adjusted</label>
+                    <input
+                        id="advance_adjusted"
+                        name="advance_adjusted"
+                        type="text"
+                        value={formData.advance_adjusted}
+                        onChange={(e) => handleChange(e)}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                     {validationErrors.advance_adjusted && <p className="text-red-500">{validationErrors.advance_adjusted}</p>}
+                </div>
                
                 <div>
                     <label htmlFor="balance_payment_received" className="block text-sm font-medium text-gray-700">Balance Payment Received</label>
@@ -500,18 +529,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     />
                      {validationErrors.balance_payment_date && <p className="text-red-500">{validationErrors.balance_payment_date}</p>}
                 </div>
-                 <div>
-                    <label htmlFor="advance_adjusted" className="block text-sm font-medium text-gray-700">Advance Adjusted</label>
-                    <input
-                        id="advance_adjusted"
-                        name="advance_adjusted"
-                        type="text"
-                        value={formData.advance_adjusted}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                     {validationErrors.advance_adjusted && <p className="text-red-500">{validationErrors.advance_adjusted}</p>}
-                </div>
+               
                 <div>
                     <label htmlFor="net_due_in_this_trade" className="block text-sm font-medium text-gray-700">Net Due in This Trade</label>
                     <input
@@ -626,15 +644,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                       {validationErrors.release_docs_date && <p className="text-red-500">{validationErrors.release_docs_date}</p>}
                 </div> */}
                 <DateInputWithIcon
-                    formData={{
-                        ...formData,
-                        release_docs_date: data?.trn.trade_type === "Purchase" ? "NA" : formData.release_docs_date,
-                    }}
-                    handleChange={(e) => {
-                        if (formData.trade_type !== "Purchase") {
-                            handleChange(e);
-                        }
-                    }}
+                    formData={formData}
+                    handleChange={handleChange}
                     validationErrors={validationErrors}
                     fieldName="release_docs_date"
                     label="Release Docs Date"

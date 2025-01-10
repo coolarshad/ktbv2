@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from 'react-icons/fa';
 
-const DateInputWithIcon = ({ formData, handleChange, validationErrors, fieldName, label, block = false }) => {
+const DateInputWithIcon = ({ formData, handleChange, validationErrors, fieldName, label, block = false, inner='', index='' }) => {
   const [isCalendarVisible, setCalendarVisible] = useState(false); // State to track visibility of the calendar
   const calendarRef = useRef(null); // Ref to detect outside click
 
@@ -72,9 +72,16 @@ const DateInputWithIcon = ({ formData, handleChange, validationErrors, fieldName
         </div>
       )}
 
-      {validationErrors[fieldName] && (
-        <p className="text-red-500">{validationErrors[fieldName]}</p>
-      )}
+      {inner === ''
+        ? validationErrors?.[fieldName] && (
+          <p className="text-red-500">{validationErrors[fieldName]}</p>
+        )
+        : validationErrors?.[`${inner}[${index}].${fieldName}`] && (
+          <p className="text-red-500">
+            {validationErrors[`${inner}[${index}].${fieldName}`]}
+          </p>
+        )}
+      
     </div>
   );
 };

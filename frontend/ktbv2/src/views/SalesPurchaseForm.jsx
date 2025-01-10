@@ -247,7 +247,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     // Function to debounce API calls
    // Debounced API call function
    const debouncedApiCall = useCallback(
-    debounce(async (trn, product_code, product_name, hs_code, index, arrayName) => {
+    debounce(async (trn, product_code, product_name, hs_code,purchase_bl_number, index, arrayName) => {
         try {
             const response = await axios.get('/trademgt/pending-balance', {
                 params: {
@@ -255,6 +255,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     product_code,
                     product_name,
                     hs_code,
+                    purchase_bl_number
                 },
             });
             const result = response.data;
@@ -266,6 +267,13 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     updatedArray[index].rate_in_usd = result.pending_balance.rate_in_usd;
                     updatedArray[index].trade_qty_unit = result.pending_balance.balance_qty_unit;
                     updatedArray[index].tolerance = result.pending_balance.tolerance;
+                    // Handle potential null for bl_qty
+                    updatedArray[index].bl_qty = result?.sp_product?.bl_qty !== null ? result?.sp_product?.bl_qty : '';
+
+                    const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
+                    const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
+                    updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2);
+
                     return { ...prev, [arrayName]: updatedArray };
                 });
             // }
@@ -320,16 +328,30 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 const updatedArray = [...prev[arrayName]];
                 updatedArray[index][name] = value;
 
-                if (name === 'product_code' || name === 'product_name' || name === 'hs_code') {
-                    debouncedApiCall(
+                // Additional logic for batch_number and production_date
+                if (name === 'batch_number' && value.toLowerCase() === 'na') {
+                    updatedArray[index]['production_date'] = 'NA';
+                }
+
+                if (
+                    name === 'product_code' || 
+                    name === 'product_name' || 
+                    name === 'hs_code'
+                  ) {
+                    const { product_code, product_name, hs_code } = updatedArray[index];
+                    
+                    if (product_code && product_name && hs_code) { // Ensure all are not null or empty
+                      debouncedApiCall(
                         formData.trn,
-                        updatedArray[index].product_code,
-                        updatedArray[index].product_name,
-                        updatedArray[index].hs_code,
+                        product_code,
+                        product_name,
+                        hs_code,
+                        formData.bl_number,
                         index,
                         arrayName
-                    );
-                }
+                      );
+                    }
+                  }
 
                 if (name === 'bl_qty') {
                     const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
@@ -1028,21 +1050,32 @@ const handleChange = async (e, arrayName = null, index = null) => {
                             </div>
 
                            
-                            <div className="col-span-1 sm:col-span-1">
+                            {/* <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
                                 <input
-                                    type="date"
+                                    type="text"
                                     name="production_date"
                                     value={product.production_date}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={product.batch_number.toLowerCase() === 'na'}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].production_date`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`salesPurchaseProducts[${index}].production_date`]}
                                     </p>
                                 )}
-                            </div>
+                            </div> */}
+                            <DateInputWithIcon
+                                formData={product} // Pass the specific product object
+                                handleChange={(e) => handleChange(e, 'salesPurchaseProducts', index)} // Handle change for the specific product
+                                validationErrors={validationErrors} // Pass validation errors for the specific product
+                                fieldName="production_date" // Field name for the date input
+                                label="Production Date" // Label for the date input
+                                block={product.batch_number.toLowerCase() === 'na'}
+                                inner={'salesPurchaseProducts'}
+                                index={index}
+                            />
                             <div>
                                 <label htmlFor="pending_qty" className="block text-sm font-medium text-gray-700">Pending Quantity</label>
                                 <input
@@ -1070,6 +1103,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Trade Quantity"
                                     className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={data?.trade_type=='Sales'}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].bl_qty`] && (
                                     <p className="text-red-500">

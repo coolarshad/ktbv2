@@ -1750,7 +1750,7 @@ class SalesPurchaseView(APIView):
                             existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
                             if existing_inv:
                                 # If it exists, update only the fields you want to update
-                                existing_inv.quantity-= product.trade_qty
+                                existing_inv.quantity-= product.bl_qty
                                 existing_inv.save()
                             else:
                                 # If it doesn't exist, create a new record with all fields
@@ -1758,7 +1758,7 @@ class SalesPurchaseView(APIView):
                                 product_name=product.product_name,
                                 batch_number=product.batch_number,
                                 production_date=product.production_date,    
-                                quantity=0-float(product.trade_qty),
+                                quantity=0-float(product.bl_qty),
                                 unit=product.trade_qty_unit
                                 )
                     except Exception as e:
@@ -2481,6 +2481,7 @@ class PendingBalanceView(APIView):
         product_code = request.query_params.get('product_code')
         product_name = request.query_params.get('product_name')
         hs_code = request.query_params.get('hs_code')
+        purchase_bl_number = request.query_params.get('purchase_bl_number')
         
         try:
             trade = Trade.objects.get(id=trn)
@@ -2510,11 +2511,14 @@ class PendingBalanceView(APIView):
                     product_name=product_name,
                     hs_code=hs_code
                 ).first()
-                
+               
                 if product:
+                    sp_product=SalesPurchaseProduct.objects.filter(sp__bl_number=purchase_bl_number,sp__trn__trade_type='Purchase',product_code=product_code,product_name=product_name).first()
+                   
                     # Serialize and return the product data
                     serialized_product = SalesPendingSerializer(product)
-                    return Response({'pending_balance': serialized_product.data})
+                    sp_serialized = SalesPurchaseProductSerializer(sp_product)
+                    return Response({'pending_balance': serialized_product.data,'sp_product':sp_serialized.data})
                 else:
                     return Response({'pending_balance': 0})
 

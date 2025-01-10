@@ -82,7 +82,7 @@ function PL() {
     return sp.sp_extra_charges.reduce((acc, item) => acc + item.charge, 0);
   };
   const sumPFCharges = (pf) => {
-    return pf.pf_charges.reduce((acc, item) => acc + item.charge, 0);
+    return pf?.pf_charges.reduce((acc, item) => acc + item.charge, 0);
   };
   const sumBLQty = (sp) => {
     return sp.sp_product.reduce((acc, item) => acc + item.bl_qty, 0);
@@ -129,7 +129,7 @@ function PL() {
         <div key={index}  className="border border-gray-300 rounded-md p-4 shadow-sm grid grid-cols-3 gap-4">
           <span className="text-sm border-gray-200">Product Code: {row.product_code}</span>
           <span className="text-sm border-gray-200">Product Name: {row.productName.name}</span>
-          <span className="text-sm border-gray-200">Trade Qty: {row.bl_qty}</span>
+          <span className="text-sm border-gray-200">BL Qty: {row.bl_qty}</span>
           <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
           <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
           <span className="text-sm border-gray-200">Commission Rate: {findTrade(data.sp,row).commission_rate}</span>
@@ -149,6 +149,37 @@ function PL() {
     { value: 'remarks', label: 'Remarks' },
   ];
 
+  const calculateSPTotal = (pf) => {
+    if (!pf) return 0; // Handle undefined or null SP
+    return parseFloat(
+      sumPackingCost(pf.sp) +
+      pf.sp.trn.commission_value +
+      pf.sp.bl_fees +
+      pf.sp.bl_collection_cost +
+      sumOtherCharges(pf.sp) +
+      pf.sp.logistic_cost +
+      sumPFCharges(pf)
+    );
+  };
+  
+  // Calculate gross profit
+  const calculateGrossProfit = (salesPF, purchasePF) => {
+    if (!salesPF || !purchasePF) return 0; // Handle undefined salesPF or purchasePF
+    const salesTotal = parseFloat(salesPF.sp.invoice_amount);
+    const purchaseTotal =  parseFloat(purchasePF.sp.invoice_amount);
+    const totalExpense = calculateSPTotal(purchasePF) + calculateSPTotal(salesPF);
+    return salesTotal - purchaseTotal - totalExpense;
+  };
+  
+  const calculateProfitPerMT = (salesPF, purchasePF) => {
+    const grossProfit = calculateGrossProfit(salesPF, purchasePF) || 0; // Default to 0 if undefined or NaN
+    const totalBLQty = sumBLQty(salesPF?.sp) || 1; // Default to 1 to avoid division by zero
+    const profitPerMT = parseFloat(grossProfit) / parseFloat(totalBLQty); // Ensure valid division
+    return isNaN(profitPerMT) ? "0.00" : profitPerMT.toFixed(2); // Handle NaN gracefully
+  };
+  
+
+  
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
@@ -346,10 +377,13 @@ function PL() {
                     </div>
                   </div>
                   <div className="p-4 text-center mb-4">
-                    <p>GROSS PROFIT: {parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))}</p>
+                    <p>GROSS PROFIT: {calculateGrossProfit(selectedPL.salesPF, selectedPL.purchasePF).toFixed(2)}</p>
+                    <p>PROFIT PMT: {calculateProfitPerMT(selectedPL.salesPF, selectedPL.purchasePF)}</p>
+
+                    {/* <p>GROSS PROFIT: {parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))}</p>
                     <p>PROFIT PMT: {
                     (parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))) > 0 ? ((parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))) / sumBLQty(selectedPL.salesPF.sp)).toFixed(2) : 0
-                    }</p>
+                    }</p> */}
                   </div>
                 </div>
 

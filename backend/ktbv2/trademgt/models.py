@@ -348,7 +348,7 @@ class SalesPurchaseProduct(models.Model):
     hs_code=models.CharField(_("hs_code"), max_length=50)
     tolerance=models.FloatField(_("tolerance"))
     batch_number=models.CharField(_("batch_number"), max_length=50)
-    production_date=models.DateField(_("production_date"))
+    production_date=models.CharField(_("production_date"), max_length=50)
     bl_qty=models.FloatField(_("bl_qty"))
     pending_qty=models.FloatField(_("bl_qty"))
     trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
@@ -364,7 +364,7 @@ class SalesPurchaseProduct(models.Model):
         verbose_name_plural = _("SalesPurchaseProducts")
 
     def __str__(self):
-        return self.name
+        return self.product_code
 
     def get_absolute_url(self):
         return reverse("SalesPurchaseProduct_detail", kwargs={"pk": self.pk})
@@ -750,7 +750,7 @@ class Unit(models.Model):
 class Inventory(models.Model):
     product_name=models.CharField(_("product_name"), max_length=50)
     batch_number=models.CharField(_("batch_number"), max_length=50)
-    production_date=models.DateField(_("production_date"), auto_now=False, auto_now_add=False)
+    production_date=models.CharField(_("production_date"), max_length=50,null=True,blank=True)
     quantity=models.FloatField(_("quantity"))
     unit=models.CharField(_("unit"), max_length=50)
     
