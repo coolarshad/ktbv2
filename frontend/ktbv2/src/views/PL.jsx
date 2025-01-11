@@ -140,6 +140,53 @@ function PL() {
       ))}
     </>
   );
+
+  const MiniGross = ({ sales_data, purchase_data }) => {
+    // Helper function to calculate totals
+    const calculateSalesTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
+    const calculateExpenseTotal = (commission_rate, bl_qty) => commission_rate * bl_qty;
+    const calculatePurchaseTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
+    const calculateGross = (salesTotal, purchaseTotal, expenseTotal) => salesTotal - purchaseTotal - expenseTotal;
+    const calculatePerUnit = (gross, sales_bl_qty) => gross / sales_bl_qty;
+  
+    return (
+      <>
+        {/* Mapping over sales and purchase data with index to pair them */}
+        {sales_data?.sp?.sp_product.map((salesRow, index) => {
+          // Find corresponding purchase row by index
+          const purchaseRow = purchase_data?.sp?.sp_product[index];
+  
+          // If there's no corresponding purchase row, we skip this pair
+          if (!purchaseRow) return null;
+  
+          // Calculating salesTotal, expenseTotal, purchaseTotal, gross, perUnit for this pair
+          const salesTotal = calculateSalesTotal(salesRow.bl_qty, salesRow.rate_in_usd);
+          const expenseTotal = calculateExpenseTotal(findTrade(sales_data.sp, salesRow).commission_rate, salesRow.bl_qty)+calculateExpenseTotal(findTrade(purchase_data.sp, purchaseRow).commission_rate, purchaseRow.bl_qty);
+          const purchaseTotal = calculatePurchaseTotal(purchaseRow.bl_qty, purchaseRow.rate_in_usd);
+          const gross = calculateGross(salesTotal, purchaseTotal, expenseTotal);
+          const perUnit = calculatePerUnit(gross, salesRow.bl_qty);
+  
+          return (
+            <div className="flex flex-col my-16 p-2" key={index}>
+            <div className="border border-gray-300 rounded-md p-4 shadow-sm flex flex-wrap gap-4">
+              {/* Calculated Profit Information */}
+              <div className="text-sm border-gray-200 flex-1 min-w-[200px]">
+                {/* <span>Sales Total: {salesTotal.toFixed(2)}</span><br />
+                <span>Expense Total: {expenseTotal.toFixed(2)}</span><br />
+                <span>Purchase Total: {purchaseTotal.toFixed(2)}</span><br /> */}
+                <span>Profit per product: {gross.toFixed(2)}</span><br />
+                <span>Profit per Unit: {perUnit.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          );
+        })}
+      </>
+    );
+  };
+  
+  
   
 
 
@@ -153,7 +200,7 @@ function PL() {
     if (!pf) return 0; // Handle undefined or null SP
     return parseFloat(
       sumPackingCost(pf.sp) +
-      pf.sp.trn.commission_value +
+      // pf.sp.trn.commission_value +
       pf.sp.bl_fees +
       pf.sp.bl_collection_cost +
       sumOtherCharges(pf.sp) +
@@ -369,13 +416,20 @@ function PL() {
                     <div>
                       <h3 className="text-lg font-bold text-gray-800">Sales Products</h3>
                       <MiniTable data={selectedPL.salesPF} />
+
                     </div>
 
                     <div>
                       <h3 className="text-lg font-bold text-gray-800">Purchase Products</h3>
                       <MiniTable data={selectedPL.purchasePF} />
                     </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">Profit/Loss</h3>
+                      <MiniGross sales_data={selectedPL.salesPF} purchase_data={selectedPL.purchasePF} />
+                    </div>
+                   
                   </div>
+                  
                   <div className="p-4 text-center mb-4">
                     <p>GROSS PROFIT: {calculateGrossProfit(selectedPL.salesPF, selectedPL.purchasePF).toFixed(2)}</p>
                     <p>PROFIT PMT: {calculateProfitPerMT(selectedPL.salesPF, selectedPL.purchasePF)}</p>

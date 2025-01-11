@@ -452,7 +452,7 @@ class PaymentFinance(models.Model):
     # balance_payment=models.FloatField(_("balance_payment"),null=True)
     balance_payment_received=models.FloatField(_("balance_payment_received"),null=True)
     balance_payment_made=models.FloatField(_("balance_payment_made"),null=True)
-    balance_payment_date=models.DateField(_("balance_payment_date"), auto_now=False, auto_now_add=False)
+    balance_payment_date=models.CharField(_("balance_payment_date"), max_length=100,blank=True,null=True)
     advance_adjusted=models.FloatField(_("advance_adjusted"),null=True,default=0)
     net_due_in_this_trade=models.FloatField(_("net_due_in_this_trade"),null=True)
     # payment_mode=models.CharField(_("payment_mode"), max_length=50)

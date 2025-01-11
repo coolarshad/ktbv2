@@ -279,12 +279,25 @@ class PreSalePurchaseSerializer(serializers.ModelSerializer):
             return PreDocumentSerializer(instance,many=True).data
         except PreDocument.DoesNotExist:
             return None
+    def get_pi_details(self, obj):
+        try:
+            instance = AcknowledgedPI.objects.filter(presalepurchase=obj)
+            return AcknowledgedPISerializer(instance,many=True).data
+        except AcknowledgedPI.DoesNotExist:
+            return None
+    def get_po_details(self, obj):
+        try:
+            instance = AcknowledgedPO.objects.filter(presalepurchase=obj)
+            return AcknowledgedPOSerializer(instance,many=True).data
+        except AcknowledgedPO.DoesNotExist:
+            return None
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['trade'] = self.get_trade_details(instance)
         ret['documentRequired'] = self.get_doc_details(instance)
-       
+        ret['acknowledgedPI'] = self.get_pi_details(instance)
+        ret['acknowledgedPO'] = self.get_po_details(instance)
         return ret
 
 
@@ -345,6 +358,27 @@ class PrePaymentSerializer(serializers.ModelSerializer):
             return PreSalePurchaseSerializer(instance).data
         except PreSalePurchase.DoesNotExist:
             return None  # Or handle it as needed
+    
+    def get_lcCopy_details(self, obj):
+        try:
+            instance = LcCopy.objects.filter(prepayment=obj)
+            return LcCopySerializer(instance,many=True).data
+        except LcCopy.DoesNotExist:
+            return None
+    
+    def get_advanceTTCopy_details(self, obj):
+        try:
+            instance = AdvanceTTCopy.objects.filter(prepayment=obj)
+            return AdvanceTTCopySerializer(instance,many=True).data
+        except AdvanceTTCopy.DoesNotExist:
+            return None
+    
+    def get_LcAmmendment_details(self, obj):
+        try:
+            instance = LcAmmendment.objects.filter(prepayment=obj)
+            return LcAmmendmentSerializer(instance,many=True).data
+        except LcAmmendment.DoesNotExist:
+            return None
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
@@ -355,6 +389,9 @@ class PrePaymentSerializer(serializers.ModelSerializer):
         ret['kyc'] = self.get_kyc_details(instance)
         ret['presp'] = self.get_presp_details(instance)
         ret['payment_term'] = self.get_payment_term_details(instance)
+        ret['lcCopy'] = self.get_lcCopy_details(instance)
+        ret['advanceTTCopy'] = self.get_advanceTTCopy_details(instance)
+        ret['lcAmmendment'] = self.get_LcAmmendment_details(instance)
         
         return ret
 
@@ -511,6 +548,14 @@ class SalesPurchaseSerializer(serializers.ModelSerializer):
             return PrePaymentSerializer(instance).data
         except PrePayment.DoesNotExist:
             return None  # Or handle it as needed
+    
+    def get_packingList_details(self, obj):
+        try:
+            instance = PackingList.objects.filter(sp=obj)
+            return PackingListSerializer(instance,many=True).data
+        except PackingList.DoesNotExist:
+            return None
+        
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
@@ -519,7 +564,7 @@ class SalesPurchaseSerializer(serializers.ModelSerializer):
         # Add the serialized company details to the response
         ret['trn'] = self.get_trade_details(instance)
         ret['prepayment'] = self.get_prepay_details(instance)
-        
+        ret['packingList'] = self.get_packingList_details(instance)
         return ret
         
 
@@ -822,6 +867,13 @@ class TradeReportSPSerializer(serializers.ModelSerializer):
             return PrePaymentSerializer(prepayment_instance).data
         except PrePayment.DoesNotExist:
             return None  # Or handle it as needed
+    
+    def get_packingList_details(self, obj):
+        try:
+            instance = PackingList.objects.filter(sp=obj)
+            return PackingListSerializer(instance,many=True).data
+        except PackingList.DoesNotExist:
+            return None
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
@@ -830,14 +882,10 @@ class TradeReportSPSerializer(serializers.ModelSerializer):
         # Add serialized trade and prepayment details
         ret['trn'] = self.get_trade_details(instance)
         ret['prepayment'] = self.get_prepay_details(instance)
+        ret['packingList'] = self.get_packingList_details(instance)
 
         return ret
 
-
-
-from rest_framework import serializers
-from .models import Trade, PreSalePurchase, PrePayment, SalesPurchase
-from .serializers import TradeSerializer, PreSalePurchaseSerializer, PrePaymentSerializer, TradeReportSPSerializer
 
 
 class TradeReportSerializer(serializers.ModelSerializer):
@@ -882,4 +930,25 @@ class TradeReportSerializer(serializers.ModelSerializer):
         ret['presp'] = self.get_presp_details(instance)
         ret['pp'] = self.get_prepay_details(instance)
         ret['sp'] = self.get_sp_details(instance)
+        return ret
+
+
+class InventoryDetailProductSerializer(serializers.ModelSerializer):
+    # Include nested SalesPurchase details
+    sp = SalesPurchaseSerializer(read_only=True)  # sp is the ForeignKey field in SalesPurchaseProduct
+
+    class Meta:
+        model = SalesPurchaseProduct
+        fields = '__all__'  # Include all fields or specify specific ones
+    
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['productName'] = self.get_product_details(instance)
         return ret

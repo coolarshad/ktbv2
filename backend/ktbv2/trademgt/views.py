@@ -2561,3 +2561,34 @@ class TradeReportView(APIView):
             return Response({'error': 'Trade record not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class InventoryDetailView(APIView):
+    def get(self, request, *args, **kwargs):
+        id = request.query_params.get('id')
+
+        # Validate if `id` is provided
+        if not id:
+            return Response({'error': 'Inventory ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get the Inventory instance
+            inventory = Inventory.objects.get(id=id)
+
+            # Filter SalesPurchaseProduct records based on Inventory details
+            sps = SalesPurchaseProduct.objects.filter(
+                product_name=inventory.product_name,
+                batch_number=inventory.batch_number,
+                production_date=inventory.production_date
+            )
+
+            # Serialize the filtered SalesPurchaseProduct records
+            sp_serializer = InventoryDetailProductSerializer(sps, many=True)
+
+            # Return serialized data
+            return Response(sp_serializer.data, status=status.HTTP_200_OK)
+        
+        except Inventory.DoesNotExist:
+            return Response({'error': 'Inventory record not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)

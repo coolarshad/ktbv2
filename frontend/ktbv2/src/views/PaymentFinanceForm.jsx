@@ -153,6 +153,14 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         } else {
             // Update the main form fields
             const updatedFormData = { ...formData, [name]: files ? files[0] : value };
+
+            if (
+                name === 'release_docs' &&
+                ['na', 'do not release document'].includes(value.toLowerCase())
+            ) {
+                updatedFormData.release_docs_date = 'NA';
+            }
+
       
             // Handle balance_payment_made or balance_payment_received
             // if (name === 'balance_payment_made' || name === 'balance_payment_received' || name === 'advance_adjusted') {
@@ -173,6 +181,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 const remainingValue = parseFloat(data?.invoice_amount) - advanceAdjusted - balancePaymentMade - balancePaymentReceived ;
               
                 updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2);
+                if(balancePaymentMade===0 || balancePaymentReceived===0){
+                    updatedFormData.balance_payment_date = 'NA';
+                }
               }
 
             // Handle advance_adjusted change with debouncing
@@ -519,7 +530,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.balance_payment_made && <p className="text-red-500">{validationErrors.balance_payment_made}</p>}
                 </div>
-                <div>
+                {/* <div>
                     <label htmlFor="balance_payment_date" className="block text-sm font-medium text-gray-700">Balance Payment Date</label>
                     <input
                         id="balance_payment_date"
@@ -530,7 +541,15 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                      {validationErrors.balance_payment_date && <p className="text-red-500">{validationErrors.balance_payment_date}</p>}
-                </div>
+                </div> */}
+                <DateInputWithIcon
+                    formData={formData}
+                    handleChange={handleChange}
+                    validationErrors={validationErrors}
+                    fieldName="balance_payment_date"
+                    label="Balance Payment Date"
+                    block={formData.balance_payment_received == '0' && formData.balance_payment_made == '0'}
+                />
                
                 <div>
                     <label htmlFor="net_due_in_this_trade" className="block text-sm font-medium text-gray-700">Net Due in This Trade</label>
@@ -620,7 +639,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 </div> */}
                 <div>
                     <label htmlFor="release_docs" className="block text-sm font-medium text-gray-700">Release Docs</label>
-                    <input
+                    {/* <input
                         id="release_docs"
                         name="release_docs"
                         type="text"
@@ -628,7 +647,21 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                         readOnly={data?.trn.trade_type === "Purchase"}
-                    />
+                    /> */}
+                    <select
+                        id="release_docs"
+                        name="release_docs"
+                        value={formData.release_docs}
+                        onChange={(e) => handleChange(e)}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        disabled={data?.trn.trade_type === "Purchase"}
+                    >
+                        <option value="">Select ---</option>
+                        
+                        <option value="Release Document">Release Document</option>
+                        <option value="Do Not Release Document">Do Not Release Document</option>
+                        <option value="NA">NA</option>
+                    </select>
                       {validationErrors.release_docs && <p className="text-red-500">{validationErrors.release_docs}</p>}
                 </div>
            
@@ -651,7 +684,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     validationErrors={validationErrors}
                     fieldName="release_docs_date"
                     label="Release Docs Date"
-                    block={data?.trn.trade_type === "Purchase"} // Disable the input when trade_type is "Purchase"
+                    // block={data?.trn.trade_type === "Purchase"} 
+                    block={formData?.release_docs!='Release Document' || data?.trn.trade_type === "Purchase"} 
                 />
                 <div>
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>

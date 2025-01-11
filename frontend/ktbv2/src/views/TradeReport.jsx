@@ -217,7 +217,7 @@ const TradeReport = () => {
                                     </tbody>
                                 </table>
                                 </div>
-                                <div>
+                                <div className='p-2'>
                                     <p className='my-2 underline'>Documents Required</p>
                                     {reportData.presp &&
                                         reportData.presp.documentRequired.map((item, index) =>
@@ -231,7 +231,7 @@ const TradeReport = () => {
                                         )}
                                     <p className='my-2 underline'>Acknowledged PI</p>
                                     {reportData.presp.acknowledgedPI &&
-                                        reportData.presp.AcknowledgedPI.map((item, index) =>
+                                        reportData.presp.acknowledgedPI.map((item, index) =>
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
@@ -243,7 +243,7 @@ const TradeReport = () => {
                                         )}
                                     <p className='my-2 underline'>Acknowledged PO</p>
                                     {reportData.presp.acknowledgedPO &&
-                                        reportData.presp.AcknowledgedPO.map((item, index) =>
+                                        reportData.presp.acknowledgedPO.map((item, index) =>
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
@@ -312,10 +312,10 @@ const TradeReport = () => {
                             </tbody>
                         </table>
                             </div>
-                            <div>
+                            <div className='p-2'>
                                     <p className='my-2 underline'>Lc Copy</p>
-                                    {reportData.pp.lcCopies &&
-                                        reportData.pp.lcCopies.map((item, index) =>
+                                    {reportData.pp.lcCopy &&
+                                        reportData.pp.lcCopy.map((item, index) =>
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
@@ -326,8 +326,8 @@ const TradeReport = () => {
                                             ) : null
                                         )}
                                     <p className='my-2 underline'>LC Ammendments</p>
-                                    {reportData.pp.lcAmmendments &&
-                                        reportData.pp.lcAmmendments.map((item, index) =>
+                                    {reportData.pp.lcAmmendment &&
+                                        reportData.pp.lcAmmendment.map((item, index) =>
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
@@ -338,8 +338,8 @@ const TradeReport = () => {
                                             ) : null
                                         )}
                                     <p className='my-2 underline'>Advance TT Copy</p>
-                                    {reportData.pp.advanceTTCopies &&
-                                        reportData.pp.advanceTTCopies.map((item, index) =>
+                                    {reportData.pp.advanceTTCopy &&
+                                        reportData.pp.advanceTTCopy.map((item, index) =>
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
@@ -496,6 +496,24 @@ const TradeReport = () => {
                                             )}
                                         </tbody>
                                     </table>
+                                    <div className='p-2'>
+                                    <p className='my-2 underline'>Documents List</p>
+                                    {salespurchase.packingList?.length > 0 ? (
+                                                salespurchase.packingList.map((item, index) => (
+                                                    <p className="text-sm">
+                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.packing_list}`} target="_blank"
+                                                            rel="noopener noreferrer">{item.name}</a>
+                                                    </p>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td className="px-4 py-2 border-b text-center" colSpan={2}>
+                                                        No documents available.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                   
+                                </div>
                                     <p>Payment & Finance</p>
 
                                     
@@ -561,6 +579,25 @@ const TradeReport = () => {
                                                         </tr>
                                                     </tbody>
                                                 </table>
+
+                                                <div className='p-2'>
+                                                    <p className='my-2 underline'>Documents List</p>
+                                                    {pnf.pf_ttcopy?.length > 0 ? (
+                                                        pnf.pf_ttcopy.map((item, index) => (
+                                                            <p className="text-sm">
+                                                                {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.tt_copy}`} target="_blank"
+                                                                    rel="noopener noreferrer">{item.name}</a>
+                                                            </p>
+                                                        ))
+                                                    ) : (
+                                                        <tr>
+                                                            <td className="px-4 py-2 border-b text-center" colSpan={2}>
+                                                                No documents available.
+                                                            </td>
+                                                        </tr>
+                                                    )}
+
+                                                </div>
                                             </div>
                                         ))
                                     ) : (

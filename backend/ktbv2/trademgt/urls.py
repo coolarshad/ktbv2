@@ -82,6 +82,7 @@ urlpatterns = [
     path('advance-amount/', AdvanceAmountView.as_view(), name='advance-amount'),
 
     path('trade-report/', TradeReportView.as_view(), name='trade-report'),
+    path('inventory-detail/', InventoryDetailView.as_view(), name='inventory-detail'),
 ]+ router.urls
 
 # urlpatterns = [
