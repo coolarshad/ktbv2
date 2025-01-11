@@ -80,6 +80,8 @@ urlpatterns = [
     path('product-balance', RefBalanceView.as_view(), name='product-balance'),
     path('pending-balance', PendingBalanceView.as_view(), name='pending-balance'),
     path('advance-amount/', AdvanceAmountView.as_view(), name='advance-amount'),
+
+    path('trade-report/', TradeReportView.as_view(), name='trade-report'),
 ]+ router.urls
 
 # urlpatterns = [

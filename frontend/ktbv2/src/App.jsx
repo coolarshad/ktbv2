@@ -44,6 +44,7 @@ import Currency from './views/Currency';
 import TradePacking from './views/TradePacking';
 import Inventory from './views/Inventory';
 import PLForm from './views/PLForm';
+import TradeReport from './views/TradeReport';
 
 function App() {
  
@@ -111,6 +112,8 @@ function App() {
           <Route path="/trade-packings" element={<TradePacking />} />
 
           <Route path="/inventory" element={<Inventory />} />
+
+          <Route path="/trade-report" element={<TradeReport />} />
         </Routes>
       </div>
     </Router>

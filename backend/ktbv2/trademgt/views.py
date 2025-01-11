@@ -2545,3 +2545,19 @@ class AdvanceAmountView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class TradeReportView(APIView):
+    def get(self, request, *args, **kwargs):
+        trn = request.query_params.get('trn')
+        
+        try:
+            # Get the SalesPurchase instance
+            trade = Trade.objects.get(id=trn)
+            
+            trade_serializer = TradeReportSerializer(trade)
+            response_data = trade_serializer.data
+            return Response(response_data)
+        except Trade.DoesNotExist:
+            return Response({'error': 'Trade record not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

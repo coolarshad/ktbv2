@@ -106,6 +106,7 @@ const MenuBar = () => {
           {/* Section 6: Miscellaneous */}
           <div>
             <h3 className="text-lg font-semibold mb-2">Trade Report</h3>
+            <Link to="/trade-report" className="block px-4 py-2 hover:bg-gray-700">Report</Link>
             <Link to="/inventory" className="block px-4 py-2 hover:bg-gray-700">Inventory</Link>
             <Link to="/sales-pending" className="block px-4 py-2 hover:bg-gray-700">Sales Pending</Link>
             <Link to="/purchase-pending" className="block px-4 py-2 hover:bg-gray-700">Purchase Pending</Link>

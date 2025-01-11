@@ -719,13 +719,6 @@ class ProfitLossSerializer(serializers.ModelSerializer):
     class Meta:
         model = PL
         fields = '__all__'
-    
-    # def get_sales_trn_details(self, obj):
-    #     try:
-    #         instance = Trade.objects.get(id=obj.trn.id)  
-    #         return TradeSerializer(instance).data
-    #     except Trade.DoesNotExist:
-    #         return None  
 
     def get_sales_trn_details(self, obj):
         try:
@@ -755,14 +748,6 @@ class PLSerializer(serializers.ModelSerializer):
         model = SalesPurchase
         fields = '__all__'
     
-    # def get_trade_details(self, obj):
-    #     # Fetch company details manually
-    #     try:
-    #         # Assuming `company` field in `Trade` contains company name or ID
-    #         instance = Trade.objects.get(id=obj.trn.id)  # or use another field to identify the company
-    #         return TradeSerializer(instance).data
-    #     except Trade.DoesNotExist:
-    #         return None  # Or handle it as needed
 
     def get_prepay_details(self, obj):
         # Fetch company details manually
@@ -790,4 +775,111 @@ class PLSerializer(serializers.ModelSerializer):
         # ret['trn'] = self.get_trade_details(instance)
         ret['prepay'] = self.get_prepay_details(instance)
         ret['pf'] = self.get_pf_details(instance)
+        return ret
+    
+
+# class TradeReportSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Trade
+#         fields = '__all__'
+    
+#     def get_sp_details(self, obj):
+#         # Fetch company details manually
+#         try:
+#             # Assuming `company` field in `Trade` contains company name or ID
+#             instance = SalesPurchase.objects.get(trn=obj.id)  # or use another field to identify the company
+#             return SalesPurchaseSerializer(instance).data
+#         except SalesPurchase.DoesNotExist:
+#             return None  # Or handle it as needed
+    
+#     def to_representation(self, instance):
+#         ret = super().to_representation(instance)
+#         ret['sp'] = self.get_sp_details(instance)
+#         return ret
+
+
+class TradeReportSPSerializer(serializers.ModelSerializer):
+    sp_product = SalesPurchaseProductSerializer(many=True, read_only=True)
+    sp_extra_charges = SalesPurchaseExtraChargeSerializer(many=True, read_only=True)
+    pf = PaymentFinanceSerializer(many=True, source='pfs', read_only=True)
+
+    class Meta:
+        model = SalesPurchase
+        fields = '__all__'
+
+    def get_trade_details(self, obj):
+        # Fetch related Trade details
+        try:
+            trade_instance = Trade.objects.get(id=obj.trn.id)  # Access related Trade
+            return TradeSerializer(trade_instance).data
+        except Trade.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_prepay_details(self, obj):
+        # Fetch related PrePayment details
+        try:
+            prepayment_instance = PrePayment.objects.get(trn=obj.trn)
+            return PrePaymentSerializer(prepayment_instance).data
+        except PrePayment.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+
+        # Add serialized trade and prepayment details
+        ret['trn'] = self.get_trade_details(instance)
+        ret['prepayment'] = self.get_prepay_details(instance)
+
+        return ret
+
+
+
+from rest_framework import serializers
+from .models import Trade, PreSalePurchase, PrePayment, SalesPurchase
+from .serializers import TradeSerializer, PreSalePurchaseSerializer, PrePaymentSerializer, TradeReportSPSerializer
+
+
+class TradeReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trade
+        fields = '__all__'
+    
+    def get_trade_details(self, obj):
+        # Fetch related Trade details
+        try:
+            # Make sure to query by the correct field, such as 'id'
+            trade_instance = Trade.objects.get(id=obj.id)  # Access related Trade using 'id'
+            return TradeSerializer(trade_instance).data
+        except Trade.DoesNotExist:
+            return None  # Or handle it as needed
+    
+    def get_presp_details(self, obj):
+        # Fetch related PreSalePurchase details
+        try:
+            prepayment_instance = PreSalePurchase.objects.get(trn=obj.id)  # Use 'trn' for PreSalePurchase
+            return PreSalePurchaseSerializer(prepayment_instance).data
+        except PreSalePurchase.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_prepay_details(self, obj):
+        # Fetch related PrePayment details
+        try:
+            prepayment_instance = PrePayment.objects.get(trn=obj.id)  # Use 'trn' for PrePayment
+            return PrePaymentSerializer(prepayment_instance).data
+        except PrePayment.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_sp_details(self, obj):
+        # Fetch related SalesPurchase details
+        sp_instances = obj.salespurchase_set.all()  # Get all related SalesPurchase instances
+        return TradeReportSPSerializer(sp_instances, many=True).data
+
+    def to_representation(self, instance):
+        # Customize the representation of the instance
+        ret = super().to_representation(instance)
+        ret['trade'] = self.get_trade_details(instance)
+        ret['presp'] = self.get_presp_details(instance)
+        ret['pp'] = self.get_prepay_details(instance)
+        ret['sp'] = self.get_sp_details(instance)
         return ret
