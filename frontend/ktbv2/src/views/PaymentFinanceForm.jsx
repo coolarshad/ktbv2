@@ -169,7 +169,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 const balancePaymentReceived = parseFloat(updatedFormData.balance_payment_received) || 0;
                 const currentValue = parseFloat(value || 0);
               
-                const remainingValue = parseFloat(calculateRemainingContractValue(data)) - advanceAdjusted - balancePaymentMade - balancePaymentReceived ;
+                // const remainingValue = parseFloat(calculateRemainingContractValue(data)) - advanceAdjusted - balancePaymentMade - balancePaymentReceived ;
+                const remainingValue = parseFloat(data?.invoice_amount) - advanceAdjusted - balancePaymentMade - balancePaymentReceived ;
               
                 updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2);
               }
@@ -342,6 +343,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         }
       
         return contractValue - advance;
+        
       };
 
     const tradeData = data
