@@ -234,7 +234,7 @@ const SalesInvoice = () => {
         <div className=" p-2">
           <p>Amount Chargeable (in words)</p>
           <p className='font-bold'>CURRENCY XXXXXXXXXX Only</p>
-          <p>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
+          <p>DOCUMENTS PROVIDED AGAINST SHIPMENT</p>
           <p>1.</p>
           <p>2.</p>
           <p>3.</p>

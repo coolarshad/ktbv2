@@ -206,7 +206,7 @@ const PurchaseInvoice = () => {
       <div className=" p-2">
         <p className='text-sm'>Amount Chargeable (in words)</p>
         <p className='font-bold mb-2 text-sm'>CURRENCY XXXXXXXXXX Only</p>
-        <p className='text-sm'>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
+        <p className='text-sm'>DOCUMENTS PROVIDED AGAINST SHIPMENT</p>
         <p className='text-sm'>1.</p>
         <p className='text-sm'>2.</p>
         <p className='text-sm'>3.</p>

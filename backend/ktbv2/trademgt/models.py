@@ -686,6 +686,9 @@ class Company(models.Model):
     name = models.CharField(max_length=255)
     initial = models.CharField(max_length=10)  # e.g., "KP", "SP", etc.
     counter = models.PositiveIntegerField(default=0)
+    registration_number=models.CharField(max_length=20)
+    seal_image = models.ImageField(upload_to='company/seals/', blank=True, null=True)
+    signature_image = models.ImageField(upload_to='company/signatures/', blank=True, null=True)
 
     def __str__(self):
         return self.name

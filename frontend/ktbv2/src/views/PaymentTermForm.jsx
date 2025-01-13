@@ -172,6 +172,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
               onChange={handleChange}
               placeholder="Advance Within (Days)"
               className="border border-gray-300 p-2 rounded w-full"
+              readOnly={formData.advance_in_percentage=='0'?true:false}
             />
           </div>
           <div>

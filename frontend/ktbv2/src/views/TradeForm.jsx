@@ -547,12 +547,28 @@ const TradeForm = ({ mode = 'add' }) => {
         let errors = {};
 
         // Define fields to skip validation for
-        const skipValidation = ['loi', 'relatedTrades','approved_by','ref_balance'];
+        const skipValidation = ['loi', 'relatedTrades', 'approved_by', 'ref_balance'];
+
+        // Trade category validation rules
+        const validCategories = {
+            Sales: ['Sales', 'Sales Cancel'],
+            Purchase: ['Purchase', 'Purchase Cancel'],
+        };
 
         // Check each regular field for empty value (except files and those in skipValidation)
         for (const [key, value] of Object.entries(formData)) {
             if (!skipValidation.includes(key) && value === '') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+            }
+           
+        }
+
+        // Validate trade_type and trade_category
+        const { trade_type, trade_category } = formData;
+        if (trade_type && trade_category) {
+            const allowedCategories = validCategories[trade_type];
+            if (!allowedCategories.includes(trade_category)) {
+                errors.trade_category = `Invalid category for ${trade_type}.`;
             }
         }
 
@@ -739,6 +755,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Transaction Reference Number"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('trn')}`}
+                        readOnly={true}
                     />
                     {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
@@ -862,6 +879,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Account Number"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('account_number')}`}
+                        readOnly={true}
                     />
                     {validationErrors.account_number && <p className="text-red-500">{validationErrors.account_number}</p>}
                 </div>
@@ -874,6 +892,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="SWIFT Code"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('swift_code')}`}
+                        readOnly={true}
                     />
                     {validationErrors.swift_code && <p className="text-red-500">{validationErrors.swift_code}</p>}
                 </div>

@@ -174,7 +174,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             {selectedTrade.address}
                           </p>
                           <p className='mt-1'>
-                            Cmp Regn No. : <span className='font-bold'>201726590K</span>
+                            Cmp Regn No. : <span className='font-bold'>{selectedTrade.company.registration_number}</span>
                           </p>
                         </div>
                         <div className=" border-black px-2 py-3">
@@ -275,7 +275,7 @@ const PreSPTable = ({ data, onDelete }) => {
                                 <td className="border-l border-r border-black p-1 text-sm text-right">{parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)}</td>
                             </tr>
                           ))}
-                          {Array.from({ length: 15 - selectedTrade.trade_products.length }, (_, index) => (
+                          {Array.from({ length: 12 - selectedTrade.trade_products.length }, (_, index) => (
                             <tr key={index}>
                               <td className="border-l border-r border-black p-2"></td>
                               <td className="border-l border-r border-black p-2"></td>
@@ -308,8 +308,8 @@ const PreSPTable = ({ data, onDelete }) => {
                       {/* Row 1 */}
                       <div className=" p-2">
                         <p className='text-sm'>Amount Chargeable (in words)</p>
-                        <p className='font-bold mb-2 text-sm uppercase'>{selectedTrade.currency.name} {toWords(totalAmount)} Only</p>
-                        <p className='text-sm'>DOUMENTS REQUIRED AGAINST SHIPMENT</p>
+                        <p className='font-bold mb-1 text-sm uppercase'>{selectedTrade.currency.name} {toWords(totalAmount)} Only</p>
+                        <p className='text-sm'>DOCUMENTS REQUIRED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
                             <div key={index}>
@@ -320,11 +320,11 @@ const PreSPTable = ({ data, onDelete }) => {
                         ) : (
                           <p>No Document data available.</p>
                         )}
-                        <p className='mt-2 underline text-sm'>Declaration</p>
+                        <p className='mt-1 underline text-sm'>Declaration</p>
                         <p className="text-sm font-md">We declare that this purchase order shows the actual price of the goods described and that all particulars are true and correct.The tolerance quantity to be provided shall be on buyer's option.</p>
                       </div>
                       { }
-                      <div className="grid grid-cols-2">
+                      {/* <div className="grid grid-cols-2">
                         <div className=" p-2">
                           <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
                           <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
@@ -332,6 +332,18 @@ const PreSPTable = ({ data, onDelete }) => {
                         <div className="border-t border-l border-black p-2">
                           <p className='mb-8 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
                           <p className='text-right text-sm'>Authorised Signatory</p>
+                        </div>
+                      </div> */}
+                      <div className="grid grid-cols-2">
+                        <div className="p-2">
+                          <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
+                          <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" />
+                          <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
+                        </div>
+                        <div className="border-t border-l border-black p-2">
+                          <p className='mb-8 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
+                          <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" />
+                          <p className='text-right text-sm'>Authorized Signatory</p>
                         </div>
                       </div>
                     </div>
@@ -475,7 +487,7 @@ const PreSPTable = ({ data, onDelete }) => {
                                 </td>
                               </tr>
                             ))}
-                            {Array.from({ length: 8 - selectedTrade.trade_products.length }, (_, index) => (
+                            {Array.from({ length: 7 - selectedTrade.trade_products.length }, (_, index) => (
                               <tr key={index}>
                                 <td className="border-l border-r border-black p-2"></td>
                                 <td className="border-l border-r border-black p-2"></td>
@@ -509,7 +521,7 @@ const PreSPTable = ({ data, onDelete }) => {
                         <div className=" px-2 py-1">
                           <p>Amount Chargeable (in words)</p>
                           <p className='font-bold uppercase'>{selectedTrade.currency.name} {toWords(totalAmount)} Only</p>
-                          <p>DOUMENTS PROVIDED AGAINST SHIPMENT</p>
+                          <p>DOCUMENTS PROVIDED AGAINST SHIPMENT</p>
                           {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
                             <div key={index}>
@@ -525,15 +537,17 @@ const PreSPTable = ({ data, onDelete }) => {
                         </div>
                         {/* Row 2 with 2 Columns */}
                         <div className="grid grid-cols-2">
-                          <div className=" px-2 py-0">
-                            <p className='mb-8 font-bold'>Acknowledged By</p>
-                            <p className='font-bold'>Authorized Signatory with Seal</p>
+                          <div className="p-2">
+                            <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
+                            <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" />
+                            <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
                           </div>
                           <div className="border-t border-l border-black p-2">
-                            <p className='mb-7 font-bold'>for KISMAT PETROLEUM TRADING PTE LTD</p>
-                            <p className='text-right'>Authorised Signatory</p>
+                            <p className='mb-8 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
+                            <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" />
+                            <p className='text-right text-sm'>Authorized Signatory</p>
                           </div>
-                        </div>
+                      </div>
                       </div>
                       <div className="text-center pb-0 mt-1">
                         <h1 className="text-sm font-md">This is a computer generated invoice</h1>
