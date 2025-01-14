@@ -2435,19 +2435,27 @@ class RefBalanceView(APIView):
         product_name = request.query_params.get('product_name')
         
         try:
-            product = TradeProduct.objects.get(trade__trn=ref_trn,product_code=product_code,product_name=product_name)
-            if product.trade.trade_type=='Sales':
-                trace=SalesProductTrace.objects.filter(product_code=product_code).first()
-            else:
-                trace=PurchaseProductTrace.objects.filter(product_code=product_code).first()
-                if trace.ref_balance_qty:
+            product = TradeProduct.objects.get(
+                trade__trn=ref_trn,
+                product_code=product_code,
+                product_name=product_name
+            )
+            
+            balance = 'NA'  # Default value
+            
+            if product.trade.trade_type == 'Sales':
+                trace = SalesProductTrace.objects.filter(product_code=product_code).first()
+                if trace and trace.ref_balance_qty is not None:
                     balance = trace.ref_balance_qty
-                else:
-                    balance = 'NA'
+            else:
+                trace = PurchaseProductTrace.objects.filter(product_code=product_code).first()
+                if trace and trace.ref_balance_qty is not None:
+                    balance = trace.ref_balance_qty
+                    
         except TradeProduct.DoesNotExist:
-            return Response({'ref_balance':'NA'})
+            return Response({'ref_balance': 'NA'})
 
-        return Response({'ref_balance':balance})
+        return Response({'ref_balance': balance})
 
       
 class ProfitLossViewSet(viewsets.ModelViewSet):
