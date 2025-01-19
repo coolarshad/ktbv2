@@ -760,7 +760,10 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 
             </div>
             <hr className="my-6" />
-            {data?.prepayment.lc_number.toLowerCase() == "na" && (
+            {data?.prepayment.lc_number.toLowerCase() === "na" && (
+                parseFloat(formData.balance_payment_received) > 0 ||
+                parseFloat(formData.balance_payment_made) > 0
+            ) && (
                 <div className=''>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">TTCopy</h3>
                     {formData.ttCopies.map((ttCopy, index) => (
@@ -809,18 +812,10 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                             </div>
                         </div>
                     ))}
-                    <div className="text-right">
-                        <button
-                            type="button"
-                            onClick={() => handleAddRow('ttCopies')}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Add TTCopy
-                        </button>
-                    </div>
-
                 </div>
             )}
+
+
 
             <hr className="my-6" />
             <div className='grid grid-cols-3 gap-4 mb-4'>

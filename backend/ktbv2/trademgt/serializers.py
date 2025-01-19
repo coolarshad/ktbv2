@@ -54,6 +54,14 @@ class TradeProductSerializer(serializers.ModelSerializer):
                 return instance.trn
         except Trade.DoesNotExist:
             return None
+    
+    def get_container_details(self, obj):
+        try:
+            instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
+            return ShipmentSizeSerializer(instance).data
+        except ShipmentSize.DoesNotExist:
+            return None
+    
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
@@ -64,6 +72,7 @@ class TradeProductSerializer(serializers.ModelSerializer):
         ret['supplier'] = self.get_supplier_details(instance)
         ret['packing'] = self.get_packing_details(instance)
         ret['refTrn'] = self.get_ref_trn_details(instance)
+        ret['shipmentSize'] = self.get_container_details(instance)
 
         return ret
 
@@ -133,12 +142,12 @@ class TradeSerializer(serializers.ModelSerializer):
             return PaymentTermSerializer(instance).data
         except PaymentTerm.DoesNotExist:
             return None
-    def get_container_details(self, obj):
-        try:
-            instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
-            return ShipmentSizeSerializer(instance).data
-        except ShipmentSize.DoesNotExist:
-            return None
+    # def get_container_details(self, obj):
+    #     try:
+    #         instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
+    #         return ShipmentSizeSerializer(instance).data
+    #     except ShipmentSize.DoesNotExist:
+    #         return None
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
@@ -150,7 +159,7 @@ class TradeSerializer(serializers.ModelSerializer):
         ret['bank'] = self.get_bank_details(instance)
         ret['currency'] = self.get_currency_details(instance)
         ret['paymentTerm'] = self.get_payment_term_details(instance)
-        ret['shipmentSize'] = self.get_container_details(instance)
+        # ret['shipmentSize'] = self.get_container_details(instance)
         
         return ret
 
@@ -210,12 +219,12 @@ class PrintSerializer(serializers.ModelSerializer):
         except Bank.DoesNotExist:
             return None  # Or handle it as needed
     
-    def get_container_details(self, obj):
-        try:
-            instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
-            return ShipmentSizeSerializer(instance).data
-        except ShipmentSize.DoesNotExist:
-            return None
+    # def get_container_details(self, obj):
+    #     try:
+    #         instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
+    #         return ShipmentSizeSerializer(instance).data
+    #     except ShipmentSize.DoesNotExist:
+    #         return None
 
 
     def to_representation(self, instance):
@@ -227,7 +236,7 @@ class PrintSerializer(serializers.ModelSerializer):
         ret['customer_company_name'] = self.get_kyc_details(instance)
         ret['bank_name_address'] = self.get_bank_details(instance)
         ret['paymentTerm'] = self.get_payment_term_details(instance)
-        ret['shipmentSize'] = self.get_container_details(instance)
+        # ret['shipmentSize'] = self.get_container_details(instance)
         ret['currency'] = self.get_currency_details(instance)
         
         return ret

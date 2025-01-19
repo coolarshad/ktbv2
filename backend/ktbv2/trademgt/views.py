@@ -94,7 +94,7 @@ class TradeView(APIView):
             'consignee_in_bl': data.get('consignee_in_bl'),
             'notify_party_in_bl': data.get('notify_party_in_bl'),
             
-            'container_shipment_size': data.get('container_shipment_size'),
+            # 'container_shipment_size': data.get('container_shipment_size'),
             'bl_fee': data.get('bl_fee'),
             'bl_fee_remarks': data.get('bl_fee_remarks'),
         }
@@ -133,6 +133,7 @@ class TradeView(APIView):
                 'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
                 'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
+                'container_shipment_size': data.get(f'tradeProducts[{i}].container_shipment_size'),
                 
             }
             trade_products_data.append(product_data)
@@ -306,7 +307,7 @@ class TradeView(APIView):
             'consignee_in_bl': data.get('consignee_in_bl'),
             'notify_party_in_bl': data.get('notify_party_in_bl'),
            
-            'container_shipment_size': data.get('container_shipment_size'),
+            # 'container_shipment_size': data.get('container_shipment_size'),
             'bl_fee': data.get('bl_fee'),
             'bl_fee_remarks': data.get('bl_fee_remarks'),
         }
@@ -356,6 +357,7 @@ class TradeView(APIView):
                 'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
                 'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
+                'container_shipment_size': data.get(f'tradeProducts[{i}].container_shipment_size'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -2488,7 +2490,7 @@ class PendingBalanceView(APIView):
         trn = request.query_params.get('trn')
         product_code = request.query_params.get('product_code')
         product_name = request.query_params.get('product_name')
-        hs_code = request.query_params.get('hs_code')
+        # hs_code = request.query_params.get('hs_code')
         purchase_bl_number = request.query_params.get('purchase_bl_number')
         
         try:
@@ -2502,7 +2504,7 @@ class PendingBalanceView(APIView):
                     trn=trade,
                     product_code=product_code,
                     product_name=product_name,
-                    hs_code=hs_code
+                    # hs_code=hs_code
                 ).first()
                
                 if product:
@@ -2517,7 +2519,7 @@ class PendingBalanceView(APIView):
                     trn=trade,
                     product_code=product_code,
                     product_name=product_name,
-                    hs_code=hs_code
+                    # hs_code=hs_code
                 ).first()
                
                 if product:
@@ -2587,7 +2589,8 @@ class InventoryDetailView(APIView):
             sps = SalesPurchaseProduct.objects.filter(
                 product_name=inventory.product_name,
                 batch_number=inventory.batch_number,
-                production_date=inventory.production_date
+                production_date=inventory.production_date,
+                sp__reviewed=True
             )
 
             # Serialize the filtered SalesPurchaseProduct records

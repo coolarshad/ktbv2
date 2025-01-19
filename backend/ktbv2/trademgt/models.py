@@ -44,7 +44,7 @@ class Trade(models.Model):
     notify_party_in_bl=models.CharField(_("notify_party_in_bl"), max_length=50)
     # markings_in_packaging=models.CharField(_("markings_in_packaging"), max_length=100)
     
-    container_shipment_size=models.CharField(_("container_shipment_size"), max_length=50)
+    # container_shipment_size=models.CharField(_("container_shipment_size"), max_length=50)
     bl_fee=models.FloatField(_("bl_fee"))
     bl_fee_remarks=models.CharField(_("bl_fee_remarks"), max_length=150)
 
@@ -95,6 +95,7 @@ class TradeProduct(models.Model):
     ref_type=models.CharField(_("ref_type"), max_length=50)
     ref_trn=models.CharField(_("ref_trn"), max_length=50)
     product_code_ref=models.CharField(_("ref_trn"), max_length=50)
+    container_shipment_size=models.CharField(_("container_shipment_size"), max_length=50)
 
 
     class Meta:

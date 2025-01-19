@@ -259,7 +259,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         { label: 'ETD', text: data.etd || '' },
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
-        { label: 'Container Shipment Size', text: data.shipmentSize.name || '' },
+        // { label: 'Container Shipment Size', text: data.shipmentSize.name || '' },
         { label: 'Remarks', text: data.remarks || '' },
       ]
     : [];
@@ -295,6 +295,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Container Shipment Size</th>
                  </tr>
                </thead>
                <tbody>
@@ -311,6 +312,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.shipmentSize.name}</td>
                    </tr>
                  ))}
                </tbody>

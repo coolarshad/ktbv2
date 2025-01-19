@@ -403,10 +403,10 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{sumPFCharges(selectedPL.purchasePF)}</td>
                       </tr>
                       <tr>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">Total</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.salesPF.sp),selectedPL.salesPF.sp.invoice_amount,selectedPL.salesPF.sp.trn.commission_value,0,selectedPL.salesPF.sp.bl_fees,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.salesPF.sp),selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.salesPF))}</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">Total </td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),selectedPL.purchasePF.sp.invoice_amount,selectedPL.purchasePF.sp.trn.commission_value,0,selectedPL.purchasePF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),selectedPL.purchasePF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF))}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">Total Income</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_amount}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">Total Expense</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,selectedPL.purchasePF.sp.trn.commission_value,selectedPL.salesPF.sp.trn.commission_value,0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td>
                       </tr>
                     </tbody>
                     

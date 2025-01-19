@@ -203,10 +203,10 @@ const PreSPTable = ({ data, onDelete }) => {
                             <p className='text-sm uppercase'>{selectedTrade.incoterm}</p>
                           </div>
                          
-                          <div className="border-b border-black p-2">
+                          {/* <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>CONTAINER SIZE</p>
                             <p className='text-sm uppercase'>{selectedTrade.shipmentSize.name}</p>
-                          </div>
+                          </div> */}
                           <div className="p-2">
                             <p className='font-bold text-sm'>
                               ESTIMATED TIME OF DEPARTURE
@@ -264,7 +264,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             <tr key={index}>
                                <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
-                                  {product.product_name_for_client ? product.product_name_for_client : product.productName.name}
+                                  {product.product_name_for_client && product.product_name_for_client !== "NA" ? product.product_name_for_client : product.productName.name}
                                 </td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>
@@ -410,10 +410,10 @@ const PreSPTable = ({ data, onDelete }) => {
                               <p className='uppercase'>{selectedTrade.incoterm}</p>
                             </div>
                             
-                            <div className="border-b border-black p-2">
+                            {/* <div className="border-b border-black p-2">
                               <p className='font-bold'>CONTAINER SIZE</p>
                               <p className='uppercase'>{selectedTrade.shipmentSize.name}</p>
-                            </div>
+                            </div> */}
                             <div className="p-2">
                               <p className='font-bold'>
                                 ESTIMATED TIME OF DEPARTURE
@@ -474,7 +474,7 @@ const PreSPTable = ({ data, onDelete }) => {
                               <tr key={index}>
                                 <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
-                                  {product.product_name_for_client ? product.product_name_for_client : product.productName.name}
+                                  {product.product_name_for_client && product.product_name_for_client !== "NA" ? product.product_name_for_client : product.productName.name}
                                 </td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>
@@ -666,10 +666,10 @@ const PreSPTable = ({ data, onDelete }) => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurance Policy Number</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.insurance_policy_number}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.shipmentSize.name}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.remarks}</td>
@@ -702,6 +702,7 @@ const PreSPTable = ({ data, onDelete }) => {
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing</th>
+                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Container Shipment Size</th>
                  </tr>
                </thead>
                <tbody>
@@ -721,6 +722,7 @@ const PreSPTable = ({ data, onDelete }) => {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packing.name}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.shipmentSize.name}</td>
                    </tr>
                  ))}
                </tbody>

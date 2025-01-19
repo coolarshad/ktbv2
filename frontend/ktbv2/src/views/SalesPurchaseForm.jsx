@@ -247,14 +247,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     // Function to debounce API calls
    // Debounced API call function
    const debouncedApiCall = useCallback(
-    debounce(async (trn, product_code, product_name, hs_code,purchase_bl_number, index, arrayName) => {
+    debounce(async (trn, product_code, product_name,purchase_bl_number, index, arrayName) => {
         try {
             const response = await axios.get('/trademgt/pending-balance', {
                 params: {
                     trn,
                     product_code,
                     product_name,
-                    hs_code,
+                    // hs_code,
                     purchase_bl_number
                 },
             });
@@ -335,8 +335,8 @@ const handleChange = async (e, arrayName = null, index = null) => {
 
                 if (
                     name === 'product_code' || 
-                    name === 'product_name' || 
-                    name === 'hs_code'
+                    name === 'product_name' 
+                    // name === 'hs_code'
                   ) {
                     const { product_code, product_name, hs_code } = updatedArray[index];
                     
@@ -345,7 +345,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                         formData.trn,
                         product_code,
                         product_name,
-                        hs_code,
+                        // hs_code,
                         formData.bl_number,
                         index,
                         arrayName

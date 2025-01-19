@@ -259,10 +259,10 @@ function TradeApproved() {
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.notify_party_in_bl}</td>
                   </tr>
                  
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Container Shipment Size</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.shipmentSize.name}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fee</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_fee}</td>
@@ -403,6 +403,10 @@ function TradeApproved() {
                         <span className="font-medium">Reference TRN:</span>
                         <span>{product.ref_trn}</span>
                       </div>
+                      <tr className="flex flex-col">
+                        <td className="font-medium">Container Shipment Size</td>
+                        <span>{product.shipmentSize.name}</span>
+                      </tr>
                     </div>
                   ))}
                 </div>

@@ -54,7 +54,7 @@ const TradeForm = ({ mode = 'add' }) => {
         consignee_in_bl: '',
         notify_party_in_bl: '',
         
-        container_shipment_size: '',
+        // container_shipment_size: '',
         bl_fee: '',
         bl_fee_remarks: '',
         tradeProducts: [
@@ -86,6 +86,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 ref_type: '',
                 ref_trn: '',
                 ref_balance: '',
+                container_shipment_size: '',
             }
         ],
         tradeExtraCosts: [
@@ -483,6 +484,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     total_commission: '',
                     ref_type: '',
                     ref_trn: '',
+                    container_shipment_size: '',
                 }
             ]
         }));
@@ -1037,7 +1039,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     {validationErrors.notify_party_in_bl && <p className="text-red-500">{validationErrors.notify_party_in_bl}</p>}
                 </div>
                
-                <div>
+                {/* <div>
                     <label htmlFor="container_shipment_size" className="block text-sm font-medium text-gray-700">Container Shipment Size</label>
                     <select
                         name="container_shipment_size"
@@ -1053,7 +1055,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         ))}
                     </select>
                     {validationErrors.container_shipment_size && <p className="text-red-500">{validationErrors.container_shipment_size}</p>}
-                </div>
+                </div> */}
                 
             </div>
 
@@ -1097,6 +1099,65 @@ const TradeForm = ({ mode = 'add' }) => {
                                 )}
                                
                             </div>
+                            <div>
+                                <label htmlFor="ref_type" className="block text-sm font-medium text-gray-700">Reference Type</label>
+                                <select
+                                    name="ref_type"
+                                    value={product.ref_type}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_type`)}`}
+                                >
+                                    {/* <option value="">Select Type</option> */}
+                                    <option value="">---</option>
+                                    <option value="NA">NA</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Purchase">Purchase</option>
+                                   
+                                </select>
+                                {validationErrors[`tradeProducts[${index}].ref_type`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].ref_type`]}
+                                    </p>
+                                )}
+                            </div>
+                           
+                            <div>
+                                <label htmlFor="ref_trn" className="block text-sm font-medium text-gray-700">
+                                Reference TRN
+                                </label>
+                                <select
+                                    name="ref_trn"
+                                    value={product.ref_trn}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_trn`)}`}
+                                >
+                                    {/* <option value="">Select TRN</option> */}
+                                    <option value="">---</option>
+                                    <option value="NA">NA</option>
+                                    {tradeOptions.map((option) => (
+                                        <option key={option.value} value={option.label}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                {validationErrors[`tradeProducts[${index}].ref_trn`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].ref_trn`]}
+                                    </p>
+                                )}
+                                {product.ref_balance && product.ref_trn !== 'NA' ? (
+                                    <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
+                                        Reference Balance: {product.ref_balance || 'NA'}
+                                    </p>
+                                ) : ''}
+                            </div>
+                            {/* <div>
+                                {product.ref_balance && product.ref_trn !== 'NA' ? (
+                                    <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
+                                        Reference Balance: {product.ref_balance || 'NA'}
+                                    </p>
+                                ) : ''}
+                            </div> */}
                             <div>
                                 <label htmlFor="product_code" className="block text-sm font-medium text-gray-700">Product Code</label>
                                 <input
@@ -1508,59 +1569,23 @@ const TradeForm = ({ mode = 'add' }) => {
                                 )}
                             </div>
                             <div>
-                                <label htmlFor="ref_type" className="block text-sm font-medium text-gray-700">Reference Type</label>
+                                <label htmlFor="container_shipment_size" className="block text-sm font-medium text-gray-700">Container Shipment Size</label>
                                 <select
-                                    name="ref_type"
-                                    value={product.ref_type}
+                                    name="container_shipment_size"
+                                    value={product.container_shipment_size}
                                     onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_type`)}`}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('container_shipment_size')}`}
                                 >
-                                    {/* <option value="">Select Type</option> */}
-                                    <option value="">---</option>
-                                    <option value="NA">NA</option>
-                                    <option value="Sales">Sales</option>
-                                    <option value="Purchase">Purchase</option>
-                                   
-                                </select>
-                                {validationErrors[`tradeProducts[${index}].ref_type`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`tradeProducts[${index}].ref_type`]}
-                                    </p>
-                                )}
-                            </div>
-                           
-                            <div>
-                                <label htmlFor="ref_trn" className="block text-sm font-medium text-gray-700">
-                                Reference TRN
-                                </label>
-                                <select
-                                    name="ref_trn"
-                                    value={product.ref_trn}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_trn`)}`}
-                                >
-                                    {/* <option value="">Select TRN</option> */}
-                                    <option value="">---</option>
-                                    <option value="NA">NA</option>
-                                    {tradeOptions.map((option) => (
-                                        <option key={option.value} value={option.label}>
-                                            {option.label}
+                                    <option value="">Select Size</option>
+                                    {shipmentSizeOptions.map((option) => (
+                                        <option key={option.id} value={option.id}>
+                                            {option.name}
                                         </option>
                                     ))}
                                 </select>
-                                {validationErrors[`tradeProducts[${index}].ref_trn`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`tradeProducts[${index}].ref_trn`]}
-                                    </p>
-                                )}
+                                {validationErrors.container_shipment_size && <p className="text-red-500">{validationErrors.container_shipment_size}</p>}
                             </div>
-                            <div>
-                                {product.ref_balance && product.ref_trn !== 'NA' ? (
-                                    <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
-                                        Reference Balance: {product.ref_balance || 'NA'}
-                                    </p>
-                                ) : ''}
-                            </div>
+
 
                             <div className="col-span-3 flex justify-end">
                                 <button

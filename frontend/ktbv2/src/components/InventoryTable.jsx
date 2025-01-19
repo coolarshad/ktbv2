@@ -13,7 +13,7 @@ const InventoryTable = ({ data , onDelete, onView }) => { // Default value for d
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch Number</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Production Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Quantity</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Closing Stock</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Unit</th>
            
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
