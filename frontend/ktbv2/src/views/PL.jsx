@@ -196,11 +196,23 @@ function PL() {
     { value: 'remarks', label: 'Remarks' },
   ];
 
+  const calculateTotalCommission = (items, sp, findTrade) => {
+    if (!items || !Array.isArray(items)) return 0;
+    
+    return items.reduce((total, item) => {
+      const qty = parseFloat(item.bl_qty) || 0;
+      const trade = findTrade(sp, item);
+      const rate = parseFloat(trade?.commission_rate) || 0;
+      return total + (qty * rate);
+    }, 0);
+  };
+
   const calculateSPTotal = (pf) => {
     if (!pf) return 0; // Handle undefined or null SP
     return parseFloat(
       sumPackingCost(pf.sp) +
       // pf.sp.trn.commission_value +
+      calculateTotalCommission(pf.sp.sp_product, pf.sp, findTrade),
       pf.sp.bl_fees +
       pf.sp.bl_collection_cost +
       sumOtherCharges(pf.sp) +
@@ -356,9 +368,10 @@ function PL() {
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">COMMISSION VALUE</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.commission_value}</td>
+                        {/* <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.commission_value}</td> */}
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">COMMISSION VALUE</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.commission_value}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Number</td>
@@ -406,7 +419,7 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Income</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_amount}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Expense</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,selectedPL.purchasePF.sp.trn.commission_value,selectedPL.salesPF.sp.trn.commission_value,0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td>
                       </tr>
                     </tbody>
                     

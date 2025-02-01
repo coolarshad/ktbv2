@@ -120,7 +120,7 @@ class TradeExtraCost(models.Model):
         verbose_name_plural = _("TradeExtraCosts")
 
     def __str__(self):
-        return self.trade
+        return self.extra_cost_remarks
 
     def get_absolute_url(self):
         return reverse("TradeExtraCost_detail", kwargs={"pk": self.pk})

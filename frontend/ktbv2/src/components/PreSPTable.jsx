@@ -264,7 +264,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             <tr key={index}>
                                <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
-                                  {product.product_name_for_client && product.product_name_for_client !== "NA" ? product.product_name_for_client : product.productName.name}
+                                  {product.product_name_for_client && product.product_name_for_client.toLowerCase() !== "na" ? product.product_name_for_client : product.productName.name}
                                 </td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>
@@ -474,7 +474,7 @@ const PreSPTable = ({ data, onDelete }) => {
                               <tr key={index}>
                                 <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
-                                  {product.product_name_for_client && product.product_name_for_client !== "NA" ? product.product_name_for_client : product.productName.name}
+                                  {product.product_name_for_client && product.product_name_for_client.toLowerCase() !== "na" ? product.product_name_for_client : product.productName.name}
                                 </td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
                                 <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>

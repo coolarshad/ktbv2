@@ -117,10 +117,10 @@ const TradeReport = () => {
                                 <td className="px-4 py-2 border-b">Insurance Policy Number</td>
                                 <td className="px-4 py-2 border-b">{reportData?.trade?.insurance_policy_number}</td>
                             </tr>
-                            <tr>
+                            {/* <tr>
                                 <td className="px-4 py-2 border-b">Container Shipment Size</td>
                                 <td className="px-4 py-2 border-b">{reportData?.trade?.shipmentSize.name}</td>
-                            </tr>
+                            </tr> */}
                             <tr>
                                 <td className="px-4 py-2 border-b">Customer Company Name</td>
                                 <td className="px-4 py-2 border-b">{reportData?.trade?.customer.name}</td> {/* Accessing customer name */}
@@ -162,6 +162,7 @@ const TradeReport = () => {
                                     <th className="px-4 py-2 border-b text-left">Trade Qty</th>
                                     <th className="px-4 py-2 border-b text-left">Rate in USD</th>
                                     <th className="px-4 py-2 border-b text-left">Commission Rate</th>
+                                    <th className="px-4 py-2 border-b text-left">Container Shipment Size</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -180,6 +181,7 @@ const TradeReport = () => {
                                             <td className="px-4 py-2 border-b">{product.trade_qty || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.rate_in_usd || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.commission_rate || 'N/A'}</td>
+                                            <td className="px-4 py-2 border-b">{product.shipmentSize.name || 'N/A'}</td>
                                         </tr>
                                     ))
                                 ) : (
