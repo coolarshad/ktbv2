@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const SalesTraceTable = ({ data , onDelete, onView }) => { // Default value for data
+const ProductRefTable = ({ data , onDelete, onView }) => { // Default value for data
 
   
   return (
@@ -10,12 +10,10 @@ const SalesTraceTable = ({ data , onDelete, onView }) => { // Default value for 
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Balance Qty</th>
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reference Balance Qty</th> */}
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Starting TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reference Balance Qty</th>
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -24,12 +22,12 @@ const SalesTraceTable = ({ data , onDelete, onView }) => { // Default value for 
           {data?.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_type}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_balance_qty}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ref_balance_qty}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.first_trn}</td>
+             
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ref_balance_qty}</td>
+              
              
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
@@ -44,4 +42,4 @@ const SalesTraceTable = ({ data , onDelete, onView }) => { // Default value for 
   );
 };
 
-export default SalesTraceTable;
+export default ProductRefTable;

@@ -44,8 +44,8 @@ const PreSPTable = ({ data, onDelete }) => {
       setSelectedTrade(response.data);
   
       // Calculate sums directly from the fetched data
-      const totalQuantity = response.data.trade_products?.reduce((sum, product) => sum + Number(product.trade_qty), 0);
-      const totalAmountSum = response.data.trade_products?.reduce((sum, product) => sum + Number(parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)), 0);
+      const totalQuantity = response.data.tradeProducts?.reduce((sum, product) => sum + Number(product.trade_qty), 0);
+      const totalAmountSum = response.data.tradeProducts?.reduce((sum, product) => sum + Number(parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)), 0);
   
       // Update state with the calculated sums
       setTotalTradeQuantity(totalQuantity);
@@ -260,7 +260,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           </tr>
                         </thead>
                         <tbody>
-                          {selectedTrade.trade_products.map((product, index) => (
+                          {selectedTrade.tradeProducts.map((product, index) => (
                             <tr key={index}>
                                <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
@@ -275,7 +275,7 @@ const PreSPTable = ({ data, onDelete }) => {
                                 <td className="border-l border-r border-black p-1 text-sm text-right">{parseFloat(product.selected_currency_rate*product.trade_qty).toFixed(2)}</td>
                             </tr>
                           ))}
-                          {Array.from({ length: 12 - selectedTrade.trade_products.length }, (_, index) => (
+                          {Array.from({ length: 12 - selectedTrade.tradeProducts.length }, (_, index) => (
                             <tr key={index}>
                               <td className="border-l border-r border-black p-2"></td>
                               <td className="border-l border-r border-black p-2"></td>
@@ -470,7 +470,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             </tr>
                           </thead>
                           <tbody>
-                            {selectedTrade.trade_products.map((product, index) => (
+                            {selectedTrade.tradeProducts.map((product, index) => (
                               <tr key={index}>
                                 <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
                                 <td className="border-l border-r border-black p-1 font-bold text-sm">
@@ -487,7 +487,7 @@ const PreSPTable = ({ data, onDelete }) => {
                                 </td>
                               </tr>
                             ))}
-                            {Array.from({ length: 7 - selectedTrade.trade_products.length }, (_, index) => (
+                            {Array.from({ length: 7 - selectedTrade.tradeProducts.length }, (_, index) => (
                               <tr key={index}>
                                 <td className="border-l border-r border-black p-2"></td>
                                 <td className="border-l border-r border-black p-2"></td>
@@ -706,7 +706,7 @@ const PreSPTable = ({ data, onDelete }) => {
                  </tr>
                </thead>
                <tbody>
-                 {selectedTrade.trade_products.map(product => (
+                 {selectedTrade.tradeProducts.map(product => (
                    <tr key={product.id}>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>

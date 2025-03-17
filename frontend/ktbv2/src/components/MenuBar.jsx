@@ -112,6 +112,7 @@ const MenuBar = () => {
             <Link to="/purchase-pending" className="block px-4 py-2 hover:bg-gray-700">Purchase Pending</Link>
             <Link to="/sales-product-trace" className="block px-4 py-2 hover:bg-gray-700">Sales Product Trace</Link>
             <Link to="/purchase-product-trace" className="block px-4 py-2 hover:bg-gray-700">Purchase Product Trace</Link>
+            <Link to="/product-ref" className="block px-4 py-2 hover:bg-gray-700">Product Reference</Link>
           </div>
 
           <div>

@@ -84,30 +84,10 @@ class TradeExtraCostSerializer(serializers.ModelSerializer):
 class TradeSerializer(serializers.ModelSerializer):
     trade_products = TradeProductSerializer(many=True, read_only=True)
     trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
-    # related_trades = serializers.PrimaryKeyRelatedField(
-    #     queryset=Trade.objects.all(),
-    #     many=True,
-    #     required=False,
-        
-    # )
     
     class Meta:
         model = Trade
         fields = '__all__'
-
-    # def create(self, validated_data):
-    #     related_trades_data = validated_data.pop('related_trades', [])
-    #     trade = super().create(validated_data)
-    #     if related_trades_data:
-    #         trade.related_trades.set(related_trades_data)
-    #     return trade
-    
-    # def update(self, instance, validated_data):
-    #     related_trades_data = validated_data.pop('related_trades', [])
-    #     trade = super().update(instance, validated_data)
-    #     if related_trades_data:
-    #         trade.related_trades.set(related_trades_data)
-    #     return trade
 
     ## additional related info
     def get_company_details(self, obj):
@@ -475,24 +455,18 @@ class SalesPurchaseProductSerializer(serializers.ModelSerializer):
         
         # Fetch the corresponding pending model based on trade type
         try:
-            if trade_type == 'Sales':  # Example trade type for sales
-                pending_obj = SalesPending.objects.get(
+
+            pending_obj = TradePending.objects.get(
                     product_code=obj.product_code,
                     product_name=obj.product_name,
-                    trn=obj.sp.trn
+                    trn=obj.sp.trn,
+                    trade_type=trade_type
                 )
-            elif trade_type == 'Purchase':  # Example trade type for purchase
-                pending_obj = PurchasePending.objects.get(
-                    product_code=obj.product_code,
-                    product_name=obj.product_name,
-                    trn=obj.sp.trn
-                )
-            else:
-                return obj.pending_qty  # Return original pending_qty if trade_type is unknown
+            
            
             # Add the balance_qty from the pending object
             return  pending_obj.balance_qty + obj.bl_qty
-        except (SalesPending.DoesNotExist, PurchasePending.DoesNotExist):
+        except (TradePending.DoesNotExist):
             return obj.pending_qty 
 
     def get_product_details(self, obj):
@@ -664,19 +638,24 @@ class PFSerializer(serializers.ModelSerializer):
 
 
 
-class PurchaseProductTraceSerializer(serializers.ModelSerializer):
+class TradeProductTraceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PurchaseProductTrace
+        model = TradeProductTrace
+        fields = '__all__'
+
+class TradeProductRefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TradeProductRef
         fields = '__all__'
     
 class SalesProductTraceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SalesProductTrace
+        model = TradeProductTrace
         fields = '__all__'
 
-class PurchasePendingSerializer(serializers.ModelSerializer):
+class TradePendingSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PurchasePending
+        model = TradePending
         fields = '__all__'
     
     def get_trade_details(self, obj):
@@ -704,7 +683,7 @@ class PurchasePendingSerializer(serializers.ModelSerializer):
 
 class SalesPendingSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SalesPending
+        model = TradePending
         fields = '__all__'
 
     def get_trade_details(self, obj):

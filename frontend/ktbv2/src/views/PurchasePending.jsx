@@ -16,7 +16,7 @@ const PurchasePending = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get('/trademgt/purchase-pending/'); 
+          const response = await axios.get('/trademgt/trade-pending/?trade_type=Purchase'); 
           setPendingData(response.data);
         } catch (error) {
           setError('Failed to fetch sales pending data');
@@ -34,7 +34,7 @@ const PurchasePending = () => {
       const confirmed = window.confirm('Are you sure you want to clear this purchase pending?');
       if (confirmed) {
         try {
-          await axios.delete(`/trademgt/purchase-pending/${id}/`);
+          await axios.delete(`/trademgt/trade-pending/${id}/`);
           setPendingData(pendingData.filter(data => data.id !== id));
           alert('Sales Pending deleted successfully.');
         } catch (error) {

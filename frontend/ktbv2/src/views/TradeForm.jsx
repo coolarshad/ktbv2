@@ -59,7 +59,7 @@ const TradeForm = ({ mode = 'add' }) => {
         bl_fee_remarks: '',
         tradeProducts: [
             {
-                product_code_ref: 'NA',
+                // product_code_ref: 'NA',
                 product_code: '',
                 product_name: '',
                 product_name_for_client: '',
@@ -213,16 +213,16 @@ const TradeForm = ({ mode = 'add' }) => {
     // Debounced function to call the API
     const fetchProductDetails = useCallback(
         
-        debounce(async (index,product_code_ref, productCode) => {
+        // debounce(async (index,product_code_ref, productCode) => {
+        debounce(async (index, productCode) => {
             // console.log('========',product_code_ref,productCode)
           try {
             let response;
       
-            if (formData.trade_type === 'Sales') {
-              response = await axios.get(`/trademgt/sales-product-trace/?product_code=${productCode}&first_trn=${product_code_ref}`);
-            } else {
-              response = await axios.get(`/trademgt/purchase-product-trace/?product_code=${productCode}&first_trn=${product_code_ref}`);
-            }
+          
+            //   response = await axios.get(`/trademgt/sales-product-trace/?product_code=${productCode}&first_trn=${product_code_ref}`);
+              response = await axios.get(`/trademgt/product-trace/?product_code=${productCode}&trade_type=${formData.trade_type}`);
+           
             if (response.status === 200) {
               const { data } = response;
               if (Array.isArray(data) && data.length > 0) {
@@ -259,7 +259,8 @@ const TradeForm = ({ mode = 'add' }) => {
             // Get the product's product_code and product_name based on the index
             const product = formData.tradeProducts[index];
             const prod_code = product?.product_code;
-            const prod_name = product?.product_name;
+            const trade_type = formData.trade_type;
+            const ref_type = product?.ref_type;
 
             if (name === 'ref_trn' && value !== 'NA') {
                 // console.log('here:', prod_code, prod_name, value)
@@ -269,7 +270,8 @@ const TradeForm = ({ mode = 'add' }) => {
                         params: {
                             trn: value,
                             product_code:prod_code,
-                            product_name:prod_name,
+                            trade_type:trade_type,
+                            ref_type:ref_type,
                         }
                     });
 
@@ -380,7 +382,8 @@ const TradeForm = ({ mode = 'add' }) => {
 
                     if (name === 'product_code' && value) {
                         setIsContractBalanceQtyReadOnly(false);
-                        fetchProductDetails(index,updatedProducts[index].product_code_ref, value); // Fetch product details
+                        // fetchProductDetails(index,updatedProducts[index].product_code_ref, value); // Fetch product details
+                        fetchProductDetails(index, value);
                     }
                     if (name === 'total_contract_qty') {
                         updatedProducts[index].contract_balance_qty = value;
@@ -1068,7 +1071,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 {formData.tradeProducts.map((product, index) => (
                     <>
                         <div key={index} className="grid grid-cols-3 gap-2 mb-4 justify-between items-end px-4 py-2">
-                            <div>
+                            {/* <div>
                                 <label htmlFor="product_code_ref" className="block text-sm font-medium text-gray-700">Product Code Ref</label>
                                 <select
                                     name="product_code_ref"
@@ -1098,59 +1101,8 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                                
-                            </div>
-                            <div>
-                                <label htmlFor="ref_type" className="block text-sm font-medium text-gray-700">Reference Type</label>
-                                <select
-                                    name="ref_type"
-                                    value={product.ref_type}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_type`)}`}
-                                >
-                                    {/* <option value="">Select Type</option> */}
-                                    <option value="">---</option>
-                                    <option value="NA">NA</option>
-                                    <option value="Sales">Sales</option>
-                                    <option value="Purchase">Purchase</option>
-                                   
-                                </select>
-                                {validationErrors[`tradeProducts[${index}].ref_type`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`tradeProducts[${index}].ref_type`]}
-                                    </p>
-                                )}
-                            </div>
+                            </div> */}
                            
-                            <div>
-                                <label htmlFor="ref_trn" className="block text-sm font-medium text-gray-700">
-                                Reference TRN
-                                </label>
-                                <select
-                                    name="ref_trn"
-                                    value={product.ref_trn}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_trn`)}`}
-                                >
-                                    {/* <option value="">Select TRN</option> */}
-                                    <option value="">---</option>
-                                    <option value="NA">NA</option>
-                                    {tradeOptions.map((option) => (
-                                        <option key={option.value} value={option.label}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {validationErrors[`tradeProducts[${index}].ref_trn`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`tradeProducts[${index}].ref_trn`]}
-                                    </p>
-                                )}
-                                {product.ref_balance && product.ref_trn !== 'NA' ? (
-                                    <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
-                                        Reference Balance: {product.ref_balance || 'NA'}
-                                    </p>
-                                ) : ''}
-                            </div>
                             {/* <div>
                                 {product.ref_balance && product.ref_trn !== 'NA' ? (
                                     <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
@@ -1229,6 +1181,58 @@ const TradeForm = ({ mode = 'add' }) => {
                                 {/* {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>} */}
                             </div>
                             <div>
+                                <label htmlFor="ref_type" className="block text-sm font-medium text-gray-700">Reference Type</label>
+                                <select
+                                    name="ref_type"
+                                    value={product.ref_type}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_type`)}`}
+                                >
+                                    {/* <option value="">Select Type</option> */}
+                                    <option value="">---</option>
+                                    <option value="NA">NA</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Purchase">Purchase</option>
+                                   
+                                </select>
+                                {validationErrors[`tradeProducts[${index}].ref_type`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].ref_type`]}
+                                    </p>
+                                )}
+                            </div>
+                           
+                            <div>
+                                <label htmlFor="ref_trn" className="block text-sm font-medium text-gray-700">
+                                Reference TRN
+                                </label>
+                                <select
+                                    name="ref_trn"
+                                    value={product.ref_trn}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_trn`)}`}
+                                >
+                                    {/* <option value="">Select TRN</option> */}
+                                    <option value="">---</option>
+                                    <option value="NA">NA</option>
+                                    {tradeOptions.map((option) => (
+                                        <option key={option.value} value={option.label}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                {validationErrors[`tradeProducts[${index}].ref_trn`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].ref_trn`]}
+                                    </p>
+                                )}
+                                {product.ref_balance && product.ref_trn !== 'NA' ? (
+                                    <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
+                                        Reference Balance: {product.ref_balance || 'NA'}
+                                    </p>
+                                ) : ''}
+                            </div>
+                            <div>
                                 <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
                                 <input
                                     type="text"
@@ -1244,6 +1248,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
+                            
                             <div>
                                 <label htmlFor="total_contract_qty" className="block text-sm font-medium text-gray-700">Total Contract Qty</label>
                                 <input

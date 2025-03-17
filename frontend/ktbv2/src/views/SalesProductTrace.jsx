@@ -16,7 +16,7 @@ const SalesProductTrace = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get('/trademgt/sales-product-trace/'); 
+          const response = await axios.get('/trademgt/product-trace/?trade_type=Sales'); 
           setPendingData(response.data);
         } catch (error) {
           setError('Failed to fetch sales pending data');
@@ -34,7 +34,7 @@ const SalesProductTrace = () => {
       const confirmed = window.confirm('Are you sure you want to clear this sales product trace?');
       if (confirmed) {
         try {
-          await axios.delete(`/trademgt/sales-product-trace/${id}/`);
+          await axios.delete(`/trademgt/product-trace/${id}/`);
           setPendingData(pendingData.filter(data => data.id !== id));
           alert('Sales product trace deleted successfully.');
         } catch (error) {

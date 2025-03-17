@@ -340,7 +340,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                   ) {
                     const { product_code, product_name, hs_code } = updatedArray[index];
                     
-                    if (product_code && product_name && hs_code) { // Ensure all are not null or empty
+                    if (product_code && product_name) { // Ensure all are not null or empty
                       debouncedApiCall(
                         formData.trn,
                         product_code,

@@ -1,13 +1,18 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your models here.
 class Trade(models.Model):
+    TRADE_TYPES = [('Sales', 'Sales'), ('Purchase', 'Purchase')]
+    
     company=models.CharField(_("company"), max_length=100)
     trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)  #actual trade entry date
     trn=models.CharField(_("trn"), max_length=50)
-    trade_type=models.CharField(_("trade_type"), max_length=50)
+    trade_type = models.CharField(_("trade_type"), max_length=10, choices=TRADE_TYPES)
     trade_category = models.CharField(_("trade_category"), max_length=50)
     country_of_origin=models.CharField(_("country_of_origin"), max_length=50)
     customer_company_name=models.CharField(_("customer_company_name"), max_length=50)
@@ -68,8 +73,8 @@ class Trade(models.Model):
         return reverse("Trade_detail", kwargs={"pk": self.pk})
 
 class TradeProduct(models.Model):
-    trade = models.ForeignKey(Trade, related_name='trade_products', on_delete=models.CASCADE)
-    product_code =  models.CharField(_("product_code"), max_length=50)
+    trade = models.ForeignKey(Trade, on_delete=models.CASCADE, related_name='trade_products')
+    product_code = models.CharField(max_length=100)
     product_name = models.CharField(_("product_name"), max_length=50)
     product_name_for_client=models.CharField(_("product_name_for_client"), max_length=50)
     loi=models.FileField(_("loi"), upload_to='uploads/lois', max_length=100)
@@ -94,9 +99,97 @@ class TradeProduct(models.Model):
     total_commission=models.FloatField(_("total_commission"))
     ref_type=models.CharField(_("ref_type"), max_length=50)
     ref_trn=models.CharField(_("ref_trn"), max_length=50)
-    product_code_ref=models.CharField(_("ref_trn"), max_length=50)
+    # product_code_ref=models.CharField(_("ref_trn"), max_length=50)
     container_shipment_size=models.CharField(_("container_shipment_size"), max_length=50)
+    previous_trade_qty = models.FloatField(_("Previous Trade Quantity"), default=0)
 
+    def save(self, *args, **kwargs):
+        """Override save to handle trade quantity updates"""
+        # previous_trade_qty is now set by the view before calling save
+        if not hasattr(self, 'previous_trade_qty'):
+            self.previous_trade_qty = 0
+            print(f"No previous trade qty found for trade_id: {self.trade.id}, product_code: {self.product_code}")
+        else:
+            print(f"Using previous trade qty: {self.previous_trade_qty} for product_code: {self.product_code}")
+
+        super().save(*args, **kwargs)
+        self.update_product_trace()
+        self.update_product_ref()
+
+    def update_product_trace(self):
+        """Update or create TradeProductTrace for this product"""
+        try:
+            trace = TradeProductTrace.objects.get(
+                product_code=self.product_code,
+                trade_type=self.trade.trade_type
+            )
+
+            if hasattr(self, 'previous_trade_qty'):
+                # For updates: add back the previous quantity and subtract the new quantity
+                trace.contract_balance_qty += float(self.previous_trade_qty)
+                trace.contract_balance_qty -= float(self.trade_qty)
+            else:
+                # For new records: just subtract the new quantity
+                trace.contract_balance_qty -= float(self.trade_qty)
+            
+            trace.save()
+            
+        except TradeProductTrace.DoesNotExist:
+            # Create new trace for first trade
+            TradeProductTrace.objects.create(
+                product_code=self.product_code,
+                trade_type=self.trade.trade_type,
+                total_contract_qty=float(self.total_contract_qty),
+                contract_balance_qty=float(self.total_contract_qty) - float(self.trade_qty)
+            )
+        
+    def update_product_ref(self):
+        """Update or create TradeProductRef for this product"""
+        try:
+            trace = TradeProductRef.objects.get(
+                product_code=self.product_code,
+                trade_type=self.trade.trade_type
+            )
+            if self.ref_trn!='NA':
+                if hasattr(self, 'previous_trade_qty'):
+                    # For updates: add back the previous quantity and subtract the new quantity
+                    trace.ref_balance_qty += float(self.previous_trade_qty)
+                    trace.ref_balance_qty -= float(self.trade_qty)
+                else:
+                    # For new records: just subtract the new quantity
+                    trace.ref_balance_qty -= float(self.trade_qty)
+            
+                trace.save()
+            
+        except TradeProductRef.DoesNotExist:
+            # Create new trace for first trade
+            TradeProductRef.objects.create(
+                product_code=self.product_code,
+                trade_type=self.trade.trade_type,
+                total_contract_qty=float(self.trade_qty),
+                ref_balance_qty=float(self.trade_qty)
+            )
+
+    def create_trade_pending(self):
+        """Create TradePending entry for this product"""
+       
+        TradePending.objects.create(
+            trn=self.trade,
+            trade_type=self.trade.trade_type,
+            trd=self.trade.trd,
+            company=self.trade.company,
+            payment_term=self.trade.payment_term,
+            product_code=self.product_code,
+            product_name=self.product_name,
+            hs_code=self.hs_code,
+            contract_qty=self.total_contract_qty,
+            contract_qty_unit=self.total_contract_qty_unit,
+            balance_qty=self.contract_balance_qty,
+            balance_qty_unit=self.contract_balance_qty_unit,
+            selected_currency_rate=self.selected_currency_rate,
+            rate_in_usd=self.rate_in_usd,
+            tolerance=self.tolerance
+        )
 
     class Meta:
         verbose_name = _("TradeProduct")
@@ -107,8 +200,6 @@ class TradeProduct(models.Model):
 
     def get_absolute_url(self):
         return reverse("TradeProduct_detail", kwargs={"pk": self.pk})
-
-
 
 class TradeExtraCost(models.Model):
     trade = models.ForeignKey(Trade, related_name='trade_extra_costs', on_delete=models.CASCADE)
@@ -545,101 +636,158 @@ class Kyc(models.Model):
         return reverse("Kyc_detail", kwargs={"pk": self.pk})
 
 
+class TradeProductTrace(models.Model):
+    TRADE_TYPES = [('Sales', 'Sales'), ('Purchase', 'Purchase')]
 
-class PurchaseProductTrace(models.Model):
-    product_code=models.CharField(max_length=100)
-    total_contract_qty=models.FloatField(null=True)
-    trade_qty=models.FloatField(null=True)
-    contract_balance_qty=models.FloatField(null=True)
-    ref_balance_qty=models.FloatField(null=True)
-    first_trn=models.CharField(max_length=15,null=True,blank=True)
-    
-
-    class Meta:
-        verbose_name = _("PurchaseProductTrace")
-        verbose_name_plural = _("PurchaseProductTraces")
-
-    def __str__(self):
-        return self.product_code
-
-    def get_absolute_url(self):
-        return reverse("PurchaseProductTrace_detail", kwargs={"pk": self.pk})
-
-
-class SalesProductTrace(models.Model):
-    product_code=models.CharField(max_length=100)
-    total_contract_qty=models.FloatField(null=True)
-    trade_qty=models.FloatField(null=True)
-    contract_balance_qty=models.FloatField(null=True)
-    ref_balance_qty=models.FloatField(null=True)
-    first_trn=models.CharField(max_length=15,null=True,blank=True)
-    
+    product_code = models.CharField(_("Product Code"), max_length=100)
+    trade_type = models.CharField(_("Trade Type"), choices=TRADE_TYPES, max_length=10)
+    total_contract_qty = models.FloatField(_("Total Contract Quantity"))
+    contract_balance_qty = models.FloatField(_("Contract Balance Quantity"))
+    # first_trn = models.CharField(_("First TRN"), max_length=15, null=True, blank=True)
 
     class Meta:
-        verbose_name = _("SalesProductTrace")
-        verbose_name_plural = _("SalesProductTraces")
+        unique_together = ("product_code", "trade_type")
 
     def __str__(self):
-        return self.product_code
+        return f"{self.trade_type} - {self.product_code}"
 
-    def get_absolute_url(self):
-        return reverse("SalesProductTrace_detail", kwargs={"pk": self.pk})
+class TradeProductRef(models.Model):
+    TRADE_TYPES = [('Sales', 'Sales'), ('Purchase', 'Purchase')]
 
-
-class PurchasePending(models.Model):
-    trn=models.ForeignKey(Trade, related_name='purchase_pending_product', on_delete=models.CASCADE)
-    trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
-    company=models.CharField(_("company"), max_length=50)
-    payment_term=models.CharField(_("company"), max_length=50)
-    product_code=models.CharField(_("product_code"), max_length=50)
-    product_name=models.CharField(_("product_code"), max_length=50)
-    hs_code=models.CharField(_("product_code"), max_length=50)
-    contract_qty=models.FloatField(_("contract_qty"))
-    contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
-    balance_qty=models.FloatField(_("balance_qty"))
-    balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
-    selected_currency_rate=models.FloatField(_("selected_currency_rate"))
-    rate_in_usd=models.FloatField(_("rate_in_usd"))
-    tolerance=models.FloatField(_("tolerance"))
-    
+    product_code = models.CharField(_("Product Code"), max_length=100)
+    trade_type = models.CharField(_("Trade Type"), choices=TRADE_TYPES, max_length=10)
+    total_contract_qty = models.FloatField(_("Total Contract Quantity"))
+    ref_balance_qty = models.FloatField(_("Reference Balance Quantity"))
+    # first_trn = models.CharField(_("First TRN"), max_length=15, null=True, blank=True)
 
     class Meta:
-        verbose_name = _("PurchasePending")
-        verbose_name_plural = _("PurchasePendings")
+        unique_together = ("product_code", "trade_type")
 
     def __str__(self):
-        return self.product_code
+        return f"{self.trade_type} - {self.product_code}"
 
-    def get_absolute_url(self):
-        return reverse("PurchasePending_detail", kwargs={"pk": self.pk})
-
-
-class SalesPending(models.Model):
-    trn=models.ForeignKey(Trade, related_name='sales_pending_product', on_delete=models.CASCADE)
-    trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
-    company=models.CharField(_("company"), max_length=50)
-    payment_term=models.CharField(_("company"), max_length=50)
-    product_code=models.CharField(_("product_code"), max_length=50)
-    product_name=models.CharField(_("product_code"), max_length=50)
-    hs_code=models.CharField(_("product_code"), max_length=50)
-    contract_qty=models.FloatField(_("contract_qty"))
-    contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
-    balance_qty=models.FloatField(_("balance_qty"))
-    balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
-    selected_currency_rate=models.FloatField(_("selected_currency_rate"))
-    rate_in_usd=models.FloatField(_("rate_in_usd"))
-    tolerance=models.FloatField(_("tolerance"))
+# class PurchaseProductTrace(models.Model):
+#     product_code=models.CharField(max_length=100)
+#     total_contract_qty=models.FloatField(null=True)
+#     trade_qty=models.FloatField(null=True)
+#     contract_balance_qty=models.FloatField(null=True)
+#     ref_balance_qty=models.FloatField(null=True)
+#     first_trn=models.CharField(max_length=15,null=True,blank=True)
     
 
+#     class Meta:
+#         verbose_name = _("PurchaseProductTrace")
+#         verbose_name_plural = _("PurchaseProductTraces")
+
+#     def __str__(self):
+#         return self.product_code
+
+#     def get_absolute_url(self):
+#         return reverse("PurchaseProductTrace_detail", kwargs={"pk": self.pk})
+
+
+# class SalesProductTrace(models.Model):
+#     product_code=models.CharField(max_length=100)
+#     total_contract_qty=models.FloatField(null=True)
+#     trade_qty=models.FloatField(null=True)
+#     contract_balance_qty=models.FloatField(null=True)
+#     ref_balance_qty=models.FloatField(null=True)
+#     first_trn=models.CharField(max_length=15,null=True,blank=True)
+    
+
+#     class Meta:
+#         verbose_name = _("SalesProductTrace")
+#         verbose_name_plural = _("SalesProductTraces")
+
+#     def __str__(self):
+#         return self.product_code
+
+#     def get_absolute_url(self):
+#         return reverse("SalesProductTrace_detail", kwargs={"pk": self.pk})
+
+class TradePending(models.Model):
+    TRADE_TYPES = [('Sales', 'Sales'), ('Purchase', 'Purchase')]
+
+    trn = models.ForeignKey('Trade', related_name='trade_pending_products', on_delete=models.CASCADE)
+    trade_type = models.CharField(_("Trade Type"), choices=TRADE_TYPES, max_length=10)
+    trd = models.DateField(_("TRD"))
+    company = models.CharField(_("Company"), max_length=50)
+    payment_term = models.CharField(_("Payment Term"), max_length=50)
+    product_code = models.CharField(_("Product Code"), max_length=50)
+    product_name = models.CharField(_("Product Name"), max_length=50)
+    hs_code = models.CharField(_("HS Code"), max_length=50)
+    contract_qty = models.FloatField(_("Contract Quantity"))
+    contract_qty_unit = models.CharField(_("Contract Quantity Unit"), max_length=15)
+    balance_qty = models.FloatField(_("Balance Quantity"))
+    balance_qty_unit = models.CharField(_("Balance Quantity Unit"), max_length=15)
+    selected_currency_rate = models.FloatField(_("Selected Currency Rate"))
+    rate_in_usd = models.FloatField(_("Rate in USD"))
+    tolerance = models.FloatField(_("Tolerance"))
+
     class Meta:
-        verbose_name = _("SalesPending")
-        verbose_name_plural = _("SalesPendings")
+        verbose_name = _("TradePending")
+        verbose_name_plural = _("TradePendings")
 
     def __str__(self):
-        return self.product_code
+        return f"{self.trade_type} - {self.product_code}"
 
     def get_absolute_url(self):
-        return reverse("SalesPending_detail", kwargs={"pk": self.pk})
+        return reverse("TradePending_detail", kwargs={"pk": self.pk})
+    
+# class PurchasePending(models.Model):
+#     trn=models.ForeignKey(Trade, related_name='purchase_pending_product', on_delete=models.CASCADE)
+#     trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
+#     company=models.CharField(_("company"), max_length=50)
+#     payment_term=models.CharField(_("company"), max_length=50)
+#     product_code=models.CharField(_("product_code"), max_length=50)
+#     product_name=models.CharField(_("product_code"), max_length=50)
+#     hs_code=models.CharField(_("product_code"), max_length=50)
+#     contract_qty=models.FloatField(_("contract_qty"))
+#     contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
+#     balance_qty=models.FloatField(_("balance_qty"))
+#     balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
+#     selected_currency_rate=models.FloatField(_("selected_currency_rate"))
+#     rate_in_usd=models.FloatField(_("rate_in_usd"))
+#     tolerance=models.FloatField(_("tolerance"))
+    
+
+#     class Meta:
+#         verbose_name = _("PurchasePending")
+#         verbose_name_plural = _("PurchasePendings")
+
+#     def __str__(self):
+#         return self.product_code
+
+#     def get_absolute_url(self):
+#         return reverse("PurchasePending_detail", kwargs={"pk": self.pk})
+
+
+# class SalesPending(models.Model):
+#     trn=models.ForeignKey(Trade, related_name='sales_pending_product', on_delete=models.CASCADE)
+#     trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)
+#     company=models.CharField(_("company"), max_length=50)
+#     payment_term=models.CharField(_("company"), max_length=50)
+#     product_code=models.CharField(_("product_code"), max_length=50)
+#     product_name=models.CharField(_("product_code"), max_length=50)
+#     hs_code=models.CharField(_("product_code"), max_length=50)
+#     contract_qty=models.FloatField(_("contract_qty"))
+#     contract_qty_unit=models.CharField(_("contract_qty_unit"), max_length=15)
+#     balance_qty=models.FloatField(_("balance_qty"))
+#     balance_qty_unit=models.CharField(_("balance_qty_unit"), max_length=15)
+#     selected_currency_rate=models.FloatField(_("selected_currency_rate"))
+#     rate_in_usd=models.FloatField(_("rate_in_usd"))
+#     tolerance=models.FloatField(_("tolerance"))
+    
+
+#     class Meta:
+#         verbose_name = _("SalesPending")
+#         verbose_name_plural = _("SalesPendings")
+
+#     def __str__(self):
+#         return self.product_code
+
+#     def get_absolute_url(self):
+#         return reverse("SalesPending_detail", kwargs={"pk": self.pk})
 
 # class PurchaseSPTracing(models.Model):
 #     trn=models.ForeignKey(Trade, related_name='purchase_sp_tracing', on_delete=models.CASCADE)

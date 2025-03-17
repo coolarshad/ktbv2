@@ -178,22 +178,42 @@ class InventoryFilter(django_filters.FilterSet):
             'unit': ['exact', 'icontains'],
         }
 
-class SalesProductTraceFilter(django_filters.FilterSet):
+class TradeProductTraceFilter(django_filters.FilterSet):
    
     class Meta:
-        model = SalesProductTrace
+        model = TradeProductTrace
         fields = {
             'product_code': ['exact'],  # Filter by Trade TRN
-            'first_trn': ['exact'],
+            # 'first_trn': ['exact'],
+            'trade_type':['exact'],
+        }
+
+class TradeProductRefFilter(django_filters.FilterSet):
+   
+    class Meta:
+        model = TradeProductRef
+        fields = {
+            'product_code': ['exact'],  # Filter by Trade TRN
+            # 'first_trn': ['exact'],
+            'trade_type':['exact'],
         }
 
 class PurchaseProductTraceFilter(django_filters.FilterSet):
    
     class Meta:
-        model = PurchaseProductTrace
+        model = TradeProductTrace
         fields = {
             'product_code': ['exact'],  # Filter by Trade TRN
-            'first_trn': ['exact'],
+            # 'first_trn': ['exact'],
+        }
+
+class TradePendingFilter(django_filters.FilterSet):
+   
+    class Meta:
+        model = TradePending
+        fields = {
+            'product_code': ['exact'],  # Filter by Trade TRN
+            'trade_type':['exact', 'icontains'],
         }
 
 

@@ -299,7 +299,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                  </tr>
                </thead>
                <tbody>
-                 {data.trade_products.map(product => (
+                 {data.tradeProducts.map(product => (
                    <tr key={product.id}>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>

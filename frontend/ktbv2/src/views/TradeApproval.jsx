@@ -58,6 +58,7 @@ function TradeApproval() {
     try {
       const response = await axios.get(`/trademgt/trades/${tradeId}/`);
       setSelectedTrade(response.data);
+      console.log(response.data)
       setIsModalOpen(true);
     } catch (error) {
       console.error('Error fetching trade details:', error);
@@ -322,12 +323,9 @@ function TradeApproval() {
      
              <h3 className="text-lg mt-4 text-center">Trade Products</h3>
                 <div className="overflow-x-auto">
-                  {selectedTrade.trade_products.map((product, index) => (
+                  {selectedTrade.tradeProducts.map((product, index) => (
                     <div key={index} className="grid grid-cols-3 gap-2 mb-4 p-4 border border-gray-200 rounded-md shadow-sm bg-white">
-                      <div className="flex flex-col">
-                        <span className="font-medium">Product Code Ref:</span>
-                        <span>{product.product_code_ref}</span>
-                      </div>
+                     
                       <div className="flex flex-col">
                         <span className="font-medium">Product Code:</span>
                         <span>{product.product_code}</span>

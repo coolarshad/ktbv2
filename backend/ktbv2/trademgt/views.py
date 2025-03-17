@@ -13,6 +13,10 @@ from rest_framework.parsers import MultiPartParser, FormParser
 import logging
 import pandas as pd
 from datetime import date
+from django.conf import settings
+
+BATCH_SIZE = getattr(settings, 'TRADE_PRODUCT_BATCH_SIZE', 100)
+
 logger = logging.getLogger(__name__)
 
 class TradeView(APIView):
@@ -107,7 +111,7 @@ class TradeView(APIView):
             loi_file = request.FILES.get(f'tradeProducts[{i}].loi', None)
 
             product_data = {
-                'product_code_ref': data.get(f'tradeProducts[{i}].product_code_ref'),
+                # 'product_code_ref': data.get(f'tradeProducts[{i}].product_code_ref'),
                 'product_code': data.get(f'tradeProducts[{i}].product_code'),
                 'product_name': data.get(f'tradeProducts[{i}].product_name'),
                 'product_name_for_client': data.get(f'tradeProducts[{i}].product_name_for_client'),
@@ -154,15 +158,31 @@ class TradeView(APIView):
             trade_serializer = TradeSerializer(data=trade_data)
             if trade_serializer.is_valid():
                 trade = trade_serializer.save()
-               
             else:
                 return Response(trade_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
             if trade_products_data:
                 try:
-                    
-                    trade_products = [TradeProduct(**item, trade=trade) for item in trade_products_data]
-                    TradeProduct.objects.bulk_create(trade_products)
+                    created_products = []
+                    # Process in batches
+                    for i in range(0, len(trade_products_data), BATCH_SIZE):
+                        batch = trade_products_data[i:i + BATCH_SIZE]
+                        for item in batch:
+                            trade_product = TradeProduct(**item, trade=trade)
+                            trade_product.save()
+                            created_products.append(trade_product)
+                    # Update TradeProductTrace and TradePending for each product
+                    for product in created_products:
+                        # product.create_trade_pending()
+                        if product.ref_trn!='NA':
+                            trace=TradeProductRef.objects.get(
+                                product_code=product.product_code,
+                                trade_type=product.ref_type
+                            )
+                            if trace and trace.ref_balance_qty:
+                                trace.ref_balance_qty-=float(product.trade_qty)
+                                trace.save()
+        
                 except Exception as e:
                     return Response({'error': f"Trade Products: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
                 
@@ -179,80 +199,6 @@ class TradeView(APIView):
             except Company.DoesNotExist:
                 return Response({'error': 'Company not found.'}, status=status.HTTP_400_BAD_REQUEST)
             
-           
-            
-            if trade.trade_type.lower() == "sales":
-                for product in trade_products:
-                    try:
-                        
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_trace = SalesProductTrace.objects.filter(product_code=product.product_code,first_trn=product.product_code_ref).first()
-                       
-                        if existing_trace:
-                            # If it exists, update only the fields you want to update
-                            existing_trace.trade_qty = product.trade_qty
-                            existing_trace.contract_balance_qty = float(product.contract_balance_qty)-float(product.trade_qty)
-                            existing_trace.save()
-                        else:
-                            # If it doesn't exist, create a new record with all fields
-                            SalesProductTrace.objects.create(
-                            product_code=product.product_code,
-                            total_contract_qty=product.total_contract_qty,
-                            trade_qty=product.trade_qty,    
-                            contract_balance_qty=float(product.contract_balance_qty)-float(product.trade_qty),
-                            ref_balance_qty=float(product.contract_balance_qty),
-                            first_trn=trade.trn
-                            )
-                        
-                        try:
-                            existing_strace = PurchaseProductTrace.objects.filter(product_code=product.product_code,first_trn=product.ref_trn).first()
-                            
-                            if existing_strace:
-                                existing_strace.ref_balance_qty = float(existing_strace.ref_balance_qty)-float(product.trade_qty)
-                                existing_strace.save()
-                        except Exception as e:
-                            print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                            raise
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating SalesProductTrace: {e}")
-                        raise
-                    
-            
-            if trade.trade_type.lower() == "purchase":
-                for product in trade_products:
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code,first_trn=product.product_code_ref).first()
-            
-                        if existing_trace:
-                            # If it exists, update only the fields you want to update
-                            existing_trace.trade_qty = product.trade_qty
-                            existing_trace.contract_balance_qty = float(product.contract_balance_qty)-float(product.trade_qty)
-                            existing_trace.save()
-                        else:
-                            # If it doesn't exist, create a new record with all fields
-                            PurchaseProductTrace.objects.create(
-                            product_code=product.product_code,
-                            total_contract_qty=product.total_contract_qty,
-                            trade_qty=product.trade_qty,
-                            contract_balance_qty=float(product.contract_balance_qty)-float(product.trade_qty),
-                            ref_balance_qty=float(product.contract_balance_qty),
-                            first_trn=trade.trn
-                            )
-                        try:
-                            existing_ptrace = SalesProductTrace.objects.filter(product_code=product.product_code,first_trn=product.ref_trn).first()
-                            if existing_ptrace:
-                                existing_ptrace.ref_balance_qty = float(existing_ptrace.ref_balance_qty)-float(product.trade_qty)
-                                existing_ptrace.save()
-                        except Exception as e:
-                            print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                            raise
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating PurchaseProductTrace: {e}")
-                        raise
-                        
             
         return Response(trade_serializer.data, status=status.HTTP_201_CREATED)
    
@@ -331,7 +277,7 @@ class TradeView(APIView):
                 loi_file = None
 
             product_data = {
-                'product_code_ref': data.get(f'tradeProducts[{i}].product_code_ref'),
+                # 'product_code_ref': data.get(f'tradeProducts[{i}].product_code_ref'),
                 'product_code': data.get(f'tradeProducts[{i}].product_code'),
                 'product_name': data.get(f'tradeProducts[{i}].product_name'),
                 'product_name_for_client': data.get(f'tradeProducts[{i}].product_name_for_client'),
@@ -373,97 +319,36 @@ class TradeView(APIView):
         
 
         with transaction.atomic():
-
-            tradeProducts=TradeProduct.objects.filter(trade=trade)
-
-            if trade.trade_type.lower() == "sales":
-                for product in tradeProducts:
-                    try:
-                        existing = SalesPending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
-                        if existing:
-                            existing.balance_qty = float(existing.balance_qty)-(float(existing.contract_qty)+(float(existing.tolerance)/100)*float(existing.contract_qty))
-                            existing.save()
-
-                    except Exception as e:
-                        print(f"Error updating or creating SalesPending: {e}")
-                        raise
-
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_trace = SalesProductTrace.objects.filter(product_code=product.product_code,first_trn=product.product_code_ref).first()
-            
-                        if existing_trace:
-                           
-                            existing_trace.contract_balance_qty = float(existing_trace.contract_balance_qty)+float(product.trade_qty)
-                            existing_trace.save()
-                       
-                        
-                        try:
-                            if product.ref_type=='Purchase':
-                                p_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code,first_trn=product.ref_trn).first()
-                                if p_trace:
-                                    p_trace.ref_balance_qty = float(p_trace.ref_balance_qty)+float(product.trade_qty)
-                                    p_trace.save()
-                        except Exception as e:
-                            print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                            raise
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating SalesProductTrace: {e}")
-                        raise
-                    
-            
-            if trade.trade_type.lower() == "purchase":
-                for product in tradeProducts:
-                    try:
-                        existing = PurchasePending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
-                        if existing:
-                            existing.balance_qty = float(existing.balance_qty)-(float(existing.contract_qty)+(float(existing.tolerance)/100)*float(existing.contract_qty))
-                            existing.save()
-
-                    except Exception as e:
-                        print(f"Error updating or creating SalesPending: {e}")
-                        raise
-
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code,first_trn=product.product_code_ref).first()
-            
-                        if existing_trace:
-                            # If it exists, update only the fields you want to update
-                            existing_trace.trade_qty = product.trade_qty
-                            existing_trace.contract_balance_qty = float(product.contract_balance_qty)-float(product.trade_qty)
-                            existing_trace.save()
-                        
-                        try:
-                            if product.ref_type=='Sales':
-                                s_trace = SalesProductTrace.objects.filter(product_code=product.product_code,first_trn=product.ref_trn).first()
-                                if s_trace:
-                                    s_trace.ref_balance_qty = float(s_trace.ref_balance_qty)+float(product.trade_qty)
-                                    s_trace.save()
-                        except Exception as e:
-                            print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                            raise
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating PurchaseProductTrace: {e}")
-                        raise
-
             trade_serializer = TradeSerializer(trade, data=trade_data, partial=True)
             if trade_serializer.is_valid():
                 trade = trade_serializer.save()
-                
             else:
                 return Response(trade_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
             if trade_products_data:
-                # Clear existing trade products and add new ones
+                # Store existing quantities before deletion
+                existing_quantities = {
+                    tp.product_code: float(tp.trade_qty) 
+                    for tp in TradeProduct.objects.filter(trade=trade)
+                }
+                
+                # Delete existing trade products
                 TradeProduct.objects.filter(trade=trade).delete()
-                try:
-                    trade_products = [TradeProduct(**item, trade=trade) for item in trade_products_data]
-                    TradeProduct.objects.bulk_create(trade_products)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Create new trade products with previous quantities
+                created_products = []
+                for item in trade_products_data:
+                    trade_product = TradeProduct(**item, trade=trade)
+                    # Set previous quantity if it existed
+                    trade_product.previous_trade_qty = existing_quantities.get(
+                        trade_product.product_code, 0
+                    )
+                    trade_product.save()  # This will trigger the save() method
+                    created_products.append(trade_product)
+                
+                # Update TradeProductTrace and TradePending for each product
+                for product in created_products:
+                    product.create_trade_pending()
 
             if trade_extra_costs_data:
                 # Clear existing trade extra costs and add new ones
@@ -473,213 +358,46 @@ class TradeView(APIView):
                     TradeExtraCost.objects.bulk_create(trade_extra_costs)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
-
-            if trade.trade_type.lower() == "sales":
-                for product in trade_products:
-                    try:
-                        existing = SalesPending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
-                        if existing:
-                            # existing.balance_qty = float(existing.balance_qty)-float(product.trade_qty)
-                            existing.balance_qty = float(existing.balance_qty)+(float(product.trade_qty)+(float(product.tolerance)/100)*float(product.trade_qty))
-                            existing.balance_qty_unit=product.trade_qty_unit
-                            existing.contract_qty=product.trade_qty
-                            existing.contract_qty_unit=product.trade_qty
-                            existing.save()
-                        else:
-                            SalesPending.objects.create(
-                            trn=trade,
-                            trd=trade.trd,
-                            company=trade.company,
-                            payment_term=trade.payment_term,
-                            product_code=product.product_code,
-                            product_name=product.product_name,
-                            hs_code=product.hs_code,
-                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
-                            balance_qty_unit=product.trade_qty_unit,
-                            contract_qty=product.trade_qty,
-                            contract_qty_unit=product.trade_qty_unit,
-                            selected_currency_rate=product.selected_currency_rate,
-                            rate_in_usd=product.rate_in_usd,
-                            tolerance=product.tolerance
-                            )
-
-                    except Exception as e:
-                        print(f"Error updating or creating SalesPending: {e}")
-                        raise
-
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        if product.product_code_ref=='NA':
-                            first_trn=trade.trn
-                        else:
-                            first_trn=product.product_code_ref
-                        existing_trace = SalesProductTrace.objects.filter(product_code=product.product_code,first_trn=first_trn).first()
-            
-                        if existing_trace:
-                            # If it exists, update only the fields you want to update
-                            existing_trace.trade_qty = product.trade_qty
-                            existing_trace.contract_balance_qty = float(product.contract_balance_qty)-float(product.trade_qty)
-                            existing.contract_qty=product.trade_qty
-                            existing_trace.save()
-                        else:
-                            # If it doesn't exist, create a new record with all fields
-                            SalesProductTrace.objects.create(
-                            product_code=product.product_code,
-                            total_contract_qty=product.total_contract_qty,
-                            trade_qty=product.trade_qty,    
-                            contract_balance_qty=float(product.contract_balance_qty)-float(product.trade_qty),
-                            ref_balance_qty=float(product.contract_balance_qty),
-                            first_trn=trade.trn
-                            )
-                        
-                        try:
-                            if product.ref_type=='Purchase':
-                                existing_ptrace = PurchaseProductTrace.objects.filter(product_code=product.product_code,first_trn=product.ref_trn).first()
-                                if existing_ptrace:
-                                    existing_ptrace.ref_balance_qty = float(existing_ptrace.ref_balance_qty)-float(product.trade_qty)
-                                    existing_ptrace.save()
-                        except Exception as e:
-                            print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                            raise
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating SalesProductTrace: {e}")
-                        raise
-                    
-            
-            if trade.trade_type.lower() == "purchase":
-                for product in trade_products:
-                    try:
-                        existing = PurchasePending.objects.filter(product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
-                        if existing:
-                            # existing.balance_qty = float(existing.balance_qty)-float(product.trade_qty)
-                            existing.balance_qty = float(existing.balance_qty)+(float(product.trade_qty)+(float(product.tolerance)/100)*float(product.trade_qty))
-                            existing.balance_qty_unit=product.trade_qty_unit
-                            existing.contract_qty=product.trade_qty
-                            existing.contract_qty_unit=product.trade_qty
-                            existing.save()
-                        else:
-                            PurchasePending.objects.create(
-                            trn=trade,
-                            trd=trade.trd,
-                            company=trade.company,
-                            payment_term=trade.payment_term,
-                            product_code=product.product_code,
-                            product_name=product.product_name,
-                            hs_code=product.hs_code,
-                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
-                            balance_qty_unit=product.trade_qty_unit,
-                            contract_qty=product.trade_qty,
-                            contract_qty_unit=product.trade_qty_unit,
-                            selected_currency_rate=product.selected_currency_rate,
-                            rate_in_usd=product.rate_in_usd,
-                            tolerance=product.tolerance
-                            )
-
-                    except Exception as e:
-                        print(f"Error updating or creating SalesPending: {e}")
-                        raise
-
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        if product.product_code_ref=='NA':
-                            first_trn=trade.trn
-                        else:
-                            first_trn=product.product_code_ref
-                        existing_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code,first_trn=first_trn).first()
-            
-                        if existing_trace:
-                            # If it exists, update only the fields you want to update
-                            existing_trace.trade_qty = product.trade_qty
-                            existing_trace.contract_balance_qty = float(product.contract_balance_qty)-float(product.trade_qty)
-                            existing_trace.save()
-                        else:
-                            # If it doesn't exist, create a new record with all fields
-                            PurchaseProductTrace.objects.create(
-                            product_code=product.product_code,
-                            total_contract_qty=product.total_contract_qty,
-                            trade_qty=product.trade_qty,
-                            contract_balance_qty=float(product.contract_balance_qty)-float(product.trade_qty),
-                            ref_balance_qty=float(product.contract_balance_qty),
-                            first_trn=trade.trn
-                            )
-                        try:
-                            if product.ref_type=='Sales':
-                                existing_strace = SalesProductTrace.objects.filter(product_code=product.product_code,first_trn=product.ref_trn).first()
-                                if existing_strace:
-                                    existing_strace.ref_balance_qty = float(existing_strace.ref_balance_qty)-float(product.trade_qty)
-                                    existing_strace.save()
-                        except Exception as e:
-                            print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                            raise
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating PurchaseProductTrace: {e}")
-                        raise
 
         return Response(trade_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
-
-        try:
-            trade = Trade.objects.get(pk=pk)
-        except Trade.DoesNotExist:
-            return Response({'error': 'Trade not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Start an atomic transaction
+        
         with transaction.atomic():
-            # Fetch related TradeProduct instances before deleting them
-            trade_products = TradeProduct.objects.filter(trade=trade)
-
-            # Undo changes in SalesProductTrace if the trade type is 'sales'
-            if trade.trade_type.lower() == "sales":
+            try:
+                trade = Trade.objects.get(pk=pk)
+                
+                # Get all trade products before deletion to update traces
+                trade_products = TradeProduct.objects.filter(trade=trade)
+                
+                # Update TradeProductTrace for each product being deleted
                 for product in trade_products:
-                    existing_trace = SalesProductTrace.objects.filter(product_code=product.product_code).first()
-                    if existing_trace:
-                        # Revert the changes
-                        existing_trace.contract_balance_qty += float(product.trade_qty)
-                        existing_trace.trade_qty = 0  # Or adjust as needed
-                        existing_trace.save()
-                    
-                    try:
-                        if product.ref_type=='Purchase':
-                            existing_ptrace = PurchaseProductTrace.objects.filter(product_code=product.product_code).first()
-                            if existing_ptrace:
-                                existing_ptrace.ref_balance_qty = float(existing_ptrace.ref_balance_qty)+float(product.trade_qty)
-                                existing_ptrace.save()
-                    except Exception as e:
-                        print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                        raise
-
-            # Undo changes in PurchaseProductTrace if the trade type is 'purchase'
-            elif trade.trade_type.lower() == "purchase":
-                for product in trade_products:
-                    existing_trace = PurchaseProductTrace.objects.filter(product_code=product.product_code).first()
-                    if existing_trace:
-                        # Revert the changes
-                        existing_trace.contract_balance_qty += float(product.trade_qty)
-                        existing_trace.trade_qty = 0  # Or adjust as needed
-                        existing_trace.save()
-                    try:
-                        if product.ref_type=='Sales':
-                            existing_strace = SalesProductTrace.objects.filter(product_code=product.product_code).first()
-                            if existing_strace:
-                                existing_strace.ref_balance_qty = float(existing_strace.ref_balance_qty)+float(product.trade_qty)
-                                existing_strace.save()
-                    except Exception as e:
-                        print(f"Error updating ref balance in PurchaseProductTrace: {e}")
-                        raise
-
-            # Delete related trade products and extra costs
-            TradeProduct.objects.filter(trade=trade).delete()
-            TradeExtraCost.objects.filter(trade=trade).delete()
-
-            # Finally, delete the trade
-            trade.delete()
-
-        return Response({'message': 'Trade deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+                    trace = TradeProductTrace.objects.get(
+                        product_code=product.product_code,
+                        trade_type=trade.trade_type
+                    )
+                    ref = TradeProductRef.objects.get(
+                        product_code=product.product_code,
+                        trade_type=product.ref_type
+                        )
+                   
+                    trace.contract_balance_qty += product.trade_qty
+                    trace.save()
+                    ref.ref_balance_qty += float(product.trade_qty)
+                    ref.save()
+                    # if trace.total_contract_qty <= 0:
+                    #     trace.delete()
+                    # else:
+                    #     trace.save()
+                
+                # Delete the trade (will cascade delete products and extra costs)
+                trade.delete()
+                
+                return Response(status=status.HTTP_204_NO_CONTENT)
+                
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class TradeApproveView(APIView):
     def get(self, request, *args, **kwargs):
@@ -722,69 +440,10 @@ class TradeReviewView(APIView):
             with transaction.atomic():
                 # Retrieve the trade object
                 trade = Trade.objects.get(id=trade_id)
-
                 # Update trade approval status
                 trade.reviewed = True
                 trade.approval_date = date.today()
                 trade.save()
-
-                # Check if trade_type is "sales" and create SalesPending instances
-                if trade.trade_type.lower() == "sales":
-                    trade_products = TradeProduct.objects.filter(trade=trade)
-                    sales_pending_instances = []
-
-                    for product in trade_products:
-                        # Create SalesPending instance using data from TradeProduct
-                        sales_pending = SalesPending(
-                            trn=trade,
-                            trd=trade.trd,
-                            company=trade.company,
-                            payment_term=trade.payment_term,
-                            product_code=product.product_code,
-                            product_name=product.product_name,
-                            hs_code=product.hs_code,
-                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
-                            balance_qty_unit=product.trade_qty_unit,
-                            contract_qty=product.trade_qty,
-                            contract_qty_unit=product.trade_qty_unit,
-                            selected_currency_rate=product.selected_currency_rate,
-                            rate_in_usd=product.rate_in_usd,
-                            tolerance=product.tolerance
-                        )
-                        sales_pending_instances.append(sales_pending)
-
-                    # Bulk create all SalesPending instances at once
-                    SalesPending.objects.bulk_create(sales_pending_instances)
-
-                # Check if trade_type is "purchase" and create PurchasePending instances
-                elif trade.trade_type.lower() == "purchase":
-                    trade_products = TradeProduct.objects.filter(trade=trade)
-                    purchase_pending_instances = []
-
-                    for product in trade_products:
-                        # Create PurchasePending instance using data from TradeProduct
-                        purchase_pending = PurchasePending(
-                            trn=trade,
-                            trd=trade.trd,
-                            company=trade.company,
-                            payment_term=trade.payment_term,
-                            product_code=product.product_code,
-                            product_name=product.product_name,
-                            hs_code=product.hs_code,
-                            balance_qty=float(product.trade_qty)+float(product.tolerance)/100*float(product.trade_qty),
-                            balance_qty_unit=product.trade_qty_unit,
-                            contract_qty=product.trade_qty,
-                            contract_qty_unit=product.trade_qty_unit,
-                            selected_currency_rate=product.selected_currency_rate,
-                            rate_in_usd=product.rate_in_usd,
-                            tolerance=product.tolerance
-                           
-                        )
-                        purchase_pending_instances.append(purchase_pending)
-
-                    # Bulk create all PurchasePending instances at once
-                    PurchasePending.objects.bulk_create(purchase_pending_instances)
-
                 # Serialize and return the approved trade
                 serializer = TradeSerializer(trade)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1540,18 +1199,11 @@ class SalesPurchaseView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
             
-            if sp.trn.trade_type.lower() == "sales":
-                for product in sp_products:
-                    pending_product=SalesPending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
-                    pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
-                    pending_product.save()
-                       
-                  
-            elif sp.trn.trade_type.lower() == "purchase":
-                for product in sp_products:
-                    pending_product=PurchasePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
-                    pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
-                    pending_product.save()
+           
+            for product in sp_products:
+                pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,trade_type=sp.trn.trade_type).first()
+                pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                pending_product.save()
 
         return Response(sp_serializer.data, status=status.HTTP_201_CREATED)
     
@@ -1834,32 +1486,6 @@ class SalesPurchaseView(APIView):
                             existing_inv.save()
                     except Exception as e:
                             # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating Inventory: {e}")
-                        raise
-
-            if sp.trn.trade_type.lower() == "purchase":
-                for product in salesPurchaseProducts:
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_pending = PurchasePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
-            
-                        if existing_pending:
-                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
-                            existing_pending.save()
-                       
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating PurchasePending: {e}")
-                        raise
-                    try:
-                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
-                        if existing_inv:
-                            # If it exists, update only the fields you want to update
-                            existing_inv.quantity-= product.bl_qty
-                            existing_inv.save()
-                           
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
                         print(f"Error updating or creating Inventory: {e}")
                         raise
             # Delete related trade products and extra costs
@@ -2266,34 +1892,39 @@ class KycApproveTwoView(APIView):
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class PurchaseProductTraceViewSet(viewsets.ModelViewSet):
-    queryset = PurchaseProductTrace.objects.all()
-    serializer_class = PurchaseProductTraceSerializer
+# class TradeProductTraceViewSet(viewsets.ModelViewSet):
+#     queryset = TradeProductTrace.objects.all()
+#     serializer_class = PurchaseProductTraceSerializer
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        product_code = self.request.query_params.get('product_code', None)
-        if product_code:
-            queryset = queryset.filter(product_code=product_code)
-        return queryset
+#     def get_queryset(self):
+#         queryset = super().get_queryset()
+#         product_code = self.request.query_params.get('product_code', None)
+#         if product_code:
+#             queryset = queryset.filter(product_code=product_code)
+#         return queryset
 
 
-class SalesProductTraceViewSet(viewsets.ModelViewSet):
-    queryset = SalesProductTrace.objects.all()
-    serializer_class = SalesProductTraceSerializer
+class TradeProductTraceViewSet(viewsets.ModelViewSet):
+    queryset = TradeProductTrace.objects.all()
+    serializer_class = TradeProductTraceSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_class = SalesProductTraceFilter
+    filterset_class = TradeProductTraceFilter
 
+class TradeProductRefViewSet(viewsets.ModelViewSet):
+    queryset = TradeProductRef.objects.all()
+    serializer_class =TradeProductRefSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TradeProductRefFilter
    
-class PurchasePendingViewSet(viewsets.ModelViewSet):
-    queryset = PurchasePending.objects.all()
-    serializer_class = PurchasePendingSerializer
+class TradePendingViewSet(viewsets.ModelViewSet):
+    queryset = TradePending.objects.all()
+    serializer_class = TradePendingSerializer
 
 
  
 
 class SalesPendingViewSet(viewsets.ModelViewSet):
-    queryset = SalesPending.objects.all()
+    queryset = TradePending.objects.all()
     serializer_class = SalesPendingSerializer
 
 
@@ -2434,25 +2065,23 @@ class RefBalanceView(APIView):
     def get(self, request, *args, **kwargs):
         ref_trn = request.query_params.get('trn')
         product_code = request.query_params.get('product_code')
-        product_name = request.query_params.get('product_name')
+        trade_type = request.query_params.get('trade_type')
+        ref_type = request.query_params.get('ref_type')
         
         try:
-            product = TradeProduct.objects.get(
-                trade__trn=ref_trn,
-                product_code=product_code,
-                product_name=product_name
-            )
+            # product = TradeProduct.objects.get(
+            #     trade__trn=ref_trn,
+            #     product_code=product_code,
+            #     trade__trade_type=trade_type
+            # )
             
             balance = 'NA'  # Default value
             
-            if product.trade.trade_type == 'Sales':
-                trace = SalesProductTrace.objects.filter(product_code=product_code).first()
-                if trace and trace.ref_balance_qty is not None:
-                    balance = trace.ref_balance_qty
-            else:
-                trace = PurchaseProductTrace.objects.filter(product_code=product_code).first()
-                if trace and trace.ref_balance_qty is not None:
-                    balance = trace.ref_balance_qty
+           
+            trace = TradeProductRef.objects.filter(product_code=product_code,trade_type=ref_type).first()
+            if trace and trace.ref_balance_qty is not None:
+                balance = trace.ref_balance_qty
+           
                     
         except TradeProduct.DoesNotExist:
             return Response({'ref_balance': 'NA'})
@@ -2500,25 +2129,27 @@ class PendingBalanceView(APIView):
                 return Response({'error': 'Trade not found'}, status=404)
             
             if trade.trade_type == 'Purchase':
-                product = PurchasePending.objects.filter(
+                product = TradePending.objects.filter(
                     trn=trade,
                     product_code=product_code,
                     product_name=product_name,
+                    trade_type=trade.trade_type
                     # hs_code=hs_code
                 ).first()
                
                 if product:
                     # Serialize and return the product data
-                    serialized_product = PurchasePendingSerializer(product)
+                    serialized_product = TradePendingSerializer(product)
                     return Response({'pending_balance': serialized_product.data})
                 else:
                     return Response({'pending_balance': 0})
             
             else:  # Sales trade type
-                product = SalesPending.objects.filter(
+                product = TradePending.objects.filter(
                     trn=trade,
                     product_code=product_code,
                     product_name=product_name,
+                    trade_type=trade.trade_type
                     # hs_code=hs_code
                 ).first()
                

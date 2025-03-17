@@ -45,6 +45,7 @@ import TradePacking from './views/TradePacking';
 import Inventory from './views/Inventory';
 import PLForm from './views/PLForm';
 import TradeReport from './views/TradeReport';
+import ProductRef from './views/ProductRef';
 
 function App() {
  
@@ -85,7 +86,7 @@ function App() {
           <Route path="/purchase-pending" element={<PurchasePending />} />
           <Route path="/sales-product-trace" element={<SalesProductTrace />} />
           <Route path="/purchase-product-trace" element={<PurchaseProductTrace />} />
-
+          <Route path='/product-ref' element={<ProductRef />} />
           <Route path="/packings" element={<Packing />} />
           <Route path="/packing-form" element={<PackingForm />} />
           <Route path="/packing-form/:id" element={<PackingForm mode="update" />} />

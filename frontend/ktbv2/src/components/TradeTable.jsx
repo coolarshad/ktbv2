@@ -285,12 +285,9 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
 
                 <h3 className="text-lg mt-4 text-center">Trade Products</h3>
                 <div className="overflow-x-auto">
-                  {selectedTrade.trade_products.map((product, index) => (
+                  {selectedTrade.tradeProducts.map((product, index) => (
                     <div key={index} className="grid grid-cols-3 gap-2 mb-4 p-4 border border-gray-200 rounded-md shadow-sm bg-white">
-                      <div className="flex flex-col border-b border-gray-200">
-                        <span className="font-medium">Product Code Ref:</span>
-                        <span>{product.product_code_ref}</span>
-                      </div>
+                      
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Code:</span>
                         <span>{product.product_code}</span>
@@ -389,7 +386,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                       </div>
                       <div className="flex flex-col ">
                         <span className="font-medium">Reference TRN:</span>
-                        <span>{product.refTrn}</span>
+                        <span>{product.ref_trn}</span>
                       </div>
                       <tr className="flex flex-col">
                         <td className="font-medium">Container Shipment Size</td>
