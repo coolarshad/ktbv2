@@ -331,10 +331,23 @@ class TradeView(APIView):
                     tp.product_code: float(tp.trade_qty) 
                     for tp in TradeProduct.objects.filter(trade=trade)
                 }
+
+                for product in TradeProduct.objects.filter(trade=trade):
+                    if product.ref_trn != 'NA':
+                        trace = TradeProductRef.objects.filter(
+                        product_code=product.product_code,
+                        trade_type=product.ref_type
+                        ).first()
+        
+                        if trace and trace.ref_balance_qty:
+                            trace.ref_balance_qty += float(product.trade_qty)
+                            trace.save()
+
                 
                 # Delete existing trade products
                 TradeProduct.objects.filter(trade=trade).delete()
-                
+                # TradePending.objects.filter(trn=trade).delete()
+
                 # Create new trade products with previous quantities
                 created_products = []
                 for item in trade_products_data:
@@ -348,6 +361,15 @@ class TradeView(APIView):
                 
                 # Update TradeProductTrace and TradePending for each product
                 for product in created_products:
+                    if product.ref_trn != 'NA':
+                        trace = TradeProductRef.objects.filter(
+                        product_code=product.product_code,
+                        trade_type=product.ref_type
+                        ).first()
+        
+                        if trace and trace.ref_balance_qty:
+                            trace.ref_balance_qty -= float(product.trade_qty)
+                            trace.save()
                     product.create_trade_pending()
 
             if trade_extra_costs_data:
