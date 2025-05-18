@@ -395,19 +395,30 @@ class TradeView(APIView):
                 
                 # Update TradeProductTrace for each product being deleted
                 for product in trade_products:
-                    trace = TradeProductTrace.objects.get(
-                        product_code=product.product_code,
-                        trade_type=trade.trade_type
-                    )
-                    ref = TradeProductRef.objects.get(
+                    try:
+                        trace = TradeProductTrace.objects.get(
+                            product_code=product.product_code,
+                            trade_type=trade.trade_type
+                        )
+                        
+                        trace.contract_balance_qty += product.trade_qty
+                        trace.save()
+                    except Exception as e:
+                        pass
+
+                    try:
+                        ref = TradeProductRef.objects.get(
                         product_code=product.product_code,
                         trade_type=product.ref_type
                         )
-                   
-                    trace.contract_balance_qty += product.trade_qty
-                    trace.save()
-                    ref.ref_balance_qty += float(product.trade_qty)
-                    ref.save()
+
+                        ref.ref_balance_qty += float(product.trade_qty)
+                        ref.save()
+                    except Exception as e:
+                        pass
+                    
+                    
+                    
                     # if trace.total_contract_qty <= 0:
                     #     trace.delete()
                     # else:
