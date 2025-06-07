@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
 
+
 const ConsumptionForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
-
-    // Sample options for TRN dropdown
-    
+    const debounceTimerRef = useRef(null);
+    // Initialize with proper default values to prevent undefined
     const [formData, setFormData] = useState({
         date: '',
         name: '',
@@ -20,9 +20,29 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         total_value: '',
         per_litre_cost: '',
         remarks: '',
-        consumptionAdditive: [{ name: '', qty_in_percent: null, qty_in_litre: null, value: null }],
-        consumptionBaseOil: [{ name: '', qty_in_percent: null, qty_in_litre: null, value: null }],
+        consumptionAdditive: [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+        consumptionBaseOil: [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
     });
+
+    const [nameOptions, setNameOptions] = useState([]);
+    const [additiveOptions, setAdditiveOptions] = useState([]);
+    const [baseOilOptions, setBaseOilOptions] = useState([]);
+
+    const fetchData = async (url, params = {}, setStateFunction) => {
+        try {
+            const response = await axios.get(url, { params });
+            setStateFunction(response.data || []); // Ensure it's never undefined
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+            setStateFunction([]); // Set to empty array on error
+        }
+    };
+
+    useEffect(() => {
+        fetchData('/costmgt/consumption-formula', {}, setNameOptions); 
+        fetchData('/costmgt/additives', {}, setAdditiveOptions); 
+        fetchData('/costmgt/raw-materials', {}, setBaseOilOptions); 
+    }, []);
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -32,9 +52,33 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     const data = response.data;
                     setFormData((prevState) => ({
                         ...prevState,
-                        ...data,
-                        consumptionAdditive: data.consumptionAdditive || [{ name: '', qty_in_percent: null, qty_in_litre: null, value: null }],
-                        consumptionBaseOil: data.consumptionBaseOil || [{ name: '', qty_in_percent: null, qty_in_litre: null, value: null }],
+                        // Ensure all fields have default values
+                        date: data.date || '',
+                        name: data.name || '',
+                        grade: data.grade || '',
+                        sae: data.sae || '',
+                        net_blending_qty: data.net_blending_qty || '',
+                        gross_vol_crosscheck: data.gross_vol_crosscheck || '',
+                        cross_check: data.cross_check || '',
+                        total_value: data.total_value || '',
+                        per_litre_cost: data.per_litre_cost || '',
+                        remarks: data.remarks || '',
+                        consumptionAdditive: data.consumptionAdditive && data.consumptionAdditive.length > 0 
+                            ? data.consumptionAdditive.map(item => ({
+                                name: item.name || '',
+                                qty_in_percent: item.qty_in_percent || '',
+                                qty_in_litre: item.qty_in_litre || '',
+                                value: item.value || ''
+                              }))
+                            : [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+                        consumptionBaseOil: data.consumptionBaseOil && data.consumptionBaseOil.length > 0
+                            ? data.consumptionBaseOil.map(item => ({
+                                name: item.name || '',
+                                qty_in_percent: item.qty_in_percent || '',
+                                qty_in_litre: item.qty_in_litre || '',
+                                value: item.value || ''
+                              }))
+                            : [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
                     }));
                 })
                 .catch((error) => {
@@ -43,43 +87,186 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         }
     }, [mode, id]);
 
-    const [additiveOptions, setAdditiveOptions] = useState([]);
-    const [baseOilOptions, setBaseOilOptions] = useState([]);
-    const fetchData = async (url, params = {}, setStateFunction) => {
-        try {
-            const response = await axios.get(url, { params }); // Pass params to axios.get
-            setStateFunction(response.data);
-        } catch (error) {
-            console.error(`Error fetching data from ${url}:`, error);
-        }
-    };
 
-    useEffect(() => {
-        fetchData('/costmgt/additives', { }, setAdditiveOptions); 
-        fetchData('/costmgt/raw-materials', { }, setBaseOilOptions); 
-    }, []);
+   
+      
 
     const handleChange = (e, section, index) => {
         const { name, value, files } = e.target;
+        const actualValue = files ? files[0] : (value || '');
+      
+        if (name === 'net_blending_qty') {
+          const newQty = parseFloat(value);
+          if (!isNaN(newQty)) {
+            setFormData((prev) => ({ ...prev, net_blending_qty: newQty }));
+      
+            // Debounce logic: clear existing timer and set a new one
+            if (debounceTimerRef.current) {
+              clearTimeout(debounceTimerRef.current);
+            }
+      
+            debounceTimerRef.current = setTimeout(() => {
+              updateConsumptionData(formData, newQty);
+            }, 2000); // 2-second delay
+          }
+        }
+      
         if (section) {
-            const updatedSection = formData[section].map((item, i) =>
-                i === index ? { ...item, [name]: files ? files[0] : value } : item
-            );
-            setFormData({ ...formData, [section]: updatedSection });
+          const updatedSection = formData[section].map((item, i) =>
+            i === index ? { ...item, [name]: actualValue } : item
+          );
+          setFormData((prev) => ({ ...prev, [section]: updatedSection }));
         } else {
-            setFormData({ ...formData, [name]: value });
+          setFormData((prev) => ({ ...prev, [name]: actualValue }));
+        }
+      };
+      useEffect(() => {
+        return () => {
+          if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+          }
+        };
+      }, []);      
+    
+    const handleNameChange = async (e) => {
+        const selectedName = e.target.value || '';
+      
+        if (!selectedName) {
+            // Reset form when no selection
+            setFormData(prev => ({
+                ...prev,
+                name: '',
+                sae: '',
+                grade: '',
+                consumptionAdditive: [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+                consumptionBaseOil: [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }]
+            }));
+            return;
+        }
+
+        try {
+            const res = await axios.get(`/costmgt/consumption-formula/${selectedName}/`);
+            const data = res.data;
+      
+            const additives = (data.consumptionFormulaAdditive || []).map((item) => ({
+                id: item.id || '',
+                name: item.name || '',
+                qty_in_percent: item.qty_in_percent || '',
+                qty_in_litre: '',
+                value: ''
+            }));
+      
+            const baseOils = (data.consumptionFormulaBaseOil || []).map((item) => ({
+                id: item.id || '',
+                name: item.name || '',
+                qty_in_percent: item.qty_in_percent || '',
+                qty_in_litre: '',
+                value: ''
+            }));
+      
+            setFormData((prev) => ({
+                ...prev,
+                name: data.id || '',
+                sae: data.sae || '',
+                grade: data.grade || '',
+                consumptionAdditive: additives.length > 0 ? additives : [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+                consumptionBaseOil: baseOils.length > 0 ? baseOils : [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }]
+            }));
+      
+      
+        } catch (err) {
+            console.error("Failed to fetch formula data", err);
         }
     };
+
+   
+
+    const updateConsumptionData = async (currentFormData, netBlendingQty) => {
+        try {
+          const additivePromises = currentFormData.consumptionAdditive.map(async (item) => {
+            if (!item.name || !item.qty_in_percent) return { ...item };
+      
+            try {
+              const res = await axios.get(`/costmgt/additives/${item.name}/`);
+              const rate = res.data.totalCost || 0;
+      
+              const qtyInLitre = (item.qty_in_percent / 100) * netBlendingQty;
+              const value = qtyInLitre * rate;
+      
+              return {
+                ...item,
+                qty_in_litre: qtyInLitre.toFixed(2),
+                value: value.toFixed(2),
+              };
+            } catch (err) {
+              console.error(`Error fetching additive ${item.name}:`, err);
+              return { ...item };
+            }
+          });
+      
+          const baseOilPromises = currentFormData.consumptionBaseOil.map(async (item) => {
+            if (!item.name || !item.qty_in_percent) return { ...item };
+      
+            try {
+              const res = await axios.get(`/costmgt/raw-materials/${item.name}/`);
+              const rate = res.data.total || 0;
+      
+              const qtyInLitre = (item.qty_in_percent / 100) * netBlendingQty;
+              const value = qtyInLitre * rate;
+      
+              return {
+                ...item,
+                qty_in_litre: qtyInLitre.toFixed(2),
+                value: value.toFixed(2),
+              };
+            } catch (err) {
+              console.error(`Error fetching base oil ${item.name}:`, err);
+              return { ...item };
+            }
+          });
+      
+          const [updatedAdditives, updatedBaseOils] = await Promise.all([
+            Promise.all(additivePromises),
+            Promise.all(baseOilPromises),
+          ]);
+      
+          // Convert strings back to numbers for summing
+          const allItems = [...updatedAdditives, ...updatedBaseOils];
+          const totalQtyPercent = allItems.reduce((sum, item) => sum + parseFloat(item.qty_in_percent || 0), 0);
+          const totalQtyLitre = allItems.reduce((sum, item) => sum + parseFloat(item.qty_in_litre || 0), 0);
+          const totalValue = allItems.reduce((sum, item) => sum + parseFloat(item.value || 0), 0);
+          const perLitreCost = netBlendingQty > 0 ? totalValue / netBlendingQty : 0;
+      
+          setFormData((prev) => ({
+            ...prev,
+            consumptionAdditive: updatedAdditives,
+            consumptionBaseOil: updatedBaseOils,
+            cross_check: totalQtyPercent.toFixed(2),
+            gross_vol_crosscheck: totalQtyLitre.toFixed(2),
+            total_value: totalValue.toFixed(2),
+            per_litre_cost: perLitreCost.toFixed(2),
+          }));
+        } catch (err) {
+          console.error("Error updating consumption data:", err);
+        }
+      };
+      
+      
+   
+
     
+   
 
     const handleAddRow = (section) => {
-        const newRow = { name: '', qty_in_percent: null, qty_in_litre: null, value: null };
+        const newRow = { name: '', qty_in_percent: '', qty_in_litre: '', value: '' };
         setFormData({ ...formData, [section]: [...formData[section], newRow] });
     };
 
     const handleRemoveRow = (section, index) => {
         const updatedSection = formData[section].filter((_, i) => i !== index);
-        setFormData({ ...formData, [section]: updatedSection });
+        // Ensure at least one row remains
+        const finalSection = updatedSection.length > 0 ? updatedSection : [{ name: '', qty_in_percent: '', qty_in_litre: '', value: '' }];
+        setFormData({ ...formData, [section]: finalSection });
     };
 
     const handleSubmit = (e) => {
@@ -90,11 +277,11 @@ const ConsumptionForm = ({ mode = 'add' }) => {
             if (Array.isArray(value)) {
                 value.forEach((item, index) => {
                     for (const [subKey, subValue] of Object.entries(item)) {
-                        formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        formDataToSend.append(`${key}[${index}].${subKey}`, subValue || '');
                     }
                 });
             } else {
-                formDataToSend.append(key, value);
+                formDataToSend.append(key, value || '');
             }
         }
 
@@ -117,6 +304,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+             <p className="text-xl text-center">Consumption & Blending Form</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 {/* Date Input */}
                 <div>
@@ -125,7 +313,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="date"
                         name="date"
                         type="date"
-                        value={formData.date}
+                        value={formData.date || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
@@ -134,14 +322,20 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 {/* Name Input */}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-                    <input
+                    <select
                         id="name"
                         name="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={handleChange}
+                        value={formData.name || ''} // Ensure never undefined
+                        onChange={handleNameChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
+                    >
+                        <option value="">Select Option</option>
+                        {nameOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Grade Input */}
@@ -151,7 +345,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="grade"
                         name="grade"
                         type="text"
-                        value={formData.grade}
+                        value={formData.grade || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
@@ -164,7 +358,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="sae"
                         name="sae"
                         type="text"
-                        value={formData.sae}
+                        value={formData.sae || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
@@ -177,7 +371,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="net_blending_qty"
                         name="net_blending_qty"
                         type="number"
-                        value={formData.net_blending_qty}
+                        value={formData.net_blending_qty || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
@@ -190,7 +384,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="gross_vol_crosscheck"
                         name="gross_vol_crosscheck"
                         type="number"
-                        value={formData.gross_vol_crosscheck}
+                        value={formData.gross_vol_crosscheck || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
@@ -203,7 +397,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="cross_check"
                         name="cross_check"
                         type="text"
-                        value={formData.cross_check}
+                        value={formData.cross_check || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
@@ -216,7 +410,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="total_value"
                         name="total_value"
                         type="number"
-                        value={formData.total_value}
+                        value={formData.total_value || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
@@ -229,21 +423,21 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         id="per_litre_cost"
                         name="per_litre_cost"
                         type="number"
-                        value={formData.per_litre_cost}
+                        value={formData.per_litre_cost || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
 
                 {/* Remarks Input */}
-                <div>
+                <div className="col-span-3">
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
                     <textarea
                         id="remarks"
                         name="remarks"
-                        value={formData.remarks}
+                        value={formData.remarks || ''}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className="border border-gray-300 p-2 rounded w-full"
                     ></textarea>
                 </div>
             </div>
@@ -252,19 +446,19 @@ const ConsumptionForm = ({ mode = 'add' }) => {
             <div className="p-4 ">
                 <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Additive</h3>
                 {formData.consumptionAdditive.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4">
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                         {/* Additive Name - Spanning 2 Columns */}
                         <div className="col-span-1 md:col-span-2">
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
                             <select
                                 name="name"
-                                value={item.name}
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                value={item.name || ''} // Ensure never undefined
+                                onChange={(e) =>  handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             >
                                 <option value="">Select Option</option>
                                 {additiveOptions.map((option) => (
-                                    <option key={option} value={option.id}>
+                                    <option key={option.id} value={option.id}>
                                         {option.name}
                                     </option>
                                 ))}
@@ -278,7 +472,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 type="number"
                                 name="qty_in_percent"
                                 placeholder="Quantity in Percent"
-                                value={item.qty_in_percent}
+                                value={item.qty_in_percent || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
@@ -291,7 +485,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 type="number"
                                 name="qty_in_litre"
                                 placeholder="Quantity in Litre"
-                                value={item.qty_in_litre}
+                                value={item.qty_in_litre || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
@@ -304,14 +498,14 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 type="number"
                                 name="value"
                                 placeholder="Value"
-                                value={item.value}
+                                value={item.value || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
                         </div>
 
                         {/* Remove Button - Centered */}
-                        <div className="col-span-1 md:col-span-1 flex items-end justify-center">
+                        {/* <div className="col-span-1 md:col-span-1 flex items-end justify-center">
                             <button
                                 type="button"
                                 onClick={() => handleRemoveRow('consumptionAdditive', index)}
@@ -319,12 +513,12 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                             >
                                 <FaTrash />
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 ))}
 
                 {/* Add Button */}
-                <div className="text-right">
+                {/* <div className="text-right">
                     <button
                         type="button"
                         onClick={() => handleAddRow('consumptionAdditive')}
@@ -332,26 +526,26 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     >
                         Add Additive
                     </button>
-                </div>
+                </div> */}
             </div>
 
             {/* Section for Consumption Base Oil */}
             <div className="p-4">
                 <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
                 {formData.consumptionBaseOil.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4">
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                         {/* Base Oil Name */}
                         <div className="col-span-1 md:col-span-2">
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
                             <select
                                 name="name"
-                                value={item.name}
+                                value={item.name || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             >
                                 <option value="">Select Option</option>
                                 {baseOilOptions.map((option) => (
-                                    <option key={option} value={option.id}>
+                                    <option key={option.id} value={option.id}>
                                         {option.name}
                                     </option>
                                 ))}
@@ -365,7 +559,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 type="number"
                                 name="qty_in_percent"
                                 placeholder="Quantity in Percent"
-                                value={item.qty_in_percent}
+                                value={item.qty_in_percent || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
@@ -378,7 +572,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 type="number"
                                 name="qty_in_litre"
                                 placeholder="Quantity in Litre"
-                                value={item.qty_in_litre}
+                                value={item.qty_in_litre || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
@@ -391,14 +585,14 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 type="number"
                                 name="value"
                                 placeholder="Value"
-                                value={item.value}
+                                value={item.value || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
                         </div>
 
                         {/* Remove Button - Centered */}
-                        <div className="col-span-1 flex items-end justify-center">
+                        {/* <div className="col-span-1 flex items-end justify-center">
                             <button
                                 type="button"
                                 onClick={() => handleRemoveRow('consumptionBaseOil', index)}
@@ -406,12 +600,12 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                             >
                                 <FaTrash />
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 ))}
 
                 {/* Add Button */}
-                <div className="text-right">
+                {/* <div className="text-right">
                     <button
                         type="button"
                         onClick={() => handleAddRow('consumptionBaseOil')}
@@ -419,7 +613,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     >
                         Add Base Oil
                     </button>
-                </div>
+                </div> */}
             </div>
             <hr className="my-6" />
 

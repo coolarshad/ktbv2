@@ -213,7 +213,7 @@ class TradePendingFilter(django_filters.FilterSet):
         model = TradePending
         fields = {
             'product_code': ['exact'],  # Filter by Trade TRN
-            'trade_type':['exact', 'icontains'],
+            'trade_type':['exact'],
         }
 
 

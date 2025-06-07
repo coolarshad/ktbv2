@@ -8,9 +8,12 @@ const AdditiveForm = ({ mode = 'add' }) => {
     const [formData, setFormData] = useState({
         date: '',
         name: '',
-        per_each: '',
-        category: '',
-        remarks: '',
+        crfPrice: '',
+        addCost: '',
+        costPriceInLiter: '',
+        density:'',
+        totalCost:'',
+        remarks:'',
     });
 
     useEffect(() => {
@@ -22,8 +25,11 @@ const AdditiveForm = ({ mode = 'add' }) => {
                         ...prevState,
                         date: data.date,
                         name: data.name,
-                        per_each: data.per_each,
-                        category: data.category,
+                        crfPrice: data.crfPrice,
+                        addCost: data.addCost,
+                        costPriceInLiter: data.costPriceInLiter,
+                        density: data.density,
+                        totalCost: data.totalCost,
                         remarks: data.remarks,
                     }));
                 })
@@ -122,23 +128,56 @@ const AdditiveForm = ({ mode = 'add' }) => {
                     />
                 </div>
                 <div>
-                    <label htmlFor="per_each" className="block text-sm font-medium text-gray-700">Per Each</label>
+                    <label htmlFor="crfPrice" className="block text-sm font-medium text-gray-700">CFR Price/KG in USD</label>
                     <input
-                        id="per_each"
-                        name="per_each"
-                        type="text"
-                        value={formData.per_each}
+                        id="crfPrice"
+                        name="crfPrice"
+                        type="number"
+                        value={formData.crfPrice}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
                 <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categories</label>
+                    <label htmlFor="addCost" className="block text-sm font-medium text-gray-700">Add Cost</label>
                     <input
-                        id="category"
-                        name="category"
-                        type="text"
-                        value={formData.category}
+                        id="addCost"
+                        name="addCost"
+                        type="number"
+                        value={formData.addCost}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="costPriceInLiter" className="block text-sm font-medium text-gray-700">Total cost EX DK in Kgs</label>
+                    <input
+                        id="costPriceInLiter"
+                        name="costPriceInLiter"
+                        type="number"
+                        value={formData.costPriceInLiter}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="density" className="block text-sm font-medium text-gray-700">Density @ 15 Degree Celsius</label>
+                    <input
+                        id="density"
+                        name="density"
+                        type="number"
+                        value={formData.density}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="totalCost" className="block text-sm font-medium text-gray-700">Cost Price in Liters</label>
+                    <input
+                        id="totalCost"
+                        name="totalCost"
+                        type="number"
+                        value={formData.totalCost}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />

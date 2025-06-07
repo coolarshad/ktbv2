@@ -32,6 +32,189 @@ class ConsumptionBaseOilViewSet(viewsets.ModelViewSet):
     queryset = ConsumptionBaseOil.objects.all()
     serializer_class = ConsumptionBaseOilSerializer
 
+
+class ConsumptionFormulaView(APIView):
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_class = ConsumptionFilter
+
+    def get(self, request, *args, **kwargs):
+        c_id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if c_id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                consumption = ConsumptionFormula.objects.get(id=c_id)
+            except ConsumptionFormula.DoesNotExist:
+                return Response({'detail': 'Consumption Formula not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            c_serializer = ConsumptionFormulaSerializer(consumption)
+            c_additives = ConsumptionFormulaAdditive.objects.filter(consumption=consumption)
+            c_base_oils = ConsumptionFormulaBaseOil.objects.filter(consumption=consumption)
+        
+            c_additives_serializer = ConsumptionFormulaAdditiveSerializer(c_additives, many=True)
+            c_base_oils_serializer = ConsumptionFormulaBaseOilSerializer(c_base_oils, many=True)
+          
+            response_data = c_serializer.data
+            response_data['consumptionFormulaAdditive'] = c_additives_serializer.data
+            response_data['consumptionFormulaBaseOil'] = c_base_oils_serializer.data
+
+            return Response(response_data)
+
+        else:  # If `pk` is not provided, list all trades
+            queryset = ConsumptionFormula.objects.all()
+            filterset = ConsumptionFormulaFilter(request.GET, queryset=queryset)
+
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = ConsumptionFormulaSerializer(filterset.qs, many=True)
+            return Response(serializer.data)
+    
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        # Prepare trade data separately
+        c_data = {
+            'date': data.get('date'),
+            'name': data.get('name'),
+            'grade': data.get('grade'),
+            'sae': data.get('sae'),
+            'remarks': data.get('remarks'),
+        }
+        c_additives_data = []
+        c_base_oils_data = []
+       
+        l = 0
+        while f'consumptionAdditive[{l}].name' in data:
+            additives_data = {
+                'name': data.get(f'consumptionAdditive[{l}].name'),
+                'qty_in_percent': data.get(f'consumptionAdditive[{l}].qty_in_percent'),
+    
+            }
+            c_additives_data.append(additives_data)
+            l += 1
+        
+        m = 0
+        while f'consumptionBaseOil[{m}].name' in data:
+            base_oils_data = {
+                'name': data.get(f'consumptionBaseOil[{m}].name'),
+                'qty_in_percent': data.get(f'consumptionBaseOil[{m}].qty_in_percent'),
+
+            }
+            c_base_oils_data.append(base_oils_data)
+            m += 1
+
+        with transaction.atomic():
+            c_serializer = ConsumptionFormulaSerializer(data=c_data)
+            if c_serializer.is_valid():
+                consumption = c_serializer.save()
+            else:
+                return Response(c_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            if c_additives_data:
+                try: 
+                    additives = [ConsumptionFormulaAdditive(**item, consumption=consumption) for item in c_additives_data]
+                    ConsumptionFormulaAdditive.objects.bulk_create(additives)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if c_base_oils_data:
+                try: 
+                    base_oils = [ConsumptionFormulaBaseOil(**item, consumption=consumption) for item in c_base_oils_data]
+                    ConsumptionFormulaBaseOil.objects.bulk_create(base_oils)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                
+
+        return Response(c_serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        data = request.data
+        
+        try:
+            consumption = ConsumptionFormula.objects.get(pk=pk)
+        except ConsumptionFormula.DoesNotExist:
+            return Response({'error': 'Consumption Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Prepare trade data separately
+        c_data = {
+            'date': data.get('date'),
+            'name': data.get('name'),
+            'grade': data.get('grade'),
+            'sae': data.get('sae'),
+            
+            'remarks': data.get('remarks'),
+        }
+        c_additives_data = []
+        c_base_oils_data = []
+
+        l = 0
+        while f'consumptionAdditive[{l}].name' in data:
+            additives_data = {
+                'name': data.get(f'consumptionAdditive[{l}].name'),
+                'qty_in_percent': data.get(f'consumptionAdditive[{l}].qty_in_percent'),
+              
+            }
+            c_additives_data.append(additives_data)
+            l += 1
+        
+        m = 0
+        while f'consumptionBaseOil[{m}].name' in data:
+            base_oils_data = {
+                'name': data.get(f'consumptionBaseOil[{m}].name'),
+                'qty_in_percent': data.get(f'consumptionBaseOil[{m}].qty_in_percent'),
+               
+            }
+            c_base_oils_data.append(base_oils_data)
+            m += 1
+       
+        with transaction.atomic():
+            c_serializer = ConsumptionFormulaSerializer(consumption, data=c_data, partial=True)
+            if c_serializer.is_valid():
+                consumption = c_serializer.save()
+            else:
+                return Response(c_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            
+            if c_additives_data:
+                # Clear existing trade products and add new ones
+                ConsumptionFormulaAdditive.objects.filter(consumption=consumption).delete()
+               
+                try:
+                    additives_data = [ConsumptionFormulaAdditive(**item, consumption=consumption) for item in c_additives_data]
+                    ConsumptionFormulaAdditive.objects.bulk_create(additives_data)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+           
+            if c_base_oils_data:
+                # Clear existing trade products and add new ones
+                ConsumptionFormulaBaseOil.objects.filter(consumption=consumption).delete()
+               
+                try:
+                    base_oils_data = [ConsumptionFormulaBaseOil(**item, consumption=consumption) for item in c_base_oils_data]
+                    ConsumptionFormulaBaseOil.objects.bulk_create(base_oils_data)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(c_serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+
+        try:
+            consumption = ConsumptionFormula.objects.get(pk=pk)
+        except ConsumptionFormula.DoesNotExist:
+            return Response({'error': 'Consumption Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        with transaction.atomic():
+            # Delete related trade products and extra costs
+            ConsumptionFormulaAdditive.objects.filter(consumption=consumption).delete()
+            ConsumptionFormulaBaseOil.objects.filter(consumption=consumption).delete()
+           
+            consumption.delete()
+
+        return Response({'message': 'Consumption Formula deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+
 class ConsumptionView(APIView):
     # filter_backends = [DjangoFilterBackend]
     # filterset_class = ConsumptionFilter
@@ -230,3 +413,89 @@ class ConsumptionView(APIView):
 class FinalProductViewSet(viewsets.ModelViewSet):
     queryset = FinalProduct.objects.all()
     serializer_class = FinalProductSerializer
+
+
+class PackingApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        print("==========",pk)
+        if not pk:
+            return Response({'detail': 'Packing ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = Packing.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+                print("==========",pk,'approved')
+                serializer = PackingSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except Packing.DoesNotExist:
+            return Response({'detail': 'Packing not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class RawMaterialApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+    
+        if not pk:
+            return Response({'detail': 'Raw Material ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = RawMaterial.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+
+                serializer = RawMaterialSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except RawMaterial.DoesNotExist:
+            return Response({'detail': 'Raw Material not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AdditiveApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+    
+        if not pk:
+            return Response({'detail': 'Additive ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = Additive.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+
+                serializer = AdditiveSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except Additive.DoesNotExist:
+            return Response({'detail': 'Additive not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class ConsumptionFormulaApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+    
+        if not pk:
+            return Response({'detail': 'Consumption Formula ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = ConsumptionFormula.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+
+                serializer = ConsumptionFormulaSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except ConsumptionFormula.DoesNotExist:
+            return Response({'detail': 'Consumption Formula not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

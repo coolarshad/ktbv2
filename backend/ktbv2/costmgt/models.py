@@ -34,7 +34,7 @@ class Packing(models.Model):
         blank=True,
         related_name='subcategories'
     )
-    
+    packing_type=models.CharField(max_length=255,blank=True,null=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
 
@@ -97,8 +97,11 @@ class RawMaterial(models.Model):
 class Additive(models.Model):
     name=models.CharField(max_length=50)
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
-    per_each=models.FloatField()
-    category=models.CharField(max_length=50,blank=True,null=True)
+    crfPrice=models.FloatField()
+    addCost=models.FloatField()
+    costPriceInLiter=models.FloatField()
+    density=models.FloatField()
+    totalCost=models.FloatField()
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
 
@@ -112,6 +115,57 @@ class Additive(models.Model):
     def get_absolute_url(self):
         return reverse("Additive_detail", kwargs={"pk": self.pk})
 
+
+class ConsumptionFormula(models.Model):
+    date=models.DateField(_("date"), auto_now=False, auto_now_add=False,null=True,blank=True)
+    name=models.CharField(max_length=50)
+    grade=models.CharField(max_length=50)
+    sae=models.CharField(max_length=50)
+
+    remarks=models.CharField(max_length=255,null=True,blank=True)
+    approved=models.BooleanField(null=True,default=False)
+
+
+    class Meta:
+        verbose_name = _("Consumption")
+        verbose_name_plural = _("Consumptions")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("Consumption_detail", kwargs={"pk": self.pk})
+
+class ConsumptionFormulaAdditive(models.Model):
+    consumption=models.ForeignKey(ConsumptionFormula,on_delete=models.CASCADE,null=True)
+    name=models.CharField(max_length=50)
+    qty_in_percent=models.FloatField()
+
+    class Meta:
+        verbose_name = _("ConsumptionFormulaAdditive")
+        verbose_name_plural = _("ConsumptionFormulaAdditives")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("ConsumptionFormulaAdditive_detail", kwargs={"pk": self.pk})
+
+class ConsumptionFormulaBaseOil(models.Model):
+    consumption=models.ForeignKey(ConsumptionFormula,on_delete=models.CASCADE,null=True)
+    name=models.CharField(max_length=50)
+    qty_in_percent=models.FloatField()
+
+    class Meta:
+        verbose_name = _("ConsumptionFormulaBaseOil")
+        verbose_name_plural = _("ConsumptionFormulaBaseOils")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("ConsumptionFormulaBaseOil_detail", kwargs={"pk": self.pk})
+    
 
 class Consumption(models.Model):
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False,null=True,blank=True)

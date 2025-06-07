@@ -182,7 +182,11 @@ class TradeView(APIView):
                             if trace and trace.ref_balance_qty:
                                 trace.ref_balance_qty-=float(product.trade_qty)
                                 trace.save()
-        
+                        try:
+                            pass
+                        except Exception as e:
+                            print("Error in craeting Trade Pending :",str(e))
+
                 except Exception as e:
                     return Response({'error': f"Trade Products: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
                 
@@ -1332,7 +1336,7 @@ class SalesPurchaseView(APIView):
                 for product in spProducts:
                     try:
                         # Check if a SalesProductTrace with the given product_code exists
-                        existing_pending = SalesPending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
+                        existing_pending = TradePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
             
                         if existing_pending:
                             existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
@@ -1360,7 +1364,7 @@ class SalesPurchaseView(APIView):
                 for product in spProducts:
                     try:
                         # Check if a SalesProductTrace with the given product_code exists
-                        existing_pending = PurchasePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
+                        existing_pending = TradePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
             
                         if existing_pending:
                             existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
@@ -1425,7 +1429,7 @@ class SalesPurchaseView(APIView):
             if sp.trn.trade_type.lower() == "sales":
                 for product in salesPurchaseProducts:
                     try:
-                        pending_product=SalesPending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
                         pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
                         pending_product.save()
                     except Exception as e:
@@ -1456,7 +1460,7 @@ class SalesPurchaseView(APIView):
             if sp.trn.trade_type.lower() == "purchase":
                 for product in salesPurchaseProducts:
                     try:
-                        pending_product=PurchasePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code).first()
+                        pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
                         pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
                         pending_product.save()
                     except Exception as e:
@@ -1501,9 +1505,12 @@ class SalesPurchaseView(APIView):
                 for product in salesPurchaseProducts:
                     try:
                         # Check if a SalesProductTrace with the given product_code exists
-                        existing_pending = SalesPending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code).first()
-            
-                        if existing_pending:
+                        existing_pending = TradePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
+                        if existing_pending and sp.trn.trade_type=='sales':
+                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
+                            existing_pending.save()
+                        
+                        if existing_pending and sp.trn.trade_type=='purchase':
                             existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
                             existing_pending.save()
                        
@@ -1521,6 +1528,7 @@ class SalesPurchaseView(APIView):
                             # Handle specific exception for SalesProductTrace
                         print(f"Error updating or creating Inventory: {e}")
                         raise
+                    
             # Delete related trade products and extra costs
             SalesPurchaseProduct.objects.filter(sp=sp).delete()
             SalesPurchaseExtraCharge.objects.filter(sp=sp).delete()
@@ -1952,7 +1960,8 @@ class TradeProductRefViewSet(viewsets.ModelViewSet):
 class TradePendingViewSet(viewsets.ModelViewSet):
     queryset = TradePending.objects.all()
     serializer_class = TradePendingSerializer
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TradePendingFilter
 
  
 

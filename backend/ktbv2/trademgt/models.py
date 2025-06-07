@@ -106,15 +106,20 @@ class TradeProduct(models.Model):
     def save(self, *args, **kwargs):
         """Override save to handle trade quantity updates"""
         # previous_trade_qty is now set by the view before calling save
-        if not hasattr(self, 'previous_trade_qty'):
-            self.previous_trade_qty = 0
-            print(f"No previous trade qty found for trade_id: {self.trade.id}, product_code: {self.product_code}")
-        else:
-            print(f"Using previous trade qty: {self.previous_trade_qty} for product_code: {self.product_code}")
+        try:
+            if not hasattr(self, 'previous_trade_qty'):
+                self.previous_trade_qty = 0
+                print(f"No previous trade qty found for trade_id: {self.trade.id}, product_code: {self.product_code}")
+            else:
+                print(f"Using previous trade qty: {self.previous_trade_qty} for product_code: {self.product_code}")
 
-        super().save(*args, **kwargs)
-        self.update_product_trace()
-        self.update_product_ref()
+            super().save(*args, **kwargs)
+            self.update_product_trace()
+            self.update_product_ref()
+            self.create_trade_pending()
+        except Exception as e:
+            print(str(e))
+
 
     def update_product_trace(self):
         """Update or create TradeProductTrace for this product"""
@@ -171,9 +176,34 @@ class TradeProduct(models.Model):
             )
 
     def create_trade_pending(self):
-        """Create TradePending entry for this product"""
-       
-        TradePending.objects.create(
+        """Create or update TradePending entry for this product"""
+        try:
+            pending = TradePending.objects.get(
+            product_code=self.product_code,
+            product_name=self.product_name,
+            trade_type=self.trade.trade_type
+            )
+            
+            if hasattr(self, 'previous_trade_qty'):
+                # Correctly update balance: rollback previous, apply new
+                pending.balance_qty += float(self.previous_trade_qty)
+                pending.balance_qty -= float(self.trade_qty)
+            else:
+                # For new record — this should ideally not hit here on update
+                pending.balance_qty -= float(self.trade_qty)
+
+            pending.save()
+
+        except TradePending.DoesNotExist:
+            # Calculate tolerance-adjusted contract balance
+            try:
+                contract_balance_qty = float(self.contract_balance_qty)
+                tolerance = float(self.tolerance)
+                adjusted_balance_qty = contract_balance_qty + (tolerance / 100) * contract_balance_qty
+            except (TypeError, ValueError):
+                adjusted_balance_qty = 0  # Fallback to avoid crash
+
+            TradePending.objects.create(
             trn=self.trade,
             trade_type=self.trade.trade_type,
             trd=self.trade.trd,
@@ -184,22 +214,23 @@ class TradeProduct(models.Model):
             hs_code=self.hs_code,
             contract_qty=self.total_contract_qty,
             contract_qty_unit=self.total_contract_qty_unit,
-            balance_qty=self.contract_balance_qty,
+            balance_qty=adjusted_balance_qty,
             balance_qty_unit=self.contract_balance_qty_unit,
             selected_currency_rate=self.selected_currency_rate,
             rate_in_usd=self.rate_in_usd,
             tolerance=self.tolerance
-        )
+            )
 
-    class Meta:
-        verbose_name = _("TradeProduct")
-        verbose_name_plural = _("TradeProducts")
 
-    def __str__(self):
-        return self.product_code
+        class Meta:
+            verbose_name = _("TradeProduct")
+            verbose_name_plural = _("TradeProducts")
 
-    def get_absolute_url(self):
-        return reverse("TradeProduct_detail", kwargs={"pk": self.pk})
+        def __str__(self):
+            return self.product_code
+
+        def get_absolute_url(self):
+            return reverse("TradeProduct_detail", kwargs={"pk": self.pk})
 
 class TradeExtraCost(models.Model):
     trade = models.ForeignKey(Trade, related_name='trade_extra_costs', on_delete=models.CASCADE)

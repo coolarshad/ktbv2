@@ -56,6 +56,19 @@ const RawMaterial = () => {
       }
     };
 
+    const approveRawMaterial = async () => {
+      try {
+        await axios.get(`/costmgt/raw-materials-approve/${selectedMaterial.id}/`);
+        setIsModalOpen(false);
+        setSelectedMaterial(null);
+        // Reload the page
+        window.location.reload();
+      } catch (error) {
+        console.error('Error approving packing:', error);
+        // Optionally, handle the error (e.g., show a user-friendly error message)
+      }
+    };
+
     const closeModal = () => {
       setIsModalOpen(false);
       setSelectedMaterial(null);
@@ -149,6 +162,11 @@ const RawMaterial = () => {
                  
                 </tbody>
                 </table>
+                {selectedMaterial.approved ? '' :
+                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                      <button onClick={approveRawMaterial} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                    </div>
+                  }
              </div>
             
            </div>

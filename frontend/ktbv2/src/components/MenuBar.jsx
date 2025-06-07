@@ -121,6 +121,7 @@ const MenuBar = () => {
             <Link to="/packings" className="block px-4 py-2 hover:bg-gray-700">Packings</Link>
             <Link to="/raw-materials" className="block px-4 py-2 hover:bg-gray-700">Raw Materials</Link>
             <Link to="/additives" className="block px-4 py-2 hover:bg-gray-700">Additives</Link>
+            <Link to="/consumption-formula" className="block px-4 py-2 hover:bg-gray-700">Consumption Formulae</Link>
             <Link to="/consumptions" className="block px-4 py-2 hover:bg-gray-700">Consumption</Link>
             <Link to="/final-products" className="block px-4 py-2 hover:bg-gray-700">Final Product Cost</Link>
            

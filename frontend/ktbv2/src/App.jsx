@@ -46,6 +46,8 @@ import Inventory from './views/Inventory';
 import PLForm from './views/PLForm';
 import TradeReport from './views/TradeReport';
 import ProductRef from './views/ProductRef';
+import ConsumptionFormula from './views/ConsumptionFormula';
+import ConsumptionFormulaForm from './views/ConsumptionFormulaForm';
 
 function App() {
  
@@ -98,6 +100,10 @@ function App() {
           <Route path="/additives" element={<Additive />} />
           <Route path="/additive-form" element={<AdditiveForm />} />
           <Route path="/additive-form/:id" element={<AdditiveForm mode="update" />} />
+
+          <Route path="/consumption-formula" element={<ConsumptionFormula />} />
+          <Route path="/consumption-formula-form" element={<ConsumptionFormulaForm />} />
+          <Route path="/consumption-formula-form/:id" element={<ConsumptionFormulaForm mode="update" />} />
 
           <Route path="/consumptions" element={<Consumption />} />
           <Route path="/consumption-form" element={<ConsumptionForm />} />

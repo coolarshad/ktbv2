@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const AdditiveTable = ({ data , onDelete, onView }) => { // Default value for data
+const ConsumptionFormulaTable = ({ data , onDelete, onView }) => { // Default value for data
   const navigate = useNavigate();  
   
   const handleEdit = (id) => {
-    navigate(`/additive-form/${id}`);  // Navigate to TradeForm with tradeId
+    navigate(`/consumption-formula-form/${id}`);  
   };
 
   return (
@@ -17,11 +17,10 @@ const AdditiveTable = ({ data , onDelete, onView }) => { // Default value for da
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">CFR Price/KG in USD</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add Cost</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total cost EX DK in Kgs</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Density @ 15 Degree Celsius</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Cost Price in Liters</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Grade</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">SAE</th>
+            
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -33,12 +32,11 @@ const AdditiveTable = ({ data , onDelete, onView }) => { // Default value for da
               
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.crfPrice}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.addCost}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.costPriceInLiter}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.density}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.totalCost}</td>
-          
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.grade}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sae}</td>
+             
+              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
+            
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
               </td>
@@ -65,4 +63,4 @@ const AdditiveTable = ({ data , onDelete, onView }) => { // Default value for da
   );
 };
 
-export default AdditiveTable;
+export default ConsumptionFormulaTable;

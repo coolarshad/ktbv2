@@ -75,7 +75,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     navigate(`/sales-purchases`);
                 })
                 .catch(error => {
-                    console.error('There was an error adding the trade!', error);
+                    console.error('There was an error adding the Sales/Purchase!', error);
                 });
             } else if (mode === 'update') {
                 axios.put(`/trademgt/sales-purchases/${id}/`, formDataToSend, {
@@ -88,7 +88,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     navigate(`/sales-purchases`);
                 })
                 .catch(error => {
-                    console.error('There was an error updating the trade!', error);
+                    console.error('There was an error updating the Sales/Purchase!', error);
                 });
             }
         }, 1000),
