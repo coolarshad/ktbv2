@@ -107,6 +107,13 @@ class TradeProduct(models.Model):
         """Override save to handle trade quantity updates"""
         # previous_trade_qty is now set by the view before calling save
         try:
+            old_instance = None
+            if self.pk:
+                try:
+                    old_instance = TradeProduct.objects.get(pk=self.pk)
+                except TradeProduct.DoesNotExist:
+                    pass
+
             if not hasattr(self, 'previous_trade_qty'):
                 self.previous_trade_qty = 0
                 print(f"No previous trade qty found for trade_id: {self.trade.id}, product_code: {self.product_code}")
@@ -116,7 +123,7 @@ class TradeProduct(models.Model):
             super().save(*args, **kwargs)
             self.update_product_trace()
             self.update_product_ref()
-            self.create_trade_pending()
+            self.create_trade_pending(old_instance)
         except Exception as e:
             print(str(e))
 
@@ -175,62 +182,74 @@ class TradeProduct(models.Model):
                 ref_balance_qty=float(self.trade_qty)
             )
 
-    def create_trade_pending(self):
+    def create_trade_pending(self, old_instance):
         """Create or update TradePending entry for this product"""
         try:
+            # Try to find an existing TradePending record
             pending = TradePending.objects.get(
             product_code=self.product_code,
             product_name=self.product_name,
             trade_type=self.trade.trade_type
             )
-            
-            if hasattr(self, 'previous_trade_qty'):
-                # Correctly update balance: rollback previous, apply new
-                pending.balance_qty += float(self.previous_trade_qty)
-                pending.balance_qty -= float(self.trade_qty)
-            else:
-                # For new record — this should ideally not hit here on update
-                pending.balance_qty -= float(self.trade_qty)
+            # Recalculate adjusted balance using current trade_qty + tolerance
+            try:
+                base_qty = float(self.trade_qty)
+                tolerance = float(self.tolerance)
+                adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
+            except (TypeError, ValueError):
+                adjusted_balance_qty = 0
 
+            prev_adjusted_balance_qty = 0
+            if old_instance:
+                try:
+                    prev_base_qty = float(old_instance.trade_qty)
+                    prev_tolerance = float(old_instance.tolerance)
+                    prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
+                except (TypeError, ValueError):
+                    pass
+
+            # Update balance qty
+            pending.balance_qty = adjusted_balance_qty - prev_adjusted_balance_qty
             pending.save()
 
         except TradePending.DoesNotExist:
-            # Calculate tolerance-adjusted contract balance
+            # No existing record, create a new one using trade_qty as base
             try:
-                contract_balance_qty = float(self.contract_balance_qty)
+                base_qty = float(self.trade_qty)
                 tolerance = float(self.tolerance)
-                adjusted_balance_qty = contract_balance_qty + (tolerance / 100) * contract_balance_qty
+                adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
             except (TypeError, ValueError):
-                adjusted_balance_qty = 0  # Fallback to avoid crash
+                adjusted_balance_qty = 0  # fallback to prevent crash
 
             TradePending.objects.create(
-            trn=self.trade,
-            trade_type=self.trade.trade_type,
-            trd=self.trade.trd,
-            company=self.trade.company,
-            payment_term=self.trade.payment_term,
-            product_code=self.product_code,
-            product_name=self.product_name,
-            hs_code=self.hs_code,
-            contract_qty=self.total_contract_qty,
-            contract_qty_unit=self.total_contract_qty_unit,
-            balance_qty=adjusted_balance_qty,
-            balance_qty_unit=self.contract_balance_qty_unit,
-            selected_currency_rate=self.selected_currency_rate,
-            rate_in_usd=self.rate_in_usd,
-            tolerance=self.tolerance
+                trn=self.trade,
+                trade_type=self.trade.trade_type,
+                trd=self.trade.trd,
+                company=self.trade.company,
+                payment_term=self.trade.payment_term,
+                product_code=self.product_code,
+                product_name=self.product_name,
+                hs_code=self.hs_code,
+                contract_qty=self.total_contract_qty,  # trade_qty used as contract_qty
+                contract_qty_unit=self.total_contract_qty_unit,
+                balance_qty=adjusted_balance_qty,
+                balance_qty_unit=self.contract_balance_qty_unit,
+                selected_currency_rate=self.selected_currency_rate,
+                rate_in_usd=self.rate_in_usd,
+                tolerance=self.tolerance
             )
 
 
-        class Meta:
-            verbose_name = _("TradeProduct")
-            verbose_name_plural = _("TradeProducts")
 
-        def __str__(self):
-            return self.product_code
+    class Meta:
+        verbose_name = _("TradeProduct")
+        verbose_name_plural = _("TradeProducts")
 
-        def get_absolute_url(self):
-            return reverse("TradeProduct_detail", kwargs={"pk": self.pk})
+    def __str__(self):
+        return self.product_code
+
+    def get_absolute_url(self):
+        return reverse("TradeProduct_detail", kwargs={"pk": self.pk})
 
 class TradeExtraCost(models.Model):
     trade = models.ForeignKey(Trade, related_name='trade_extra_costs', on_delete=models.CASCADE)

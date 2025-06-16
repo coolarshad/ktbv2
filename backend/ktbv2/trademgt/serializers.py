@@ -940,3 +940,193 @@ class InventoryDetailProductSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['productName'] = self.get_product_details(instance)
         return ret
+    
+
+
+class ExcelTradeSerializer(serializers.ModelSerializer):
+  
+    class Meta:
+        model = Trade
+        fields = '__all__'
+
+    ## additional related info
+    def get_company_details(self, obj):
+        try:
+            company_instance = Company.objects.get(id=obj.company)  
+            return CompanySerializer(company_instance).data
+        except Company.DoesNotExist:
+            return None 
+
+    def get_kyc_details(self, obj):
+        try:
+            kyc_instance = Kyc.objects.get(id=obj.customer_company_name)  # or use another field to identify the company
+            return KycSerializer(kyc_instance).data
+        except Kyc.DoesNotExist:
+            return None
+    
+    def get_bank_details(self, obj):
+        try:
+            instance = Bank.objects.get(id=obj.bank_name_address)
+            return BankSerializer(instance).data
+        except Bank.DoesNotExist:
+            return None
+    def get_currency_details(self, obj):
+        try:
+            instance = Currency.objects.get(id=obj.currency_selection)
+            return CurrencySerializer(instance).data
+        except Currency.DoesNotExist:
+            return None
+    def get_payment_term_details(self, obj):
+        try:
+            instance = PaymentTerm.objects.get(id=obj.payment_term)
+            return PaymentTermSerializer(instance).data
+        except PaymentTerm.DoesNotExist:
+            return None
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['companyName'] = self.get_company_details(instance)
+        ret['customer'] = self.get_kyc_details(instance)
+        ret['bank'] = self.get_bank_details(instance)
+        ret['currency'] = self.get_currency_details(instance)
+        ret['paymentTerm'] = self.get_payment_term_details(instance)
+        # ret['shipmentSize'] = self.get_container_details(instance)
+        
+        return ret
+    
+
+class ExcelTradeProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TradeProduct
+        fields = '__all__'
+        
+    def get_trade_details(self, obj):
+        try:
+            instance = Trade.objects.get(id=obj.trade.id)
+            return ExcelTradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None
+        
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+    def get_supplier_details(self, obj):
+        try:
+            instance = Kyc.objects.get(id=obj.packaging_supplier)  # or use another field to identify the company
+            return KycSerializer(instance).data
+        except Kyc.DoesNotExist:
+            return None
+    def get_packing_details(self, obj):
+        try:
+            instance = Packing.objects.get(id=obj.mode_of_packing)  # or use another field to identify the company
+            return PackingSerializer(instance).data
+        except Packing.DoesNotExist:
+            return None
+    
+    def get_ref_trn_details(self, obj):
+        try:
+            if obj.ref_trn != 'NA':
+                instance = Trade.objects.get(trn=obj.ref_trn)  # or use another field to identify the company
+                return instance.trn
+        except Trade.DoesNotExist:
+            return None
+    
+    def get_container_details(self, obj):
+        try:
+            instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
+            return ShipmentSizeSerializer(instance).data
+        except ShipmentSize.DoesNotExist:
+            return None
+    
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+       
+        # Add the serialized company details to the response
+        ret['productName'] = self.get_product_details(instance)
+        ret['supplier'] = self.get_supplier_details(instance)
+        ret['packing'] = self.get_packing_details(instance)
+        ret['refTrn'] = self.get_ref_trn_details(instance)
+        ret['shipmentSize'] = self.get_container_details(instance)
+        ret['trade']=self.get_trade_details(instance)
+
+        return ret
+    
+
+
+
+class ExcelSalesPurchaseSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = SalesPurchase
+        fields = '__all__'
+    
+    def get_trade_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = Trade.objects.get(id=obj.trn.id)  # or use another field to identify the company
+            return TradeSerializer(instance).data
+        except Trade.DoesNotExist:
+            return None  # Or handle it as needed
+
+    def get_prepay_details(self, obj):
+        # Fetch company details manually
+        try:
+            # Assuming `company` field in `Trade` contains company name or ID
+            instance = PrePayment.objects.get(trn=obj.trn)  # or use another field to identify the company
+            return PrePaymentSerializer(instance).data
+        except PrePayment.DoesNotExist:
+            return None  # Or handle it as needed
+    
+    def get_packingList_details(self, obj):
+        try:
+            instance = PackingList.objects.filter(sp=obj)
+            return PackingListSerializer(instance,many=True).data
+        except PackingList.DoesNotExist:
+            return None
+        
+
+    def to_representation(self, instance):
+        # Call the parent's `to_representation` method
+        ret = super().to_representation(instance)
+        
+        # Add the serialized company details to the response
+        ret['trn'] = self.get_trade_details(instance)
+        ret['prepayment'] = self.get_prepay_details(instance)
+        ret['packingList'] = self.get_packingList_details(instance)
+        return ret
+
+class ExcelSalesPurchaseProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesPurchaseProduct
+        # fields = '__all__'
+        exclude = ['pending_qty']
+    
+    def get_sp_details(self, obj):
+        try:
+            instance = SalesPurchase.objects.get(id=obj.sp.id)
+            return ExcelSalesPurchaseSerializer(instance).data
+        except SalesPurchase.DoesNotExist:
+            return None
+        
+    def get_product_details(self, obj):
+        try:
+            instance = ProductName.objects.get(id=obj.product_name)
+            return ProductNameSerializer(instance).data
+        except ProductName.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['productName'] = self.get_product_details(instance)
+        ret['sp'] = self.get_sp_details(instance)
+        return ret
+    

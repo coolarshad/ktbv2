@@ -339,7 +339,7 @@ function PL() {
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Provider</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.logistic_provider}</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">Commission Agent</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Provider</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.logistic_provider}</td>
                       </tr>
                       <tr>
