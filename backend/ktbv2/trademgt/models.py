@@ -209,7 +209,8 @@ class TradeProduct(models.Model):
                     pass
 
             # Update balance qty
-            pending.balance_qty = adjusted_balance_qty - prev_adjusted_balance_qty
+            pending.balance_qty-=prev_adjusted_balance_qty
+            pending.balance_qty+= adjusted_balance_qty 
             pending.save()
 
         except TradePending.DoesNotExist:
