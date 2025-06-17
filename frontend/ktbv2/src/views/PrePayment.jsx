@@ -115,7 +115,7 @@ function PrePayment() {
         </button>
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-payments'} 
-        fieldOptions={fieldOptions}
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" 
         />
         </div>
         <div className=" rounded p-2">

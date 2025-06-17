@@ -125,7 +125,7 @@ function SalesPurchases() {
         </button>
         <div>
           <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/sales-purchases'}
-            fieldOptions={fieldOptions}
+            fieldOptions={fieldOptions} downloadUrl="/excel/export/sp/" 
           />
         </div>
         <div className=" rounded p-2">

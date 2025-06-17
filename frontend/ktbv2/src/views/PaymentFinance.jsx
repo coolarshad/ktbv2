@@ -119,7 +119,7 @@ function PaymentFinance() {
         </button>
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/payment-finances/'} 
-        fieldOptions={fieldOptions}
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/pf/" 
         />
         </div>
         <div className=" rounded p-2">

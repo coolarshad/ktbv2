@@ -257,7 +257,7 @@ function PL() {
       </button>
       <div>
       <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/profitloss'} 
-      fieldOptions={fieldOptions}
+      fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/" 
       />
       </div>
       <div className=" rounded p-2">

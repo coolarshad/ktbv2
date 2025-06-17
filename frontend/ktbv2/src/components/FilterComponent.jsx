@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaDownload } from 'react-icons/fa'; // Importing a download icon
 import axios from '../axiosConfig';
 
-const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, checkBtn=true }) => {
+const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, checkBtn=true,downloadUrl = '/excel/export/trade/', }) => {
   const [field, setField] = useState('');
   const [searchText, setSearchText] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -11,68 +11,71 @@ const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, c
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
 
-  const downloadExcel = async () => {
-    try {
-      // Send a GET request with 'responseType' set to 'blob' to handle binary data
-      const response = await axios.get('/excel/export/trade/', {
-        responseType: 'blob', // This is necessary for handling binary data correctly
-        headers: {
-          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        },
-      });
+  const buildSearchParams = () => {
+    const params = {
+      ...extraParams,
+    };
   
-      // Create a URL from the received blob data
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      
-      // Create a link element and trigger the download
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'trades.xlsx'); // File name for download
-      document.body.appendChild(link);
-      link.click();
-      link.remove(); // Remove the link element after clicking
-    } catch (error) {
-      console.error('Error downloading the file:', error);
+    if (field && searchText) {
+      params[`${field}__icontains`] = searchText;
     }
+  
+    if (dateFrom) params.date_from = dateFrom;
+    if (dateTo) params.date_to = dateTo;
+  
+    const tradeTypes = [];
+    if (salesChecked) tradeTypes.push('sales');
+    if (purchaseChecked) tradeTypes.push('purchase');
+    if (cancelChecked) tradeTypes.push('cancel');
+  
+    if (flag) {
+      if (tradeTypes.length > 0) {
+        params.trade_type__icontains = tradeTypes.join('|');
+      }
+    } else {
+      if (tradeTypes.length > 0) {
+        params.trn__trade_type__icontains = tradeTypes.join('|');
+      }
+    }
+  
+    return params;
   };
-
+  
   const handleSearch = async () => {
     try {
-      const params = {
-        ...extraParams,
-        [`${field}__icontains`]: searchText,
-      };
-      console.log(params)
-      // Add date fields only if they are provided
-      if (dateFrom) params.date_from = dateFrom;
-      if (dateTo) params.date_to = dateTo;
-  
-      // Create an array for trade_category using icontains
-      const tradeTypes = [];
-      if (salesChecked) tradeTypes.push('sales');
-      if (purchaseChecked) tradeTypes.push('purchase');
-      if (cancelChecked) tradeTypes.push('cancel');
-  
-      // Add trade_category to params if there are selected values
-      if(flag){
-        if (tradeTypes.length > 0) {
-          params.trade_type__icontains = tradeTypes.join('|'); // Using regex OR for multiple values
-        }
-      }
-      else{
-        if (tradeTypes.length > 0) {
-          params.trn__trade_type__icontains = tradeTypes.join('|'); // Using regex OR for multiple values
-        }
-      }
-      
-      const finalParams = { ...params };
-      const response = await axios.get(`${apiEndpoint}`, { params });
-      onFilter(response.data); // Pass the filtered data to the parent component
+      const params = buildSearchParams();
+      const response = await axios.get(apiEndpoint, { params });
+      onFilter(response.data);
     } catch (error) {
       console.error('Error fetching filtered trades:', error);
       alert('There was an error fetching the filtered trades. Please try again.');
     }
   };
+  
+  const downloadExcel = async () => {
+    try {
+      const params = buildSearchParams();
+      const response = await axios.get(downloadUrl, {
+        params,
+        responseType: 'blob',
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      });
+  
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'data_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading the file:', error);
+      alert('Failed to download Excel. Please try again.');
+    }
+  };
+  
   
   return (
     <div className="px-3 py-1 bg-white shadow-md rounded-md">

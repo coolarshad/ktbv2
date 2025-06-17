@@ -79,7 +79,7 @@ function PreSalePurchase() {
         </button>
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-sales-purchases'} 
-        fieldOptions={fieldOptions}
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/presp/" 
         />
         </div>
         <div className=" rounded p-2">
