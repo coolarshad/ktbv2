@@ -111,6 +111,14 @@ class TradeProduct(models.Model):
             if self.pk:
                 try:
                     old_instance = TradeProduct.objects.get(pk=self.pk)
+                    prev_adjusted_balance_qty = 0
+                    if old_instance:
+                        try:
+                            prev_base_qty = float(old_instance.trade_qty)
+                            prev_tolerance = float(old_instance.tolerance)
+                            prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
+                        except Exception as e:
+                            print(str(e))
                 except TradeProduct.DoesNotExist:
                     pass
 
@@ -123,7 +131,7 @@ class TradeProduct(models.Model):
             super().save(*args, **kwargs)
             self.update_product_trace()
             self.update_product_ref()
-            self.create_trade_pending(old_instance)
+            self.create_trade_pending(prev_adjusted_balance_qty)
         except Exception as e:
             print(str(e))
 
@@ -199,17 +207,17 @@ class TradeProduct(models.Model):
             except (TypeError, ValueError):
                 adjusted_balance_qty = 0
 
-            prev_adjusted_balance_qty = 0
-            if old_instance:
-                try:
-                    prev_base_qty = float(old_instance.trade_qty)
-                    prev_tolerance = float(old_instance.tolerance)
-                    prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
-                except (TypeError, ValueError):
-                    pass
+            # prev_adjusted_balance_qty = 0
+            # if old_instance:
+            #     try:
+            #         prev_base_qty = float(old_instance.trade_qty)
+            #         prev_tolerance = float(old_instance.tolerance)
+            #         prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
+            #     except Exception as e:
+            #         print(str(e))
 
             # Update balance qty
-            pending.balance_qty-=prev_adjusted_balance_qty
+            pending.balance_qty-=old_instance
             pending.balance_qty+= adjusted_balance_qty 
             pending.save()
 

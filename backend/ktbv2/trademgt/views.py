@@ -394,7 +394,16 @@ class TradeView(APIView):
                     trade_qty=previous.get("trade_qty", 0),
                     tolerance=previous.get("tolerance", 0)
                     )
-                    product.create_trade_pending(fake_old_instance)
+                   
+                    prev_adjusted_balance_qty = 0
+          
+                    try:
+                        prev_base_qty = float(fake_old_instance.trade_qty)
+                        prev_tolerance = float(fake_old_instance.tolerance)
+                        prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
+                    except Exception as e:
+                        print(str(e))
+                    product.create_trade_pending(prev_adjusted_balance_qty)
 
             if trade_extra_costs_data:
                 # Clear existing trade extra costs and add new ones
