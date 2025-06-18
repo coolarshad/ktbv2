@@ -108,6 +108,7 @@ class TradeProduct(models.Model):
         # previous_trade_qty is now set by the view before calling save
         try:
             old_instance = None
+            prev_adjusted_balance_qty = None
             if self.pk:
                 try:
                     old_instance = TradeProduct.objects.get(pk=self.pk)
