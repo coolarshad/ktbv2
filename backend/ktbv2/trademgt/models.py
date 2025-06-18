@@ -218,7 +218,8 @@ class TradeProduct(models.Model):
             #         print(str(e))
 
             # Update balance qty
-            pending.balance_qty-=old_instance
+            if old_instance:
+                pending.balance_qty-=old_instance
             pending.balance_qty+= adjusted_balance_qty 
             pending.save()
 
