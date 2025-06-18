@@ -1,5 +1,5 @@
 // src/components/TradeTable.js
-import React,{useState,useRef} from 'react';
+import React,{useState,useRef,useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
 import PurchaseInvoice from "../views/PurchaseInvoice";
 import ReactToPrint from 'react-to-print';
@@ -88,7 +88,9 @@ const PreSPTable = ({ data, onDelete }) => {
     navigate(`/pre-sale-purchase-form/${id}`);  // Navigate to TradeForm with tradeId
   };
 
- 
+ const sortedData = useMemo(() => {
+     return [...(data || [])].sort((a, b) => b.id - a.id);
+   }, [data]);
 
   return (
     <>
@@ -112,7 +114,7 @@ const PreSPTable = ({ data, onDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((presp, index) => (
+          {sortedData.map((presp, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.date}</td>

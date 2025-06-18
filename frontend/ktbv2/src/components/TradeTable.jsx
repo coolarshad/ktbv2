@@ -1,5 +1,5 @@
 // src/components/TradeTable.js
-import React,{useState,useRef} from 'react';
+import React,{useState,useRef,useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
 import PrintModal from './PrintModal';
 import ReactToPrint from 'react-to-print';
@@ -33,6 +33,9 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
     }
   };
 
+  const sortedData = useMemo(() => {
+    return [...(data || [])].sort((a, b) => b.id - a.id);
+  }, [data]);
 
   return (
     <>
@@ -55,37 +58,37 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
           </tr>
         </thead>
         <tbody>
-          {data?.map((trade, index) => (
-            <tr key={index} onClick={() => onRowClick(trade.id)}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
-              
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trd}</td>
+            {sortedData.map((trade, index) => (
+                <tr key={index} onClick={() => onRowClick(trade.id)}>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
 
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.approval_date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => {}} />
-              </td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                {trade.reviewed?<button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(trade.id)}>Print</button>:''}
-                <button
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
-                    onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
-                  >
-                    View
-                  </button>
-                  <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(trade.id)}>Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(trade.id)}>Delete</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trd}</td>
+
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.approval_date}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
+                  {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => { }} />
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                    <div className="space-x-2">
+                      {trade.reviewed ? <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={() => handlePrintClick(trade.id)}>Print</button> : ''}
+                      <button
+                        className="bg-blue-500 text-white px-2 py-1 rounded"
+                        onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
+                      >
+                        View
+                      </button>
+                      <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(trade.id)}>Edit</button>
+                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(trade.id)}>Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
         </tbody>
       </table>
     </div>

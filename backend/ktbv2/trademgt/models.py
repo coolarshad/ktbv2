@@ -107,22 +107,6 @@ class TradeProduct(models.Model):
         """Override save to handle trade quantity updates"""
         # previous_trade_qty is now set by the view before calling save
         try:
-            old_instance = None
-            prev_adjusted_balance_qty = None
-            if self.pk:
-                try:
-                    old_instance = TradeProduct.objects.get(pk=self.pk)
-                    prev_adjusted_balance_qty = 0
-                    if old_instance:
-                        try:
-                            prev_base_qty = float(old_instance.trade_qty)
-                            prev_tolerance = float(old_instance.tolerance)
-                            prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
-                        except Exception as e:
-                            print(str(e))
-                except TradeProduct.DoesNotExist:
-                    pass
-
             if not hasattr(self, 'previous_trade_qty'):
                 self.previous_trade_qty = 0
                 print(f"No previous trade qty found for trade_id: {self.trade.id}, product_code: {self.product_code}")
@@ -132,7 +116,7 @@ class TradeProduct(models.Model):
             super().save(*args, **kwargs)
             self.update_product_trace()
             self.update_product_ref()
-            self.create_trade_pending(prev_adjusted_balance_qty)
+            self.create_trade_pending()
         except Exception as e:
             print(str(e))
 
@@ -191,11 +175,12 @@ class TradeProduct(models.Model):
                 ref_balance_qty=float(self.trade_qty)
             )
 
-    def create_trade_pending(self, old_instance):
+    def create_trade_pending(self, old_value=None):
         """Create or update TradePending entry for this product"""
         try:
             # Try to find an existing TradePending record
             pending = TradePending.objects.get(
+            trn=self.trade,
             product_code=self.product_code,
             product_name=self.product_name,
             trade_type=self.trade.trade_type
@@ -208,19 +193,13 @@ class TradeProduct(models.Model):
             except (TypeError, ValueError):
                 adjusted_balance_qty = 0
 
-            # prev_adjusted_balance_qty = 0
-            # if old_instance:
-            #     try:
-            #         prev_base_qty = float(old_instance.trade_qty)
-            #         prev_tolerance = float(old_instance.tolerance)
-            #         prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
-            #     except Exception as e:
-            #         print(str(e))
-
             # Update balance qty
-            if old_instance:
-                pending.balance_qty-=old_instance
-            pending.balance_qty+= adjusted_balance_qty 
+            if old_value:
+                pending.balance_qty-=old_value
+                # pending.balance_qty+=adjusted_balance_qty
+            else:
+                pending.balance_qty+=adjusted_balance_qty
+         
             pending.save()
 
         except TradePending.DoesNotExist:

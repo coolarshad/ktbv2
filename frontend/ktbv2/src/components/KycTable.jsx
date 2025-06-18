@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const KycTable = ({ data , onDelete, onView }) => { // Default value for data
@@ -7,6 +7,12 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
   const handleEdit = (id) => {
     navigate(`/kyc-form/${id}`);  // Navigate to TradeForm with tradeId
   };
+
+  const sortedData = useMemo(() => {
+    return [...(data || [])].sort((a, b) => b.id - a.id);
+  }, [data]);
+
+
 
   return (
     <div className="overflow-x-auto">
@@ -39,7 +45,7 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
           </tr>
         </thead>
         <tbody>
-          {data?.map((item, index) => (
+          {sortedData.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>

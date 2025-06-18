@@ -17,7 +17,7 @@ class ExportTradeExcelView(APIView):
         tradeProducts = TradeProduct.objects.all()
         serializer = ExcelTradeProductSerializer(tradeProducts, many=True)
         data = self.prepare_excel_data(serializer.data)
-        print(serializer.data)
+        
         df = pd.DataFrame(data)
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="trades.xlsx"'
@@ -112,7 +112,7 @@ class ExportPreSPExcelView(APIView):
         objs = PreSalePurchase.objects.all()
         serializer = PreSalePurchaseSerializer(objs, many=True)
         data = self.prepare_excel_data(serializer.data)
-        print(serializer.data)
+        
         df = pd.DataFrame(data)
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="presalespurchase.xlsx"'
@@ -413,5 +413,53 @@ class ExportPLExcelView(APIView):
 
                 
             excel_data.append(obj_data)
+        
+        return excel_data
+    
+
+class ExportKycExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        tradeProducts = Kyc.objects.all()
+        serializer = KycSerializer(tradeProducts, many=True)
+        data = self.prepare_excel_data(serializer.data)
+       
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="kyc.xlsx"'
+        df.to_excel(response, index=False)
+
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for obj in serialized_data:
+
+            trade_data = {
+                'Date': obj['date'],
+                'Name': obj['name'],
+                'Company Reg.No': obj['companyRegNo'],
+                'Reg Address': obj['regAddress'],
+                'Mailing Address': obj['mailingAddress'],
+                'Telephone': obj['telephone'],
+                'Fax': obj['fax'],
+                'Person 1': obj['person1'],
+                'Designation 1': obj['designation1'],
+                'Mobile 1': obj['mobile1'],
+                'Email 1': obj['email1'],
+                'Person 2': obj['person2'],
+                'Designation 2': obj['designation2'],
+                'Mobile 2': obj['mobile2'],
+                'Email 2': obj['email2'],
+                'Banker': obj['banker'],
+                'Address': obj['address'],
+                'Swift Code': obj['swiftCode'],
+                'Account Number': obj['accountNumber'],
+                'Approve 1': obj['approve1'],
+                'Approve 2': obj['approve2'],
+               
+                # Include any other trade fields you want
+            }
+                
+            excel_data.append(trade_data)
         
         return excel_data

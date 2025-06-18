@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useCallback } from 'react';
+import React, { useState, useEffect,useCallback,useRef } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
@@ -12,6 +12,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     const [validationErrors, setValidationErrors] = useState({});
     const [data, setData] = useState(null); 
     const navigate = useNavigate();
+    const submittingRef = useRef(false);
+    const debouncedSubmitRef = useRef(null);
 
     const [formData, setFormData] = useState({
         trn: '',
@@ -62,38 +64,73 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     });
 
     // Move the debounced submit logic to component level
-    const debouncedSubmit = useCallback(
-        debounce((formDataToSend, mode, id) => {
-            if (mode === 'add') {
-                axios.post('/trademgt/sales-purchases/', formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-                .then(response => {
+    // const debouncedSubmit = useCallback(
+    //     debounce((formDataToSend, mode, id) => {
+    //         if (mode === 'add') {
+    //             axios.post('/trademgt/sales-purchases/', formDataToSend, {
+    //                 headers: {
+    //                     'Content-Type': 'multipart/form-data'
+    //                 }
+    //             })
+    //             .then(response => {
+    //                 console.log('Sales/Purchase added successfully!', response.data);
+    //                 navigate(`/sales-purchases`);
+    //             })
+    //             .catch(error => {
+    //                 console.error('There was an error adding the Sales/Purchase!', error);
+    //             });
+    //         } else if (mode === 'update') {
+    //             axios.put(`/trademgt/sales-purchases/${id}/`, formDataToSend, {
+    //                 headers: {
+    //                     'Content-Type': 'multipart/form-data'
+    //                 }
+    //             })
+    //             .then(response => {
+    //                 console.log('Sales/Purchase updated successfully!', response.data);
+    //                 navigate(`/sales-purchases`);
+    //             })
+    //             .catch(error => {
+    //                 console.error('There was an error updating the Sales/Purchase!', error);
+    //             });
+    //         }
+    //     }, 1000),
+    //     [navigate]
+    // );
+    useEffect(() => {
+        debouncedSubmitRef.current = debounce(async (formDataToSend, mode, id) => {
+            if (submittingRef.current) return;
+
+            submittingRef.current = true;
+
+            try {
+                if (mode === 'add') {
+                    const response = await axios.post('/trademgt/sales-purchases/', formDataToSend, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
                     console.log('Sales/Purchase added successfully!', response.data);
                     navigate(`/sales-purchases`);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Sales/Purchase!', error);
-                });
-            } else if (mode === 'update') {
-                axios.put(`/trademgt/sales-purchases/${id}/`, formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-                .then(response => {
+                } else if (mode === 'update') {
+                    const response = await axios.put(`/trademgt/sales-purchases/${id}/`, formDataToSend, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
                     console.log('Sales/Purchase updated successfully!', response.data);
                     navigate(`/sales-purchases`);
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Sales/Purchase!', error);
-                });
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+            } finally {
+                submittingRef.current = false;
             }
-        }, 1000),
-        [navigate]
-    );
+        }, 1000);
+
+        return () => {
+            debouncedSubmitRef.current?.cancel?.(); // clean up on unmount
+        };
+    }, [navigate]); // keep this effect stable
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -197,52 +234,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         return qty + toleranceValue;
       }
 
-    // const handleChange = async (e, arrayName = null, index = null) => {
-    //     const { name, value, type, files } = e.target;
-
-    //     setFormData((prev) => {
-
-    //         if (type === 'file' && arrayName !== null && index !== null) {
-    //             if (Array.isArray(prev[arrayName])) {
-    //                 const updatedArray = [...prev[arrayName]];
-    //                 updatedArray[index][name] = files[0];
-    //                 return { ...prev, [arrayName]: updatedArray };
-    //             } else {
-    //                 console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
-    //             }
-    //         }
-
-    //         else if (arrayName !== null && index !== null) {
-    //             if (Array.isArray(prev[arrayName])) {
-    //                 const updatedArray = [...prev[arrayName]];
-    //                 updatedArray[index][name] = value;
-    //                 return { ...prev, [arrayName]: updatedArray };
-    //             } else {
-    //                 console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
-    //             }
-    //         }
-
-    //         else {
-    //             return { ...prev, [name]: value };
-    //         }
-
-    //         return prev;
-    //     });
-
-    //     if (name === 'trn') {
-    //         try {
-    //             const response = await axios.get(`/trademgt/sp/${value}`);
-    //             response.data.prepayment ? setData(response.data) : alert('No Prepayment Found !');
-
-    //             setFormData((prev) => ({
-    //                 ...prev,
-    //                 salesPurchaseProducts: response.data.trade_products || []
-    //             }));
-    //         } catch (error) {
-    //             console.error('Error fetching TRN data:', error);
-    //         }
-    //     }
-    // };
+  
     
     // Function to debounce API calls
    // Debounced API call function
@@ -474,7 +466,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+        if (submittingRef.current) return;
         let errors = {};
 
         // Define fields to skip validation for
@@ -561,7 +553,8 @@ const handleChange = async (e, arrayName = null, index = null) => {
         }
 
         // Call the debounced submit function
-        debouncedSubmit(formDataToSend, mode, id);
+        // debouncedSubmit(formDataToSend, mode, id);
+        debouncedSubmitRef.current(formDataToSend, mode, id);
     };
 
     const tradeData = data
@@ -1323,6 +1316,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
             <button
                     type="submit"
                     className="bg-blue-500 text-white p-2 rounded col-span-3"
+                    disabled={submittingRef.current}
                 >
                     {mode === 'add' ? 'Add S&P' : 'Update S&P'}
                 </button>

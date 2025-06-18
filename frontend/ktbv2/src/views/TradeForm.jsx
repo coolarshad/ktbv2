@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useRef } from 'react';
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
@@ -14,6 +14,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
     const [isContractBalanceQtyReadOnly, setIsContractBalanceQtyReadOnly] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
+    
 
     const initialFormData={
         company: '',
@@ -245,6 +246,21 @@ const TradeForm = ({ mode = 'add' }) => {
         }, 500), // Debounce delay in milliseconds
         [formData.trade_type] // Dependency array
       );
+
+    const calculateAdvanceValue = (contractValue, selectedTerm) => {
+        if (!contractValue || !selectedTerm?.advance_in_percentage) return '';
+        return ((selectedTerm.advance_in_percentage / 100) * contractValue).toFixed(2);
+    };
+
+    useEffect(() => {
+        const selectedTerm = paymentTermOptions.find((term) => term.id == formData.payment_term);
+        if (formData.contract_value && selectedTerm) {
+            setFormData((prevState) => ({
+                ...prevState,
+                advance_value_to_receive: calculateAdvanceValue(prevState.contract_value, selectedTerm)
+            }));
+        }
+    }, [formData.contract_value]);
 
     const handleChange = async (e, index, section) => {
         const { name, value, type, files } = e.target;
@@ -520,35 +536,55 @@ const TradeForm = ({ mode = 'add' }) => {
         }));
     };
 
-    const debouncedSubmit = useCallback(
-        debounce((formDataToSend, config) => {
-            if (mode === 'add') {
-                axios.post('/trademgt/trades/', formDataToSend, config)
-                    .then(response => {
-                        console.log('Trade added successfully!', response.data);
-                        localStorage.removeItem('tradeDraft');
-                        navigate(-1);
-                    })
-                    .catch(error => {
-                        console.error('There was an error adding the trade!', error);
-                    });
-            } else if (mode === 'update') {
-                axios.put(`/trademgt/trades/${id}/`, formDataToSend, config)
-                    .then(response => {
-                        console.log('Trade updated successfully!', response.data);
-                        navigate(-1);
-                    })
-                    .catch(error => {
-                        console.error('There was an error updating the trade!', error);
-                    });
+    // const debouncedSubmit = useCallback(
+    //     debounce((formDataToSend, config) => {
+    //         if (mode === 'add') {
+    //             axios.post('/trademgt/trades/', formDataToSend, config)
+    //                 .then(response => {
+    //                     console.log('Trade added successfully!', response.data);
+    //                     localStorage.removeItem('tradeDraft');
+    //                     navigate(-1);
+    //                 })
+    //                 .catch(error => {
+    //                     console.error('There was an error adding the trade!', error);
+    //                 });
+    //         } else if (mode === 'update') {
+    //             axios.put(`/trademgt/trades/${id}/`, formDataToSend, config)
+    //                 .then(response => {
+    //                     console.log('Trade updated successfully!', response.data);
+    //                     navigate(-1);
+    //                 })
+    //                 .catch(error => {
+    //                     console.error('There was an error updating the trade!', error);
+    //                 });
+    //         }
+    //     }, 1000, { leading: true, trailing: false }), // 1 second delay, only execute first call
+    //     [mode, id, navigate]
+    // );
+    const debouncedSubmit = useRef(
+        debounce(async (formDataToSend, config) => {
+            try {
+                if (mode === 'add') {
+                    await axios.post('/trademgt/trades/', formDataToSend, config);
+                    localStorage.removeItem('tradeDraft');
+                    navigate(-1);
+                } else if (mode === 'update') {
+                    await axios.put(`/trademgt/trades/${id}/`, formDataToSend, config);
+                    navigate(-1);
+                }
+            } catch (error) {
+                console.error('Error saving trade:', error);
+            } finally {
+                submittingRef.current = false; // unlock
             }
-        }, 1000, { leading: true, trailing: false }), // 1 second delay, only execute first call
-        [mode, id, navigate]
-    );
+        }, 1000, { leading: true, trailing: false })
+    ).current;
+
+    const submittingRef = useRef(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+        if (submittingRef.current) return;
         let errors = {};
 
         // Define fields to skip validation for
@@ -639,6 +675,7 @@ const TradeForm = ({ mode = 'add' }) => {
             return; // Stop form submission
         }
 
+        submittingRef.current = true;
         const formDataToSend = new FormData();
 
         // Append regular fields
@@ -939,18 +976,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     {validationErrors.pod && <p className="text-red-500">{validationErrors.pod}</p>}
                 </div>
                
-                {/* <div>
-                    <label htmlFor="etd" className="block text-sm font-medium text-gray-700">ETD</label>
-                    <input
-                        type="text"
-                        name="etd"
-                        value={formData.etd}
-                        onChange={handleChange}
-                        placeholder="ETD"
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('etd')}`}
-                    />
-                    {validationErrors.etd && <p className="text-red-500">{validationErrors.etd}</p>}
-                </div> */}
+               
                  <DateInputWithIcon
                     formData={formData}
                     handleChange={handleChange}
@@ -959,18 +985,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     label="ETD"
                     
                 />
-                {/* <div>
-                    <label htmlFor="eta" className="block text-sm font-medium text-gray-700">ETA</label>
-                    <input
-                        type="text"
-                        name="eta"
-                        value={formData.eta}
-                        onChange={handleChange}
-                        placeholder="ETA"
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('eta')}`}
-                    />
-                    {validationErrors.eta && <p className="text-red-500">{validationErrors.eta}</p>}
-                </div> */}
+               
                  <DateInputWithIcon
                     formData={formData}
                     handleChange={handleChange}
@@ -1042,23 +1057,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     {validationErrors.notify_party_in_bl && <p className="text-red-500">{validationErrors.notify_party_in_bl}</p>}
                 </div>
                
-                {/* <div>
-                    <label htmlFor="container_shipment_size" className="block text-sm font-medium text-gray-700">Container Shipment Size</label>
-                    <select
-                        name="container_shipment_size"
-                        value={formData.container_shipment_size}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('container_shipment_size')}`}
-                    >
-                        <option value="">Select Size</option>
-                        {shipmentSizeOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
-                    {validationErrors.container_shipment_size && <p className="text-red-500">{validationErrors.container_shipment_size}</p>}
-                </div> */}
+             
                 
             </div>
 
@@ -1071,45 +1070,8 @@ const TradeForm = ({ mode = 'add' }) => {
                 {formData.tradeProducts.map((product, index) => (
                     <>
                         <div key={index} className="grid grid-cols-3 gap-2 mb-4 justify-between items-end px-4 py-2">
-                            {/* <div>
-                                <label htmlFor="product_code_ref" className="block text-sm font-medium text-gray-700">Product Code Ref</label>
-                                <select
-                                    name="product_code_ref"
-                                    value={product.product_code_ref}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].product_code_ref`)}`}
-                                >
-                                    <option value="">Select---</option>
-                                    <option value="NA">NA</option>
-                                    {formData.trade_type === 'Sales'
-                                        ? salesTrace.map((option) => (
-                                            <option key={option.id} value={option.first_trn}>
-                                                {option.first_trn}
-                                            </option>
-                                        ))
-                                        : purchaseTrace.map((option) => (
-                                            <option key={option.id} value={option.first_trn}>
-                                                {option.first_trn}
-                                            </option>
-                                        ))
-                                    }
-
-                                </select>
-                                {validationErrors[`tradeProducts[${index}].product_code_ref`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`tradeProducts[${index}].product_code_ref`]}
-                                    </p>
-                                )}
-                               
-                            </div> */}
                            
-                            {/* <div>
-                                {product.ref_balance && product.ref_trn !== 'NA' ? (
-                                    <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
-                                        Reference Balance: {product.ref_balance || 'NA'}
-                                    </p>
-                                ) : ''}
-                            </div> */}
+                           
                             <div>
                                 <label htmlFor="product_code" className="block text-sm font-medium text-gray-700">Product Code</label>
                                 <input
@@ -1869,7 +1831,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
                         <button
                             type="submit"
-                            className="bg-blue-500 text-white p-2 rounded col-span-1"
+                            className="bg-blue-500 text-white p-2 rounded col-span-1" disabled={submittingRef.current}
                         >
                             Add Trade
                         </button>
@@ -1877,7 +1839,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 ) : (
                     <button
                         type="submit"
-                        className="bg-blue-500 text-white p-2 rounded col-span-3"
+                        className="bg-blue-500 text-white p-2 rounded col-span-3" disabled={submittingRef.current}
                     >
                         Update Trade
                     </button>
