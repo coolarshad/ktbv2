@@ -155,16 +155,20 @@ class TradeProduct(models.Model):
                 product_code=self.product_code,
                 trade_type=self.trade.trade_type
             )
+            # if self.ref_trn!='NA':
+            #     if hasattr(self, 'previous_trade_qty'):
+            #         # For updates: add back the previous quantity and subtract the new quantity
+            #         trace.ref_balance_qty += float(self.previous_trade_qty)
+            #         trace.ref_balance_qty -= float(self.trade_qty)
+            #     else:
+            #         # For new records: just subtract the new quantity
+            #         trace.ref_balance_qty -= float(self.trade_qty)
             if self.ref_trn!='NA':
                 if hasattr(self, 'previous_trade_qty'):
-                    # For updates: add back the previous quantity and subtract the new quantity
-                    trace.ref_balance_qty += float(self.previous_trade_qty)
-                    trace.ref_balance_qty -= float(self.trade_qty)
-                else:
-                    # For new records: just subtract the new quantity
-                    trace.ref_balance_qty -= float(self.trade_qty)
+                    trace.ref_balance_qty -= float(self.previous_trade_qty)
+                    trace.ref_balance_qty += float(self.trade_qty)
             
-                trace.save()
+            trace.save()
             
         except TradeProductRef.DoesNotExist:
             # Create new trace for first trade
@@ -873,6 +877,7 @@ class TradePending(models.Model):
 
 class Company(models.Model):
     name = models.CharField(max_length=255)
+    address=models.CharField(max_length=255)
     initial = models.CharField(max_length=10)  # e.g., "KP", "SP", etc.
     counter = models.PositiveIntegerField(default=0)
     registration_number=models.CharField(max_length=20)

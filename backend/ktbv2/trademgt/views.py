@@ -344,33 +344,29 @@ class TradeView(APIView):
                 }
 
                 for product in TradeProduct.objects.filter(trade=trade):
+                    
                     if product.ref_trn != 'NA':
                         trace = TradeProductRef.objects.filter(
                         product_code=product.product_code,
                         trade_type=product.ref_type
                         ).first()
-        
-                        if trace and trace.ref_balance_qty:
+                        
+                        # if trace and trace.ref_balance_qty:
+                        if trace:
                             trace.ref_balance_qty += float(product.trade_qty)
                             trace.save()
 
                 
                 # Delete existing trade products
                 TradeProduct.objects.filter(trade=trade).delete()
-                # TradePending.objects.filter(trn=trade).delete()
-
+                
                 # Create new trade products with previous quantities
                 created_products = []
                 for item in trade_products_data:
                     trade_product = TradeProduct(**item, trade=trade)
                     # Set previous quantity if it existed
-                    # trade_product.previous_trade_qty = existing_quantities.get(
-                    #     trade_product.product_code, 0
-                    # )
                     previous = existing_values.get(trade_product.product_code, {})
-    
                     trade_product.previous_trade_qty = previous.get("trade_qty", 0)
-                   
                     trade_product.save()  # This will trigger the save() method
                     created_products.append(trade_product)
                 

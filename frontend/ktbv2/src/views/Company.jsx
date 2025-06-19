@@ -6,7 +6,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
     name: '',
     initial: '',
     registration_number: '',
-  
+    address:'',
     seal_image: null,
     signature_image: null,
   });
@@ -84,7 +84,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           name: '',
           initial: '',
           registration_number: '',
-         
+          address:'',
           seal_image: null,
           signature_image: null,
         }); // Reset form after add
@@ -103,7 +103,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           name: '',
           initial: '',
           registration_number: '',
-         
+          address:'',
           seal_image: null,
           signature_image: null,
         }); // Reset form after update
@@ -157,6 +157,15 @@ const Company = ({ mode = 'add', companyId = null }) => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Name"
+            className="border border-gray-300 p-2 rounded w-full"
+            required
+          />
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            placeholder="Address"
             className="border border-gray-300 p-2 rounded w-full"
             required
           />
@@ -251,6 +260,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           {/* Display Text Information */}
           <div>
             <h3 className="text-lg font-medium">{company.name}</h3>
+            <p>Address: {company.address}</p>
             <p>Initials: {company.initial}</p>
             <p>Registration Number: {company.registration_number}</p>
           </div>

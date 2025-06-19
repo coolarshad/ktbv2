@@ -248,7 +248,7 @@ const TradeForm = ({ mode = 'add' }) => {
       );
 
     const calculateAdvanceValue = (contractValue, selectedTerm) => {
-        if (!contractValue || !selectedTerm?.advance_in_percentage) return '';
+        if (!contractValue || !selectedTerm?.advance_in_percentage) return 0;
         return ((selectedTerm.advance_in_percentage / 100) * contractValue).toFixed(2);
     };
 

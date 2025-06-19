@@ -172,9 +172,9 @@ const PreSPTable = ({ data, onDelete }) => {
                         <div className="border-b border-black px-2 py-2">
                           <p className='font-light text-sm'>Invoice To</p>
                           <p className='font-bold text-sm uppercase'>{selectedTrade.company.name}</p>
-                          {/* <p className='text-sm uppercase'>
-                            {selectedTrade.address}
-                          </p> */}
+                          <p className='text-sm uppercase'>
+                            {selectedTrade.company.address}
+                          </p>
                           <p className='mt-1'>
                             Cmp Regn No. : <span className='font-bold'>{selectedTrade.company.registration_number}</span>
                           </p>
@@ -343,7 +343,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
                         </div>
                         <div className="border-t border-l border-black p-2">
-                          <p className='mb-8 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
+                          <p className='mb-8 font-bold text-sm'>for {selectedTrade.company.name}</p>
                           <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" />
                           <p className='text-right text-sm'>Authorized Signatory</p>
                         </div>
@@ -375,7 +375,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           <div className="border-b border-black px-2 py-3">
                             <p className='font-bold uppercase'>{selectedTrade.company.name}</p>
                             <p className='uppercase'>
-                            {selectedTrade.address}
+                            {selectedTrade.company.address}
                             </p>
                             <p>
                               Cmp Regn No. : <span className='font-bold uppercase'>201726590K</span>
@@ -545,7 +545,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
                           </div>
                           <div className="border-t border-l border-black p-2">
-                            <p className='mb-8 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
+                            <p className='mb-8 font-bold text-sm'>for {selectedTrade.company.name}</p>
                             <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" />
                             <p className='text-right text-sm'>Authorized Signatory</p>
                           </div>
