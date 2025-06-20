@@ -8,8 +8,8 @@ from trademgt.serializers import *
 
 class ExportTradeCheckView(APIView):
     def get(self, request, *args, **kwargs):
-        products = SalesPurchaseProduct.objects.all()
-        serializer = ExcelSalesPurchaseProductSerializer(products, many=True)
+        products = TradeProduct.objects.all()
+        serializer = ExcelTradeProductSerializer(products, many=True)
         return Response(serializer.data)
     
 class ExportTradeExcelView(APIView):
@@ -100,7 +100,14 @@ class ExportTradeExcelView(APIView):
                
                 # Include any other trade fields you want
             }
-                
+            trade_extra_costs = trade.get('trade', {}).get('trade_extra_costs', [])
+            max_extras = len(trade_extra_costs)
+
+            for i in range(max_extras):
+                extra = trade_extra_costs[i]
+                trade_data[f'extra_cost_remarks {i+1}'] = extra.get('extra_cost_remarks', '')
+                trade_data[f'extra_cost {i+1}'] = extra.get('extra_cost', '')
+               
             excel_data.append(trade_data)
         
         return excel_data
@@ -430,36 +437,79 @@ class ExportKycExcelView(APIView):
 
         return response
 
+    # def prepare_excel_data(self, serialized_data):
+    #     excel_data = []
+    #     for obj in serialized_data:
+
+    #         trade_data = {
+    #             'Date': obj['date'],
+    #             'Name': obj['name'],
+    #             'Company Reg.No': obj['companyRegNo'],
+    #             'Reg Address': obj['regAddress'],
+    #             'Mailing Address': obj['mailingAddress'],
+    #             'Telephone': obj['telephone'],
+    #             'Fax': obj['fax'],
+    #             'Person 1': obj['person1'],
+    #             'Designation 1': obj['designation1'],
+    #             'Mobile 1': obj['mobile1'],
+    #             'Email 1': obj['email1'],
+    #             'Person 2': obj['person2'],
+    #             'Designation 2': obj['designation2'],
+    #             'Mobile 2': obj['mobile2'],
+    #             'Email 2': obj['email2'],
+    #             'Banker': obj['banker'],
+    #             'Address': obj['address'],
+    #             'Swift Code': obj['swiftCode'],
+    #             'Account Number': obj['accountNumber'],
+    #             'Approve 1': obj['approve1'],
+    #             'Approve 2': obj['approve2'],
+               
+    #             # Include any other trade fields you want
+    #         }
+                
+    #         excel_data.append(trade_data)
+        
+    #     return excel_data
     def prepare_excel_data(self, serialized_data):
         excel_data = []
-        for obj in serialized_data:
+        max_banks = 3  # Max number of bank details to include columns for
 
+        for obj in serialized_data:
             trade_data = {
-                'Date': obj['date'],
-                'Name': obj['name'],
-                'Company Reg.No': obj['companyRegNo'],
-                'Reg Address': obj['regAddress'],
-                'Mailing Address': obj['mailingAddress'],
-                'Telephone': obj['telephone'],
-                'Fax': obj['fax'],
-                'Person 1': obj['person1'],
-                'Designation 1': obj['designation1'],
-                'Mobile 1': obj['mobile1'],
-                'Email 1': obj['email1'],
-                'Person 2': obj['person2'],
-                'Designation 2': obj['designation2'],
-                'Mobile 2': obj['mobile2'],
-                'Email 2': obj['email2'],
-                'Banker': obj['banker'],
-                'Address': obj['address'],
-                'Swift Code': obj['swiftCode'],
-                'Account Number': obj['accountNumber'],
-                'Approve 1': obj['approve1'],
-                'Approve 2': obj['approve2'],
-               
-                # Include any other trade fields you want
+            'Date': obj['date'],
+            'Name': obj['name'],
+            'Company Reg.No': obj['companyRegNo'],
+            'Reg Address': obj['regAddress'],
+            'Mailing Address': obj['mailingAddress'],
+            'Telephone': obj['telephone'],
+            'Fax': obj['fax'],
+            'Person 1': obj['person1'],
+            'Designation 1': obj['designation1'],
+            'Mobile 1': obj['mobile1'],
+            'Email 1': obj['email1'],
+            'Person 2': obj['person2'],
+            'Designation 2': obj['designation2'],
+            'Mobile 2': obj['mobile2'],
+            'Email 2': obj['email2'],
+            'Approve 1': obj['approve1'],
+            'Approve 2': obj['approve2'],
             }
-                
+
+            # Fill in bank details
+            bank_details = obj.get('bank_details', [])
+            for i in range(max_banks):
+                if i < len(bank_details):
+                    bank = bank_details[i]
+                    trade_data[f'Banker {i+1}'] = bank.get('banker', '')
+                    trade_data[f'Address {i+1}'] = bank.get('address', '')
+                    trade_data[f'Swift Code {i+1}'] = bank.get('swiftCode', '')
+                    trade_data[f'Account Number {i+1}'] = bank.get('accountNumber', '')
+                # else:
+                #     trade_data[f'Banker {i+1}'] = ''
+                #     trade_data[f'Address {i+1}'] = ''
+                #     trade_data[f'Swift Code {i+1}'] = ''
+                #     trade_data[f'Account Number {i+1}'] = ''
+
             excel_data.append(trade_data)
-        
+
         return excel_data

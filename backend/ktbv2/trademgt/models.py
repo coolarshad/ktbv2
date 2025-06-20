@@ -678,6 +678,17 @@ class Kyc(models.Model):
 
     def get_absolute_url(self):
         return reverse("Kyc_detail", kwargs={"pk": self.pk})
+    
+
+class KycBankDetail(models.Model):
+    kyc = models.ForeignKey(Kyc, related_name='bank_details', on_delete=models.CASCADE)
+    banker = models.CharField(max_length=255, null=True, blank=True)
+    address = models.CharField(max_length=255, null=True, blank=True)
+    swiftCode = models.CharField(max_length=255, null=True, blank=True)
+    accountNumber = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.banker} - {self.accountNumber}"
 
 
 class TradeProductTrace(models.Model):
@@ -916,6 +927,7 @@ class Company(models.Model):
 
 class Bank(models.Model):
     name=models.CharField(max_length=100)
+    address=models.CharField(max_length=100)
     account_number=models.CharField(max_length=50)
     swift_code=models.CharField(max_length=100)
     

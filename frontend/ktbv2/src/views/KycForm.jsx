@@ -24,10 +24,13 @@ const KycForm = ({ mode = 'add' }) => {
         designation2: '',
         mobile2: '',
         email2: '',
-        banker: '',
-        address: '',
-        swiftCode: '',
-        accountNumber: '',
+        // banker: '',
+        // address: '',
+        // swiftCode: '',
+        // accountNumber: '',
+        bank_details: [
+            { banker: '', address: '', swiftCode: '', accountNumber: '' }
+        ]
     });
     const [errors, setErrors] = useState({});
 
@@ -36,57 +39,93 @@ const KycForm = ({ mode = 'add' }) => {
             axios.get(`/trademgt/kyc/${id}`)
                 .then(response => {
                     const data = response.data;
-                    setFormData(prevState => ({
-                        ...prevState,
-                        date: data.date,
-                        name: data.name,
-                        companyRegNo: data.companyRegNo,
-                        regAddress: data.regAddress,
-                        mailingAddress: data.mailingAddress,
-                        telephone: data.telephone,
-                        fax: data.fax,
-                        person1: data.person1,
-                        designation1: data.designation1,
-                        mobile1: data.mobile1,
-                        email1: data.email1,
-                        person2: data.person2,
-                        designation2: data.designation2,
-                        mobile2: data.mobile2,
-                        email2: data.email2,
-                        banker: data.banker,
-                        address: data.address,
-                        swiftCode: data.swiftCode,
-                        accountNumber: data.accountNumber,
-                    }));
+                    setFormData({
+                        date: data.date || '',
+                        name: data.name || '',
+                        companyRegNo: data.companyRegNo || '',
+                        regAddress: data.regAddress || '',
+                        mailingAddress: data.mailingAddress || '',
+                        telephone: data.telephone || '',
+                        fax: data.fax || '',
+                        person1: data.person1 || '',
+                        designation1: data.designation1 || '',
+                        mobile1: data.mobile1 || '',
+                        email1: data.email1 || '',
+                        person2: data.person2 || '',
+                        designation2: data.designation2 || '',
+                        mobile2: data.mobile2 || '',
+                        email2: data.email2 || '',
+                        bank_details: Array.isArray(data.bank_details) && data.bank_details.length > 0
+                            ? data.bank_details
+                            : [{ banker: '', address: '', swiftCode: '', accountNumber: '' }]
+                    });
                 })
                 .catch(error => {
-                    console.error('There was an error fetching the kyc data!', error);
+                    console.error('Error fetching KYC data', error);
                 });
         }
     }, [mode, id]);
 
+
+    // const handleChange = (e, section, index) => {
+    //     const { name, value, files } = e.target;
+    //     if (section) {
+    //         const updatedSection = formData[section].map((item, i) =>
+    //             i === index ? { ...item, [name]: files ? files[0] : value } : item
+    //         );
+    //         setFormData({ ...formData, [section]: updatedSection });
+    //     } else {
+    //         setFormData({ ...formData, [name]: value });
+    //     }
+    // };
     const handleChange = (e, section, index) => {
-        const { name, value, files } = e.target;
-        if (section) {
-            const updatedSection = formData[section].map((item, i) =>
-                i === index ? { ...item, [name]: files ? files[0] : value } : item
-            );
-            setFormData({ ...formData, [section]: updatedSection });
-        } else {
-            setFormData({ ...formData, [name]: value });
-        }
-    };
+    const { name, value } = e.target;
+
+    if (section && index !== undefined) {
+        const updatedSection = [...formData[section]];
+        updatedSection[index][name] = value;
+        setFormData({ ...formData, [section]: updatedSection });
+    } else {
+        setFormData({ ...formData, [name]: value });
+    }
+};
 
     const validateForm = () => {
-        const newErrors = {};
-        for (const [key, value] of Object.entries(formData)) {
-          if (!value.trim()) {
-            newErrors[key] = 'This field is required';
-          }
+    const newErrors = {};
+
+    for (const [key, value] of Object.entries(formData)) {
+        if (typeof value === 'string') {
+            if (!value.trim()) {
+                newErrors[key] = 'This field is required';
+            }
+        } else if (Array.isArray(value) && key === 'bank_details') {
+            value.forEach((bank, index) => {
+                if (!bank.banker?.trim()) {
+                    newErrors[`bank_details.${index}.banker`] = 'Banker is required';
+                }
+                if (!bank.accountNumber?.trim()) {
+                    newErrors[`bank_details.${index}.accountNumber`] = 'Account Number is required';
+                }
+                // Add more nested validations if needed
+            });
         }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-      };
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+};
+
+    const handleAddBankDetail = () => {
+        setFormData({
+            ...formData,
+            bank_details: [...formData.bank_details, { banker: '', address: '', swiftCode: '', accountNumber: '' }]
+        });
+    };
+
+    const handleRemoveBankDetail = (index) => {
+        const updated = formData.bank_details.filter((_, i) => i !== index);
+        setFormData({ ...formData, bank_details: updated });
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -94,51 +133,22 @@ const KycForm = ({ mode = 'add' }) => {
         if (!validateForm()) {
             return;
           }
-        // console.log(formData);
-        const formDataToSend = new FormData();
-
-        for (const [key, value] of Object.entries(formData)) {
-            if (Array.isArray(value)) {
-                value.forEach((item, index) => {
-                    for (const [subKey, subValue] of Object.entries(item)) {
-                        if (subValue instanceof File) {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
-                        } else {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
-                        }
-                    }
-                });
-            } else {
-                formDataToSend.append(key, value);
-            }
-        }
-        // console.log(formDataToSend)
+       
+      
         if (mode === 'add') {
-            axios.post('/trademgt/kyc/', formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('KYC added successfully!', response.data);
-                navigate(`/kyc`);
-            })
-            .catch(error => {
-                console.error('There was an error adding the kyc!', error);
-            });
-        } else if (mode === 'update') {
-            axios.put(`/trademgt/kyc/${id}/`, formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('KYC updated successfully!', response.data);
-                navigate(`/kyc`);
-            })
-            .catch(error => {
-                console.error('There was an error updating the KYC!', error);
-            });
+            axios.post('/trademgt/kyc/', formData)
+                .then(res => {
+                    console.log('KYC added!', res.data);
+                    navigate('/kyc');
+                })
+                .catch(err => console.error(err));
+        } else {
+            axios.put(`/trademgt/kyc/${id}/`, formData)
+                .then(res => {
+                    console.log('KYC updated!', res.data);
+                    navigate('/kyc');
+                })
+                .catch(err => console.error(err));
         }
     };
 
@@ -313,7 +323,7 @@ const KycForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div>
-                <div >
+                {/* <div >
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Banker</label>
                     <input
                         id="banker"
@@ -357,7 +367,63 @@ const KycForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                </div>
+                </div> */}
+            </div>
+            <div className="col-span-3">
+                <h3 className="text-lg font-semibold mb-2">Bank Details</h3>
+                {formData.bank_details.map((bank, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 border p-4 rounded">
+                        <input
+                            type="text"
+                            name="banker"
+                            placeholder="Banker"
+                            value={bank.banker}
+                            onChange={(e) => handleChange(e, 'bank_details', index)}
+                            className="border p-2 rounded"
+                        />
+                        <input
+                            type="text"
+                            name="address"
+                            placeholder="Address"
+                            value={bank.address}
+                            onChange={(e) => handleChange(e, 'bank_details', index)}
+                            className="border p-2 rounded"
+                        />
+                        <input
+                            type="text"
+                            name="swiftCode"
+                            placeholder="Swift Code"
+                            value={bank.swiftCode}
+                            onChange={(e) => handleChange(e, 'bank_details', index)}
+                            className="border p-2 rounded"
+                        />
+                        <input
+                            type="text"
+                            name="accountNumber"
+                            placeholder="Account Number"
+                            value={bank.accountNumber}
+                            onChange={(e) => handleChange(e, 'bank_details', index)}
+                            className="border p-2 rounded"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => handleRemoveBankDetail(index)}
+                            className="text-red-600 text-sm mt-2"
+                        >
+                            Remove
+                        </button>
+                        {errors[`bank_details.${index}.banker`] && (
+                            <p className="text-red-500 text-sm">{errors[`bank_details.${index}.banker`]}</p>
+                        )}
+                    </div>
+                ))}
+                <button
+                    type="button"
+                    onClick={handleAddBankDetail}
+                    className="bg-green-500 text-white px-4 py-2 rounded"
+                >
+                    Add Bank Detail
+                </button>
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">

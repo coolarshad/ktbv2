@@ -199,7 +199,7 @@ const Kyc = () => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Email 2</td>
                     <td className="py-2 px-4 text-gray-800">{selectedKyc.email2}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Banker</td>
                     <td className="py-2 px-4 text-gray-800">{selectedKyc.banker}</td>
                   </tr>
@@ -214,7 +214,7 @@ const Kyc = () => {
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>
                     <td className="py-2 px-4 text-gray-800">{selectedKyc.accountNumber}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 1</td>
                     <td className="py-2 px-4 text-gray-800">{selectedKyc.approve1? "Yes":"No"}</td>
@@ -223,9 +223,40 @@ const Kyc = () => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 2</td>
                     <td className="py-2 px-4 text-gray-800">{selectedKyc.approve2? "Yes":"No"}</td>
                   </tr>
-                 
+
+                   <tr className="bg-gray-200 font-semibold">
+                    <td className="py-2 px-4" colSpan={2}>Bank Details</td>
+                      </tr>
+                      {selectedKyc.bank_details && selectedKyc.bank_details.length > 0 ? (
+                        selectedKyc.bank_details.map((bank, index) => (
+                          <React.Fragment key={index}>
+                            <tr className="border-b border-gray-200 bg-gray-50">
+                              <td className="py-2 px-4 font-medium capitalize">Banker #{index + 1}</td>
+                              <td className="py-2 px-4">{bank.banker}</td>
+                            </tr>
+                            <tr className="border-b border-gray-200 bg-gray-50">
+                              <td className="py-2 px-4 font-medium capitalize">Address #{index + 1}</td>
+                              <td className="py-2 px-4">{bank.address}</td>
+                            </tr>
+                            <tr className="border-b border-gray-200 bg-gray-50">
+                              <td className="py-2 px-4 font-medium capitalize">Swift Code #{index + 1}</td>
+                              <td className="py-2 px-4">{bank.swiftCode}</td>
+                            </tr>
+                            <tr className="border-b border-gray-200 bg-gray-50">
+                              <td className="py-2 px-4 font-medium capitalize">Account Number #{index + 1}</td>
+                              <td className="py-2 px-4">{bank.accountNumber}</td>
+                            </tr>
+                          </React.Fragment>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="py-2 px-4 text-gray-600" colSpan={2}>No bank details available</td>
+                        </tr>
+                      )}
+
                 </tbody>
                 </table>
+                
                   {selectedKyc.approve1 ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                       <button onClick={approveKycOne} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>
@@ -236,6 +267,9 @@ const Kyc = () => {
                       <button onClick={approveKycTwo} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 2</button>
                     </div>
                   }
+
+                 
+
              </div>
             
            </div>

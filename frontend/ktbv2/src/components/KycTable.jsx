@@ -35,10 +35,10 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Designation 2</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Mobile 2</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Email 2</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Banker</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Banker</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Address</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Swift Code</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Account Number</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Account Number</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve 1</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve 2</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
@@ -63,10 +63,10 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.designation2}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mobile2}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.email2}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.banker}</td>
+              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.banker}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.address}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.swiftCode}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.accountNumber}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.accountNumber}</td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve1} onChange={() => {}} />
               </td>

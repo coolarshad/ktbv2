@@ -5,6 +5,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
   const [formData, setFormData] = useState({
     name: '',
     account_number: '',
+    address: '',
     swift_code: '',
   });
 
@@ -59,7 +60,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
         .then(response => {
           console.log('Bank added successfully!', response.data);
           setBanks(prevData => [...prevData, response.data]);
-          setFormData({ name: '', account_number: '', swift_code: '' }); // Reset form after add
+          setFormData({ name: '',address: '', account_number: '', swift_code: '' }); // Reset form after add
         })
         .catch(error => {
           console.error('There was an error adding the bank!', error);
@@ -71,7 +72,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
           console.log('Bank updated successfully!', response.data);
           setBanks(prevData => prevData.map(bank => bank.id === response.data.id ? response.data : bank));
           setIsUpdateMode(false);
-          setFormData({ name: '', account_number: '', swift_code: '' }); // Reset form after update
+          setFormData({ name: '',address: '', account_number: '', swift_code: '' }); // Reset form after update
         })
         .catch(error => {
           console.error('There was an error updating the bank!', error);
@@ -105,6 +106,14 @@ const Bank = ({ mode = 'add', bankId = null }) => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Name"
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+           <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            placeholder="Address"
             className="border border-gray-300 p-2 rounded w-full"
           />
           <input
@@ -142,6 +151,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
             <li key={bank.id} className="border border-gray-300 p-4 rounded flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-medium">{bank.name}</h3>
+                <p>Address: {bank.address}</p>
                 <p>Account Number: {bank.account_number}</p>
                 <p>Swift Code: {bank.swift_code}</p>
               </div>

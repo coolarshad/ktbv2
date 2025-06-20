@@ -18,10 +18,44 @@ class UnitSerializer(serializers.ModelSerializer):
         model = Unit
         fields = '__all__'
 
+# class KycSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Kyc
+#         fields = '__all__'
+
+class KycBankDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KycBankDetail
+        fields = ['id', 'banker', 'address', 'swiftCode', 'accountNumber']
+
 class KycSerializer(serializers.ModelSerializer):
+    bank_details = KycBankDetailSerializer(many=True)
+
     class Meta:
         model = Kyc
         fields = '__all__'
+
+    def create(self, validated_data):
+        bank_details_data = validated_data.pop('bank_details', [])
+        kyc = Kyc.objects.create(**validated_data)
+        for bank_detail in bank_details_data:
+            KycBankDetail.objects.create(kyc=kyc, **bank_detail)
+        return kyc
+
+    def update(self, instance, validated_data):
+        bank_details_data = validated_data.pop('bank_details', [])
+        # update KYC fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Optionally clear old bank details
+        instance.bank_details.all().delete()
+
+        for bank_detail in bank_details_data:
+            KycBankDetail.objects.create(kyc=instance, **bank_detail)
+
+        return instance
         
 class TradeProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -944,7 +978,7 @@ class InventoryDetailProductSerializer(serializers.ModelSerializer):
 
 
 class ExcelTradeSerializer(serializers.ModelSerializer):
-  
+    trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
     class Meta:
         model = Trade
         fields = '__all__'
