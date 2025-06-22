@@ -346,7 +346,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 setFormData((prevState) => ({
                     ...prevState,
                     [name]: value,
-                    address: selectedCustomer?.address || '',
+                    address: selectedCustomer?.regAddress || '',
                 }));
             } else if (name === 'payment_term') {
                 const selectedTerm = paymentTermOptions.find((term) => term.id == value);
