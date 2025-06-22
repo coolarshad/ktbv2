@@ -30,7 +30,8 @@ export const paymentDueDate = (data) => {
   if (payment_from === 'BL DATE') {
     return addDaysToDate(data.bl_date, payment_within);
   } else if (payment_from === 'CLEAN SHIPPING DOCUMENTS AS PER CONTRACT / PURCHASE ORDER') {
-    return addDaysToDate(data.prepayment.presp.doc_issuance_date, payment_within);
+    // return addDaysToDate(data.prepayment.presp.doc_issuance_date, payment_within);
+    return addDaysToDate(data.bl_date, payment_within);
   } else if (payment_from === 'PURCHASE BILL DATE') {
     return addDaysToDate(data.invoice_date, payment_within);
   } else if (payment_from === 'SALES BILL DATE') {

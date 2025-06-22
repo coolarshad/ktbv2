@@ -47,10 +47,10 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
       let updatedFormData = { ...prevState, [name]: value };
   
       // Check if advance_in_percentage is being updated to 0
-      if (name === 'advance_in_percentage' && parseFloat(value) === 0) {
-        // Automatically set advance_within to 'N/A' when advance_in_percentage is 0
-        updatedFormData.advance_within = 'NA';
-      }
+      // if (name === 'advance_in_percentage' && parseFloat(value) === 0) {
+      //   // Automatically set advance_within to 'N/A' when advance_in_percentage is 0
+      //   updatedFormData.advance_within = 'NA';
+      // }
   
       return updatedFormData;
     });
@@ -172,7 +172,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
               onChange={handleChange}
               placeholder="Advance Within (Days)"
               className="border border-gray-300 p-2 rounded w-full"
-              readOnly={formData.advance_in_percentage=='0'?true:false}
+              // readOnly={formData.advance_in_percentage=='0'?true:false}
             />
           </div>
           <div>

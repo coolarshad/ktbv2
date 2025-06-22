@@ -430,7 +430,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         const trade_qty = parseFloat(updatedProducts[index].trade_qty) || 0;
                         const selected_currency_rate = parseFloat(updatedProducts[index].selected_currency_rate) || 0;
 
-                        updatedProducts[index].rate_in_usd = selected_currency_rate * parseFloat(prevState.exchange_rate);
+                        updatedProducts[index].rate_in_usd = parseFloat(selected_currency_rate * parseFloat(prevState.exchange_rate)).toFixed(4);
                         updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
                     }
 
@@ -447,7 +447,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         const selected_currency_rate = parseFloat(product.selected_currency_rate) || 0;
                         return {
                             ...product,
-                            rate_in_usd: (selected_currency_rate * exchange_rate).toFixed(2),
+                            rate_in_usd: (selected_currency_rate * exchange_rate).toFixed(4),
                         };
                     });
 

@@ -182,7 +182,7 @@ const PreSPTable = ({ data, onDelete }) => {
                         <div className=" border-black px-2 py-3">
                           <p className=' pb-2'>Supplier</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.name}</p>
-                          <p className='uppercase'>{selectedTrade.customer_company_name.address}</p>
+                          <p className='uppercase'>{selectedTrade.customer_company_name.regAddress}</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.companyRegNo}</p>
                         </div>
 
@@ -339,7 +339,8 @@ const PreSPTable = ({ data, onDelete }) => {
                       <div className="grid grid-cols-2">
                         <div className="p-2">
                           <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
-                          <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" />
+                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" /> */}
+                          <div className="w-16 h-16 mx-auto"></div>
                           <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
                         </div>
                         <div className="border-t border-l border-black p-2">
@@ -384,7 +385,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           <div className="border-b border-black px-2 py-3">
                             <p className=' pb-2'>Buyer</p>
                             <p className='uppercase'>{selectedTrade.customer_company_name.name}</p>
-                            <p className='uppercase'>{selectedTrade.customer_company_name.address}</p>
+                            <p className='uppercase'>{selectedTrade.customer_company_name.regAddress}</p>
                             <p className='uppercase'>{selectedTrade.customer_company_name.companyRegNo}</p>
                           </div>
                           <div className="px-2 py-2">
@@ -541,7 +542,8 @@ const PreSPTable = ({ data, onDelete }) => {
                         <div className="grid grid-cols-2">
                           <div className="p-2">
                             <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
-                            <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" />
+                            <div className="w-16 h-16 mx-auto"></div>
+                            {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" /> */}
                             <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
                           </div>
                           <div className="border-t border-l border-black p-2">

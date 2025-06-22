@@ -333,7 +333,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         { label: 'Value of Contract', text: data.presp.trade.contract_value || '' },
         { label: 'Advance to Pay', text: advanceToPay(data) || '0' },
         { label: 'Advance to Receive', text: advanceToReceive(data) || '0' },
-        { label: 'Advance Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
+        { label: 'Advance/LC Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
         { label: 'Trader Name', text: data.trader_name || '' },
         { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
     
@@ -377,7 +377,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 
                 
                 <div>
-                    <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">LC Number</label>
+                    <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">LC Number / LC Date</label>
                     <input
                         id="lc_number"
                         name="lc_number"

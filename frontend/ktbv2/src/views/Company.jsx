@@ -187,12 +187,12 @@ const Company = ({ mode = 'add', companyId = null }) => {
             className="border border-gray-300 p-2 rounded w-full"
           />
           
-          <input
+          {/* <input
             type="file"
             name="seal_image"
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
-          />
+          /> */}
           <input
             type="file"
             name="signature_image"
@@ -224,7 +224,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           
 
           {/* Display Seal Image */}
-          <div>
+          {/* <div>
             {company.seal_image ? (
               <a href={company.seal_image} target="_blank" rel="noopener noreferrer">
                 <img
@@ -238,7 +238,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
                 No Seal
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Display Signature Image */}
           <div>
