@@ -345,7 +345,8 @@ const PreSPTable = ({ data, onDelete }) => {
                         </div>
                         <div className="border-t border-l border-black p-2">
                           <p className='mb-8 font-bold text-sm'>for {selectedTrade.company.name}</p>
-                          <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" />
+                          <div className="w-16 h-16 mx-auto"></div>
+                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" /> */}
                           <p className='text-right text-sm'>Authorized Signatory</p>
                         </div>
                       </div>
@@ -548,7 +549,8 @@ const PreSPTable = ({ data, onDelete }) => {
                           </div>
                           <div className="border-t border-l border-black p-2">
                             <p className='mb-8 font-bold text-sm'>for {selectedTrade.company.name}</p>
-                            <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" />
+                            <div className="w-16 h-16 mx-auto"></div>
+                            {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" /> */}
                             <p className='text-right text-sm'>Authorized Signatory</p>
                           </div>
                       </div>

@@ -19,6 +19,16 @@ BATCH_SIZE = getattr(settings, 'TRADE_PRODUCT_BATCH_SIZE', 100)
 
 logger = logging.getLogger(__name__)
 
+
+def negate_trade_type(trade_type):
+    if trade_type.lower() == 'purchase':
+        return 'Sales'
+    elif trade_type.lower() == 'sales':
+        return 'Purchase'
+    else:
+        return 'Unknown'
+    
+
 class TradeView(APIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradeFilter
@@ -135,7 +145,8 @@ class TradeView(APIView):
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
                 'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
                 'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
-                'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
+                # 'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
+                'ref_product_code': data.get(f'tradeProducts[{i}].ref_product_code'),
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
                 'container_shipment_size': data.get(f'tradeProducts[{i}].container_shipment_size'),
                 
@@ -176,8 +187,8 @@ class TradeView(APIView):
                         # product.create_trade_pending()
                         if product.ref_trn!='NA':
                             trace=TradeProductRef.objects.get(
-                                product_code=product.product_code,
-                                trade_type=product.ref_type
+                                product_code=product.ref_product_code,
+                                trade_type=negate_trade_type(trade.trade_type)
                             )
                             if trace and trace.ref_balance_qty:
                                 trace.ref_balance_qty-=float(product.trade_qty)
@@ -305,7 +316,7 @@ class TradeView(APIView):
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
                 'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
                 'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
-                'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
+                'ref_product_code': data.get(f'tradeProducts[{i}].ref_product_code'),
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
                 'container_shipment_size': data.get(f'tradeProducts[{i}].container_shipment_size'),
             }
@@ -347,8 +358,8 @@ class TradeView(APIView):
                     
                     if product.ref_trn != 'NA':
                         trace = TradeProductRef.objects.filter(
-                        product_code=product.product_code,
-                        trade_type=product.ref_type
+                        product_code=product.ref_product_code,
+                        trade_type=negate_trade_type(trade.trade_type)
                         ).first()
                         
                         # if trace and trace.ref_balance_qty:
@@ -374,8 +385,8 @@ class TradeView(APIView):
                 for product in created_products:
                     if product.ref_trn != 'NA':
                         trace = TradeProductRef.objects.filter(
-                        product_code=product.product_code,
-                        trade_type=product.ref_type
+                        product_code=product.ref_product_code,
+                        trade_type=negate_trade_type(trade.trade_type)
                         ).first()
         
                         if trace and trace.ref_balance_qty:
@@ -438,8 +449,8 @@ class TradeView(APIView):
 
                     try:
                         ref = TradeProductRef.objects.get(
-                        product_code=product.product_code,
-                        trade_type=product.ref_type
+                        product_code=product.ref_product_code,
+                        trade_type=negate_trade_type(trade.trade_type)
                         )
 
                         ref.ref_balance_qty += float(product.trade_qty)
@@ -2120,14 +2131,13 @@ class PackingViewSet(viewsets.ModelViewSet):
     serializer_class = PackingSerializer
 
 
-class RefBalanceView(APIView):
-    
+class RefBalanceView(APIView):   
     def get(self, request, *args, **kwargs):
         ref_trn = request.query_params.get('trn')
-        product_code = request.query_params.get('product_code')
+        product_code = request.query_params.get('ref_product_code')
         trade_type = request.query_params.get('trade_type')
-        ref_type = request.query_params.get('ref_type')
-        
+        # ref_type = request.query_params.get('ref_type')
+        print("=========: ",ref_trn,product_code,trade_type)
         try:
             # product = TradeProduct.objects.get(
             #     trade__trn=ref_trn,
@@ -2138,7 +2148,8 @@ class RefBalanceView(APIView):
             balance = 'NA'  # Default value
             
            
-            trace = TradeProductRef.objects.filter(product_code=product_code,trade_type=ref_type).first()
+            trace = TradeProductRef.objects.filter(product_code=product_code,trade_type=negate_trade_type(trade_type)).first()
+            print("=========2: ",trace)
             if trace and trace.ref_balance_qty is not None:
                 balance = trace.ref_balance_qty
            
@@ -2147,6 +2158,17 @@ class RefBalanceView(APIView):
             return Response({'ref_balance': 'NA'})
 
         return Response({'ref_balance': balance})
+
+class RefProductCodeView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_type = request.query_params.get('trade_type')
+        queryset = TradeProductRef.objects.filter(trade_type=negate_trade_type(trade_type))
+
+        if not queryset.exists():
+            return Response([])
+
+        serializer = TradeProductRefSerializer(queryset, many=True)
+        return Response(serializer.data)
 
       
 class ProfitLossViewSet(viewsets.ModelViewSet):

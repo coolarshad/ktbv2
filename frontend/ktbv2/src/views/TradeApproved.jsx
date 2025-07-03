@@ -393,8 +393,8 @@ function TradeApproved() {
                         <span>{product.total_commission}</span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-medium">Reference Type:</span>
-                        <span>{product.ref_type}</span>
+                        <span className="font-medium">Reference Product Code:</span>
+                        <span>{product.ref_product_code}</span>
                       </div>
                       <div className="flex flex-col">
                         <span className="font-medium">Reference TRN:</span>

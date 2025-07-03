@@ -94,7 +94,8 @@ class ExportTradeExcelView(APIView):
                 'commission_rate': trade['commission_rate'],
 
                 'total_commission': trade['total_commission'],
-                'ref_type': trade['ref_type'],
+                # 'ref_type': trade['ref_type'],
+                'ref_product_code': trade['ref_product_code'],
                 'ref_trn': trade['ref_trn'],
                 'container_shipment_size': trade['shipmentSize']['name'],
                

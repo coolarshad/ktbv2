@@ -193,12 +193,12 @@ const Company = ({ mode = 'add', companyId = null }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           /> */}
-          <input
+          {/* <input
             type="file"
             name="signature_image"
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
-          />
+          /> */}
           <button
             type="submit"
             className="bg-blue-500 text-white p-2 rounded"
@@ -241,7 +241,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           </div> */}
 
           {/* Display Signature Image */}
-          <div>
+          {/* <div>
             {company.signature_image ? (
               <a href={company.signature_image} target="_blank" rel="noopener noreferrer">
                 <img
@@ -255,7 +255,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
                 No Signature
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Display Text Information */}
           <div>

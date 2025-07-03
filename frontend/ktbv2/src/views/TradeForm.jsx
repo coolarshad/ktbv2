@@ -84,10 +84,11 @@ const TradeForm = ({ mode = 'add' }) => {
                 total_packing_cost:'',
                 commission_rate: '',
                 total_commission: '',
-                ref_type: '',
+                ref_product_code: '',
                 ref_trn: '',
                 ref_balance: '',
                 container_shipment_size: '',
+                logistic: '',
             }
         ],
         tradeExtraCosts: [
@@ -114,6 +115,7 @@ const TradeForm = ({ mode = 'add' }) => {
     const [currencyOptions, setCurrencyOptions] = useState([]);
     const [salesTrace, setSalesTrace] = useState([]);
     const [purchaseTrace, setPurchaseTrace] = useState([]);
+    const [refProductOptions,setRefProductOptions] = useState([]);
     
     // Function to fetch data
     const fetchData = async (url, setStateFunction) => {
@@ -136,8 +138,9 @@ const TradeForm = ({ mode = 'add' }) => {
         fetchData('/trademgt/product-names', setProductNameOptions);
         fetchData('/trademgt/currencies', setCurrencyOptions);
         fetchData('/trademgt/shipment-sizes', setShipmentSizeOptions);
-        fetchData('/trademgt/purchase-product-trace', setPurchaseTrace);
-        fetchData('/trademgt/sales-product-trace', setSalesTrace);
+        // fetchData('/trademgt/purchase-product-trace', setPurchaseTrace);
+        // fetchData('/trademgt/sales-product-trace', setSalesTrace);
+        // fetchData('/trademgt/refproductcode', setRefProductOptions);
     }, []);
 
     useEffect(() => {
@@ -165,19 +168,31 @@ const TradeForm = ({ mode = 'add' }) => {
             });
     }, []);
 
+   useEffect(() => {
+    if (!formData.trade_type || formData.trade_type=='') return;
+
+    axios.get('/trademgt/refproductcode', {
+        params: {
+            trade_type: formData.trade_type
+        }
+    })
+    .then(response => {
+        setRefProductOptions(response.data);  // Assuming product_codes is a list
+    })
+    .catch(error => {
+        console.error('Error fetching product codes', error);
+    });
+}, [formData.trade_type]);
+
     useEffect(() => {
         if (mode === 'update' && id) {
             // Fetch existing trade data for update
             axios.get(`/trademgt/trades/${id}`)
                 .then(response => {
                     const data = response.data;
-
-                    // Ensure that formData has the necessary structure
                     setFormData(prevData => ({
                         ...prevData,
                         ...data,
-                        // Example: Ensure relatedTrades is an array if it's expected
-                        // relatedTrades: Array.isArray(data.related_trades) ? data.related_trades : []
                     }));
                 })
                 .catch(error => {
@@ -188,19 +203,14 @@ const TradeForm = ({ mode = 'add' }) => {
 
     useEffect(() => {
         // Calculate contract value and product value whenever exchange_rate changes
-        
-
         if (formData.exchange_rate) {
             const updatedTradeProducts = formData.tradeProducts.map(product => ({
                 ...product,
                 product_value: product.trade_qty*product.rate_in_usd
             }));
-
             const selectedTerm = paymentTermOptions?.find((term) => term.id == formData.payment_term);
-
             const updatedContractValue = updatedTradeProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
             const commissionValue = updatedTradeProducts.reduce((acc, product) => acc + (parseFloat(product.total_commission) || 0), 0);
-    
             setFormData(prevState => ({
                 ...prevState,
                 contract_value: updatedContractValue,
@@ -276,7 +286,7 @@ const TradeForm = ({ mode = 'add' }) => {
             const product = formData.tradeProducts[index];
             const prod_code = product?.product_code;
             const trade_type = formData.trade_type;
-            const ref_type = product?.ref_type;
+            const ref_product_code = product?.ref_product_code;
 
             if (name === 'ref_trn' && value !== 'NA') {
                 // console.log('here:', prod_code, prod_name, value)
@@ -285,9 +295,9 @@ const TradeForm = ({ mode = 'add' }) => {
                     const response = await axios.get(`/trademgt/product-balance`, {
                         params: {
                             trn: value,
-                            product_code:prod_code,
+                            // product_code:prod_code,
                             trade_type:trade_type,
-                            ref_type:ref_type,
+                            ref_product_code:ref_product_code,
                         }
                     });
 
@@ -436,8 +446,9 @@ const TradeForm = ({ mode = 'add' }) => {
 
                     const totalContractValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
                     const commissionValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.total_commission) || 0), 0);
+                    const logisticValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.logistic) || 0), 0);
 
-                    return { ...prevState, tradeProducts: updatedProducts, contract_value: totalContractValue.toFixed(2), commission_value: commissionValue.toFixed(2) };
+                    return { ...prevState, tradeProducts: updatedProducts, contract_value: totalContractValue.toFixed(2), commission_value: commissionValue.toFixed(2), estimated_logistic_cost: logisticValue.toFixed(2) };
                 });
             } else if (name === 'exchange_rate') {
                 // When exchange_rate changes, update rate_in_usd for all products
@@ -501,9 +512,10 @@ const TradeForm = ({ mode = 'add' }) => {
                     total_packing_cost:'',
                     commission_rate: '',
                     total_commission: '',
-                    ref_type: '',
+                    ref_product_code: '',
                     ref_trn: '',
                     container_shipment_size: '',
+                    logistic: '',
                 }
             ]
         }));
@@ -1070,8 +1082,6 @@ const TradeForm = ({ mode = 'add' }) => {
                 {formData.tradeProducts.map((product, index) => (
                     <>
                         <div key={index} className="grid grid-cols-3 gap-2 mb-4 justify-between items-end px-4 py-2">
-                           
-                           
                             <div>
                                 <label htmlFor="product_code" className="block text-sm font-medium text-gray-700">Product Code</label>
                                 <input
@@ -1143,23 +1153,26 @@ const TradeForm = ({ mode = 'add' }) => {
                                 {/* {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>} */}
                             </div>
                             <div>
-                                <label htmlFor="ref_type" className="block text-sm font-medium text-gray-700">Reference Type</label>
+                                <label htmlFor="ref_product_code" className="block text-sm font-medium text-gray-700">Reference Product Code</label>
                                 <select
-                                    name="ref_type"
-                                    value={product.ref_type}
+                                    name="ref_product_code"
+                                    value={product.ref_product_code}
                                     onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_type`)}`}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_product_code`)}`}
                                 >
                                     {/* <option value="">Select Type</option> */}
                                     <option value="">---</option>
                                     <option value="NA">NA</option>
-                                    <option value="Sales">Sales</option>
-                                    <option value="Purchase">Purchase</option>
+                                     {refProductOptions?.map((option) => (
+                                        <option key={option.id} value={option.product_code}>
+                                            {option.product_code}
+                                        </option>
+                                    ))}
                                    
                                 </select>
-                                {validationErrors[`tradeProducts[${index}].ref_type`] && (
+                                {validationErrors[`tradeProducts[${index}].ref_product_code`] && (
                                     <p className="text-red-500">
-                                        {validationErrors[`tradeProducts[${index}].ref_type`]}
+                                        {validationErrors[`tradeProducts[${index}].ref_product_code`]}
                                     </p>
                                 )}
                             </div>
@@ -1551,6 +1564,22 @@ const TradeForm = ({ mode = 'add' }) => {
                                     ))}
                                 </select>
                                 {validationErrors.container_shipment_size && <p className="text-red-500">{validationErrors.container_shipment_size}</p>}
+                            </div>
+                            <div>
+                                <label htmlFor="logistic" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
+                                <input
+                                    type="number"
+                                    name="logistic"
+                                    value={product.logistic}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Logistic Cost"
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].logistic`)}`}
+                                />
+                                 {validationErrors[`tradeProducts[${index}].logistic`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].logistic`]}
+                                    </p>
+                                )}
                             </div>
 
 

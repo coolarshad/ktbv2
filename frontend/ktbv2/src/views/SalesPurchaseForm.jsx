@@ -1096,7 +1096,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Trade Quantity"
                                     className="border border-gray-300 p-2 rounded w-full"
-                                    readOnly={data?.trade_type=='Sales'}
+                                    // readOnly={data?.trade_type=='Sales'}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].bl_qty`] && (
                                     <p className="text-red-500">
