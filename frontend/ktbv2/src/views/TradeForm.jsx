@@ -1554,7 +1554,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     name="container_shipment_size"
                                     value={product.container_shipment_size}
                                     onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('container_shipment_size')}`}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 `}
                                 >
                                     <option value="">Select Size</option>
                                     {shipmentSizeOptions.map((option) => (
@@ -1563,7 +1563,11 @@ const TradeForm = ({ mode = 'add' }) => {
                                         </option>
                                     ))}
                                 </select>
-                                {validationErrors.container_shipment_size && <p className="text-red-500">{validationErrors.container_shipment_size}</p>}
+                                {validationErrors[`tradeProducts[${index}].container_shipment_size`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].container_shipment_size`]}
+                                    </p>
+                                )}
                             </div>
                             <div>
                                 <label htmlFor="logistic" className="block text-sm font-medium text-gray-700">Logistic Cost</label>

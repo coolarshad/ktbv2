@@ -2238,7 +2238,7 @@ class PendingBalanceView(APIView):
                 ).first()
                
                 if product:
-                    sp_product=SalesPurchaseProduct.objects.filter(sp__bl_number=purchase_bl_number,sp__trn__trade_type='Purchase',product_code=product_code,product_name=product_name).first()
+                    sp_product=SalesPurchaseProduct.objects.filter(sp__bl_number=purchase_bl_number,sp__trn__trade_type='Purchase',product_name=product_name).first()
                    
                     # Serialize and return the product data
                     serialized_product = SalesPendingSerializer(product)
