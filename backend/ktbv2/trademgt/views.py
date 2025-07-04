@@ -145,6 +145,7 @@ class TradeView(APIView):
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
                 'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
                 'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
+                'logistic': data.get(f'tradeProducts[{i}].total_commission'),
                 # 'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
                 'ref_product_code': data.get(f'tradeProducts[{i}].ref_product_code'),
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
@@ -319,6 +320,7 @@ class TradeView(APIView):
                 'ref_product_code': data.get(f'tradeProducts[{i}].ref_product_code'),
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
                 'container_shipment_size': data.get(f'tradeProducts[{i}].container_shipment_size'),
+                'logistic': data.get(f'tradeProducts[{i}].logistic'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -2137,7 +2139,7 @@ class RefBalanceView(APIView):
         product_code = request.query_params.get('ref_product_code')
         trade_type = request.query_params.get('trade_type')
         # ref_type = request.query_params.get('ref_type')
-        print("=========: ",ref_trn,product_code,trade_type)
+        # print("=========: ",ref_trn,product_code,trade_type)
         try:
             # product = TradeProduct.objects.get(
             #     trade__trn=ref_trn,
@@ -2149,7 +2151,7 @@ class RefBalanceView(APIView):
             
            
             trace = TradeProductRef.objects.filter(product_code=product_code,trade_type=negate_trade_type(trade_type)).first()
-            print("=========2: ",trace)
+            # print("=========2: ",trace)
             if trace and trace.ref_balance_qty is not None:
                 balance = trace.ref_balance_qty
            

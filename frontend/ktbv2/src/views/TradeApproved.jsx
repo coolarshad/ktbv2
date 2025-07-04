@@ -404,6 +404,10 @@ function TradeApproved() {
                         <td className="font-medium">Container Shipment Size</td>
                         <span>{product.shipmentSize.name}</span>
                       </tr>
+                       <tr className="flex flex-col">
+                        <td className="font-medium">Logistic Cost</td>
+                        <span>{product.logistic}</span>
+                      </tr>
                     </div>
                   ))}
                 </div>
