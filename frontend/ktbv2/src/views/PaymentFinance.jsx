@@ -149,6 +149,10 @@ function PaymentFinance() {
                       <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.trn}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
+                      <td className="py-2 px-4 text-gray-800">{selectedPF.date}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">S&P ID </td>
                       <td className="py-2 px-4 text-gray-800">{selectedPF.sp.id}</td>
                     </tr>

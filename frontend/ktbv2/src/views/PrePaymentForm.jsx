@@ -326,7 +326,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
     const tradeData = data
     ? [
-        { label: 'PO Date/PI Date', text: data.presp.date || '' },
+        { label: 'Date', text: data.presp.date || '' },
         { label: 'Trade Type', text: data.trade_type || '' },
         { label: 'Payment Term', text: data.presp.trade.paymentTerm.name || '' },
         { label: 'Buyer/Seller Name', text: data.presp.trade.customer.name || '' },

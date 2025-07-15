@@ -9,7 +9,7 @@ import DateInputWithIcon from '../components/DateInputWithIcon';
 const PaymentFinanceForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
-
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
     const [validationErrors, setValidationErrors] = useState({});
 
     const [trnOptions, setTrnOptions] = useState([]); 
@@ -18,6 +18,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     const [formData, setFormData] = useState({
         sp: '',
         // balance_payment: '',
+        date: today,
         balance_payment_received: '',
         balance_payment_made: '',
         balance_payment_date: '',
@@ -47,6 +48,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     setFormData(prevState => ({
                         ...prevState,
                         sp: data.sp.id,
+                        date: data.date,
                         // balance_payment: data.balance_payment,
                         balance_payment_received: data.balance_payment_received,
                         balance_payment_made: data.balance_payment_made,
@@ -286,6 +288,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         //     }
         // });
         if (data?.prepayment.lc_number.toLowerCase() === "na") {
+             if (shouldRequireTTCopy) {
             if (formData.ttCopies.length === 0) {
                 alert('TT Copy cannot be empty!');
                 return;
@@ -298,6 +301,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     } 
                 });
             }
+        }
         }
 
         setValidationErrors(errors);
@@ -356,6 +360,21 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         return contractValue - advance;
         
       };
+
+    const shouldRequireTTCopy = (() => {
+        if (!data || !data.trn || !data.trn.paymentTerm) return false;
+        if (data.trn.paymentTerm.payment_within === 'NA') return false;
+
+        const dueDate = paymentDueDate(data);  // Assuming this returns a Date object or a parseable string
+        const today = new Date();
+
+        try {
+            return new Date(dueDate) >= today;
+        } catch (err) {
+            console.error("Invalid due date:", dueDate);
+            return false;
+        }
+    })();
 
     const tradeData = data
     ? [
@@ -480,17 +499,19 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 </div>
                 
             
-                {/* <div>
-                    <label htmlFor="balance_payment" className="block text-sm font-medium text-gray-700">Balance Payment</label>
+                 <div>
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
                     <input
-                        id="balance_payment"
-                        name="balance_payment"
-                        type="number"
-                        value={formData.balance_payment}
+                        id="date"
+                        name="date"
+                        type="date"
+                        value={formData.date}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                </div> */}
+                    {validationErrors.date && <p className="text-red-500">{validationErrors.date}</p>}
+                </div>
+
                   <div>
                     <label htmlFor="advance_adjusted" className="block text-sm font-medium text-gray-700">Advance Adjusted</label>
                     <input
@@ -578,65 +599,6 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                      {validationErrors.status_of_payment && <p className="text-red-500">{validationErrors.status_of_payment}</p>}
                 </div>
             
-                {/* <div>
-                    <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
-                    <input
-                        id="logistic_cost"
-                        name="logistic_cost"
-                        type="number"
-                        value={formData.logistic_cost}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div> */}
-                {/* <div>
-                    <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Agent Value</label>
-                    <input
-                        id="commission_value"
-                        name="commission_value"
-                        type="number"
-                        value={formData.commission_value}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div> */}
-                {/* <div>
-                    <label htmlFor="bl_fee" className="block text-sm font-medium text-gray-700">BL Fee</label>
-                    <input
-                        id="bl_fee"
-                        name="bl_fee"
-                        type="number"
-                        value={formData.bl_fee}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                       {validationErrors.bl_fee && <p className="text-red-500">{validationErrors.bl_fee}</p>}
-                </div> */}
-           
-                {/* <div>
-                    <label htmlFor="bl_collection_cost" className="block text-sm font-medium text-gray-700">BL Collection Cost</label>
-                    <input
-                        id="bl_collection_cost"
-                        name="bl_collection_cost"
-                        type="number"
-                        value={formData.bl_collection_cost}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                      {validationErrors.bl_collection_cost && <p className="text-red-500">{validationErrors.bl_collection_cost}</p>}
-                </div> */}
-                {/* <div>
-                    <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
-                    <input
-                        id="shipment_status"
-                        name="shipment_status"
-                        type="text"
-                        value={formData.shipment_status}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                        {validationErrors.shipment_status && <p className="text-red-500">{validationErrors.shipment_status}</p>}
-                </div> */}
                 <div>
                     <label htmlFor="release_docs" className="block text-sm font-medium text-gray-700">Release Docs</label>
                     {/* <input

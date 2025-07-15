@@ -38,7 +38,7 @@ const TradeForm = ({ mode = 'add' }) => {
         logistic_provider: '',
         estimated_logistic_cost: '',
         logistic_cost_tolerence: '',
-        logistic_cost_remarks: '',
+        // logistic_cost_remarks: '',
         bank_name_address: '',
         account_number: '',
         swift_code: '',
@@ -89,6 +89,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 ref_balance: '',
                 container_shipment_size: '',
                 logistic: '',
+                logistic_remark: '',
             }
         ],
         tradeExtraCosts: [
@@ -375,7 +376,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         [name]: value,
                         estimated_logistic_cost:0,
                         logistic_cost_tolerence:0,
-                        logistic_cost_remarks:'NA',
+                        // logistic_cost_remarks:'NA',
                         bl_fee:0,
                         bl_fee_remarks:'NA'
                     }));
@@ -442,6 +443,9 @@ const TradeForm = ({ mode = 'add' }) => {
 
                         updatedProducts[index].rate_in_usd = parseFloat(selected_currency_rate * parseFloat(prevState.exchange_rate)).toFixed(4);
                         updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
+
+                        const commission = parseFloat(updatedProducts[index].commission_rate) || 0;
+                        updatedProducts[index].total_commission = (commission * trade_qty).toFixed(2);
                     }
 
                     const totalContractValue = updatedProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
@@ -516,6 +520,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     ref_trn: '',
                     container_shipment_size: '',
                     logistic: '',
+                    logistic_remark: '',
                 }
             ]
         }));
@@ -1585,6 +1590,22 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
+                            <div>
+                                <label htmlFor="logistic_remarks" className="block text-sm font-medium text-gray-700">Logistic Remark</label>
+                                <input
+                                    type="text"
+                                    name="logistic_remark"
+                                    value={product.logistic_remark}
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    placeholder="Logistic Remark"
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].logistic_remark`)}`}
+                                />
+                                 {validationErrors[`tradeProducts[${index}].logistic_remark`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].logistic_remark`]}
+                                    </p>
+                                )}
+                            </div>
 
 
                             <div className="col-span-3 flex justify-end">
@@ -1722,7 +1743,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                      {validationErrors.logistic_cost_tolerence && <p className="text-red-500">{validationErrors.logistic_cost_tolerence}</p>}
                 </div>
-                <div>
+                {/* <div>
                     <label htmlFor="logistic_cost_remarks" className="block text-sm font-medium text-gray-700">Logistic Cost Remarks</label>
                     <input
                         type="text"
@@ -1734,7 +1755,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
                     />
                     {validationErrors.logistic_cost_remarks && <p className="text-red-500">{validationErrors.logistic_cost_remarks}</p>}
-                </div>
+                </div> */}
                 <div>
                     <label htmlFor="bl_fee" className="block text-sm font-medium text-gray-700">BL Fee</label>
                     <input

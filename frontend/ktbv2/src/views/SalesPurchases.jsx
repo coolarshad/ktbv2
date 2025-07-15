@@ -296,6 +296,7 @@ function SalesPurchases() {
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Marking</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
                     <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Logistic</th>
                    
                   </tr>
                 </thead>
@@ -314,6 +315,7 @@ function SalesPurchases() {
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).markings_in_packaging}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).total_packing_cost}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).supplier.name}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.logistic}</td>
                     </tr>
                   ))}
                 </tbody>

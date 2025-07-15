@@ -195,10 +195,10 @@ function TradeApproved() {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Tolerance</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_cost_tolerence}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Remarks</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_cost_remarks}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
                     <td className="py-2 px-4 text-gray-800">{selectedTrade.bank.name}</td>
@@ -407,6 +407,10 @@ function TradeApproved() {
                        <tr className="flex flex-col">
                         <td className="font-medium">Logistic Cost</td>
                         <span>{product.logistic}</span>
+                      </tr>
+                       <tr className="flex flex-col">
+                        <td className="font-medium">Logistic Remark</td>
+                        <span>{product.logistic_remark}</span>
                       </tr>
                     </div>
                   ))}

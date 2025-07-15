@@ -380,7 +380,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             {selectedTrade.company.address}
                             </p>
                             <p>
-                              Cmp Regn No. : <span className='font-bold uppercase'>201726590K</span>
+                              Cmp Regn No. : <span className='font-bold uppercase'>{selectedTrade.company.registration_number}</span>
                             </p>
                           </div>
                           <div className="border-b border-black px-2 py-3">

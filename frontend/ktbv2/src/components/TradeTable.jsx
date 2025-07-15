@@ -197,10 +197,10 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Tolerance</td>
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_cost_tolerence}</td>
                       </tr>
-                      <tr className="border-b border-gray-200">
+                      {/* <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Remarks</td>
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_cost_remarks}</td>
-                      </tr>
+                      </tr> */}
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.bank.name}</td>
@@ -274,11 +274,11 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_fee_remarks}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
-                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved 1</td>
+                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Reviewed</td>
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.approved ? 'Yes' : 'No'}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
-                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved 2</td>
+                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved</td>
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.reviewed ? 'Yes' : 'No'}</td>
                       </tr>
                     </tbody>
@@ -394,6 +394,14 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                       <tr className="flex flex-col">
                         <td className="font-medium">Container Shipment Size</td>
                         <span>{product.shipmentSize.name}</span>
+                      </tr>
+                       <tr className="flex flex-col">
+                        <td className="font-medium">Logistic Cost</td>
+                        <span>{product.logistic}</span>
+                      </tr>
+                      <tr className="flex flex-col">
+                        <td className="font-medium">Logistic Remark</td>
+                        <span>{product.logistic_remark}</span>
                       </tr>
                     </div>
                   ))}

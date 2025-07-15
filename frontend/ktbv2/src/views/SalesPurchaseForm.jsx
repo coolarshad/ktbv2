@@ -54,6 +54,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 bl_value: '',
                 selected_currency_rate: '',
                 rate_in_usd: '',
+                logistic: '',
             }
         ],
         extraCharges: [{ name: '', charge: '' }],
@@ -190,6 +191,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 bl_value: '',
                                 selected_currency_rate: '',
                                 rate_in_usd: '',
+                                logistic: '',
                             }
                         ],
                         extraCharges: data.extraCharges || [{ name: '', charge: '' }],
@@ -265,6 +267,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
                     const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
                     updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2);
+                    updatedArray[index].logistic = result.pending_balance.logistic;
 
                     return { ...prev, [arrayName]: updatedArray };
                 });
@@ -434,6 +437,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     bl_value: '',
                     selected_currency_rate: '',
                     rate_in_usd: '',
+                    logistic: '',
 
                 },
             ],
@@ -1181,8 +1185,26 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 )}
                             </div>
 
+                             <div>
+                                <label htmlFor="bl_value" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
+                                <input
+                                    type="number"
+                                    name="logistic"
+                                    value={product.logistic}
+                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    placeholder="Logistic"
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
+                                />
+                                {validationErrors[`salesPurchaseProducts[${index}].logistic`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`salesPurchaseProducts[${index}].logistic`]}
+                                    </p>
+                                )}
+                            </div>
 
-                            <div>
+
+                            <div className="col-start-1 sm:col-start-2 md:col-start-3 lg:col-start-3 flex justify-end items-end">
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveProduct(index)}

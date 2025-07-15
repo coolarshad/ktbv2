@@ -91,7 +91,7 @@ class TradeView(APIView):
             'logistic_provider': data.get('logistic_provider'),
             'estimated_logistic_cost': data.get('estimated_logistic_cost'),
             'logistic_cost_tolerence': data.get('logistic_cost_tolerence'),
-            'logistic_cost_remarks': data.get('logistic_cost_remarks'),
+            # 'logistic_cost_remarks': data.get('logistic_cost_remarks'),
             'bank_name_address': data.get('bank_name_address'),
             'account_number': data.get('account_number'),
             'swift_code': data.get('swift_code'),
@@ -146,6 +146,7 @@ class TradeView(APIView):
                 'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
                 'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
                 'logistic': data.get(f'tradeProducts[{i}].total_commission'),
+                'logistic_remark': data.get(f'tradeProducts[{i}].logistic_remark'),
                 # 'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
                 'ref_product_code': data.get(f'tradeProducts[{i}].ref_product_code'),
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
@@ -252,7 +253,7 @@ class TradeView(APIView):
             'logistic_provider': data.get('logistic_provider'),
             'estimated_logistic_cost': data.get('estimated_logistic_cost'),
             'logistic_cost_tolerence': data.get('logistic_cost_tolerence'),
-            'logistic_cost_remarks': data.get('logistic_cost_remarks'),
+            # 'logistic_cost_remarks': data.get('logistic_cost_remarks'),
             'bank_name_address': data.get('bank_name_address'),
             'account_number': data.get('account_number'),
             'swift_code': data.get('swift_code'),
@@ -321,6 +322,7 @@ class TradeView(APIView):
                 'ref_trn': data.get(f'tradeProducts[{i}].ref_trn'),
                 'container_shipment_size': data.get(f'tradeProducts[{i}].container_shipment_size'),
                 'logistic': data.get(f'tradeProducts[{i}].logistic'),
+                'logistic_remark': data.get(f'tradeProducts[{i}].logistic_remark'),
             }
             trade_products_data.append(product_data)
             i += 1
@@ -1222,6 +1224,7 @@ class SalesPurchaseView(APIView):
                 'product_code': data.get(f'salesPurchaseProducts[{h}].product_code'), 
                 'selected_currency_rate': data.get(f'salesPurchaseProducts[{h}].selected_currency_rate'),  
                 'rate_in_usd': data.get(f'salesPurchaseProducts[{h}].rate_in_usd'), 
+                'logistic': data.get(f'salesPurchaseProducts[{h}].logistic'), 
             }
             sp_products_data.append(sp_product)
             h += 1
@@ -1339,6 +1342,7 @@ class SalesPurchaseView(APIView):
                 'product_code': data.get(f'salesPurchaseProducts[{h}].product_code'), 
                 'selected_currency_rate': data.get(f'salesPurchaseProducts[{h}].selected_currency_rate'),  
                 'rate_in_usd': data.get(f'salesPurchaseProducts[{h}].rate_in_usd'), 
+                'logistic': data.get(f'salesPurchaseProducts[{h}].logistic'), 
             }
             sp_products_data.append(sp_product)
             h += 1
@@ -1732,6 +1736,7 @@ class PaymentFinanceView(APIView):
             'release_docs': data.get('release_docs'),
             'release_docs_date': data.get('release_docs_date'),
             'remarks': data.get('remarks'),
+            'date': data.get('date'),
         }
 
         charges_data = []
@@ -1811,6 +1816,7 @@ class PaymentFinanceView(APIView):
             'release_docs': data.get('release_docs'),
             'release_docs_date': data.get('release_docs_date'),
             'remarks': data.get('remarks'),
+            'date': data.get('date'),
         }
 
         charges_data = []

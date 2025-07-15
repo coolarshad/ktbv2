@@ -30,7 +30,7 @@ class Trade(models.Model):
     logistic_provider=models.CharField(_("logistic_provider"), max_length=100)
     estimated_logistic_cost=models.FloatField(_("estimated_logistic_cost"))
     logistic_cost_tolerence=models.FloatField(_("logistic_cost_tolerence"))
-    logistic_cost_remarks=models.CharField(_("logistic_cost_remarks"), max_length=100)
+    # logistic_cost_remarks=models.CharField(_("logistic_cost_remarks"), max_length=100)
     bank_name_address=models.CharField(_("bank_name_address"), max_length=100)
     account_number=models.CharField(_("account_number"), max_length=50)
     swift_code=models.CharField(_("swift_code"), max_length=50)
@@ -101,6 +101,7 @@ class TradeProduct(models.Model):
     ref_product_code=models.CharField(_("ref_product_code"), max_length=50)
     ref_trn=models.CharField(_("ref_trn"), max_length=50)
     logistic=models.FloatField(_("logistic"),null=True)
+    logistic_remark=models.CharField(_("logistic_remark"), max_length=50)
     # product_code_ref=models.CharField(_("ref_trn"), max_length=50)
     container_shipment_size=models.CharField(_("container_shipment_size"), max_length=50)
     previous_trade_qty = models.FloatField(_("Previous Trade Quantity"), default=0)
@@ -232,7 +233,8 @@ class TradeProduct(models.Model):
                 balance_qty_unit=self.contract_balance_qty_unit,
                 selected_currency_rate=self.selected_currency_rate,
                 rate_in_usd=self.rate_in_usd,
-                tolerance=self.tolerance
+                tolerance=self.tolerance,
+                logistic=self.logistic
             )
 
 
@@ -494,6 +496,7 @@ class SalesPurchaseProduct(models.Model):
     product_code = models.CharField(_("product_code"), max_length=50)
     selected_currency_rate = models.FloatField(_("selected_currency_rate"))
     rate_in_usd = models.FloatField(_("selected_currency_rate"))
+    logistic=models.FloatField(_("logistic"),null=True)
 
 
    
@@ -604,6 +607,7 @@ class PaymentFinance(models.Model):
     release_docs_date=models.CharField(_("release_docs_date"), max_length=50)
     remarks=models.CharField(_("remarks"), max_length=100)
     reviewed=models.BooleanField(_("reviewed"),default=False)
+    date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
 
     class Meta:
         verbose_name = _("PaymentFinance")
@@ -780,6 +784,7 @@ class TradePending(models.Model):
     selected_currency_rate = models.FloatField(_("Selected Currency Rate"))
     rate_in_usd = models.FloatField(_("Rate in USD"))
     tolerance = models.FloatField(_("Tolerance"))
+    logistic=models.FloatField(_("logistic"),null=True)
 
     class Meta:
         verbose_name = _("TradePending")
