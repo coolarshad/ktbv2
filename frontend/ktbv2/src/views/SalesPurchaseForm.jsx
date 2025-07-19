@@ -55,6 +55,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 selected_currency_rate: '',
                 rate_in_usd: '',
                 logistic: '',
+                max_logistic:'',
             }
         ],
         extraCharges: [{ name: '', charge: '' }],
@@ -177,23 +178,29 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         eta: data.eta,
                         shipment_status: data.shipment_status,
                         remarks: data.remarks,
-                        salesPurchaseProducts: data.salesPurchaseProducts || [
-                            {
-                                product_code: '',
-                                product_name: '',
-                                hs_code: '',
-                                tolerance: '',
-                                batch_number: '',
-                                production_date: '',
-                                pending_qty: '',
-                                bl_qty: '',
-                                trade_qty_unit: '',
-                                bl_value: '',
-                                selected_currency_rate: '',
-                                rate_in_usd: '',
-                                logistic: '',
-                            }
-                        ],
+                        salesPurchaseProducts: data.salesPurchaseProducts
+                            ? data.salesPurchaseProducts.map(product => ({
+                                ...product,
+                                max_logistic: product.logistic || '', // Use logistic as the max_logistic if available
+                            }))
+                            : [
+                                {
+                                    product_code: '',
+                                    product_name: '',
+                                    hs_code: '',
+                                    tolerance: '',
+                                    batch_number: '',
+                                    production_date: '',
+                                    pending_qty: '',
+                                    bl_qty: '',
+                                    trade_qty_unit: '',
+                                    bl_value: '',
+                                    selected_currency_rate: '',
+                                    rate_in_usd: '',
+                                    logistic: '',
+                                    max_logistic: '',
+                                }
+                            ],
                         extraCharges: data.extraCharges || [{ name: '', charge: '' }],
                         packingLists: mergedPackingLists,
                         
@@ -268,6 +275,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
                     updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2);
                     updatedArray[index].logistic = result.pending_balance.logistic;
+                    updatedArray[index].max_logistic = result.pending_balance.logistic;
 
                     return { ...prev, [arrayName]: updatedArray };
                 });
@@ -353,6 +361,28 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
                     updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2);
                 }
+
+                if (name === 'logistic') {
+                    const entered = parseFloat(value);
+                    const max = parseFloat(updatedArray[index].max_logistic);
+
+                    updatedArray[index][name] = value;
+
+                    if (!isNaN(max) && entered > max) {
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            [`${arrayName}[${index}].logistic`]: `Logistic cost cannot exceed ${max}`,
+                        }));
+                    } else {
+                        setValidationErrors(prev => {
+                            const copy = { ...prev };
+                            delete copy[`${arrayName}[${index}].logistic`];
+                            return copy;
+                        });
+                    }
+                }
+
+
 
                 updatedFormData = { ...prev, [arrayName]: updatedArray };
             } else {
@@ -501,6 +531,14 @@ const handleChange = async (e, arrayName = null, index = null) => {
                             errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
                         }
                     
+                }
+
+                if (key === 'logistic') {
+                    const maxAllowed = product.max_logistic;
+                    if (value > maxAllowed) {
+                            alert(`Logistic cost exceeds for ${product.product_code || 'this product'}`);
+                            errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds logistic cost!`;
+                        }
                 }
             }
         });
@@ -1194,7 +1232,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Logistic"
                                     className="border border-gray-300 p-2 rounded w-full"
-                                    readOnly={true}
+                                    // readOnly={true}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].logistic`] && (
                                     <p className="text-red-500">
