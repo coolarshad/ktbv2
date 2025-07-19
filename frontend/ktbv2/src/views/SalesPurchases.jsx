@@ -7,6 +7,7 @@ import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import ReactToPrint from 'react-to-print';
 import { BASE_URL } from '../utils'; 
+import { dateFormatter } from "../dateUtils";
 
 function SalesPurchases() {
   const componentRef = useRef();
@@ -176,7 +177,7 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Invoice Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.invoice_date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedSP.invoice_date)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Invoice Number </td>
@@ -217,7 +218,7 @@ function SalesPurchases() {
 
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Date</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.bl_date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedSP.bl_date)}</td>
                     </tr>
                     {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Packing Cost </td>
@@ -237,7 +238,7 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Due Date</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.logistic_cost_due_date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedSP.logistic_cost_due_date)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Liner </td>
@@ -253,11 +254,11 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETD</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.etd}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedSP.etd)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETA</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.eta}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedSP.eta)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>

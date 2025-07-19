@@ -6,7 +6,7 @@ import PFTable from "../components/PFTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import { BASE_URL } from '../utils';
-import { paymentDueDate,calculateRemainingContractValue, calculatePFCommissionValue } from '../dateUtils';
+import { paymentDueDate,calculateRemainingContractValue, calculatePFCommissionValue,dateFormatter } from '../dateUtils';
 import ReactToPrint from 'react-to-print';
 
 function PaymentFinance() {
@@ -150,7 +150,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPF.date)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">S&P ID </td>
@@ -174,7 +174,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Invoice Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.invoice_date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPF.sp.invoice_date)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Number </td>
@@ -191,7 +191,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Recived/Paid Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.prepayment.date_of_receipt}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPF.sp.prepayment.date_of_receipt)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment </td>
@@ -199,7 +199,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Due Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.paymentTerm.payment_within == 'NA' ? 'NA' : paymentDueDate(selectedPF.sp)}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.paymentTerm.payment_within == 'NA' ? 'NA' : dateFormatter(paymentDueDate(selectedPF.sp))}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Received </td>
@@ -211,7 +211,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.balance_payment_date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPF.balance_payment_date)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Adjusted </td>
@@ -239,7 +239,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Due Date</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.logistic_cost_due_date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPF.sp.logistic_cost_due_date)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent</td>
@@ -281,7 +281,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Documents To Release Date </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.release_docs_date}</td>
+                      <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPF.release_docs_date)}</td>
                     </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>

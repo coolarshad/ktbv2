@@ -1,6 +1,7 @@
 // src/components/TradeTable.js
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
+import { dateFormatter } from '../dateUtils';
 
 const PrePaymentTable = ({ data, onDelete, onView }) => {
   const navigate = useNavigate();  
@@ -43,11 +44,11 @@ const PrePaymentTable = ({ data, onDelete, onView }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_number}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_received}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date_of_receipt}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_receipt)}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_paid}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date_of_payment}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_expiry_date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.latest_shipment_date_in_lc}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_payment)}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.lc_expiry_date)}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.latest_shipment_date_in_lc)}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />

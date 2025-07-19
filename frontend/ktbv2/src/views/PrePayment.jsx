@@ -5,7 +5,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
-import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
+import { today, addDaysToDate,advanceToPay,advanceToReceive,dateFormatter } from '../dateUtils';
 import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
 
@@ -149,7 +149,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp.date}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPrePayment.presp.date)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
@@ -177,7 +177,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPrePayment.presp.doc_issuance_date,selectedPrePayment.presp.trade.paymentTerm.advance_within)}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp.trade.paymentTerm.advance_within=='NA'?'NA':dateFormatter(addDaysToDate(selectedPrePayment.presp.doc_issuance_date,selectedPrePayment.presp.trade.paymentTerm.advance_within))}</td>
                   </tr>
                   {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">As Per PI Cash/TT/Advance </td>
@@ -197,7 +197,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Receipt </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_receipt}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPrePayment.date_of_receipt)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Paid </td>
@@ -205,15 +205,15 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Payment </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.date_of_payment}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPrePayment.date_of_payment)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Expiry Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.lc_expiry_date}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPrePayment.lc_expiry_date)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Latest Shipment Date in LC </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.latest_shipment_date_in_lc}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPrePayment.latest_shipment_date_in_lc)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>

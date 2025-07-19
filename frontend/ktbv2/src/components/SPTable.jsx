@@ -1,6 +1,7 @@
 // src/components/TradeTable.js
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
+import { dateFormatter } from '../dateUtils';
 
 const SPTable = ({ data,onDelete,onView }) => {
   const navigate = useNavigate(); 
@@ -39,11 +40,11 @@ const SPTable = ({ data,onDelete,onView }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.invoice_date)}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_number}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_amount}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_number}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_date}</td> 
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.bl_date)}</td> 
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />
               </td> 

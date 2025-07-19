@@ -73,3 +73,11 @@ export const calculatePFCommissionValue = (data) => {
 
   return commissionValue;
 };
+
+export const dateFormatter = (dateString) =>{
+  if (!dateString) return '';
+  if (dateString.toLowerCase() === 'na') return dateString;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return dateString;
+  const [year, month, day] = dateString.split('-');
+  return `${day}/${month}/${year}`;
+}

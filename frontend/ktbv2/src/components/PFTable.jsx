@@ -1,7 +1,7 @@
 // src/components/TradeTable.js
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { calculateRemainingContractValue } from '../dateUtils';
+import { calculateRemainingContractValue,dateFormatter } from '../dateUtils';
 
 const PFTable = ({ data, onDelete, onView }) => {
   const navigate = useNavigate(); 
