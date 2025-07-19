@@ -6,6 +6,7 @@ import axios from '../axiosConfig';
 import Modal from '../components/Modal';
 import FilterComponent from "../components/FilterComponent";
 import { BASE_URL } from "../utils";
+import {dateFormatter} from '../dateUtils';
 
 function TradeApproval() {
   const navigate = useNavigate();
@@ -159,11 +160,11 @@ function TradeApproval() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.trd}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.trd)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRD</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.approval_date ? selectedTrade.approval_date : 'Not Approved'}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.approval_date ? dateFormatter(selectedTrade.approval_date) : 'Not Approved'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
@@ -264,11 +265,11 @@ function TradeApproval() {
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETD</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.etd}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.etd)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETA</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.eta}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.eta)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>

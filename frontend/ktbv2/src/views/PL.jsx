@@ -7,6 +7,7 @@ import FilterComponent from "../components/FilterComponent";
 import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
 import Modal from '../components/Modal';
+import { dateFormatter } from "../dateUtils.jsx";
 
 function PL() {
   const navigate = useNavigate();
@@ -302,9 +303,9 @@ function PL() {
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trade Reference Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.trd}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF.sp.trn.trd)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trade Reference Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.trd}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF.sp.trn.trd)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trade Reference Number</td>
@@ -350,9 +351,9 @@ function PL() {
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_date}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF.sp.invoice_date)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.invoice_date}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF.sp.invoice_date)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Number</td>
@@ -399,9 +400,9 @@ function PL() {
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.bl_date}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF.sp.bl_date)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.bl_date}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF.sp.bl_date)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logitics Cost</td>

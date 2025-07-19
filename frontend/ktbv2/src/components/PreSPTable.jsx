@@ -8,7 +8,7 @@ import Modal from './Modal';
 import PrintModal from './PrintModal';
 import axios from '../axiosConfig';
 import { toWords } from 'number-to-words';
-import { today, addDaysToDate } from '../dateUtils';
+import { today, addDaysToDate,dateFormatter } from '../dateUtils';
 import { BASE_URL } from '../utils';
 
 const PreSPTable = ({ data, onDelete }) => {
@@ -117,8 +117,8 @@ const PreSPTable = ({ data, onDelete }) => {
           {sortedData.map((presp, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.doc_issuance_date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.date)}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.doc_issuance_date)}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trn}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trade_type}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.customer.name}</td>
@@ -213,7 +213,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             <p className='font-bold text-sm'>
                               ESTIMATED TIME OF DEPARTURE
                             </p>
-                            <p className='text-sm uppercase'>{selectedTrade.etd}</p>
+                            <p className='text-sm uppercase'>{dateFormatter(selectedTrade.etd)}</p>
                           </div>
                         </div>
 
@@ -221,7 +221,7 @@ const PreSPTable = ({ data, onDelete }) => {
                         <div className="flex flex-col ">
                           <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>Dated</p>
-                            <p className='text-sm uppercase'>{selectedTrade.approval_date}</p>
+                            <p className='text-sm uppercase'>{dateFormatter(selectedTrade.approval_date)}</p>
 
                           </div>
                           <div className="border-b border-black p-2">
@@ -230,7 +230,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           </div>
                           <div className="border-b border-black p-2">
                               <p className='font-bold text-sm'>ADVANCE/LC DUE DATE</p>
-                              <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
+                              <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':dateFormatter(addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within))}</p>
                             </div>
                           <div className="border-b border-black p-2">
                             <p className='font-bold text-sm'>Port of Loading</p>
@@ -422,7 +422,7 @@ const PreSPTable = ({ data, onDelete }) => {
                               <p className='font-bold'>
                                 ESTIMATED TIME OF DEPARTURE
                               </p>
-                              <p className='uppercase'>{selectedTrade.etd}</p>
+                              <p className='uppercase'>{dateFormatter(selectedTrade.etd)}</p>
                             </div>
                           </div>
 
@@ -430,7 +430,7 @@ const PreSPTable = ({ data, onDelete }) => {
                           <div className="flex flex-col justify-between">
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>Dated</p>
-                              <p className='uppercase'>{selectedTrade.approval_date}</p>
+                              <p className='uppercase'>{dateFormatter(selectedTrade.approval_date)}</p>
 
                             </div>
                             <div className="border-b border-black p-2">
@@ -439,7 +439,7 @@ const PreSPTable = ({ data, onDelete }) => {
                             </div>
                             <div className="border-b border-black p-2">
                               <p className='font-bold'>ADVANCE/LC DUE DATE</p>
-                              <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
+                              <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':dateFormatter(addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within))}</p>
                             </div>
                             {/* <div className="border-b border-black p-2">
                               <p className='font-bold'>LC DUE DATE</p>
@@ -590,7 +590,7 @@ const PreSPTable = ({ data, onDelete }) => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPresp.date}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPresp.date)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Company </td>
@@ -598,7 +598,7 @@ const PreSPTable = ({ data, onDelete }) => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Document Issuance Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPresp.doc_issuance_date}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPresp.doc_issuance_date)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
@@ -624,7 +624,7 @@ const PreSPTable = ({ data, onDelete }) => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance/LC Due Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedTrade.paymentTerm.advance_within=='NA'?'NA':dateFormatter(addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within))}</td>
                   </tr>
                  
                   
@@ -658,11 +658,11 @@ const PreSPTable = ({ data, onDelete }) => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETA</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.eta}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.eta)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETD</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedTrade.etd}</td>
+                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.etd)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>

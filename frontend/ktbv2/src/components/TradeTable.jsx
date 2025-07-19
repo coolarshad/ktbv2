@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import PrintModal from './PrintModal';
 import ReactToPrint from 'react-to-print';
 import axios from '../axiosConfig';
+import { dateFormatter } from '../dateUtils';
 
 const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
   const navigate = useNavigate();  
@@ -66,9 +67,9 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trd}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.trd)}</td>
 
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.approval_date}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.approval_date)}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
                   {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
@@ -127,11 +128,11 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
-                        <td className="py-2 px-4 text-gray-800">{selectedTrade.trd}</td>
+                        <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.trd)}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRD</td>
-                        <td className="py-2 px-4 text-gray-800">{selectedTrade.approval_date ? selectedTrade.approval_date : 'Not Approved'}</td>
+                        <td className="py-2 px-4 text-gray-800">{selectedTrade.approval_date ? dateFormatter(selectedTrade.approval_date) : 'Not Approved'}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
@@ -229,11 +230,11 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
 
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETD</td>
-                        <td className="py-2 px-4 text-gray-800">{selectedTrade.etd}</td>
+                        <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.etd)}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">ETA</td>
-                        <td className="py-2 px-4 text-gray-800">{selectedTrade.eta}</td>
+                        <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.eta)}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
