@@ -145,7 +145,7 @@ class TradeView(APIView):
                 'product_value': data.get(f'tradeProducts[{i}].product_value'),
                 'commission_rate': data.get(f'tradeProducts[{i}].commission_rate'),
                 'total_commission': data.get(f'tradeProducts[{i}].total_commission'),
-                'logistic': data.get(f'tradeProducts[{i}].total_commission'),
+                'logistic': data.get(f'tradeProducts[{i}].logistic'),
                 'logistic_remark': data.get(f'tradeProducts[{i}].logistic_remark'),
                 # 'ref_type': data.get(f'tradeProducts[{i}].ref_type'),
                 'ref_product_code': data.get(f'tradeProducts[{i}].ref_product_code'),
