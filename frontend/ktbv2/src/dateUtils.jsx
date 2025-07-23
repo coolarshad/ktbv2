@@ -43,7 +43,8 @@ export const paymentDueDate = (data) => {
 
 
 export const calculateRemainingContractValue = (data) => {
-  const contractValue = parseFloat(data.trn.contract_value);
+  const contractValue = parseFloat(data.invoice_amount);
+  
   let advance=0;
   if(data.trn.trade_type=='Sales'){
      advance = parseFloat(data.prepayment.advance_received);
@@ -71,8 +72,9 @@ export const calculatePFCommissionValue = (data) => {
     }
   });
 
-  return commissionValue;
+  return commissionValue.toFixed(2);
 };
+
 
 export const dateFormatter = (dateString) =>{
   if (!dateString) return '';
@@ -81,3 +83,5 @@ export const dateFormatter = (dateString) =>{
   const [year, month, day] = dateString.split('-');
   return `${day}/${month}/${year}`;
 }
+
+

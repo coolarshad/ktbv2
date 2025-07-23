@@ -5,11 +5,13 @@ from django.http import HttpResponse
 import pandas as pd
 from trademgt.models import *
 from trademgt.serializers import *
-
+from . import helper
 class ExportTradeCheckView(APIView):
     def get(self, request, *args, **kwargs):
-        products = TradeProduct.objects.all()
-        serializer = ExcelTradeProductSerializer(products, many=True)
+        # products = TradeProduct.objects.all()
+        # serializer = ExcelTradeProductSerializer(products, many=True)
+        objs = PaymentFinance.objects.all()
+        serializer = PaymentFinanceSerializer(objs, many=True)
         return Response(serializer.data)
     
 class ExportTradeExcelView(APIView):
@@ -242,7 +244,7 @@ class ExportSPExcelView(APIView):
                 
                 'LC Details':obj['sp']['prepayment']['lc_number'],
                 'Commission Agent': obj['sp']['trn']['commission_agent'],
-                'Commission Value': obj['sp']['trn']['commission_value'],
+                'Commission Value': helper.calculate_sp_commission_value(obj,obj['sp']['trn']['trade_products']),
                 'Logistic Provider': obj['sp']['trn']['logistic_provider'],
               
                 
@@ -328,7 +330,7 @@ class ExportPaymentFinanceExcelView(APIView):
 
                 
                 'Commission Agent':obj['sp']['trn']['commission_agent'],
-                'Commission Value':obj['sp']['trn']['commission_value'],
+                'Commission Value':helper.calculate_pf_commission_value(obj['sp']['sp_product'],obj['sp']['trn']['trade_products']),
                 'BL Fees': obj['sp']['bl_fees'],
                 'BL Collection Cost': obj['sp']['bl_collection_cost'],
                 'Shipment Status': obj['sp']['shipment_status'],

@@ -599,6 +599,24 @@ const handleChange = async (e, arrayName = null, index = null) => {
         debouncedSubmitRef.current(formDataToSend, mode, id);
     };
 
+    const calculateCommissionValue = (sp_products, trade_products) => {
+        let commissionValue = 0;
+
+        sp_products.forEach((sp) => {
+            const matched = trade_products.find(
+                (tp) => tp.product_code === sp.product_code
+            );
+
+            if (matched) {
+                const blQty = parseFloat(sp.bl_qty) || 0;
+                const commissionRate = parseFloat(matched.commission_rate) || 0;
+                commissionValue += blQty * commissionRate;
+            }
+        });
+
+        return commissionValue.toFixed(2);
+    };
+
     const tradeData = data
     ? [
         { label: 'Trade Type', text: data.trade_type || '' },
@@ -607,7 +625,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
         { label: 'Buyer/Seller Name', text: data.prepayment.kyc?.name || '' },
         { label: 'LC Details', text: data.prepayment.lc_number || '' },
         { label: 'Commission Agent', text: data.commission_agent || '' },
-        { label: 'Commission Value', text: data.commission_value || 0 },
+        { label: 'Commission Value', text: calculateCommissionValue(formData.salesPurchaseProducts,data.trade_products) || 0 },
         // { label: 'Tolerance', text: data.commission_value || '' },
         { label: 'Logistic Provider', text: data.logistic_provider || '' },
         { label: 'Trader Name', text: data.trader_name || '' },

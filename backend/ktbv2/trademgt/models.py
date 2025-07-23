@@ -184,6 +184,7 @@ class TradeProduct(models.Model):
 
     def create_trade_pending(self, old_value=None):
         """Create or update TradePending entry for this product"""
+        # import pdb; pdb.set_trace()
         try:
             # Try to find an existing TradePending record
             pending = TradePending.objects.get(
@@ -193,6 +194,7 @@ class TradeProduct(models.Model):
             trade_type=self.trade.trade_type
             )
             # Recalculate adjusted balance using current trade_qty + tolerance
+            
             try:
                 base_qty = float(self.trade_qty)
                 tolerance = float(self.tolerance)
@@ -215,6 +217,7 @@ class TradeProduct(models.Model):
                 base_qty = float(self.trade_qty)
                 tolerance = float(self.tolerance)
                 adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
+                
             except (TypeError, ValueError):
                 adjusted_balance_qty = 0  # fallback to prevent crash
 

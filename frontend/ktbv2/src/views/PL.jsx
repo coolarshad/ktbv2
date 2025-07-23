@@ -128,13 +128,14 @@ function PL() {
       {data.sp.sp_product.map((row, index) => (
         <div className="flex flex-col p-2">
         <div key={index}  className="border border-gray-300 rounded-md p-4 shadow-sm grid grid-cols-3 gap-4">
-          <span className="text-sm border-gray-200">Product Code: {row.product_code}</span>
+          {/* <span className="text-sm border-gray-200">Product Code: {row.product_code}</span> */}
           <span className="text-sm border-gray-200">Product Name: {row.productName.name}</span>
           <span className="text-sm border-gray-200">BL Qty: {row.bl_qty}</span>
           <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
           <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
           <span className="text-sm border-gray-200">Commission Rate: {findTrade(data.sp,row).commission_rate}</span>
           <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span>
+          <span className="text-sm border-gray-200">Logistic: {row.logistic}</span>
           {/* <span>Product Code: {row.product_code}</span> */}
         </div>
         </div>
@@ -314,6 +315,12 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.trn}</td>
                       </tr>
                       <tr>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">S&P ID</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.id}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">S&P ID</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.id}</td>
+                      </tr>
+                      <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trader Name </td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.trader_name}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trader Name </td>
@@ -445,8 +452,8 @@ function PL() {
                   </div>
                   
                   <div className="p-4 text-center mb-4">
-                    <p>GROSS PROFIT: {calculateGrossProfit(selectedPL.salesPF, selectedPL.purchasePF).toFixed(2)}</p>
-                    <p>PROFIT PMT: {calculateProfitPerMT(selectedPL.salesPF, selectedPL.purchasePF)}</p>
+                    <p>PROFIT: {calculateGrossProfit(selectedPL.salesPF, selectedPL.purchasePF).toFixed(2)}</p>
+                    {/* <p>PROFIT PMT: {calculateProfitPerMT(selectedPL.salesPF, selectedPL.purchasePF)}</p> */}
 
                     {/* <p>GROSS PROFIT: {parseFloat(sumTotal(sumPackingCost(selectedPL.salesPF.sp), selectedPL.salesPF.sp.invoice_amount, selectedPL.salesPF.sp.trn.commission_value, 0, selectedPL.salesPF.sp.bl_fees, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.salesPF.sp), selectedPL.salesPF.sp.logistic_cost, sumPFCharges(selectedPL.salesPF))) - parseFloat(sumTotal(sumPackingCost(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.invoice_amount, selectedPL.purchasePF.sp.trn.commission_value, 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), selectedPL.purchasePF.sp.logistic_cost, sumPFCharges(selectedPL.purchasePF)))}</p>
                     <p>PROFIT PMT: {

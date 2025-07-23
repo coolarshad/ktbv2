@@ -7,7 +7,7 @@ import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import ReactToPrint from 'react-to-print';
 import { BASE_URL } from '../utils'; 
-import { dateFormatter } from "../dateUtils";
+import { dateFormatter, calculatePFCommissionValue } from "../dateUtils";
 
 function SalesPurchases() {
   const componentRef = useRef();
@@ -197,7 +197,7 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.trn.commission_value}</td>
+                      <td className="py-2 px-4 text-gray-800">{calculatePFCommissionValue(selectedSP)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Number </td>

@@ -235,7 +235,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.logistic_cost}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.trn.logistic_provider}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Due Date</td>
