@@ -134,7 +134,8 @@ function PL() {
           <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
           <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
           <span className="text-sm border-gray-200">Commission Rate: {findTrade(data.sp,row).commission_rate}</span>
-          <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span>
+          {/* <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span> */}
+          <span className="text-sm border-gray-200">Packaging Sum: {sumPackingCost(data.sp)}</span>
           <span className="text-sm border-gray-200">Logistic: {row.logistic}</span>
           {/* <span>Product Code: {row.product_code}</span> */}
         </div>
@@ -146,7 +147,7 @@ function PL() {
   const MiniGross = ({ sales_data, purchase_data }) => {
     // Helper function to calculate totals
     const calculateSalesTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
-    const calculateExpenseTotal = (commission_rate, bl_qty) => commission_rate * bl_qty;
+    const calculateExpenseTotal = (commission_rate, bl_qty, logistic, packing) => (commission_rate * bl_qty)+logistic+packing;
     const calculatePurchaseTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
     const calculateGross = (salesTotal, purchaseTotal, expenseTotal) => salesTotal - purchaseTotal - expenseTotal;
     const calculatePerUnit = (gross, sales_bl_qty) => gross / sales_bl_qty;
@@ -163,7 +164,7 @@ function PL() {
   
           // Calculating salesTotal, expenseTotal, purchaseTotal, gross, perUnit for this pair
           const salesTotal = calculateSalesTotal(salesRow.bl_qty, salesRow.rate_in_usd);
-          const expenseTotal = calculateExpenseTotal(findTrade(sales_data.sp, salesRow).commission_rate, salesRow.bl_qty)+calculateExpenseTotal(findTrade(purchase_data.sp, purchaseRow).commission_rate, purchaseRow.bl_qty);
+          const expenseTotal = calculateExpenseTotal(findTrade(sales_data.sp, salesRow).commission_rate, salesRow.bl_qty, salesRow.logistic, sumPackingCost(sales_data.sp))+calculateExpenseTotal(findTrade(purchase_data.sp, purchaseRow).commission_rate, purchaseRow.bl_qty,purchaseRow.logistic, sumPackingCost(purchase_data.sp));
           const purchaseTotal = calculatePurchaseTotal(purchaseRow.bl_qty, purchaseRow.rate_in_usd);
           const gross = calculateGross(salesTotal, purchaseTotal, expenseTotal);
           const perUnit = calculatePerUnit(gross, salesRow.bl_qty);
@@ -427,7 +428,9 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Income</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_amount}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Expense</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td>
+                        {/* <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td> */}
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td>
+
                       </tr>
                     </tbody>
                     
