@@ -24,6 +24,7 @@ urlpatterns = [
     path('trademgt/',include('trademgt.urls')),
     path('costmgt/',include('costmgt.urls')),
     path('excel/',include('excel.urls')),
+    path('accounts/',include('accounts.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

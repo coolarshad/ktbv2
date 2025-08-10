@@ -14,6 +14,9 @@ import logging
 import pandas as pd
 from datetime import date
 from django.conf import settings
+from accounts.models import CustomUser
+from .utils.email_service import send_async_email
+
 
 BATCH_SIZE = getattr(settings, 'TRADE_PRODUCT_BATCH_SIZE', 100)
 
@@ -71,6 +74,7 @@ class TradeView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         # Prepare trade data separately
+        # import pdb;pdb.set_trace()
         
         trade_data = {
             'company': data.get('company'),
@@ -115,6 +119,11 @@ class TradeView(APIView):
         trade_products_data = []
         trade_extra_costs_data = []
         # related_trades_data = []
+
+        notified_users = request.data.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users))
+        emails = list(CustomUser.objects.filter(id__in=notified_user_ids).values_list('email', flat=True))
+        
 
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
@@ -171,6 +180,8 @@ class TradeView(APIView):
             trade_serializer = TradeSerializer(data=trade_data)
             if trade_serializer.is_valid():
                 trade = trade_serializer.save()
+                body=f"Trade created {trade.trn}"
+                subject="KTB Notification"
             else:
                 return Response(trade_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
@@ -213,6 +224,7 @@ class TradeView(APIView):
             try:
                 company = Company.objects.get(id=data.get('company'))
                 company.save_counter(data.get('trn'))
+                send_async_email(subject, body, emails)
             except Company.DoesNotExist:
                 return Response({'error': 'Company not found.'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -279,6 +291,9 @@ class TradeView(APIView):
         trade_extra_costs_data = []
         # related_trades_data = []
         
+        notified_users = request.data.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users))
+        emails = list(CustomUser.objects.filter(id__in=notified_user_ids).values_list('email', flat=True))
 
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
@@ -341,6 +356,8 @@ class TradeView(APIView):
             trade_serializer = TradeSerializer(trade, data=trade_data, partial=True)
             if trade_serializer.is_valid():
                 trade = trade_serializer.save()
+                body=f"Trade updated {trade.trn}"
+                subject="KTB Notification"
             else:
                 return Response(trade_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -425,7 +442,7 @@ class TradeView(APIView):
                     TradeExtraCost.objects.bulk_create(trade_extra_costs)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+            send_async_email(subject, body, emails)
         return Response(trade_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
@@ -471,7 +488,6 @@ class TradeView(APIView):
                 
                 # Delete the trade (will cascade delete products and extra costs)
                 trade.delete()
-                
                 return Response(status=status.HTTP_204_NO_CONTENT)
                 
             except Exception as e:

@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback,useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import debounce from 'lodash.debounce';
-import {capitalizeKey} from '../utils';
+import { capitalizeKey } from '../utils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const TradeForm = ({ mode = 'add' }) => {
 
@@ -14,9 +15,9 @@ const TradeForm = ({ mode = 'add' }) => {
 
     const [isContractBalanceQtyReadOnly, setIsContractBalanceQtyReadOnly] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
-    
 
-    const initialFormData={
+
+    const initialFormData = {
         company: '',
         trd: today,
         trn: '',
@@ -25,15 +26,15 @@ const TradeForm = ({ mode = 'add' }) => {
         country_of_origin: '',
         customer_company_name: '',
         address: '',
-       
+
         currency_selection: '',
         exchange_rate: '',
-      
+
         commission_agent: '',
         contract_value: '',
         payment_term: '',
         advance_value_to_receive: '',
-        
+
         commission_value: '',
         logistic_provider: '',
         estimated_logistic_cost: '',
@@ -50,11 +51,11 @@ const TradeForm = ({ mode = 'add' }) => {
         remarks: '',
         trader_name: '',
         insurance_policy_number: '',
-        
+
         shipper_in_bl: '',
         consignee_in_bl: '',
         notify_party_in_bl: '',
-        
+
         // container_shipment_size: '',
         bl_fee: '',
         bl_fee_remarks: '',
@@ -74,14 +75,14 @@ const TradeForm = ({ mode = 'add' }) => {
                 trade_qty: '',
                 trade_qty_unit: '',
                 selected_currency_rate: '',
-                rate_in_usd:'',
-                product_value:'',
-                markings_in_packaging:'',
-                packaging_supplier:'',
-                mode_of_packing:'',
-                rate_of_each_packing:'',
-                qty_of_packing:'',
-                total_packing_cost:'',
+                rate_in_usd: '',
+                product_value: '',
+                markings_in_packaging: '',
+                packaging_supplier: '',
+                mode_of_packing: '',
+                rate_of_each_packing: '',
+                qty_of_packing: '',
+                total_packing_cost: '',
                 commission_rate: '',
                 total_commission: '',
                 ref_product_code: '',
@@ -98,17 +99,17 @@ const TradeForm = ({ mode = 'add' }) => {
                 extra_cost_remarks: ''
             }
         ],
-        // relatedTrades: []
+        notifiedUsers: [],
     };
     const [formData, setFormData] = useState(initialFormData);
 
     const tradeTypeOptions = ['Sales', 'Purchase'];
     const tradeCategoryOptions = ['Sales', 'Sales Cancel', 'Purchase', 'Purchase Cancel'];
 
-    const [companyOptions, setCompanyOptions] = useState([]); 
-    const [customerOptions, setCustomerOptions] = useState([]); 
-    const [paymentTermOptions, setPaymentTermOptions] = useState([]); 
-    const [bankNameOptions, setBankNameOptions] = useState([]); 
+    const [companyOptions, setCompanyOptions] = useState([]);
+    const [customerOptions, setCustomerOptions] = useState([]);
+    const [paymentTermOptions, setPaymentTermOptions] = useState([]);
+    const [bankNameOptions, setBankNameOptions] = useState([]);
     const [unitOptions, setUnitOptions] = useState([]);
     const [productNameOptions, setProductNameOptions] = useState([]);
     const [packingOptions, setPackingOptions] = useState([]);
@@ -116,8 +117,8 @@ const TradeForm = ({ mode = 'add' }) => {
     const [currencyOptions, setCurrencyOptions] = useState([]);
     const [salesTrace, setSalesTrace] = useState([]);
     const [purchaseTrace, setPurchaseTrace] = useState([]);
-    const [refProductOptions,setRefProductOptions] = useState([]);
-    
+    const [refProductOptions, setRefProductOptions] = useState([]);
+
     // Function to fetch data
     const fetchData = async (url, setStateFunction) => {
         try {
@@ -169,21 +170,21 @@ const TradeForm = ({ mode = 'add' }) => {
             });
     }, []);
 
-   useEffect(() => {
-    if (!formData.trade_type || formData.trade_type=='') return;
+    useEffect(() => {
+        if (!formData.trade_type || formData.trade_type == '') return;
 
-    axios.get('/trademgt/refproductcode', {
-        params: {
-            trade_type: formData.trade_type
-        }
-    })
-    .then(response => {
-        setRefProductOptions(response.data);  // Assuming product_codes is a list
-    })
-    .catch(error => {
-        console.error('Error fetching product codes', error);
-    });
-}, [formData.trade_type]);
+        axios.get('/trademgt/refproductcode', {
+            params: {
+                trade_type: formData.trade_type
+            }
+        })
+            .then(response => {
+                setRefProductOptions(response.data);  // Assuming product_codes is a list
+            })
+            .catch(error => {
+                console.error('Error fetching product codes', error);
+            });
+    }, [formData.trade_type]);
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -207,7 +208,7 @@ const TradeForm = ({ mode = 'add' }) => {
         if (formData.exchange_rate) {
             const updatedTradeProducts = formData.tradeProducts.map(product => ({
                 ...product,
-                product_value: product.trade_qty*product.rate_in_usd
+                product_value: product.trade_qty * product.rate_in_usd
             }));
             const selectedTerm = paymentTermOptions?.find((term) => term.id == formData.payment_term);
             const updatedContractValue = updatedTradeProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
@@ -222,41 +223,45 @@ const TradeForm = ({ mode = 'add' }) => {
         }
     }, [formData.exchange_rate]);
 
+    const handleUserSelect = (users) => {
+        setFormData(prev => ({ ...prev, notifiedUsers: users }));
+    };
+
     // Debounced function to call the API
     const fetchProductDetails = useCallback(
-        
+
         // debounce(async (index,product_code_ref, productCode) => {
         debounce(async (index, productCode) => {
             // console.log('========',product_code_ref,productCode)
-          try {
-            let response;
-      
-          
-            //   response = await axios.get(`/trademgt/sales-product-trace/?product_code=${productCode}&first_trn=${product_code_ref}`);
-              response = await axios.get(`/trademgt/product-trace/?product_code=${productCode}&trade_type=${formData.trade_type}`);
-           
-            if (response.status === 200) {
-              const { data } = response;
-              if (Array.isArray(data) && data.length > 0) {
-                setFormData((prevState) => {
-                    const updatedProducts = [...prevState.tradeProducts];
-                    updatedProducts[index].total_contract_qty = data[0]?.total_contract_qty; // Example field
-                    updatedProducts[index].contract_balance_qty = data[0]?.contract_balance_qty; // Example field
-                    setIsContractBalanceQtyReadOnly(true);
-                    return { ...prevState, tradeProducts: updatedProducts };
-                });
-              }
-            
-            } else {
-                setIsContractBalanceQtyReadOnly(false);
-                console.error('Error fetching product details:', response.statusText);
+            try {
+                let response;
+
+
+                //   response = await axios.get(`/trademgt/sales-product-trace/?product_code=${productCode}&first_trn=${product_code_ref}`);
+                response = await axios.get(`/trademgt/product-trace/?product_code=${productCode}&trade_type=${formData.trade_type}`);
+
+                if (response.status === 200) {
+                    const { data } = response;
+                    if (Array.isArray(data) && data.length > 0) {
+                        setFormData((prevState) => {
+                            const updatedProducts = [...prevState.tradeProducts];
+                            updatedProducts[index].total_contract_qty = data[0]?.total_contract_qty; // Example field
+                            updatedProducts[index].contract_balance_qty = data[0]?.contract_balance_qty; // Example field
+                            setIsContractBalanceQtyReadOnly(true);
+                            return { ...prevState, tradeProducts: updatedProducts };
+                        });
+                    }
+
+                } else {
+                    setIsContractBalanceQtyReadOnly(false);
+                    console.error('Error fetching product details:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching product details:', error.message);
             }
-          } catch (error) {
-            console.error('Error fetching product details:', error.message);
-          }
         }, 500), // Debounce delay in milliseconds
         [formData.trade_type] // Dependency array
-      );
+    );
 
     const calculateAdvanceValue = (contractValue, selectedTerm) => {
         if (!contractValue || !selectedTerm?.advance_in_percentage) return 0;
@@ -297,8 +302,8 @@ const TradeForm = ({ mode = 'add' }) => {
                         params: {
                             trn: value,
                             // product_code:prod_code,
-                            trade_type:trade_type,
-                            ref_product_code:ref_product_code,
+                            trade_type: trade_type,
+                            ref_product_code: ref_product_code,
                         }
                     });
 
@@ -315,7 +320,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     } else {
                         console.error('Error fetching ref balance:', response.statusText);
                     }
-                    
+
                 } catch (error) {
                     console.error('API Error:', error.message);
                 }
@@ -370,23 +375,23 @@ const TradeForm = ({ mode = 'add' }) => {
                 }));
 
             } else if (name === 'logistic_provider') {
-                if(value.toLowerCase()=='na'){
+                if (value.toLowerCase() == 'na') {
                     setFormData((prevState) => ({
                         ...prevState,
                         [name]: value,
-                        estimated_logistic_cost:0,
-                        logistic_cost_tolerence:0,
+                        estimated_logistic_cost: 0,
+                        logistic_cost_tolerence: 0,
                         // logistic_cost_remarks:'NA',
-                        bl_fee:0,
-                        bl_fee_remarks:'NA'
+                        bl_fee: 0,
+                        bl_fee_remarks: 'NA'
                     }));
                 }
-                else{
+                else {
                     setFormData((prevState) => ({
-                    ...prevState,
-                    [name]: value
-                }));
-            }
+                        ...prevState,
+                        [name]: value
+                    }));
+                }
 
             } else if (name === 'bank_name_address') {
                 const selectedBank = bankNameOptions.find((bank) => bank.id == value);
@@ -506,14 +511,14 @@ const TradeForm = ({ mode = 'add' }) => {
                     trade_qty: '',
                     trade_qty_unit: '',
                     selected_currency_rate: '',
-                    rate_in_usd:'',
-                    product_value:'',
-                    markings_in_packaging:'',
-                    packaging_supplier:'',
-                    mode_of_packing:'',
-                    rate_of_each_packing:'',
-                    qty_of_packing:'',
-                    total_packing_cost:'',
+                    rate_in_usd: '',
+                    product_value: '',
+                    markings_in_packaging: '',
+                    packaging_supplier: '',
+                    mode_of_packing: '',
+                    rate_of_each_packing: '',
+                    qty_of_packing: '',
+                    total_packing_cost: '',
                     commission_rate: '',
                     total_commission: '',
                     ref_product_code: '',
@@ -604,6 +609,7 @@ const TradeForm = ({ mode = 'add' }) => {
         if (submittingRef.current) return;
         let errors = {};
 
+         console.log("Submitting formData:", formData);  // Debug here
         // Define fields to skip validation for
         const skipValidation = ['loi', 'relatedTrades', 'approved_by', 'ref_balance'];
 
@@ -618,7 +624,7 @@ const TradeForm = ({ mode = 'add' }) => {
             if (!skipValidation.includes(key) && value === '') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
             }
-           
+
         }
 
         // Validate trade_type and trade_category
@@ -654,12 +660,12 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         });
         setValidationErrors(errors);
-    
+
         if (Object.keys(errors).length > 0) {
             console.log(errors)
             return; // Don't proceed if there are validation errors
-        }else{
-             setValidationErrors({});  
+        } else {
+            setValidationErrors({});
         }
 
         // Check if formData.tradeProducts is defined and is an array
@@ -686,7 +692,7 @@ const TradeForm = ({ mode = 'add' }) => {
             // Otherwise, check if ref_balance is less than trade_qty
             return Number(product.ref_balance) < Number(product.trade_qty);
         });
-        
+
         if (invalidRefBalanceProduct) {
             alert(`Trade Quantity cannot exceed Ref Balance for product index: ${formData.tradeProducts.indexOf(invalidRefBalanceProduct) + 1}`);
             return; // Stop form submission
@@ -698,18 +704,27 @@ const TradeForm = ({ mode = 'add' }) => {
         // Append regular fields
         for (const [key, value] of Object.entries(formData)) {
             if (Array.isArray(value)) {
-                value.forEach((item, index) => {
-                    for (const [subKey, subValue] of Object.entries(item)) {
-                        if (subValue instanceof File) {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
-                        } else {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                if (value.length > 0 && typeof value[0] !== 'object') {
+                    // Simple array (like notifiedUsers: [1,2,3])
+                    value.forEach(item => {
+                        formDataToSend.append(`${key}[]`, item);
+                    });
+                } else {
+                    // Array of objects (like tradeProducts, tradeExtraCosts)
+                    value.forEach((item, index) => {
+                        for (const [subKey, subValue] of Object.entries(item)) {
+                            if (subValue instanceof File) {
+                                formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                            } else {
+                                formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             } else {
                 formDataToSend.append(key, value);
             }
+
         }
 
         const config = {
@@ -773,7 +788,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     </select>
                     {validationErrors.trade_type && <p className="text-red-500">{validationErrors.trade_type}</p>}
                 </div>
-                
+
                 <div>
                     <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company</label>
                     <select
@@ -791,7 +806,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     </select>
                     {validationErrors.company && <p className="text-red-500">{validationErrors.company}</p>}
                 </div>
-                
+
                 <div>
                     <label htmlFor="trd" className="block text-sm font-medium text-gray-700">Trade Reference Date</label>
                     <input
@@ -820,7 +835,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 </div>
 
                 {/* Add other fields similarly */}
-                
+
                 <div>
                     <label htmlFor="trade_category" className="block text-sm font-medium text-gray-700">Select Trade Category</label>
                     <select
@@ -879,9 +894,9 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.address && <p className="text-red-500">{validationErrors.address}</p>}
                 </div>
-                
-              
-               
+
+
+
                 <div>
                     <label htmlFor="currency_selection" className="block text-sm font-medium text-gray-700">Currency Selection</label>
                     <select
@@ -911,7 +926,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.exchange_rate && <p className="text-red-500">{validationErrors.exchange_rate}</p>}
                 </div>
-                
+
                 <div>
                     <label htmlFor="bank_name_address" className="block text-sm font-medium text-gray-700">Select Bank Name & Address</label>
                     <select
@@ -967,7 +982,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.incoterm && <p className="text-red-500">{validationErrors.incoterm}</p>}
                 </div>
-               
+
                 <div>
                     <label htmlFor="pol" className="block text-sm font-medium text-gray-700">POL</label>
                     <input
@@ -992,26 +1007,26 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.pod && <p className="text-red-500">{validationErrors.pod}</p>}
                 </div>
-               
-               
-                 <DateInputWithIcon
+
+
+                <DateInputWithIcon
                     formData={formData}
                     handleChange={handleChange}
                     validationErrors={validationErrors}
                     fieldName="etd"
                     label="ETD"
-                    
+
                 />
-               
-                 <DateInputWithIcon
+
+                <DateInputWithIcon
                     formData={formData}
                     handleChange={handleChange}
                     validationErrors={validationErrors}
                     fieldName="eta"
                     label="ETA"
-                    
+
                 />
-                
+
                 <div>
                     <label htmlFor="trader_name" className="block text-sm font-medium text-gray-700">Trader Name</label>
                     <input
@@ -1036,7 +1051,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.insurance_policy_number && <p className="text-red-500">{validationErrors.insurance_policy_number}</p>}
                 </div>
-                
+
                 <div>
                     <label htmlFor="shipper_in_bl" className="block text-sm font-medium text-gray-700">Shipper in BL</label>
                     <input
@@ -1073,9 +1088,9 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.notify_party_in_bl && <p className="text-red-500">{validationErrors.notify_party_in_bl}</p>}
                 </div>
-               
-             
-                
+
+
+
             </div>
 
             <hr className="my-6" />
@@ -1168,12 +1183,12 @@ const TradeForm = ({ mode = 'add' }) => {
                                     {/* <option value="">Select Type</option> */}
                                     <option value="">---</option>
                                     <option value="NA">NA</option>
-                                     {refProductOptions?.map((option) => (
+                                    {refProductOptions?.map((option) => (
                                         <option key={option.id} value={option.product_code}>
                                             {option.product_code}
                                         </option>
                                     ))}
-                                   
+
                                 </select>
                                 {validationErrors[`tradeProducts[${index}].ref_product_code`] && (
                                     <p className="text-red-500">
@@ -1181,10 +1196,10 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
-                           
+
                             <div>
                                 <label htmlFor="ref_trn" className="block text-sm font-medium text-gray-700">
-                                Reference TRN
+                                    Reference TRN
                                 </label>
                                 <select
                                     name="ref_trn"
@@ -1228,7 +1243,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
-                            
+
                             <div>
                                 <label htmlFor="total_contract_qty" className="block text-sm font-medium text-gray-700">Total Contract Qty</label>
                                 <input
@@ -1246,7 +1261,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
-                            
+
                             <div>
                                 <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Total Contract Qty Unit
@@ -1280,7 +1295,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Tolerance"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].tolerance`)}`}
                                 />
-                                 {validationErrors[`tradeProducts[${index}].tolerance`] && (
+                                {validationErrors[`tradeProducts[${index}].tolerance`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].tolerance`]}
                                     </p>
@@ -1303,7 +1318,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
-                           
+
                             <div>
                                 <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Contract Balance Qty Unit
@@ -1343,7 +1358,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     </p>
                                 )}
                             </div>
-                            
+
                             <div>
                                 <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Trade Qty Unit
@@ -1409,7 +1424,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Product Value"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].product_value`)}`}
                                 />
-                                 {validationErrors[`tradeProducts[${index}].product_value`] && (
+                                {validationErrors[`tradeProducts[${index}].product_value`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].product_value`]}
                                     </p>
@@ -1462,7 +1477,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Qty of packing"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].qty_of_packing`)}`}
                                 />
-                                 {validationErrors[`tradeProducts[${index}].qty_of_packing`] && (
+                                {validationErrors[`tradeProducts[${index}].qty_of_packing`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].qty_of_packing`]}
                                     </p>
@@ -1515,7 +1530,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Markings in Packaging"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].markings_in_packaging`)}`}
                                 />
-                               {validationErrors[`tradeProducts[${index}].markings_in_packaging`] && (
+                                {validationErrors[`tradeProducts[${index}].markings_in_packaging`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].markings_in_packaging`]}
                                     </p>
@@ -1547,7 +1562,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Total Commission"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].total_commission`)}`}
                                 />
-                                 {validationErrors[`tradeProducts[${index}].total_commission`] && (
+                                {validationErrors[`tradeProducts[${index}].total_commission`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].total_commission`]}
                                     </p>
@@ -1584,7 +1599,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Logistic Cost"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].logistic`)}`}
                                 />
-                                 {validationErrors[`tradeProducts[${index}].logistic`] && (
+                                {validationErrors[`tradeProducts[${index}].logistic`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].logistic`]}
                                     </p>
@@ -1600,7 +1615,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     placeholder="Logistic Remark"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].logistic_remark`)}`}
                                 />
-                                 {validationErrors[`tradeProducts[${index}].logistic_remark`] && (
+                                {validationErrors[`tradeProducts[${index}].logistic_remark`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].logistic_remark`]}
                                     </p>
@@ -1636,7 +1651,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
             <hr className="my-6" />
             <div className="grid grid-cols-3 gap-4 p-4 ">
-            <div>
+                <div>
                     <label htmlFor="commission" className="block text-sm font-medium text-gray-700">Commission Agent</label>
                     <input
                         type="text"
@@ -1648,7 +1663,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.commission_agent && <p className="text-red-500">{validationErrors.commission_agent}</p>}
                 </div>
-                
+
                 <div>
                     <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
                     <input
@@ -1673,7 +1688,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('contract_value')}`}
                         readOnly={true}
                     />
-                     {validationErrors.contract_value && <p className="text-red-500">{validationErrors.contract_value}</p>}
+                    {validationErrors.contract_value && <p className="text-red-500">{validationErrors.contract_value}</p>}
                 </div>
                 <div>
                     <label htmlFor="payment_term" className="block text-sm font-medium text-gray-700">Select Payment Term</label>
@@ -1726,7 +1741,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Estimated Logistic Cost"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('estimated_logistic_cost')}`}
-                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase() == 'na' ? true : false}
                     />
                     {validationErrors.estimated_logistic_cost && <p className="text-red-500">{validationErrors.estimated_logistic_cost}</p>}
                 </div>
@@ -1739,9 +1754,9 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Logistic Cost Tolerance"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('logistic_cost_tolerence')}`}
-                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase() == 'na' ? true : false}
                     />
-                     {validationErrors.logistic_cost_tolerence && <p className="text-red-500">{validationErrors.logistic_cost_tolerence}</p>}
+                    {validationErrors.logistic_cost_tolerence && <p className="text-red-500">{validationErrors.logistic_cost_tolerence}</p>}
                 </div>
                 {/* <div>
                     <label htmlFor="logistic_cost_remarks" className="block text-sm font-medium text-gray-700">Logistic Cost Remarks</label>
@@ -1765,7 +1780,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="BL Fee"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('bl_fee')}`}
-                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase() == 'na' ? true : false}
                     />
                     {validationErrors.bl_fee && <p className="text-red-500">{validationErrors.bl_fee}</p>}
                 </div>
@@ -1778,7 +1793,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="BL Fee Remarks"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('bl_fee_remarks')}`}
-                        readOnly={formData.logistic_provider.toLocaleLowerCase()=='na'?true:false}
+                        readOnly={formData.logistic_provider.toLocaleLowerCase() == 'na' ? true : false}
                     />
                     {validationErrors.bl_fee_remarks && <p className="text-red-500">{validationErrors.bl_fee_remarks}</p>}
                 </div>
@@ -1797,7 +1812,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
             </div>
             <div className="grid grid-cols-3 gap-4 p-4 ">
-                
+
             </div>
             <p className='text-center text-2xl gap-4 mb-4'>Extra Costs</p>
             <hr className="my-6" />
@@ -1861,6 +1876,13 @@ const TradeForm = ({ mode = 'add' }) => {
                     </button>
                 </div>
             </div>
+
+
+            {/* MULTI-USER SELECTOR */}
+            <MultiUserSelector
+                selectedUsers={formData.notifiedUsers}
+                onChange={handleUserSelect}
+            />
 
 
 

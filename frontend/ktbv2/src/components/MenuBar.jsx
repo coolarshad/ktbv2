@@ -74,7 +74,7 @@ const MenuBar = () => {
           <div>
             <h3 className="text-lg font-semibold mb-2">Dashboard & Overview</h3>
             <Link to="/" className="block px-4 py-2 hover:bg-gray-700">Dashboard</Link>
-            
+            <Link to="/users" className="block px-4 py-2 hover:bg-gray-700">Users</Link>
           </div>
 
           <div>

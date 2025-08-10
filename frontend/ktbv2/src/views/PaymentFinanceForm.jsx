@@ -288,20 +288,21 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         //     }
         // });
         if (data?.prepayment.lc_number.toLowerCase() === "na") {
-             if (shouldRequireTTCopy) {
-            if (formData.ttCopies.length === 0) {
-                alert('TT Copy cannot be empty!');
-                return;
-            } else {
-                formData.ttCopies.forEach((item, index) => {
-                    for (const [key, value] of Object.entries(item)) {
-                        if (!skipValidation.includes(key) && (value === '' || value == null)) {
-                            errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+            console.log("====",shouldRequireTTCopy)
+            if (shouldRequireTTCopy) {
+                if (formData.ttCopies.length === 0) {
+                    alert('TT Copy cannot be empty!');
+                    return;
+                } else {
+                    formData.ttCopies.forEach((item, index) => {
+                        for (const [key, value] of Object.entries(item)) {
+                            if (!skipValidation.includes(key) && (value === '' || value == null)) {
+                                errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
+                            }
                         }
-                    } 
-                });
+                    });
+                }
             }
-        }
         }
 
         setValidationErrors(errors);
@@ -367,9 +368,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
         const dueDate = paymentDueDate(data);  // Assuming this returns a Date object or a parseable string
         const today = new Date();
-
+       
         try {
-            return new Date(dueDate) >= today;
+            return today >= new Date(dueDate);
         } catch (err) {
             console.error("Invalid due date:", dueDate);
             return false;
@@ -722,7 +723,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 
             </div>
             <hr className="my-6" />
-            {data?.prepayment.lc_number.toLowerCase() === "na" && (
+            {data?.prepayment.lc_number.toLowerCase() === "na" && shouldRequireTTCopy && (
                 parseFloat(formData.balance_payment_received) > 0 ||
                 parseFloat(formData.balance_payment_made) > 0
             ) && (

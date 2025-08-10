@@ -412,12 +412,12 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Date</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF.sp.bl_date)}</td>
                       </tr>
-                      <tr>
+                      {/* <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logitics Cost</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.logistic_cost}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logitics Cost</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.logistic_cost}</td>
-                      </tr>
+                      </tr> */}
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">CHARGES P & F </td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{sumPFCharges(selectedPL.salesPF)}</td>

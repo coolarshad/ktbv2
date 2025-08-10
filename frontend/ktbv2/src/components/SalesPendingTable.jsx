@@ -24,7 +24,7 @@ const SalesPendingTable = ({ data , onDelete, onView }) => { // Default value fo
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in USD</th>
-          
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Logistic</th>
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -47,7 +47,7 @@ const SalesPendingTable = ({ data , onDelete, onView }) => { // Default value fo
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.tolerance}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.selected_currency_rate}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.rate_in_usd}</td>
-             
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.logistic}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
                  

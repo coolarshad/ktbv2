@@ -48,6 +48,12 @@ import TradeReport from './views/TradeReport';
 import ProductRef from './views/ProductRef';
 import ConsumptionFormula from './views/ConsumptionFormula';
 import ConsumptionFormulaForm from './views/ConsumptionFormulaForm';
+import UserForm from './views/UserForm';
+import Users from './views/Users';
+
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
  
@@ -121,7 +127,12 @@ function App() {
           <Route path="/inventory" element={<Inventory />} />
 
           <Route path="/trade-report" element={<TradeReport />} />
+          
+          <Route path="/users" element={<Users />} />
+          <Route path="/user-form" element={<UserForm />} />
+          <Route path="/user-form/:id" element={<UserForm mode="update" />} />
         </Routes>
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>
   )
