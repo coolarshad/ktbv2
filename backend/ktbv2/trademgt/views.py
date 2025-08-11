@@ -431,7 +431,13 @@ class TradeView(APIView):
                     except Exception as e:
                         print(str(e))
                     
-                    product.create_trade_pending(prev_adjusted_balance_qty)
+                    # trade_product.old_value = prev_adjusted_balance_qty
+                    # trade_product.save()
+
+                    trade_product.previous_trade_qty = previous.get("trade_qty", 0)
+                    trade_product.old_value = prev_adjusted_balance_qty  # 👈 KEY FIX
+                    trade_product.save()
+                    # product.create_trade_pending(prev_adjusted_balance_qty)
                     print("old value found: ",prev_adjusted_balance_qty)
 
             if trade_extra_costs_data:
@@ -478,13 +484,6 @@ class TradeView(APIView):
                         ref.save()
                     except Exception as e:
                         pass
-                    
-                    
-                    
-                    # if trace.total_contract_qty <= 0:
-                    #     trace.delete()
-                    # else:
-                    #     trace.save()
                 
                 # Delete the trade (will cascade delete products and extra costs)
                 trade.delete()

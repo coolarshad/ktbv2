@@ -119,7 +119,7 @@ class TradeProduct(models.Model):
             super().save(*args, **kwargs)
             self.update_product_trace()
             self.update_product_ref()
-            self.create_trade_pending()
+            self.create_trade_pending(old_value=getattr(self, 'old_value', None))
         except Exception as e:
             print(str(e))
 
@@ -184,7 +184,6 @@ class TradeProduct(models.Model):
 
     def create_trade_pending(self, old_value=None):
         """Create or update TradePending entry for this product"""
-        # import pdb; pdb.set_trace()
         try:
             # Try to find an existing TradePending record
             pending = TradePending.objects.get(
@@ -193,52 +192,50 @@ class TradeProduct(models.Model):
             product_name=self.product_name,
             trade_type=self.trade.trade_type
             )
+          
             # Recalculate adjusted balance using current trade_qty + tolerance
-            
-            try:
-                base_qty = float(self.trade_qty)
-                tolerance = float(self.tolerance)
-                adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
-            except (TypeError, ValueError):
-                adjusted_balance_qty = 0
+            base_qty = float(self.trade_qty)
+            tolerance = float(self.tolerance)
+            adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
 
-            # Update balance qty
-            if old_value:
-                pending.balance_qty-=old_value
-                # pending.balance_qty+=adjusted_balance_qty
-            else:
-                pending.balance_qty+=adjusted_balance_qty
-         
+            pending.balance_qty -= old_value
+            pending.balance_qty += adjusted_balance_qty
+
+            # if old_value is not None:
+            #     # True update — remove old qty, add new qty
+            #     pending.balance_qty -= old_value
+            #     pending.balance_qty += adjusted_balance_qty
+            # else:
+            #     # No previous qty provided — just add
+            #     pending.balance_qty += adjusted_balance_qty
+
             pending.save()
 
         except TradePending.DoesNotExist:
-            # No existing record, create a new one using trade_qty as base
-            try:
-                base_qty = float(self.trade_qty)
-                tolerance = float(self.tolerance)
-                adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
-                
-            except (TypeError, ValueError):
-                adjusted_balance_qty = 0  # fallback to prevent crash
+            # Always create fresh with trade_qty + tolerance
+            base_qty = float(self.trade_qty)
+            tolerance = float(self.tolerance)
+            adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
 
             TradePending.objects.create(
-                trn=self.trade,
-                trade_type=self.trade.trade_type,
-                trd=self.trade.trd,
-                company=self.trade.company,
-                payment_term=self.trade.payment_term,
-                product_code=self.product_code,
-                product_name=self.product_name,
-                hs_code=self.hs_code,
-                contract_qty=self.total_contract_qty,  # trade_qty used as contract_qty
-                contract_qty_unit=self.total_contract_qty_unit,
-                balance_qty=adjusted_balance_qty,
-                balance_qty_unit=self.contract_balance_qty_unit,
-                selected_currency_rate=self.selected_currency_rate,
-                rate_in_usd=self.rate_in_usd,
-                tolerance=self.tolerance,
-                logistic=self.logistic
+            trn=self.trade,
+            trade_type=self.trade.trade_type,
+            trd=self.trade.trd,
+            company=self.trade.company,
+            payment_term=self.trade.payment_term,
+            product_code=self.product_code,
+            product_name=self.product_name,
+            hs_code=self.hs_code,
+            contract_qty=self.total_contract_qty,
+            contract_qty_unit=self.total_contract_qty_unit,
+            balance_qty=adjusted_balance_qty,
+            balance_qty_unit=self.contract_balance_qty_unit,
+            selected_currency_rate=self.selected_currency_rate,
+            rate_in_usd=self.rate_in_usd,
+            tolerance=self.tolerance,
+            logistic=self.logistic
             )
+
 
 
 
