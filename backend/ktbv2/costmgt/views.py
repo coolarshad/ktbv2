@@ -12,13 +12,26 @@ from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
 # Create your views here.
 
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
 class PackingViewSet(viewsets.ModelViewSet):
     queryset = Packing.objects.all()
     serializer_class = PackingSerializer
 
+class RawCategoryViewSet(viewsets.ModelViewSet):
+    queryset = RawCategory.objects.all()
+    serializer_class = RawCategorySerializer
+
 class RawMaterialViewSet(viewsets.ModelViewSet):
     queryset = RawMaterial.objects.all()
     serializer_class = RawMaterialSerializer
+
+class AdditiveCategoryViewSet(viewsets.ModelViewSet):
+    queryset = AdditiveCategory.objects.all()
+    serializer_class = AdditiveCategorySerializer
 
 class AdditiveViewSet(viewsets.ModelViewSet):
     queryset = Additive.objects.all()

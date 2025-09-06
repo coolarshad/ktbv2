@@ -1,208 +1,284 @@
-import React, { useState, useEffect } from 'react';
-import { useParams,useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 
 const AdditiveForm = ({ mode = 'add' }) => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        date: '',
-        name: '',
-        crfPrice: '',
-        addCost: '',
-        costPriceInLiter: '',
-        density:'',
-        totalCost:'',
-        remarks:'',
-    });
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-    useEffect(() => {
-        if (mode === 'update' && id) {
-            axios.get(`/costmgt/additives/${id}`)
-                .then(response => {
-                    const data = response.data;
-                    setFormData(prevState => ({
-                        ...prevState,
-                        date: data.date,
-                        name: data.name,
-                        crfPrice: data.crfPrice,
-                        addCost: data.addCost,
-                        costPriceInLiter: data.costPriceInLiter,
-                        density: data.density,
-                        totalCost: data.totalCost,
-                        remarks: data.remarks,
-                    }));
-                })
-                .catch(error => {
-                    console.error('There was an error fetching the additive data!', error);
-                });
-        }
-    }, [mode, id]);
+  const [categories, setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [formData, setFormData] = useState({
+    date: '',
+    name: '',
+    crfPrice: '',
+    addCost: '',
+    costPriceInLiter: '',
+    density: '',
+    totalCost: '',
+    remarks: '',
+    category: '', // category id
+  });
 
-    const handleChange = (e, section, index) => {
-        const { name, value, files } = e.target;
-        if (section) {
-            const updatedSection = formData[section].map((item, i) =>
-                i === index ? { ...item, [name]: files ? files[0] : value } : item
-            );
-            setFormData({ ...formData, [section]: updatedSection });
-        } else {
-            setFormData({ ...formData, [name]: value });
-        }
+  // Fetch categories
+  useEffect(() => {
+    axios
+      .get('/costmgt/additive-categories/')
+      .then((res) => setCategories(res.data))
+      .catch((err) => console.error('Error fetching categories:', err));
+  }, []);
+
+  // Fetch existing additive in update mode
+  useEffect(() => {
+    if (mode === 'update' && id) {
+      axios
+        .get(`/costmgt/additives/${id}/`)
+        .then((res) => {
+          const data = res.data;
+          setFormData({
+            date: data.date || '',
+            name: data.name || '',
+            crfPrice: data.crfPrice || '',
+            addCost: data.addCost || '',
+            costPriceInLiter: data.costPriceInLiter || '',
+            density: data.density || '',
+            totalCost: data.totalCost || '',
+            remarks: data.remarks || '',
+            category: data.category || '',
+          });
+        })
+        .catch((err) => console.error('Error fetching additive:', err));
+    }
+  }, [mode, id]);
+
+  // Auto-set selected category when categories or formData.category change
+  useEffect(() => {
+    if (formData.category && categories.length) {
+      const cat = categories.find((c) => c.id === formData.category);
+      if (cat) {
+        setSelectedCategory(cat);
+        setSearchTerm(cat.name);
+      }
+    }
+  }, [categories, formData.category]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
     };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // console.log(formData);
-        const formDataToSend = new FormData();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
-        for (const [key, value] of Object.entries(formData)) {
-            if (Array.isArray(value)) {
-                value.forEach((item, index) => {
-                    for (const [subKey, subValue] of Object.entries(item)) {
-                        if (subValue instanceof File) {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
-                        } else {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
-                        }
-                    }
-                });
-            } else {
-                formDataToSend.append(key, value);
-            }
-        }
-        // console.log(formDataToSend)
-        if (mode === 'add') {
-            axios.post('/costmgt/additives/', formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('Additives added successfully!', response.data);
-                navigate(`/additives`);
-            })
-            .catch(error => {
-                console.error('There was an error adding the additive!', error);
-            });
-        } else if (mode === 'update') {
-            axios.put(`/costmgt/additives/${id}/`, formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(response => {
-                console.log('Additives updated successfully!', response.data);
-                navigate(`/additives`);
-            })
-            .catch(error => {
-                console.error('There was an error updating the Additive!', error);
-            });
-        }
-    };
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setIsDropdownOpen(true);
+  };
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                
-                <div>
-                    <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">Name</label>
-                    <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div >
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
-                    <input
-                        id="date"
-                        name="date"
-                        type="date"
-                        value={formData.date}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="crfPrice" className="block text-sm font-medium text-gray-700">CFR Price/KG in USD</label>
-                    <input
-                        id="crfPrice"
-                        name="crfPrice"
-                        type="number"
-                        value={formData.crfPrice}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="addCost" className="block text-sm font-medium text-gray-700">Add Cost</label>
-                    <input
-                        id="addCost"
-                        name="addCost"
-                        type="number"
-                        value={formData.addCost}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="costPriceInLiter" className="block text-sm font-medium text-gray-700">Total cost EX DK in Kgs</label>
-                    <input
-                        id="costPriceInLiter"
-                        name="costPriceInLiter"
-                        type="number"
-                        value={formData.costPriceInLiter}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="density" className="block text-sm font-medium text-gray-700">Density @ 15 Degree Celsius</label>
-                    <input
-                        id="density"
-                        name="density"
-                        type="number"
-                        value={formData.density}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="totalCost" className="block text-sm font-medium text-gray-700">Cost Price in Liters</label>
-                    <input
-                        id="totalCost"
-                        name="totalCost"
-                        type="number"
-                        value={formData.totalCost}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                    <input
-                        id="remarks"
-                        name="remarks"
-                        type="text"
-                        value={formData.remarks}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                </div>
-                
-            </div>
+  const handleSelectCategory = (category) => {
+    setSelectedCategory(category);
+    setFormData({ ...formData, category: category.id });
+    setSearchTerm(category.name);
+    setIsDropdownOpen(false);
+  };
 
-            <div className="grid grid-cols-3 gap-4 mb-4">
-                <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
-                    Submit
+  const handleClearCategory = () => {
+    setSelectedCategory(null);
+    setFormData({ ...formData, category: '' });
+    setSearchTerm('');
+  };
+
+  const filteredCategories = categories.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.category) {
+      alert('Name and Category are required!');
+      return;
+    }
+
+    const payload = { ...formData };
+
+    if (mode === 'add') {
+      axios
+        .post('/costmgt/additives/', payload)
+        .then((res) => navigate('/additives'))
+        .catch((err) => console.error(err));
+    } else {
+      axios
+        .put(`/costmgt/additives/${id}/`, payload)
+        .then((res) => navigate('/additives'))
+        .catch((err) => console.error(err));
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Name</label>
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        {/* Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Date</label>
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        {/* Category Dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <div className="relative" ref={dropdownRef}>
+            <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+              <input
+                type="text"
+                placeholder="Search category..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                onClick={() => setIsDropdownOpen(true)}
+                className="p-2 w-full outline-none"
+              />
+              {selectedCategory && (
+                <button
+                  type="button"
+                  onClick={handleClearCategory}
+                  className="px-2 text-gray-500 hover:text-gray-700"
+                >
+                  ✖
                 </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="px-2 text-gray-500 hover:text-gray-700"
+              >
+                {isDropdownOpen ? '▲' : '▼'}
+              </button>
             </div>
-        </form>
-    );
+
+            {isDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
+                {filteredCategories.length > 0 ? (
+                  filteredCategories.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className={`p-2 cursor-pointer ${
+                        selectedCategory?.id === cat.id ? 'bg-blue-100' : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => handleSelectCategory(cat)}
+                    >
+                      {cat.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-2 text-gray-500">No matches found</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Remaining fields */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">CFR Price/KG</label>
+          <input
+            name="crfPrice"
+            type="number"
+            value={formData.crfPrice}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Add Cost</label>
+          <input
+            name="addCost"
+            type="number"
+            value={formData.addCost}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Total Cost EX DK</label>
+          <input
+            name="costPriceInLiter"
+            type="number"
+            value={formData.costPriceInLiter}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Density</label>
+          <input
+            name="density"
+            type="number"
+            value={formData.density}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Cost Price in Liters</label>
+          <input
+            name="totalCost"
+            type="number"
+            value={formData.totalCost}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Remarks</label>
+          <input
+            name="remarks"
+            type="text"
+            value={formData.remarks}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
+          Submit
+        </button>
+      </div>
+    </form>
+  );
 };
 
 export default AdditiveForm;

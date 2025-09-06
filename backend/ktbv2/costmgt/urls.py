@@ -4,6 +4,9 @@ from .views import *
 
 router = DefaultRouter()
 # router.register(r'trades', TradeViewSet)
+router.register(r'categories', CategoryViewSet)
+router.register(r'raw-categories', RawCategoryViewSet)
+router.register(r'additive-categories', AdditiveCategoryViewSet)
 router.register(r'packings', PackingViewSet)
 router.register(r'raw-materials', RawMaterialViewSet)
 router.register(r'additives', AdditiveViewSet)

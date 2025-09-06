@@ -118,8 +118,11 @@ const MenuBar = () => {
           <div>
             <h3 className="text-lg font-semibold mb-2">Cost Management</h3>
             
+            <Link to="/categories" className="block px-4 py-2 hover:bg-gray-700">Packing Category</Link>
             <Link to="/packings" className="block px-4 py-2 hover:bg-gray-700">Packings</Link>
+            <Link to="/raw-categories" className="block px-4 py-2 hover:bg-gray-700">Raw Category</Link>
             <Link to="/raw-materials" className="block px-4 py-2 hover:bg-gray-700">Raw Materials</Link>
+            <Link to="/additive-categories" className="block px-4 py-2 hover:bg-gray-700">Additives Category</Link>
             <Link to="/additives" className="block px-4 py-2 hover:bg-gray-700">Additives</Link>
             <Link to="/consumption-formula" className="block px-4 py-2 hover:bg-gray-700">Consumption Formulae</Link>
             <Link to="/consumptions" className="block px-4 py-2 hover:bg-gray-700">Consumption</Link>

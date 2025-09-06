@@ -30,7 +30,7 @@ const MultiUserSelector = ({ selectedUsers = [], onChange }) => {
   // Prepare options for react-select
   const options = users.map(user => ({
     value: user.id,
-    label: `${user.username} (${user.email})`,
+    label: `${user.name} (${user.email})`,
   }));
 
   // selectedUsers is array of IDs, so find the matching options:

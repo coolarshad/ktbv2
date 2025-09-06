@@ -3,38 +3,42 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 # Create your models here.
 
-# class Packing(models.Model):
-#     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
-#     name=models.CharField(max_length=50)
-#     per_each=models.FloatField()
-#     category=models.CharField(max_length=50,blank=True,null=True)
-#     remarks=models.CharField(max_length=255,null=True,blank=True)
-#     approved=models.BooleanField(null=True,default=False)
-    
-#     class Meta:
-#         verbose_name = _("Packing")
-#         verbose_name_plural = _("Packings")
-        
-#     def __str__(self):
-#         return self.name
-    
-#     def get_absolute_url(self):
-#         return reverse("Packing_detail", kwargs={"pk": self.pk})
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
+
+    class Meta:
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
+
+    def __str__(self):
+        full_path = [self.name]
+        k = self.parent
+        while k is not None:
+            full_path.append(k.name)
+            k = k.parent
+        return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
+
 
 class Packing(models.Model):
-    date = models.DateField(_("date"), auto_now=False, auto_now_add=False,null=True,blank=True)
+    date = models.DateField(_("date"), null=True, blank=True)
     name = models.CharField(max_length=50)
-    per_each = models.FloatField(null=True,blank=True)
-    
-    # Self-referential ForeignKey to establish parent-child hierarchy
-    parent = models.ForeignKey(
-        'self',  # References the same model
+    per_each = models.FloatField(null=True, blank=True)
+    category = models.ForeignKey(
+        Category,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='subcategories'
+        related_name="packings"
     )
-    packing_type=models.CharField(max_length=255,blank=True,null=True)
+    packing_type = models.CharField(max_length=255, blank=True, null=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
 
@@ -43,28 +47,31 @@ class Packing(models.Model):
         verbose_name_plural = _("Packings")
 
     def __str__(self):
-        return f"{self.parent.name} -> {self.name}" if self.parent else self.name
+        return f"{self.category} -> {self.name}" if self.category else self.name
 
-# class RawMaterial(models.Model):
-#     name=models.CharField(max_length=50)
-#     cost_per_liter=models.FloatField()
-#     buy_price_pmt=models.FloatField()
-#     add_cost=models.FloatField()
-#     total=models.FloatField()
-#     ml_to_kl=models.FloatField()
-#     density=models.FloatField()
-#     remarks=models.CharField(max_length=255,null=True,blank=True)
-#     approved=models.BooleanField(null=True,default=False)
+
+class RawCategory(models.Model):
+    name = models.CharField(max_length=100)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
+
+    class Meta:
+        verbose_name = _("RawCategory")
+        verbose_name_plural = _("RawCategories")
+
+    def __str__(self):
+        full_path = [self.name]
+        k = self.parent
+        while k is not None:
+            full_path.append(k.name)
+            k = k.parent
+        return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
     
-#     class Meta:
-#         verbose_name = _("RawMaterial")
-#         verbose_name_plural = _("RawMaterials")
-        
-#     def __str__(self):
-#         return self.name
-    
-#     def get_absolute_url(self):
-#         return reverse("RawMaterial_detail", kwargs={"pk": self.pk})
 class RawMaterial(models.Model):
     name = models.CharField(max_length=50)
     cost_per_liter = models.FloatField(null=True,blank=True)
@@ -73,12 +80,12 @@ class RawMaterial(models.Model):
     total = models.FloatField(null=True,blank=True)
     ml_to_kl = models.FloatField(null=True,blank=True)
     density = models.FloatField(null=True,blank=True)
-    parent = models.ForeignKey(
-        'self',
+    category = models.ForeignKey(
+        RawCategory,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='subcategories'  # You could use 'subcategories' or another name
+        related_name="rawmaterials"
     )
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
@@ -94,6 +101,28 @@ class RawMaterial(models.Model):
         return reverse("RawMaterial_detail", kwargs={"pk": self.pk})
 
 
+class AdditiveCategory(models.Model):
+    name = models.CharField(max_length=100)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
+
+    class Meta:
+        verbose_name = _("AdditiveCategory")
+        verbose_name_plural = _("AdditiveCategories")
+
+    def __str__(self):
+        full_path = [self.name]
+        k = self.parent
+        while k is not None:
+            full_path.append(k.name)
+            k = k.parent
+        return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
+    
 class Additive(models.Model):
     name=models.CharField(max_length=50)
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
@@ -104,6 +133,15 @@ class Additive(models.Model):
     totalCost=models.FloatField()
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+
+
+    category = models.ForeignKey(
+        AdditiveCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="additives"
+    )
 
     class Meta:
         verbose_name = _("Additive")
@@ -170,6 +208,7 @@ class ConsumptionFormulaBaseOil(models.Model):
 class Consumption(models.Model):
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False,null=True,blank=True)
     name=models.CharField(max_length=50)
+    alias=models.CharField(max_length=50)
     grade=models.CharField(max_length=50)
     sae=models.CharField(max_length=50)
     net_blending_qty=models.FloatField()

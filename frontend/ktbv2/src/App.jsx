@@ -54,6 +54,12 @@ import Users from './views/Users';
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CategoryForm from './views/CategoryForm';
+import Category from './views/Category';
+import RawCategoryForm from './views/RawCategoryForm';
+import RawCategory from './views/RawCategory';
+import AdditivesCategory from './views/AdditivesCategory';
+import AdditivesCategoryForm from './views/AdditivesCategoryForm';
 
 function App() {
  
@@ -95,14 +101,27 @@ function App() {
           <Route path="/sales-product-trace" element={<SalesProductTrace />} />
           <Route path="/purchase-product-trace" element={<PurchaseProductTrace />} />
           <Route path='/product-ref' element={<ProductRef />} />
+
+          <Route path="/categories" element={<Category />} />
+          <Route path="/category-form" element={<CategoryForm />} />
+          <Route path="/category-form/:id" element={<CategoryForm mode="update"/>} />
+
           <Route path="/packings" element={<Packing />} />
           <Route path="/packing-form" element={<PackingForm />} />
           <Route path="/packing-form/:id" element={<PackingForm mode="update" />} />
+          
+          <Route path="/raw-categories" element={<RawCategory />} />
+          <Route path="/raw-category-form" element={<RawCategoryForm />} />
+          <Route path="/raw-category-form/:id" element={<RawCategoryForm mode="update"/>} />
 
           <Route path="/raw-materials" element={<RawMaterial />} />
           <Route path="/raw-material-form" element={<RawMaterialForm />} />
           <Route path="/raw-material-form/:id" element={<RawMaterialForm mode="update" />} />
 
+          <Route path="/additive-categories" element={<AdditivesCategory />} />
+          <Route path="/additive-category-form" element={<AdditivesCategoryForm />} />
+          <Route path="/additive-category-form/:id" element={<AdditivesCategoryForm mode="update"/>} />
+          
           <Route path="/additives" element={<Additive />} />
           <Route path="/additive-form" element={<AdditiveForm />} />
           <Route path="/additive-form/:id" element={<AdditiveForm mode="update" />} />
