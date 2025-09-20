@@ -303,3 +303,15 @@ class FinalProduct(models.Model):
     def get_absolute_url(self):
         return reverse("FinalProduct_detail", kwargs={"pk": self.pk})
 
+class PackingType(models.Model):
+    name=models.CharField(_("name"), max_length=50)
+    
+    class Meta:
+        verbose_name = _("PackingType")
+        verbose_name_plural = _("PackingTypes")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("PackingType_detail", kwargs={"pk": self.pk})

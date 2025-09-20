@@ -118,10 +118,34 @@ class ConsumptionFormulaAdditiveSerializer(serializers.ModelSerializer):
         model = ConsumptionFormulaAdditive
         fields = '__all__'
 
+    def get_additive_details(self, obj):
+        try:
+            instance = Additive.objects.get(id=obj.name)
+            return AdditiveSerializer(instance).data
+        except Additive.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['additive'] = self.get_additive_details(instance)
+        return ret
+
 class ConsumptionFormulaBaseOilSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConsumptionFormulaBaseOil
         fields = '__all__'
+
+    def get_raw_details(self, obj):
+        try:
+            instance = RawMaterial.objects.get(id=obj.name)
+            return RawMaterialSerializer(instance).data
+        except RawMaterial.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['raw'] = self.get_raw_details(instance)
+        return ret
 
 class ConsumptionFormulaSerializer(serializers.ModelSerializer):
     consumption_additives = ConsumptionFormulaAdditiveSerializer(many=True, read_only=True)
@@ -135,10 +159,35 @@ class ConsumptionAdditiveSerializer(serializers.ModelSerializer):
         model = ConsumptionAdditive
         fields = '__all__'
 
+    def get_additive_details(self, obj):
+        try:
+            instance = Additive.objects.get(id=obj.name)
+            return AdditiveSerializer(instance).data
+        except Additive.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['additive'] = self.get_additive_details(instance)
+        return ret
+
 class ConsumptionBaseOilSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConsumptionBaseOil
         fields = '__all__'
+
+    def get_raw_details(self, obj):
+        try:
+            instance = RawMaterial.objects.get(id=obj.name)
+            return RawMaterialSerializer(instance).data
+        except RawMaterial.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['raw'] = self.get_raw_details(instance)
+        return ret
+
 
 class ConsumptionSerializer(serializers.ModelSerializer):
     consumption_additives = ConsumptionAdditiveSerializer(many=True, read_only=True)
@@ -150,4 +199,10 @@ class ConsumptionSerializer(serializers.ModelSerializer):
 class FinalProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = FinalProduct
+        fields = '__all__'
+
+
+class PackingTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PackingType
         fields = '__all__'

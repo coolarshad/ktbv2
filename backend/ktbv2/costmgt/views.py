@@ -270,6 +270,7 @@ class ConsumptionView(APIView):
         c_data = {
             'date': data.get('date'),
             'name': data.get('name'),
+            'alias': data.get('alias'),
             'grade': data.get('grade'),
             'sae': data.get('sae'),
             'net_blending_qty': data.get('net_blending_qty'),
@@ -341,6 +342,7 @@ class ConsumptionView(APIView):
         c_data = {
             'date': data.get('date'),
             'name': data.get('name'),
+            'alias': data.get('alias'),
             'grade': data.get('grade'),
             'sae': data.get('sae'),
             'net_blending_qty': data.get('net_blending_qty'),
@@ -431,7 +433,6 @@ class FinalProductViewSet(viewsets.ModelViewSet):
 class PackingApprovalView(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
-        print("==========",pk)
         if not pk:
             return Response({'detail': 'Packing ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -441,7 +442,6 @@ class PackingApprovalView(APIView):
 
                 obj.approved = True
                 obj.save()
-                print("==========",pk,'approved')
                 serializer = PackingSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Packing.DoesNotExist:
@@ -512,3 +512,8 @@ class ConsumptionFormulaApprovalView(APIView):
             return Response({'detail': 'Consumption Formula not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class PackingTypeViewSet(viewsets.ModelViewSet):
+    queryset = PackingType.objects.all()
+    serializer_class = PackingTypeSerializer

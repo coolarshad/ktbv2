@@ -11,6 +11,7 @@ router.register(r'packings', PackingViewSet)
 router.register(r'raw-materials', RawMaterialViewSet)
 router.register(r'additives', AdditiveViewSet)
 router.register(r'final-products', FinalProductViewSet)
+router.register(r'packing-type', PackingTypeViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
