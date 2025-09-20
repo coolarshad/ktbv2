@@ -92,7 +92,7 @@ const getAllSubcategoryNames = (category) => {
   return (
     <>
       <div className="w-full h-full rounded bg-slate-200 p-3">
-        <p className="text-xl">Categories</p>
+        <p className="text-xl">Packing Categories</p>
         <button
           onClick={handleAddCategoryClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
@@ -114,6 +114,7 @@ const getAllSubcategoryNames = (category) => {
               <tr>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Name</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Parent</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Children</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Actions</th>
               </tr>
             </thead>
@@ -173,7 +174,7 @@ const getAllSubcategoryNames = (category) => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium">Parent</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedCategory.parent || "Root"}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedCategory.parent_name || "Root"}</td>
                   </tr>
                   {selectedCategory.children && selectedCategory.children.length > 0 && (
                     <tr className="border-b border-gray-200">

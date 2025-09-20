@@ -12,6 +12,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     const [formData, setFormData] = useState({
         date: '',
         name: '',
+        alias: '',
         grade: '',
         sae: '',
         net_blending_qty: '',
@@ -55,6 +56,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         // Ensure all fields have default values
                         date: data.date || '',
                         name: data.name || '',
+                        alias: data.alias || '',
                         grade: data.grade || '',
                         sae: data.sae || '',
                         net_blending_qty: data.net_blending_qty || '',
@@ -322,6 +324,18 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 {/* Name Input */}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                    <input
+                        id="alias"
+                        name="alias"
+                        type="text"
+                        value={formData.alias || ''} // Ensure never undefined
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Formula</label>
                     <select
                         id="name"
                         name="name"

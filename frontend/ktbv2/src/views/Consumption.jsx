@@ -173,7 +173,7 @@ const Consumption = () => {
                   {selectedConsumption.consumptionAdditive.map((item, index) =>
                     item.name && ( // Check if both fields exist
                       <tr key={index}>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.additive?.name}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_percent}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_litre}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
@@ -198,7 +198,7 @@ const Consumption = () => {
                   {selectedConsumption.consumptionBaseOil.map((item, index) =>
                     item.name && ( // Check if both fields exist
                       <tr key={index}>
-                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.name}</td>
+                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.raw?.name}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_percent}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_litre}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>

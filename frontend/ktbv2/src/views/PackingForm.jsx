@@ -9,6 +9,7 @@ const PackingForm = ({ mode = "add" }) => {
   const dropdownRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
+  const [packingTypes, setPackingTypes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -23,9 +24,6 @@ const PackingForm = ({ mode = "add" }) => {
     remarks: "",
   });
 
-  // Predefined packing types
-  const packingTypes = ["Box", "Bag", "Crate", "Container", "Drum", "Other"];
-
   // Fetch categories for dropdown
   useEffect(() => {
     axios
@@ -34,6 +32,16 @@ const PackingForm = ({ mode = "add" }) => {
         setCategories(response.data);
       })
       .catch((error) => console.error("Error fetching categories:", error));
+  }, []);
+
+  // Fetch categories for dropdown
+  useEffect(() => {
+    axios
+      .get("/costmgt/packing-type/")
+      .then((response) => {
+        setPackingTypes(response.data);
+      })
+      .catch((error) => console.error("Error fetching packing type list:", error));
   }, []);
 
   // Fetch existing data in update mode
@@ -51,15 +59,21 @@ const PackingForm = ({ mode = "add" }) => {
             packing_type: data.packing_type || "",
             remarks: data.remarks || "",
           });
-
-          if (data.category) {
-            const cat = categories.find((c) => c.id === data.category);
-            if (cat) setSelectedCategory(cat);
-          }
         })
         .catch((error) => console.error("Error fetching packing data:", error));
     }
   }, [mode, id, categories]);
+
+
+  useEffect(() => {
+  if (formData.category && categories.length > 0) {
+    const cat = categories.find((c) => c.id === formData.category);
+    if (cat) {
+      setSelectedCategory(cat);
+      setSearchTerm(cat.name); // also show category name in input
+    }
+  }
+}, [formData.category, categories]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -264,8 +278,8 @@ const PackingForm = ({ mode = "add" }) => {
           >
             <option value="">Select packing type</option>
             {packingTypes.map((type, index) => (
-              <option key={index} value={type}>
-                {type}
+              <option key={index} value={type.id}>
+                {type.name}
               </option>
             ))}
           </select>

@@ -60,6 +60,7 @@ import RawCategoryForm from './views/RawCategoryForm';
 import RawCategory from './views/RawCategory';
 import AdditivesCategory from './views/AdditivesCategory';
 import AdditivesCategoryForm from './views/AdditivesCategoryForm';
+import PackingTypeList from './views/PackingTypeList';
 
 function App() {
  
@@ -105,6 +106,8 @@ function App() {
           <Route path="/categories" element={<Category />} />
           <Route path="/category-form" element={<CategoryForm />} />
           <Route path="/category-form/:id" element={<CategoryForm mode="update"/>} />
+
+          <Route path="/packingtype" element={<PackingTypeList />} />
 
           <Route path="/packings" element={<Packing />} />
           <Route path="/packing-form" element={<PackingForm />} />

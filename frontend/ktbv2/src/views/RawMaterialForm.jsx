@@ -85,6 +85,27 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     };
   }, []);
 
+
+  // Auto-calculations
+  useEffect(() => {
+    const buy = parseFloat(formData.buy_price_pmt) || 0;
+    const add = parseFloat(formData.add_cost) || 0;
+    const density = parseFloat(formData.density) || 0;
+
+    // Formula
+    const total = buy + add;
+    const mlToKl = total * density;
+    const costPerLiter = parseFloat(mlToKl) / 1000;
+
+    setFormData((prev) => ({
+      ...prev,
+      total: total ? total.toFixed(4) : "",
+      ml_to_kl: mlToKl ? mlToKl.toFixed(4) : "",
+      cost_per_liter: costPerLiter ? costPerLiter.toFixed(4) : "",
+    }));
+  }, [formData.buy_price_pmt, formData.add_cost, formData.density]);
+
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -222,16 +243,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
         </div>
 
         {/* Other fields */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Cost Per Litre</label>
-          <input
-            name="cost_per_liter"
-            type="text"
-            value={formData.cost_per_liter}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-        </div>
+       
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Buy Price</label>
@@ -266,6 +278,17 @@ const RawMaterialForm = ({ mode = 'add' }) => {
           />
         </div>
 
+         <div>
+          <label className="block text-sm font-medium text-gray-700">Density</label>
+          <input
+            name="density"
+            type="text"
+            value={formData.density}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Ml to KG</label>
           <input
@@ -276,17 +299,18 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
           />
         </div>
-
+          
         <div>
-          <label className="block text-sm font-medium text-gray-700">Density</label>
+          <label className="block text-sm font-medium text-gray-700">Cost Per Litre</label>
           <input
-            name="density"
+            name="cost_per_liter"
             type="text"
-            value={formData.density}
+            value={formData.cost_per_liter}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
         </div>
+       
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Remarks</label>

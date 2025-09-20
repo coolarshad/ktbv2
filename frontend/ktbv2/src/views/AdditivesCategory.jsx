@@ -114,6 +114,7 @@ const getAllSubcategoryNames = (category) => {
               <tr>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Name</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Parent</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Children</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Actions</th>
               </tr>
             </thead>

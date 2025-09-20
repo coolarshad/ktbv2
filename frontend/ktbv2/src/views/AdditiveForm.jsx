@@ -99,6 +99,26 @@ const AdditiveForm = ({ mode = 'add' }) => {
     setSearchTerm('');
   };
 
+  // Auto-calculations
+  useEffect(() => {
+    const buy = parseFloat(formData.crfPrice) || 0;
+    const add = parseFloat(formData.addCost) || 0;
+    const density = parseFloat(formData.density) || 0;
+
+    // Formula
+    const total = buy + add;
+    const mlToKl = total * density;
+    const costPerLiter = total * density;
+
+    setFormData((prev) => ({
+      ...prev,
+      totalCost: total ? total.toFixed(4) : "",
+      mlToKl: mlToKl ? mlToKl.toFixed(4) : "",
+      costPriceInLiter: costPerLiter ? costPerLiter.toFixed(4) : "",
+    }));
+  }, [formData.crfPrice, formData.addCost, formData.density]);
+
+
   const filteredCategories = categories.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -232,7 +252,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
           <input
             name="costPriceInLiter"
             type="number"
-            value={formData.costPriceInLiter}
+            value={formData.totalCost}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
@@ -254,7 +274,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
           <input
             name="totalCost"
             type="number"
-            value={formData.totalCost}
+            value={formData.costPriceInLiter}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />

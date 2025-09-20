@@ -35,9 +35,9 @@ const AdditiveTable = ({ data , onDelete, onView }) => { // Default value for da
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.crfPrice}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.addCost}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.costPriceInLiter}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.totalCost.toFixed(4)}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.density}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.totalCost}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.costPriceInLiter.toFixed(4)}</td>
           
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />

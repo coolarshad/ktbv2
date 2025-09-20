@@ -143,7 +143,7 @@ const Additive = () => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total cost EX DK in Kgs</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.costPriceInLiter}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.totalCost}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Density @ 15 Degree Celsius</td>
@@ -151,7 +151,7 @@ const Additive = () => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost Price in Liters</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.totalCost}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.costPriceInLiter}</td>
                   </tr>
                  
                   <tr className="border-b border-gray-200">
