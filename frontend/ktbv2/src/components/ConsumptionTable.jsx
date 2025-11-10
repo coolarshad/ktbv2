@@ -34,7 +34,7 @@ const ConsumptionTable = ({ data , onDelete, onView }) => { // Default value for
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.alias}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.grade}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sae}</td>

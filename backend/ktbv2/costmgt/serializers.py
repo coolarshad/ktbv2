@@ -196,6 +196,18 @@ class ConsumptionSerializer(serializers.ModelSerializer):
         model = Consumption
         fields = '__all__'
 
+    def get_formula(self, obj):
+        try:
+            instance = ConsumptionFormula.objects.get(id=int(obj.name))
+            return ConsumptionFormulaSerializer(instance).data
+        except ConsumptionFormula.DoesNotExist:
+            return None
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['formula'] = self.get_formula(instance)
+        return ret
+
 class FinalProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = FinalProduct
