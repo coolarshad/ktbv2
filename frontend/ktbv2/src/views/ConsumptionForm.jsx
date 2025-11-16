@@ -473,6 +473,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         value={formData.net_blending_qty || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        step={0.0001}
                     />
                 </div>
 
@@ -486,6 +487,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         value={formData.gross_vol_crosscheck || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        step={0.0001}
                     />
                 </div>
 
@@ -512,6 +514,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         value={formData.total_value || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        step={0.01}
                     />
                 </div>
 
@@ -525,6 +528,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         value={formData.per_litre_cost || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        step={0.01}
                     />
                 </div>
 
@@ -575,6 +579,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 readOnly={true}
+                                step={0.01}
                             />
                         </div>
 
@@ -588,6 +593,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.qty_in_percent || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.0001}
                             />
                         </div>
 
@@ -601,6 +607,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.qty_in_litre || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.0001}
                             />
                         </div>
 
@@ -614,6 +621,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.value || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.01}
                             />
                         </div>
 
@@ -676,6 +684,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 readOnly={true}
+                                step={0.01}
                             />
                         </div>
 
@@ -689,6 +698,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.qty_in_percent || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.0001}
                             />
                         </div>
 
@@ -702,6 +712,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.qty_in_litre || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.0001}
                             />
                         </div>
 
@@ -715,6 +726,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.value || ''} // Ensure never undefined
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.01}
                             />
                         </div>
 

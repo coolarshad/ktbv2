@@ -226,6 +226,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 value={item.qty_in_percent}
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.0001}
                             />
                         </div>
 
@@ -291,6 +292,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 value={item.qty_in_percent}
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
+                                step={0.0001}
                             />
                         </div>
 

@@ -233,6 +233,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             value={formData.crfPrice}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
+            step={0.01}
           />
         </div>
 
@@ -244,6 +245,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             value={formData.addCost}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
+            step={0.01}
           />
         </div>
 
@@ -255,6 +257,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             value={formData.totalCost}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
+            step={0.01}
           />
         </div>
 
@@ -266,6 +269,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             value={formData.density}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
+            step={0.0001}
           />
         </div>
 
@@ -277,6 +281,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             value={formData.costPriceInLiter}
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
+            step={0.01}
           />
         </div>
 
