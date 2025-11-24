@@ -218,3 +218,37 @@ class PackingTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PackingType
         fields = '__all__'
+
+
+class ProductFormulaItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductFormulaItem
+        fields = '__all__'
+
+
+class ProductFormulaSerializer(serializers.ModelSerializer):
+    formula_item = ProductFormulaItemSerializer(many=True, read_only=True)
+    class Meta:
+        model = ProductFormula
+        fields = '__all__'
+
+    def get_consumption_details(self, obj):
+        try:
+            instance = Consumption.objects.get(id=obj.consumption_name)
+            return ConsumptionSerializer(instance).data
+        except Consumption.DoesNotExist:
+            return None
+    
+    def get_packing_details(self, obj):
+        try:
+            instance = Packing.objects.get(id=obj.packing_type)
+            return PackingSerializer(instance).data
+        except Packing.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['consumption'] = self.get_consumption_details(instance)
+        ret['packing'] = self.get_packing_details(instance)
+        return ret
+

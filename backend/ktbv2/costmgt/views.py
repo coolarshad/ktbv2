@@ -517,3 +517,144 @@ class ConsumptionFormulaApprovalView(APIView):
 class PackingTypeViewSet(viewsets.ModelViewSet):
     queryset = PackingType.objects.all()
     serializer_class = PackingTypeSerializer
+
+
+class ProductFormulaView(APIView):
+    
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if pk:
+            try:
+                formula = ProductFormula.objects.get(id=pk)
+            except ProductFormula.DoesNotExist:
+                return Response(
+                    {'detail': 'ProductFormula not found.'},
+                    status=status.HTTP_404_NOT_FOUND
+                    )
+
+            formula_serializer = ProductFormulaSerializer(formula)
+
+            items = ProductFormulaItem.objects.filter(product_formula=formula)
+
+            item_serializer = ProductFormulaItemSerializer(items, many=True)
+
+    
+            response_data = formula_serializer.data
+            response_data['items'] = item_serializer.data
+
+            return Response(response_data)
+
+   
+        queryset = ProductFormula.objects.all()
+        filterset = ProductFormulaFilter(request.GET, queryset=queryset)
+
+        if not filterset.is_valid():
+            return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ProductFormulaSerializer(filterset.qs, many=True)
+        return Response(serializer.data)
+
+        
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        # Prepare trade data separately
+        c_data = {
+            'formula_name': data.get('formula_name'),
+            'consumption_name': data.get('consumption_name'),
+            'packing_type': data.get('packing_type'),
+            'remarks': data.get('remarks'),
+        }
+        c_items_data = []
+      
+       
+        l = 0
+        while f'attributes[{l}].label' in data:
+            item_data = {
+                'label': data.get(f'attributes[{l}].label'),
+                'value': data.get(f'attributes[{l}].value'),
+            }
+            c_items_data.append(item_data)
+            l += 1
+
+        with transaction.atomic():
+            p_serializer = ProductFormulaSerializer(data=c_data)
+            if p_serializer.is_valid():
+                p_formula = p_serializer.save()
+            else:
+                return Response(p_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            if c_items_data:
+                try: 
+                    items = [ProductFormulaItem(**item, product_formula=p_formula) for item in c_items_data]
+                    ProductFormulaItem.objects.bulk_create(items)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+        return Response(p_serializer.data, status=status.HTTP_201_CREATED)
+    
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        data = request.data
+        
+        try:
+            formula = ProductFormula.objects.get(pk=pk)
+        except ProductFormula.DoesNotExist:
+            return Response({'error': 'Product formula not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        c_data = {
+            'formula_name': data.get('formula_name'),
+            'consumption_name': data.get('consumption_name'),
+            'packing_type': data.get('packing_type'),
+            'remarks': data.get('remarks'),
+        }
+        c_items_data = []
+      
+       
+        l = 0
+        while f'attributes[{l}].label' in data:
+            item_data = {
+                'label': data.get(f'attributes[{l}].label'),
+                'value': data.get(f'attributes[{l}].value'),
+            }
+            c_items_data.append(item_data)
+            l += 1
+       
+        with transaction.atomic():
+            formula_serializer = ProductFormulaSerializer(formula, data=c_data, partial=True)
+            if formula_serializer.is_valid():
+                formula = formula_serializer.save()
+            else:
+                return Response(formula_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            
+            if c_items_data:
+                # Clear existing trade products and add new ones
+                ProductFormulaItem.objects.filter(product_formula=formula).delete()
+               
+                try: 
+                    items = [ProductFormulaItem(**item, product_formula=formula) for item in c_items_data]
+                    ProductFormulaItem.objects.bulk_create(items)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+
+        return Response(formula_serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+
+        try:
+            formula = ProductFormula.objects.get(pk=pk)
+        except ProductFormula.DoesNotExist:
+            return Response({'error': 'Product Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        with transaction.atomic():
+            # Delete related trade products and extra costs
+            ProductFormulaItem.objects.filter(product_formula=formula).delete()
+            formula.delete()
+
+        return Response({'message': 'Product Formula deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+class ProductFormulaItemViewSet(viewsets.ModelViewSet):
+    queryset = ProductFormulaItem.objects.all()
+    serializer_class = ProductFormulaItemSerializer

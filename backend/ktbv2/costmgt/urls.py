@@ -18,8 +18,12 @@ urlpatterns = [
     path('consumption-formula/', ConsumptionFormulaView.as_view(), name='consumption-formula'),
     path('consumption-formula/<int:pk>/', ConsumptionFormulaView.as_view(), name='consumption-formula-detail'),
 
+    path('product-formula/', ProductFormulaView.as_view(), name='product-formula'),
+    path('product-formula/<int:pk>/', ProductFormulaView.as_view(), name='product-formula-detail'),
+
     path('consumption/', ConsumptionView.as_view(), name='consumption'),
     path('consumption/<int:pk>/', ConsumptionView.as_view(), name='consumption-detail'),
+
 
     path('packings-approve/<int:pk>/', PackingApprovalView.as_view(), name='packings-approve'),
     path('raw-materials-approve/<int:pk>/', RawMaterialApprovalView.as_view(), name='raw-materials-approve'),

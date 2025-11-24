@@ -315,3 +315,24 @@ class PackingType(models.Model):
 
     def get_absolute_url(self):
         return reverse("PackingType_detail", kwargs={"pk": self.pk})
+    
+
+class ProductFormula(models.Model):
+    formula_name=models.CharField(max_length=100)
+    consumption_name=models.CharField(max_length=100)
+    packing_type=models.CharField(max_length=100,blank=True,null=True)
+    remarks=models.CharField(max_length=100,null=True,blank=True)
+
+    class Meta:
+        verbose_name = _("ProductFormula")
+        verbose_name_plural = _("ProductFormulas")
+
+    def __str__(self):
+        return self.formula_name
+    
+class ProductFormulaItem(models.Model):
+    product_formula=models.ForeignKey('ProductFormula',on_delete=models.CASCADE,related_name='product_formula_items')
+    label=models.CharField(max_length=100)
+    value=models.FloatField()
+
+

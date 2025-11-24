@@ -61,6 +61,9 @@ import RawCategory from './views/RawCategory';
 import AdditivesCategory from './views/AdditivesCategory';
 import AdditivesCategoryForm from './views/AdditivesCategoryForm';
 import PackingTypeList from './views/PackingTypeList';
+// import ProductFormula from './views/ProductFormulaForm';
+import ProductFormulaForm from './views/ProductFormulaForm';
+import ProductFormula from './views/ProductFormula';
 
 function App() {
  
@@ -136,6 +139,10 @@ function App() {
           <Route path="/consumptions" element={<Consumption />} />
           <Route path="/consumption-form" element={<ConsumptionForm />} />
           <Route path="/consumption-form/:id" element={<ConsumptionForm mode="update" />} />
+
+          <Route path="/product-formula" element={<ProductFormula />} />
+          <Route path="/product-formula-form" element={<ProductFormulaForm />} />
+          <Route path="/product-formula-form/:id" element={<ProductFormulaForm mode="update" />} />
 
           <Route path="/final-products" element={<FinalProduct />} />
           <Route path="/final-product-form" element={<FinalProductForm />} />
