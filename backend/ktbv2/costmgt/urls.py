@@ -10,8 +10,9 @@ router.register(r'additive-categories', AdditiveCategoryViewSet)
 router.register(r'packings', PackingViewSet)
 router.register(r'raw-materials', RawMaterialViewSet)
 router.register(r'additives', AdditiveViewSet)
-router.register(r'final-products', FinalProductViewSet)
+# router.register(r'final-products', FinalProductViewSet)
 router.register(r'packing-type', PackingTypeViewSet)
+router.register(r'packing-size', PackingSizeViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -23,6 +24,9 @@ urlpatterns = [
 
     path('consumption/', ConsumptionView.as_view(), name='consumption'),
     path('consumption/<int:pk>/', ConsumptionView.as_view(), name='consumption-detail'),
+
+    path('final-product/', FinalProductView.as_view(), name='final-product'),
+    path('final-product/<int:pk>/', FinalProductView.as_view(), name='final-product-detail'),
 
 
     path('packings-approve/<int:pk>/', PackingApprovalView.as_view(), name='packings-approve'),

@@ -16,7 +16,7 @@ const FinalProduct = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('/costmgt/final-products/');
+                const response = await axios.get('/costmgt/final-product/');
                 setProductData(response.data);
             } catch (error) {
                 setError('Failed to fetch final products data');
@@ -36,7 +36,7 @@ const FinalProduct = () => {
         const confirmed = window.confirm('Are you sure you want to delete this final-products?');
         if (confirmed) {
             try {
-                await axios.delete(`/costmgt/final-products/${id}/`);
+                await axios.delete(`/costmgt/final-product/${id}/`);
                 setProductData(productData.filter(data => data.id !== id));
                 alert('Final Products deleted successfully.');
             } catch (error) {
@@ -48,7 +48,7 @@ const FinalProduct = () => {
 
     const handleViewClick = async (id) => {
         try {
-            const response = await axios.get(`/costmgt/final-products/${id}/`);
+            const response = await axios.get(`/costmgt/final-product/${id}/`);
             setSelectedProduct(response.data);
             setIsModalOpen(true);
         } catch (error) {
@@ -85,7 +85,7 @@ const FinalProduct = () => {
                     +
                 </button>
                 <div>
-                    <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-products'} fieldOptions={fieldOptions} />
+                    <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} />
                 </div>
                 <div className=" rounded p-2">
                     <FinalProductTable data={productData} onDelete={handleDelete} onView={handleViewClick} />

@@ -24,7 +24,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class PackingSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
-
+    
     class Meta:
         model = Packing
         fields = [
@@ -208,7 +208,13 @@ class ConsumptionSerializer(serializers.ModelSerializer):
         ret['formula'] = self.get_formula(instance)
         return ret
 
+class FinalProductItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FinalProductItem
+        fields = '__all__'
+
 class FinalProductSerializer(serializers.ModelSerializer):
+    final_product_items = FinalProductItemSerializer(many=True, read_only=True)
     class Meta:
         model = FinalProduct
         fields = '__all__'
@@ -252,3 +258,7 @@ class ProductFormulaSerializer(serializers.ModelSerializer):
         ret['packing'] = self.get_packing_details(instance)
         return ret
 
+class PackingSizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PackingSize
+        fields = '__all__'

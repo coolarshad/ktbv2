@@ -49,3 +49,12 @@ class ProductFormulaFilter(django_filters.FilterSet):
             'consumption_name': ['exact', 'icontains'],
             'packing_type': ['exact', 'icontains']
         }
+class FinalProductFilter(django_filters.FilterSet):
+    # date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')  # Replace `date_field` with the actual field name
+    # date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')    # Replace `date_field` with the actual field name
+
+    class Meta:
+        model = FinalProduct
+        fields = {
+            'name': ['exact', 'icontains'],
+        }

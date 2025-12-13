@@ -277,7 +277,7 @@ class FinalProduct(models.Model):
     qty_in_liters=models.FloatField(null=True,blank=True)
     per_liter_cost=models.FloatField(null=True,blank=True)
     cost_per_case=models.FloatField(null=True,blank=True)
-    dk_cost=models.FloatField(null=True,blank=True)
+    # dk_cost=models.FloatField(null=True,blank=True)
     price_per_bottle=models.CharField(_("price_per_bottle"), max_length=50)
     price_per_label=models.CharField(_("price_per_label"), max_length=50)
     price_per_bottle_cap=models.CharField(_("price_per_bottle_cap"), max_length=50)
@@ -285,13 +285,14 @@ class FinalProduct(models.Model):
     label_per_case=models.FloatField(_("label_per_case"))
     bottle_cap_per_case=models.FloatField(_("bottle_cap_per_case"))
     price_per_carton=models.CharField(_("price_per_carton"), max_length=50)
-    dk_exprice=models.FloatField(null=True,blank=True)
-    ks_cost=models.FloatField(null=True,blank=True)
-    total_factory_price=models.FloatField(null=True,blank=True)
-    freight_logistic=models.FloatField(null=True,blank=True)
+    # dk_exprice=models.FloatField(null=True,blank=True)
+    # ks_cost=models.FloatField(null=True,blank=True)
+    # total_factory_price=models.FloatField(null=True,blank=True)
+    # freight_logistic=models.FloatField(null=True,blank=True)
     total_cif_price=models.FloatField(null=True,blank=True)
     remarks=models.CharField(max_length=50,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    formula=models.CharField(max_length=5)
 
     class Meta:
         verbose_name = _("FinalProduct")
@@ -302,6 +303,11 @@ class FinalProduct(models.Model):
 
     def get_absolute_url(self):
         return reverse("FinalProduct_detail", kwargs={"pk": self.pk})
+    
+class FinalProductItem(models.Model):
+    final_product=models.ForeignKey('FinalProduct',on_delete=models.CASCADE,related_name='final_product_items')
+    label=models.CharField(max_length=100)
+    value=models.FloatField()
 
 class PackingType(models.Model):
     name=models.CharField(_("name"), max_length=50)
@@ -336,3 +342,13 @@ class ProductFormulaItem(models.Model):
     value=models.FloatField()
 
 
+class PackingSize(models.Model):
+    name = models.CharField(max_length=255)
+    bottles_per_pack=models.CharField(max_length=10)
+    litres_per_pack = models.CharField(max_length=10)  # e.g., "KP", "SP", etc.
+   
+    def __str__(self):
+        return self.name
+    
+    def get_absolute_url(self):
+        return reverse("PackingSize_detail", kwargs={"pk": self.pk})

@@ -117,7 +117,7 @@ const MenuBar = () => {
 
           <div>
             <h3 className="text-lg font-semibold mb-2">Cost Management</h3>
-
+            <Link to="/packing-size" className="block px-4 py-2 hover:bg-gray-700">Packing Size</Link>
             <Link to="/packingtype" className="block px-4 py-2 hover:bg-gray-700">Packing Type List</Link>
             <Link to="/categories" className="block px-4 py-2 hover:bg-gray-700">Packing Category</Link>
             <Link to="/packings" className="block px-4 py-2 hover:bg-gray-700">Packings</Link>

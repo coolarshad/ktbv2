@@ -278,7 +278,7 @@ const PackingForm = ({ mode = "add" }) => {
           >
             <option value="">Select packing type</option>
             {packingTypes.map((type, index) => (
-              <option key={index} value={type.id}>
+              <option key={index} value={type.name}>
                 {type.name}
               </option>
             ))}

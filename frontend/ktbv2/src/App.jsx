@@ -64,6 +64,7 @@ import PackingTypeList from './views/PackingTypeList';
 // import ProductFormula from './views/ProductFormulaForm';
 import ProductFormulaForm from './views/ProductFormulaForm';
 import ProductFormula from './views/ProductFormula';
+import PackingSize from './views/PackingSize';
 
 function App() {
  
@@ -160,6 +161,8 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/user-form" element={<UserForm />} />
           <Route path="/user-form/:id" element={<UserForm mode="update" />} />
+
+          <Route path="/packing-size" element={<PackingSize />} />
         </Routes>
         <ToastContainer position="top-right" autoClose={3000} />
       </div>

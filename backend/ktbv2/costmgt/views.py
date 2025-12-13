@@ -425,9 +425,170 @@ class ConsumptionView(APIView):
         return Response({'message': 'Consumption deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
 
-class FinalProductViewSet(viewsets.ModelViewSet):
-    queryset = FinalProduct.objects.all()
-    serializer_class = FinalProductSerializer
+class FinalProductView(APIView):
+    # queryset = FinalProduct.objects.all()
+    # serializer_class = FinalProductSerializer
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('pk')  # URL parameter for trade ID
+        
+        if id:  # If `pk` is provided, retrieve a specific trade
+            try:
+                obj = FinalProduct.objects.get(id=id)
+            except FinalProduct.DoesNotExist:
+                return Response({'detail': 'Final Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = FinalProductSerializer(obj)
+            items = FinalProductItem.objects.filter(final_product=obj)
+
+            items_serializer = FinalProductItemSerializer(items, many=True)
+          
+            response_data = serializer.data
+            # response_data['formula_items'] = items_serializer.data
+
+            return Response(response_data)
+
+        else:  # If `pk` is not provided, list all trades
+            queryset = FinalProduct.objects.all()
+            filterset = FinalProductFilter(request.GET, queryset=queryset)
+
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = FinalProductSerializer(filterset.qs, many=True)
+            return Response(serializer.data)
+    
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        # Prepare trade data separately
+        c_data = {
+            'date': data.get('date'),
+            'name': data.get('name'),
+            'packing_size': data.get('packing_size'),
+            'bottles_per_pack': data.get('bottles_per_pack'),
+            'liters_per_pack': data.get('liters_per_pack'),
+            'total_qty': data.get('total_qty'),
+            'total_qty_unit': data.get('total_qty_unit'),
+            'qty_in_liters': data.get('qty_in_liters'),
+            'per_liter_cost': data.get('per_liter_cost'),
+            'cost_per_case': data.get('cost_per_case'),
+            'price_per_bottle': data.get('price_per_bottle'),
+            'price_per_label': data.get('price_per_label'),
+            'price_per_bottle_cap': data.get('price_per_bottle_cap'),
+            'bottle_per_case': data.get('bottle_per_case'),
+            'label_per_case': data.get('label_per_case'),
+            'bottle_cap_per_case': data.get('bottle_cap_per_case'),
+            'price_per_carton': data.get('price_per_carton'),
+            'total_cif_price': data.get('total_cif_price'),
+            'remarks': data.get('remarks'),
+            'formula': data.get('formula'),
+        }
+        c_items_data = []
+      
+       
+        l = 0
+        while f'final_product_items[{l}].label' in data:
+            item_data = {
+                'label': data.get(f'final_product_items[{l}].label'),
+                'value': data.get(f'final_product_items[{l}].value'),
+            }
+            c_items_data.append(item_data)
+            l += 1
+
+        with transaction.atomic():
+            p_serializer = FinalProductSerializer(data=c_data)
+            if p_serializer.is_valid():
+                p_formula = p_serializer.save()
+            else:
+                return Response(p_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if c_items_data:
+                try: 
+                    items = [FinalProductItem(**item, final_product=p_formula) for item in c_items_data]
+                    FinalProductItem.objects.bulk_create(items)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+        return Response(p_serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        data = request.data
+        
+        try:
+            obj = FinalProduct.objects.get(pk=pk)
+        except FinalProduct.DoesNotExist:
+            return Response({'error': 'FinalProduct Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Prepare trade data separately
+        c_data = {
+            'date': data.get('date'),
+            'name': data.get('name'),
+            'packing_size': data.get('packing_size'),
+            'bottles_per_pack': data.get('bottles_per_pack'),
+            'liters_per_pack': data.get('liters_per_pack'),
+            'total_qty': data.get('total_qty'),
+            'total_qty_unit': data.get('total_qty_unit'),
+            'qty_in_liters': data.get('qty_in_liters'),
+            'per_liter_cost': data.get('per_liter_cost'),
+            'cost_per_case': data.get('cost_per_case'),
+            'price_per_bottle': data.get('price_per_bottle'),
+            'price_per_label': data.get('price_per_label'),
+            'price_per_bottle_cap': data.get('price_per_bottle_cap'),
+            'bottle_per_case': data.get('bottle_per_case'),
+            'label_per_case': data.get('label_per_case'),
+            'bottle_cap_per_case': data.get('bottle_cap_per_case'),
+            'price_per_carton': data.get('price_per_carton'),
+            'total_cif_price': data.get('total_cif_price'),
+            'remarks': data.get('remarks'),
+            'formula': data.get('formula'),
+        }
+        c_items_data = []
+      
+       
+        l = 0
+        while f'final_product_items[{l}].label' in data:
+            item_data = {
+                'label': data.get(f'final_product_items[{l}].label'),
+                'value': data.get(f'final_product_items[{l}].value'),
+            }
+            c_items_data.append(item_data)
+            l += 1
+       
+        with transaction.atomic():
+            c_serializer = FinalProductSerializer(obj, data=c_data, partial=True)
+            if c_serializer.is_valid():
+                product = c_serializer.save()
+            else:
+                return Response(c_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            
+            if c_items_data:
+                # Clear existing trade products and add new ones
+                FinalProductItem.objects.filter(final_product=obj).delete()
+               
+                try:
+                    c_data = [FinalProductItem(**item, final_product=product) for item in c_items_data]
+                    FinalProductItem.objects.bulk_create(c_data)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(c_serializer.data, status=status.HTTP_200_OK)
+    
+    
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+
+        try:
+            obj = FinalProduct.objects.get(pk=pk)
+        except FinalProduct.DoesNotExist:
+            return Response({'error': 'Final Product Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        with transaction.atomic():
+            # Delete related trade products and extra costs
+            FinalProductItem.objects.filter(final_product=obj).delete()
+           
+            obj.delete()
+
+        return Response({'message': 'Final Product Formula deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
 
 class PackingApprovalView(APIView):
@@ -658,3 +819,7 @@ class ProductFormulaView(APIView):
 class ProductFormulaItemViewSet(viewsets.ModelViewSet):
     queryset = ProductFormulaItem.objects.all()
     serializer_class = ProductFormulaItemSerializer
+
+class PackingSizeViewSet(viewsets.ModelViewSet):
+    queryset = PackingSize.objects.all()
+    serializer_class = PackingSizeSerializer
