@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
+import SearchableSelect from '../components/SearchableSelect';
 
 
 const ConsumptionForm = ({ mode = 'add' }) => {
@@ -419,7 +420,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     />
                 </div>
 
-                <div>
+                {/* <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Formula</label>
                     <select
                         id="name"
@@ -435,7 +436,16 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                             </option>
                         ))}
                     </select>
-                </div>
+                </div> */}
+                <SearchableSelect
+                    label="Formula"
+                    options={nameOptions}     // [{id, name}]
+                    value={formData.name}
+                    onChange={(val) =>
+                        setFormData(prev => ({ ...prev, name: val }))
+                    }
+                    placeholder="Select Formula"
+                />
 
                 {/* Grade Input */}
                 <div>
@@ -551,7 +561,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 {formData.consumptionAdditive.map((item, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
                         {/* Additive Name - Spanning 2 Columns */}
-                        <div className="col-span-1 md:col-span-2">
+                        {/* <div className="col-span-1 md:col-span-2">
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
                             <select
                                 name="name"
@@ -566,8 +576,16 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                     </option>
                                 ))}
                             </select>
+                        </div> */}
+                        <div className="col-span-1 md:col-span-2">
+                            <SearchableSelect
+                                label="Additive Name"
+                                options={additiveOptions}     // [{id, name}]
+                                value={item.name || ''}
+                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                placeholder="Select Option"
+                            />
                         </div>
-
                         {/* Rate */}
                         <div className="col-span-1 md:col-span-1">
                             <label htmlFor="rate" className="block text-sm font-medium text-gray-700">Rate</label>
@@ -656,7 +674,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 {formData.consumptionBaseOil.map((item, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
                         {/* Base Oil Name */}
-                        <div className="col-span-1 md:col-span-2">
+                        {/* <div className="col-span-1 md:col-span-2">
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
                             <select
                                 name="name"
@@ -671,6 +689,15 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                     </option>
                                 ))}
                             </select>
+                        </div> */}
+                        <div className="col-span-1 md:col-span-2">
+                            <SearchableSelect
+                                label="Base Oil Name"
+                                options={baseOilOptions}     // [{id, name}]
+                                value={item.name || ''}
+                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
+                                placeholder="Select Option"
+                            />
                         </div>
 
                         {/* Rate */}
