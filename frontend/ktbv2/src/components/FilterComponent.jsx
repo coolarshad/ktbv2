@@ -41,6 +41,7 @@ const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, c
       const params = {
         ...extraParams,
         [`${field}__icontains`]: searchText,
+        // [field]: searchText,
       };
       // console.log(params)
       // Add date fields only if they are provided

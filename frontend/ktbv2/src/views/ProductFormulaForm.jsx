@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
+import Select from 'react-select';
 
 const ProductFormulaForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -46,8 +47,8 @@ const ProductFormulaForm = ({ mode = 'add' }) => {
     };
 
     useEffect(() => {
-        fetchData('/costmgt/consumption', { }, setCOnsumptionOptions); 
-        fetchData('/costmgt/packings', { }, setPackingOptions); 
+        fetchData('/costmgt/consumption', {}, setCOnsumptionOptions);
+        fetchData('/costmgt/packings', {}, setPackingOptions);
     }, []);
 
     const handleChange = (e) => {
@@ -105,8 +106,19 @@ const ProductFormulaForm = ({ mode = 'add' }) => {
             .catch((error) => {
                 console.error(`There was an error ${mode === 'add' ? 'adding' : 'updating'} the Product formula!`, error);
             });
-       
+
     };
+
+
+    const consumptionOptionsMapped = consumptionOptions.map(opt => ({
+        value: opt.id,
+        label: opt.alias
+    }));
+
+    const packingOptionsMapped = packingOptions.map(opt => ({
+        value: opt.id,
+        label: opt.name
+    }));
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 w-full lg:w-2/3 mx-auto">
@@ -124,7 +136,7 @@ const ProductFormulaForm = ({ mode = 'add' }) => {
                     />
                 </div>
 
-                <div className="mb-4">
+                {/* <div className="mb-4">
                     <label className="block mb-1 font-semibold">Consumption Name</label>
                     <select
                         name="consumption_name"
@@ -159,21 +171,48 @@ const ProductFormulaForm = ({ mode = 'add' }) => {
                             </option>
                         ))}
                     </select>
-                </div>
-
-            </div>
-           
-                 <div>
-                    <label className="text-sm font-medium">Remarks</label>
-                    <input
-                        type="text"
-                        name="remarks"
-                        value={formData.remarks}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full"
+                </div> */}
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Consumption Name</label>
+                    <Select
+                        options={consumptionOptionsMapped}
+                        value={consumptionOptionsMapped.find(opt => opt.value === formData.consumption_name) || null}
+                        onChange={(selectedOption) =>
+                            handleChange({ target: { name: 'consumption_name', value: selectedOption?.value || '' } })
+                        }
+                        placeholder="Select Consumption"
+                        isSearchable={true}
                     />
                 </div>
-            
+
+                {/* Packing Type */}
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Packing Type</label>
+                    <Select
+                        options={packingOptionsMapped}
+                        value={packingOptionsMapped.find(opt => opt.value === formData.packing_type) || null}
+                        onChange={(selectedOption) =>
+                            handleChange({ target: { name: 'packing_type', value: selectedOption?.value || '' } })
+                        }
+                        placeholder="Select Packing Type"
+                        isSearchable={true}
+                    />
+                </div>
+
+
+            </div>
+
+            <div>
+                <label className="text-sm font-medium">Remarks</label>
+                <input
+                    type="text"
+                    name="remarks"
+                    value={formData.remarks}
+                    onChange={handleChange}
+                    className="border border-gray-300 p-2 rounded w-full"
+                />
+            </div>
+
 
             {/* Dynamic attributes section */}
             <div>

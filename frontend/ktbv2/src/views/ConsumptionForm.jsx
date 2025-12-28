@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
 import SearchableSelect from '../components/SearchableSelect';
-
+import Select from 'react-select'
 
 const ConsumptionForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -390,6 +390,23 @@ const ConsumptionForm = ({ mode = 'add' }) => {
             });
     };
 
+    const formulaOptions = nameOptions.map(opt => ({
+        value: Number(opt.id), // ensure it's a number
+        label: opt.name
+    }));
+
+    const selectedFormula = formulaOptions.find(opt => opt.value === Number(formData.name)) || null;
+
+    const additiveOptionsMapped = additiveOptions.map(opt => ({
+        value: Number(opt.id), // store id as value
+        label: opt.name
+    }));
+
+    const baseOilOptionsMapped = baseOilOptions.map(opt => ({
+        value: Number(opt.id),  // store id
+        label: opt.name         // display name
+    }));
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
             <p className="text-xl text-center">Consumption & Blending Form</p>
@@ -437,15 +454,21 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         ))}
                     </select>
                 </div> */}
-                <SearchableSelect
-                    label="Formula"
-                    options={nameOptions}     // [{id, name}]
-                    value={formData.name}
-                    onChange={(val) =>
-                        setFormData(prev => ({ ...prev, name: val }))
-                    }
-                    placeholder="Select Formula"
-                />
+                <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Formula</label>
+                    <Select
+                        name="name"
+                        value={selectedFormula}
+                        onChange={(selectedOption) => {
+                            setFormData(prev => ({ ...prev, name: selectedOption.value }));
+                        }}
+                        options={formulaOptions}
+                        placeholder="Select Formula"
+                        isSearchable
+                        isClearable
+                    />
+                </div>
+
 
                 {/* Grade Input */}
                 <div>
@@ -578,13 +601,16 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                             </select>
                         </div> */}
                         <div className="col-span-1 md:col-span-2">
-                            <SearchableSelect
-                                label="Additive Name"
-                                options={additiveOptions}     // [{id, name}]
-                                value={item.name || ''}
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                placeholder="Select Option"
-                            />
+                            <div className="col-span-1 md:col-span-2">
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
+                                <Select
+                                    options={additiveOptionsMapped}
+                                    value={additiveOptionsMapped.find(opt => opt.value === Number(item.name)) || null} // select current value
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'name', value: selectedOption.value } }, 'consumptionAdditive', index)}
+                                    placeholder="Select Additive"
+                                    isSearchable={true}
+                                />
+                            </div>
                         </div>
                         {/* Rate */}
                         <div className="col-span-1 md:col-span-1">
@@ -691,12 +717,19 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                             </select>
                         </div> */}
                         <div className="col-span-1 md:col-span-2">
-                            <SearchableSelect
-                                label="Base Oil Name"
-                                options={baseOilOptions}     // [{id, name}]
-                                value={item.name || ''}
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                placeholder="Select Option"
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
+                            <Select
+                                options={baseOilOptionsMapped}
+                                value={baseOilOptionsMapped.find(opt => opt.value === Number(item.name)) || null} // current selection
+                                onChange={(selectedOption) =>
+                                    handleChange(
+                                        { target: { name: 'name', value: selectedOption.value } }, // mimic event for your handleChange
+                                        'consumptionBaseOil',
+                                        index
+                                    )
+                                }
+                                placeholder="Select Base Oil"
+                                isSearchable={true}
                             />
                         </div>
 

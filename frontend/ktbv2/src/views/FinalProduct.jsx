@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import Modal from '../components/Modal';
 import FinalProductTable from '../components/FinalProductTable';
+import CostMgtFilterComponent from '../components/CostmgtFIlterComponent';
 
 const FinalProduct = () => {
     const navigate = useNavigate();
@@ -56,6 +57,19 @@ const FinalProduct = () => {
         }
     };
 
+    const approveFinalProduct = async (id) => {
+        try {
+            await axios.get(`/costmgt/final-product-approve/${selectedProduct.id}/`);
+            setIsModalOpen(false);
+            setProductData(null);
+            // Reload the page
+            window.location.reload();
+        } catch (error) {
+            console.error('Error approving final product cost:', error);
+            // Optionally, handle the error (e.g., show a user-friendly error message)
+        }
+    }
+
     const closeModal = () => {
         setIsModalOpen(false);
         setProductData(null);
@@ -85,7 +99,9 @@ const FinalProduct = () => {
                     +
                 </button>
                 <div>
-                    <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} />
+                    {/* <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} /> */}
+                    <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} />
+
                 </div>
                 <div className=" rounded p-2">
                     <FinalProductTable data={productData} onDelete={handleDelete} onView={handleViewClick} />
@@ -115,7 +131,7 @@ const FinalProduct = () => {
 
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.name}</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct?.consumption?.alias}</td>
                                         </tr>
 
                                         <tr className="border-b border-gray-200">
@@ -150,10 +166,10 @@ const FinalProduct = () => {
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.cost_per_case}</td>
                                         </tr>
 
-                                        <tr className="border-b border-gray-200">
+                                        {/* <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">DK Cost</td>
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.dk_cost}</td>
-                                        </tr>
+                                        </tr> */}
 
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Price Per Bottle</td>
@@ -185,7 +201,7 @@ const FinalProduct = () => {
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Price Per Carton</td>
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.price_per_carton}</td>
                                         </tr>
-                                        <tr className="border-b border-gray-200">
+                                        {/* <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">DK Ex Price</td>
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.dk_exprice}</td>
                                         </tr>
@@ -200,7 +216,7 @@ const FinalProduct = () => {
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Freight & Logistic</td>
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.freight_logistic}</td>
-                                        </tr>
+                                        </tr> */}
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total CIF Price</td>
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.total_cif_price}</td>
@@ -213,11 +229,16 @@ const FinalProduct = () => {
 
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.approve ? "Yes" : "No"}</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.approved ? "Yes" : "No"}</td>
                                         </tr>
 
                                     </tbody>
                                 </table>
+                                {selectedProduct.approved ? '' :
+                                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                                        <button onClick={approveFinalProduct} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                                    </div>
+                                }
                             </div>
 
                         </div>

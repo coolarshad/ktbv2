@@ -823,3 +823,43 @@ class ProductFormulaItemViewSet(viewsets.ModelViewSet):
 class PackingSizeViewSet(viewsets.ModelViewSet):
     queryset = PackingSize.objects.all()
     serializer_class = PackingSizeSerializer
+
+class FinalProductApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+    
+        if not pk:
+            return Response({'detail': 'Final Product id not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = FinalProduct.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+
+                serializer = FinalProductSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except FinalProduct.DoesNotExist:
+            return Response({'detail': 'Final Product Cost not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class ConsumptionApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if not pk:
+            return Response({'detail': 'Consumption ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = Consumption.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+                serializer = ConsumptionSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except Consumption.DoesNotExist:
+            return Response({'detail': 'Consumption not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

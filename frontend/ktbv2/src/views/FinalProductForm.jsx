@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
+import Select from 'react-select';
+
 
 const FinalProductForm = ({ mode = 'add' }) => {
   const { id } = useParams();
@@ -319,15 +321,15 @@ const FinalProductForm = ({ mode = 'add' }) => {
   };
 
   useEffect(() => {
-  setFormData((prev) => {
-    const cif = calculateTotalCIF(prev);
-    if (prev.total_cif_price === cif) return prev;
-    return {
-      ...prev,
-      total_cif_price: cif,
-    };
-  });
-}, [formData.final_product_items, formData.price_per_carton]);
+    setFormData((prev) => {
+      const cif = calculateTotalCIF(prev);
+      if (prev.total_cif_price === cif) return prev;
+      return {
+        ...prev,
+        total_cif_price: cif,
+      };
+    });
+  }, [formData.final_product_items, formData.price_per_carton]);
 
 
 
@@ -372,6 +374,41 @@ const FinalProductForm = ({ mode = 'add' }) => {
       });
   };
 
+  const productOptionsMapped = nameOptions.map(opt => ({
+    value: opt.id,
+    label: opt.alias
+  }));
+
+  const packingSizeOptionsMapped = packingSizeOptions.map(opt => ({
+    value: String(opt.id), // convert to string
+    label: opt.name
+  }));
+
+  const bottleOptionsMapped = bottleOptions.map(opt => ({
+    value: String(opt.id),
+    label: `${opt.name} - ${opt.per_each}`
+  }));
+
+  const labelOptionsMapped = labelOptions.map(opt => ({
+    value: String(opt.id),
+    label: `${opt.name} - ${opt.per_each}`
+  }));
+
+  const bottleCapOptionsMapped = bottleCapOptions.map(opt => ({
+    value: String(opt.id),
+    label: `${opt.name} - ${opt.per_each}`
+  }));
+
+  const cartonOptionsMapped = cartonOptions.map(opt => ({
+    value: String(opt.id),
+    label: `${opt.name} - ${opt.per_each}`
+  }));
+
+  const formulaOptionsMapped = formulaOptions.map(f => ({
+    value: String(f.id),
+    label: f.formula_name
+  }));
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
@@ -390,7 +427,7 @@ const FinalProductForm = ({ mode = 'add' }) => {
         </div>
 
         {/* Product Name */}
-        <div>
+        {/* <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Product Name</label>
           <select
             id="name"
@@ -402,10 +439,22 @@ const FinalProductForm = ({ mode = 'add' }) => {
             <option value="">Select product</option>
             {nameOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.alias}</option>)}
           </select>
+        </div> */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Product Name</label>
+          <Select
+            options={productOptionsMapped}
+            value={productOptionsMapped.find(opt => opt.value === formData.name) || null}
+            onChange={(selectedOption) =>
+              handleChange({ target: { name: 'name', value: selectedOption?.value || '' } })
+            }
+            placeholder="Select product"
+            isSearchable={true}
+          />
         </div>
 
         {/* Packing Size */}
-        <div>
+        {/* <div>
           <label htmlFor="packing_size" className="block text-sm font-medium text-gray-700">Packing Size</label>
           <select
             id="packing_size"
@@ -417,6 +466,18 @@ const FinalProductForm = ({ mode = 'add' }) => {
             <option value="">Select packing size</option>
             {packingSizeOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
           </select>
+        </div> */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Packing Size</label>
+          <Select
+            options={packingSizeOptionsMapped}
+            value={packingSizeOptionsMapped.find(opt => opt.value === formData.packing_size) || null}
+            onChange={(selectedOption) =>
+              handleChange({ target: { name: 'packing_size', value: selectedOption?.value || '' } })
+            }
+            placeholder="Select packing size"
+            isSearchable={true}
+          />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4">
@@ -517,7 +578,7 @@ const FinalProductForm = ({ mode = 'add' }) => {
         </div>
 
         {/* Price Per Bottle */}
-        <div>
+        {/* <div>
           <label htmlFor="price_per_bottle" className="block text-sm font-medium text-gray-700">
             Price Per Bottle
           </label>
@@ -535,11 +596,26 @@ const FinalProductForm = ({ mode = 'add' }) => {
               </option>
             ))}
           </select>
+        </div> */}
+        <div>
+          <label htmlFor="price_per_bottle" className="block text-sm font-medium text-gray-700">
+            Price Per Bottle
+          </label>
+          <Select
+            options={bottleOptionsMapped}
+            value={bottleOptionsMapped.find(opt => opt.value === String(formData.price_per_bottle)) || null}
+            onChange={selectedOption =>
+              handleChange({ target: { name: 'price_per_bottle', value: selectedOption?.value || '' } })
+            }
+            placeholder="Select Bottle Price"
+            isSearchable={true}
+          />
         </div>
 
 
+
         {/* Price Per Label */}
-        <div>
+        {/* <div>
           <label htmlFor="price_per_label" className="block text-sm font-medium text-gray-700">
             Price Per Label
           </label>
@@ -557,11 +633,25 @@ const FinalProductForm = ({ mode = 'add' }) => {
               </option>
             ))}
           </select>
+        </div> */}
+        <div>
+          <label htmlFor="price_per_label" className="block text-sm font-medium text-gray-700">
+            Price Per Label
+          </label>
+          <Select
+            options={labelOptionsMapped}
+            value={labelOptionsMapped.find(opt => opt.value === String(formData.price_per_label)) || null}
+            onChange={selectedOption =>
+              handleChange({ target: { name: 'price_per_label', value: selectedOption?.value || '' } })
+            }
+            placeholder="Select Label Price"
+            isSearchable={true}
+          />
         </div>
 
 
         {/* Price Per Bottle Cap */}
-        <div>
+        {/* <div>
           <label htmlFor="price_per_bottle_cap" className="block text-sm font-medium text-gray-700">
             Price Per Bottle Cap
           </label>
@@ -579,6 +669,20 @@ const FinalProductForm = ({ mode = 'add' }) => {
               </option>
             ))}
           </select>
+        </div> */}
+        <div>
+          <label htmlFor="price_per_bottle_cap" className="block text-sm font-medium text-gray-700">
+            Price Per Bottle Cap
+          </label>
+          <Select
+            options={bottleCapOptionsMapped}
+            value={bottleCapOptionsMapped.find(opt => opt.value === String(formData.price_per_bottle_cap)) || null}
+            onChange={selectedOption =>
+              handleChange({ target: { name: 'price_per_bottle_cap', value: selectedOption?.value || '' } })
+            }
+            placeholder="Select Bottle Cap Price"
+            isSearchable={true}
+          />
         </div>
 
 
@@ -622,7 +726,7 @@ const FinalProductForm = ({ mode = 'add' }) => {
         </div>
 
         {/* Price Per Carton */}
-        <div>
+        {/* <div>
           <label htmlFor="price_per_carton" className="block text-sm font-medium text-gray-700">
             Price Per Carton
           </label>
@@ -657,6 +761,32 @@ const FinalProductForm = ({ mode = 'add' }) => {
               </option>
             ))}
           </select>
+        </div> */}
+        <div>
+          <label htmlFor="price_per_carton" className="block text-sm font-medium text-gray-700">
+            Price Per Carton
+          </label>
+          <Select
+            options={cartonOptionsMapped}
+            value={cartonOptionsMapped.find(opt => opt.value === String(formData.price_per_carton)) || null}
+            onChange={selectedOption =>
+              handleChange({ target: { name: 'price_per_carton', value: selectedOption?.value || '' } })
+            }
+            placeholder="Select Carton Price"
+            isSearchable={true}
+          />
+        </div>
+        <div>
+          <label htmlFor="formula" className="block text-sm font-medium text-gray-700">Formula</label>
+          <Select
+            options={formulaOptionsMapped}
+            value={formulaOptionsMapped.find(opt => opt.value === String(formData.formula)) || null}
+            onChange={selectedOption =>
+              handleChange({ target: { name: 'formula', value: selectedOption?.value || '' } })
+            }
+            placeholder="Select Formula"
+            isSearchable={true}
+          />
         </div>
 
         {/* Total CIF Price */}

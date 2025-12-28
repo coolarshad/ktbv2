@@ -268,7 +268,7 @@ class ConsumptionBaseOil(models.Model):
 
 class FinalProduct(models.Model):
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
-    name=models.CharField(max_length=50,null=True,blank=True)
+    name=models.ForeignKey(Consumption,on_delete=models.CASCADE,null=True)
     packing_size=models.CharField(max_length=50,null=True,blank=True)
     bottles_per_pack=models.FloatField(null=True,blank=True)
     liters_per_pack=models.FloatField(null=True,blank=True)

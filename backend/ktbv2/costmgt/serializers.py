@@ -215,6 +215,12 @@ class FinalProductItemSerializer(serializers.ModelSerializer):
 
 class FinalProductSerializer(serializers.ModelSerializer):
     final_product_items = FinalProductItemSerializer(many=True, read_only=True)
+    consumption = ConsumptionSerializer(source="name", read_only=True)
+    consumption_id = serializers.PrimaryKeyRelatedField(
+        queryset=Consumption.objects.all(),
+        source="name",
+        write_only=True
+    )
     class Meta:
         model = FinalProduct
         fields = '__all__'

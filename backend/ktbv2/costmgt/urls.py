@@ -33,5 +33,7 @@ urlpatterns = [
     path('raw-materials-approve/<int:pk>/', RawMaterialApprovalView.as_view(), name='raw-materials-approve'),
     path('additives-approve/<int:pk>/', AdditiveApprovalView.as_view(), name='additives-approve'),
     path('consumption-formula-approve/<int:pk>/', ConsumptionFormulaApprovalView.as_view(), name='consumption-formula-approve'),
+    path('consumption-approve/<int:pk>/', ConsumptionApprovalView.as_view(), name='consumption-approve'),
+    path('final-product-approve/<int:pk>/', FinalProductApprovalView.as_view(), name='final-product-approve'),
 
 ]+ router.urls
