@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
+import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
+
 import Modal from '../components/Modal';
 import AdditiveTable from '../components/AdditiveTable';
 
@@ -92,7 +94,7 @@ const Additive = () => {
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">Additives</p>
+        <p className="text-xl">Additive Pricing</p>
         <button
           onClick={handleAddAdditiveClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
@@ -100,7 +102,7 @@ const Additive = () => {
           +
         </button>
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/additives'} fieldOptions={fieldOptions} />
+        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/additives'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
         <AdditiveTable data={additiveData} onDelete={handleDelete} onView={handleViewClick} />

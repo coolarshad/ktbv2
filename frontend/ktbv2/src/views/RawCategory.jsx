@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
+import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
+
 import Modal from '../components/Modal';
 
 const RawCategory = () => {
@@ -100,7 +102,7 @@ const getAllSubcategoryNames = (category) => {
           +
         </button>
         <div>
-          <FilterComponent 
+          <CostMgtFilterComponent 
             checkBtn={false} 
             flag={2} 
             onFilter={handleFilter} 

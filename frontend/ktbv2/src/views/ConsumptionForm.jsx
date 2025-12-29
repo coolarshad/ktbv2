@@ -460,7 +460,11 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         name="name"
                         value={selectedFormula}
                         onChange={(selectedOption) => {
-                            setFormData(prev => ({ ...prev, name: selectedOption.value }));
+                            if (!selectedOption) {
+                                handleNameChange({ target: { value: '' } });
+                            } else {
+                                handleNameChange({ target: { value: selectedOption.value } });
+                            }
                         }}
                         options={formulaOptions}
                         placeholder="Select Formula"

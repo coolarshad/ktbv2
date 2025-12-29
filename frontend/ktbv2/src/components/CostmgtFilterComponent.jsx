@@ -42,10 +42,16 @@ const CostMgtFilterComponent = ({
     try {
       const params = { ...extraParams };
 
+      // Find the selected field's type from fieldOptions
+      const selectedField = fieldOptions.find(f => f.value === field);
+
       if (searchText) {
-        params[field] = searchText;
+        // Use exact or icontains based on field type
+        const lookup = selectedField?.type === 'exact' ? field : `${field}__icontains`;
+        params[lookup] = searchText;
       }
 
+      // Handle trade type checkboxes (if any)
       const tradeTypes = [];
       if (salesChecked) tradeTypes.push('sales');
       if (purchaseChecked) tradeTypes.push('purchase');
@@ -55,13 +61,16 @@ const CostMgtFilterComponent = ({
         params.trade_type = tradeTypes.join(',');
       }
 
+      // Call API with built params
       const response = await axios.get(apiEndpoint, { params });
       onFilter(response.data);
+
     } catch (error) {
       console.error('Error fetching filtered data:', error);
       alert('Error fetching filtered data. Please try again.');
     }
   };
+
 
   return (
     <div className="px-16 py-2 bg-white shadow-md rounded-md">

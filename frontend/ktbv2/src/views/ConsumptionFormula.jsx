@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
+import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
 import ConsumptionTable from '../components/ConsumptionTable';
 import ConsumptionFormulaTable from '../components/ConsumptionFormulaTable';
@@ -91,7 +92,7 @@ const ConsumptionFormula = () => {
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl"> Blending Formulae</p>
+        <p className="text-xl"> Blending Formation</p>
         <button
           onClick={handleAddConsumptionClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
@@ -99,7 +100,7 @@ const ConsumptionFormula = () => {
           +
         </button>
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption-formula'} fieldOptions={fieldOptions} />
+        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption-formula'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
         <ConsumptionFormulaTable data={consumptionData} onDelete={handleDelete} onView={handleViewClick} />
@@ -110,7 +111,7 @@ const ConsumptionFormula = () => {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <h2 className="text-2xl mb-2 text-center">Additives Details</h2>
+             <h2 className="text-2xl mb-2 text-center">Consumption Formula Details</h2>
              <hr className='mb-2' />
              <div className="overflow-x-auto">
               <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
@@ -148,7 +149,7 @@ const ConsumptionFormula = () => {
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedConsumption.approve? "Yes":"No"}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedConsumption.approved? "Yes":"No"}</td>
                   </tr>
                  
                 </tbody>

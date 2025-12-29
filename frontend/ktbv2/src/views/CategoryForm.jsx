@@ -30,31 +30,31 @@ const CategoryForm = ({ mode = "add" }) => {
   }, []);
 
   // Fetch existing category in update mode
-useEffect(() => {
-  if (mode === "update" && id) {
-    axios
-      .get(`/costmgt/categories/${id}/`)
-      .then((response) => {
-        const data = response.data;
-        setFormData({
-          name: data.name || "",
-          parent: data.parent || "",
-        });
-      })
-      .catch((error) => console.error("Error fetching category:", error));
-  }
-}, [mode, id]);
-
-// ✅ Separate effect: when categories OR formData.parent change, set selectedParent
-useEffect(() => {
-  if (formData.parent && categories.length > 0) {
-    const parentCat = categories.find((c) => c.id === formData.parent);
-    if (parentCat) {
-      setSelectedParent(parentCat);
-      setSearchTerm(parentCat.name); // so input shows the name
+  useEffect(() => {
+    if (mode === "update" && id) {
+      axios
+        .get(`/costmgt/categories/${id}/`)
+        .then((response) => {
+          const data = response.data;
+          setFormData({
+            name: data.name || "",
+            parent: data.parent || "",
+          });
+        })
+        .catch((error) => console.error("Error fetching category:", error));
     }
-  }
-}, [formData.parent, categories]);
+  }, [mode, id]);
+
+  // ✅ Separate effect: when categories OR formData.parent change, set selectedParent
+  useEffect(() => {
+    if (formData.parent && categories.length > 0) {
+      const parentCat = categories.find((c) => c.id === formData.parent);
+      if (parentCat) {
+        setSelectedParent(parentCat);
+        setSearchTerm(parentCat.name); // so input shows the name
+      }
+    }
+  }, [formData.parent, categories]);
 
 
   // Close dropdown when clicking outside
@@ -134,6 +134,8 @@ useEffect(() => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+      <p className="text-xl text-center">Packing Category Form</p>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         {/* Category Name */}
         <div>
@@ -192,11 +194,10 @@ useEffect(() => {
                     filteredCategories.map((category) => (
                       <div
                         key={category.id}
-                        className={`p-2 cursor-pointer ${
-                          selectedParent?.id === category.id
+                        className={`p-2 cursor-pointer ${selectedParent?.id === category.id
                             ? "bg-blue-100"
                             : "hover:bg-gray-100"
-                        }`}
+                          }`}
                         onClick={() => handleSelectParent(category)}
                       >
                         {category.name}

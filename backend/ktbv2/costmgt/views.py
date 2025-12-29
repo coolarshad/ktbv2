@@ -16,26 +16,38 @@ from rest_framework.parsers import MultiPartParser, FormParser
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = CategoryFilter
 
 class PackingViewSet(viewsets.ModelViewSet):
     queryset = Packing.objects.all()
     serializer_class = PackingSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PackingFilter
 
 class RawCategoryViewSet(viewsets.ModelViewSet):
     queryset = RawCategory.objects.all()
     serializer_class = RawCategorySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RawCategoryFilter
 
 class RawMaterialViewSet(viewsets.ModelViewSet):
     queryset = RawMaterial.objects.all()
     serializer_class = RawMaterialSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RawMaterialFilter
 
 class AdditiveCategoryViewSet(viewsets.ModelViewSet):
     queryset = AdditiveCategory.objects.all()
     serializer_class = AdditiveCategorySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = AdditiveCategoryFilter
 
 class AdditiveViewSet(viewsets.ModelViewSet):
     queryset = Additive.objects.all()
     serializer_class = AdditiveSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = AdditiveFilter
 
 class ConsumptionAdditiveViewSet(viewsets.ModelViewSet):
     queryset = ConsumptionAdditive.objects.all()
@@ -229,8 +241,6 @@ class ConsumptionFormulaView(APIView):
 
 
 class ConsumptionView(APIView):
-    # filter_backends = [DjangoFilterBackend]
-    # filterset_class = ConsumptionFilter
 
     def get(self, request, *args, **kwargs):
         c_id = kwargs.get('pk')  # URL parameter for trade ID

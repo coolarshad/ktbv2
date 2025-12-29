@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
+import Select from 'react-select'
+
 
 const ConsumptionFormulaForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
 
     // Sample options for TRN dropdown
-    
+
     const [formData, setFormData] = useState({
         date: '',
         name: '',
@@ -55,8 +57,8 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
     };
 
     useEffect(() => {
-        fetchData('/costmgt/additives', { }, setAdditiveOptions); 
-        fetchData('/costmgt/raw-materials', { }, setBaseOilOptions); 
+        fetchData('/costmgt/additives', {}, setAdditiveOptions);
+        fetchData('/costmgt/raw-materials', {}, setBaseOilOptions);
     }, []);
 
     const handleChange = (e, section, index) => {
@@ -70,7 +72,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
             setFormData({ ...formData, [name]: value });
         }
     };
-    
+
 
     const handleAddRow = (section) => {
         const newRow = { name: '', qty_in_percent: null };
@@ -115,9 +117,20 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
             });
     };
 
+    const additiveOptionsMapped = additiveOptions.map(opt => ({
+        value: Number(opt.id),
+        label: opt.name
+    }));
+    const baseOilOptionsMapped = baseOilOptions.map(opt => ({
+        value: Number(opt.id),
+        label: opt.name
+    }));
+
+
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
-            <p className="text-xl text-center">Consumption & Blending Formula Form</p>
+            <p className="text-xl text-center">Blending Formation Form</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 {/* Date Input */}
                 <div>
@@ -171,35 +184,26 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                     />
                 </div>
 
-               
-
-                
-              
-
-               
-
-              
-
                 {/* Remarks Input */}
-                <div>
+                <div className="md:col-span-2">
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                    <textarea
+                    <input
                         id="remarks"
                         name="remarks"
                         value={formData.remarks}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    ></textarea>
+                        className="border border-gray-300 p-2 rounded w-full"
+                    />
                 </div>
-            </div>
+                </div>
 
-            {/* Section for Consumption Additive */}
-            <div className="p-4 ">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Additive</h3>
-                {formData.consumptionAdditive.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                        {/* Additive Name - Spanning 2 Columns */}
-                        <div className="col-span-1 md:col-span-2">
+                {/* Section for Consumption Additive */}
+                <div className="p-4 ">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Additive</h3>
+                    {formData.consumptionAdditive.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                            {/* Additive Name - Spanning 2 Columns */}
+                            {/* <div className="col-span-1 md:col-span-2">
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
                             <select
                                 name="name"
@@ -214,58 +218,79 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                     </option>
                                 ))}
                             </select>
+                        </div> */}
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Additive Name</label>
+
+                                <Select
+                                    options={additiveOptionsMapped}
+                                    value={
+                                        additiveOptionsMapped.find(opt => opt.value === Number(item.name)) || null
+                                    }
+                                    onChange={(selectedOption) =>
+                                        handleChange(
+                                            { target: { name: 'name', value: selectedOption ? selectedOption.value : '' } },
+                                            'consumptionAdditive',
+                                            index
+                                        )
+                                    }
+                                    placeholder="Select Additive"
+                                    isSearchable
+                                    isClearable
+                                />
+                            </div>
+
+
+                            {/* Qty in Percent */}
+                            <div className="col-span-1 md:col-span-1">
+                                <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_percent"
+                                    placeholder="Quantity in Percent"
+                                    value={item.qty_in_percent}
+                                    onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                />
+                            </div>
+
+
+
+
+
+                            {/* Remove Button - Centered */}
+                            <div className="col-span-1 md:col-span-1 flex items-end justify-center">
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveRow('consumptionAdditive', index)}
+                                    className="bg-red-500 text-white p-2 rounded"
+                                >
+                                    <FaTrash />
+                                </button>
+                            </div>
                         </div>
+                    ))}
 
-                        {/* Qty in Percent */}
-                        <div className="col-span-1 md:col-span-1">
-                            <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
-                            <input
-                                type="number"
-                                name="qty_in_percent"
-                                placeholder="Quantity in Percent"
-                                value={item.qty_in_percent}
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                            />
-                        </div>
-
-                       
-
-                       
-
-                        {/* Remove Button - Centered */}
-                        <div className="col-span-1 md:col-span-1 flex items-end justify-center">
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveRow('consumptionAdditive', index)}
-                                className="bg-red-500 text-white p-2 rounded"
-                            >
-                                <FaTrash />
-                            </button>
-                        </div>
+                    {/* Add Button */}
+                    <div className="text-right">
+                        <button
+                            type="button"
+                            onClick={() => handleAddRow('consumptionAdditive')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                            Add Additive
+                        </button>
                     </div>
-                ))}
-
-                {/* Add Button */}
-                <div className="text-right">
-                    <button
-                        type="button"
-                        onClick={() => handleAddRow('consumptionAdditive')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                        Add Additive
-                    </button>
                 </div>
-            </div>
 
-            {/* Section for Consumption Base Oil */}
-            <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
-                {formData.consumptionBaseOil.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                        {/* Base Oil Name */}
-                        <div className="col-span-1 md:col-span-2">
+                {/* Section for Consumption Base Oil */}
+                <div className="p-4">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
+                    {formData.consumptionBaseOil.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                            {/* Base Oil Name */}
+                            {/* <div className="col-span-1 md:col-span-2">
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
                             <select
                                 name="name"
@@ -280,60 +305,80 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                     </option>
                                 ))}
                             </select>
-                        </div>
+                        </div> */}
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Base Oil Name</label>
 
-                        {/* Quantity in Percent */}
-                        <div className="col-span-1">
-                            <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
-                            <input
-                                type="number"
-                                name="qty_in_percent"
-                                placeholder="Quantity in Percent"
-                                value={item.qty_in_percent}
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                            />
-                        </div>
+                                <Select
+                                    options={baseOilOptionsMapped}
+                                    value={
+                                        baseOilOptionsMapped.find(opt => opt.value === Number(item.name)) || null
+                                    }
+                                    onChange={(selectedOption) =>
+                                        handleChange(
+                                            { target: { name: 'name', value: selectedOption ? selectedOption.value : '' } },
+                                            'consumptionBaseOil',
+                                            index
+                                        )
+                                    }
+                                    placeholder="Select Base Oil"
+                                    isSearchable
+                                    isClearable
+                                />
+                            </div>
 
-                       
+                            {/* Quantity in Percent */}
+                            <div className="col-span-1">
+                                <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_percent"
+                                    placeholder="Quantity in Percent"
+                                    value={item.qty_in_percent}
+                                    onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                />
+                            </div>
 
-                      
-                        {/* Remove Button - Centered */}
-                        <div className="col-span-1 flex items-end justify-center">
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveRow('consumptionBaseOil', index)}
-                                className="bg-red-500 text-white p-2 rounded"
-                            >
-                                <FaTrash />
-                            </button>
+
+
+
+                            {/* Remove Button - Centered */}
+                            <div className="col-span-1 flex items-end justify-center">
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveRow('consumptionBaseOil', index)}
+                                    className="bg-red-500 text-white p-2 rounded"
+                                >
+                                    <FaTrash />
+                                </button>
+                            </div>
                         </div>
+                    ))}
+
+                    {/* Add Button */}
+                    <div className="text-right">
+                        <button
+                            type="button"
+                            onClick={() => handleAddRow('consumptionBaseOil')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                            Add Base Oil
+                        </button>
                     </div>
-                ))}
+                </div>
+                <hr className="my-6" />
 
-                {/* Add Button */}
-                <div className="text-right">
+                {/* Submit Button */}
+                <div className='grid grid-cols-3 gap-4 mb-4'>
                     <button
-                        type="button"
-                        onClick={() => handleAddRow('consumptionBaseOil')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        type="submit"
+                        className="bg-blue-500 text-white p-2 rounded col-span-3"
                     >
-                        Add Base Oil
+                        {mode === 'add' ? 'Add Consumption' : 'Update Consumption'}
                     </button>
                 </div>
-            </div>
-            <hr className="my-6" />
-
-            {/* Submit Button */}
-            <div className='grid grid-cols-3 gap-4 mb-4'>
-                <button
-                    type="submit"
-                    className="bg-blue-500 text-white p-2 rounded col-span-3"
-                >
-                    {mode === 'add' ? 'Add Consumption' : 'Update Consumption'}
-                </button>
-            </div>
         </form>
     );
 };

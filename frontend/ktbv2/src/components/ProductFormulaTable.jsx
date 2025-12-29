@@ -31,8 +31,8 @@ const ProductFormulaTable = ({ data , onDelete, onView }) => { // Default value 
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.formula_name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.consumption_name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_type}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.consumption?.alias}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.packing?.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
              
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}

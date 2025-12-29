@@ -1,6 +1,48 @@
 import django_filters
 from .models import *
 
+class AdditiveFilter(django_filters.FilterSet):
+    class Meta:
+        model = Additive
+        fields = {
+            'name': ['exact', 'icontains'],
+        }
+
+class RawMaterialFilter(django_filters.FilterSet):
+    class Meta:
+        model = RawMaterial
+        fields = {
+            'name': ['exact', 'icontains'],
+        }
+
+class PackingFilter(django_filters.FilterSet):
+    class Meta:
+        model = Packing
+        fields = {
+            'name': ['exact', 'icontains'],
+        }
+
+class AdditiveCategoryFilter(django_filters.FilterSet):
+    class Meta:
+        model = AdditiveCategory
+        fields = {
+            'name': ['exact', 'icontains'],
+        }
+
+class RawCategoryFilter(django_filters.FilterSet):
+    class Meta:
+        model = RawCategory
+        fields = {
+            'name': ['exact', 'icontains'],
+        }
+
+class CategoryFilter(django_filters.FilterSet):
+    class Meta:
+        model = Category
+        fields = {
+            'name': ['exact', 'icontains'],
+        }
+
 class ConsumptionFilter(django_filters.FilterSet):
     date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')  # Replace `date_field` with the actual field name
     date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')    # Replace `date_field` with the actual field name
@@ -12,7 +54,7 @@ class ConsumptionFilter(django_filters.FilterSet):
     class Meta:
         model = Consumption
         fields = {
-            'name': ['exact', 'icontains'],
+            'alias': ['exact', 'icontains'],
             'grade': ['exact', 'icontains'],
             'sae': ['exact', 'icontains'],
             'remarks': ['exact', 'icontains'],

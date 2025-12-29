@@ -4,7 +4,7 @@ import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import Modal from '../components/Modal';
 import FinalProductTable from '../components/FinalProductTable';
-import CostMgtFilterComponent from '../components/CostmgtFIlterComponent';
+import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 
 const FinalProduct = () => {
     const navigate = useNavigate();

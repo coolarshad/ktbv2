@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
+import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
+
 import Modal from '../components/Modal';
 import RawMaterialTable from '../components/RawMaterialTable';
 
@@ -90,7 +92,7 @@ const RawMaterial = () => {
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">Raw Materials</p>
+        <p className="text-xl">Raw Material Pricing</p>
         <button
           onClick={handleAddMaterialClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
@@ -98,7 +100,7 @@ const RawMaterial = () => {
           +
         </button>
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/raw-materials'} fieldOptions={fieldOptions} />
+        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/raw-materials'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
         <RawMaterialTable data={materialData} onDelete={handleDelete} onView={handleViewClick} />

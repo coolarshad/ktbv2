@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
+import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
 import ConsumptionTable from '../components/ConsumptionTable';
 
@@ -79,7 +80,7 @@ const Consumption = () => {
   };
 
   const fieldOptions = [
-    { value: 'name', label: 'Name' },  // Trade TRN field in PreSalePurchase filter
+    { value: 'alias', label: 'Name' },  // Trade TRN field in PreSalePurchase filter
 
   ];
 
@@ -97,7 +98,7 @@ const Consumption = () => {
           +
         </button>
         <div>
-          <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption'} fieldOptions={fieldOptions} />
+          <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
           <ConsumptionTable data={consumptionData} onDelete={handleDelete} onView={handleViewClick} />

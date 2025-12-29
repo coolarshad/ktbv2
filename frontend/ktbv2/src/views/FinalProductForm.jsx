@@ -412,6 +412,7 @@ const FinalProductForm = ({ mode = 'add' }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+      <p className="text-xl text-center">Final Product Cost Form</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
         {/* Date */}
         <div>
