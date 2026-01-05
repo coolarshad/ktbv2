@@ -21,6 +21,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
     totalCost: '',
     remarks: '',
     category: '', // category id
+    extras: [],
   });
 
   // Fetch categories
@@ -48,6 +49,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             totalCost: data.totalCost || '',
             remarks: data.remarks || '',
             category: data.category || '',
+            extras: data.extras || [],
           });
         })
         .catch((err) => console.error('Error fetching additive:', err));
@@ -81,6 +83,23 @@ const AdditiveForm = ({ mode = 'add' }) => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleExtraChange = (index, field, value) => {
+    const updated = [...formData.extras];
+    updated[index][field] = value;
+    setFormData({ ...formData, extras: updated });
+  };
+
+  const addExtraRow = () => {
+    setFormData({
+      ...formData,
+      extras: [...formData.extras, { name: "", rate: "" }],
+    });
+  };
+
+  const removeExtraRow = (index) => {
+    const updated = formData.extras.filter((_, i) => i !== index);
+    setFormData({ ...formData, extras: updated });
+  };
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setIsDropdownOpen(true);
@@ -130,7 +149,19 @@ const AdditiveForm = ({ mode = 'add' }) => {
       return;
     }
 
-    const payload = { ...formData };
+    // Validate extras
+    formData.extras.forEach((extra, index) => {
+      if (!extra.name.trim() || extra.rate === "") {
+        errors[`extras_${index}`] = "Both name and rate are required!";
+      }
+    });
+
+    const payload = {
+      ...formData,
+      extras: formData.extras.filter(
+        (extra) => extra.name.trim() !== "" && extra.rate !== ""
+      ),
+    };
 
     if (mode === 'add') {
       axios
@@ -209,9 +240,8 @@ const AdditiveForm = ({ mode = 'add' }) => {
                   filteredCategories.map((cat) => (
                     <div
                       key={cat.id}
-                      className={`p-2 cursor-pointer ${
-                        selectedCategory?.id === cat.id ? 'bg-blue-100' : 'hover:bg-gray-100'
-                      }`}
+                      className={`p-2 cursor-pointer ${selectedCategory?.id === cat.id ? 'bg-blue-100' : 'hover:bg-gray-100'
+                        }`}
                       onClick={() => handleSelectCategory(cat)}
                     >
                       {cat.name}
@@ -295,6 +325,49 @@ const AdditiveForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+        </div>
+      </div>
+      <div className="p-4 border rounded bg-gray-50 relative">
+        <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
+
+        {formData.extras.map((row, index) => (
+          <div key={index} className="grid grid-cols-5 gap-3 items-center mb-2">
+            <input
+              type="text"
+              placeholder="Name"
+              value={row.name}
+              onChange={(e) =>
+                handleExtraChange(index, "name", e.target.value)
+              }
+              className="border p-2 rounded col-span-2"
+            />
+            <input
+              type="text"
+              placeholder="Rate"
+              value={row.rate}
+              onChange={(e) =>
+                handleExtraChange(index, "rate", e.target.value)
+              }
+              className="border p-2 rounded col-span-2"
+            />
+            <button
+              type="button"
+              onClick={() => removeExtraRow(index)}
+              className="bg-red-500 text-white px-3 py-1 rounded"
+            >
+              ✖
+            </button>
+          </div>
+        ))}
+
+        <div className="flex justify-end mt-2">
+          <button
+            type="button"
+            onClick={addExtraRow}
+            className="bg-blue-500 text-white px-4 py-1 rounded"
+          >
+            + Add More
+          </button>
         </div>
       </div>
 

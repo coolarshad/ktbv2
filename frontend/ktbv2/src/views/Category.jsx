@@ -17,7 +17,7 @@ const Category = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('/costmgt/categories/'); 
+        const response = await axios.get('/costmgt/categories/');
         setCategoryData(response.data);
       } catch (error) {
         setError('Failed to fetch category data');
@@ -72,16 +72,16 @@ const Category = () => {
 
 
   // Helper function in React to flatten children recursively
-const getAllSubcategoryNames = (category) => {
-  let names = [];
-  if (category.children && category.children.length > 0) {
-    category.children.forEach((child) => {
-      names.push(child.name);
-      names = names.concat(getAllSubcategoryNames(child));
-    });
-  }
-  return names;
-};
+  const getAllSubcategoryNames = (category) => {
+    let names = [];
+    if (category.children && category.children.length > 0) {
+      category.children.forEach((child) => {
+        names.push(child.name);
+        names = names.concat(getAllSubcategoryNames(child));
+      });
+    }
+    return names;
+  };
 
 
   const fieldOptions = [
@@ -102,17 +102,17 @@ const getAllSubcategoryNames = (category) => {
           +
         </button>
         <div>
-          <CostMgtFilterComponent 
-            checkBtn={false} 
-            flag={2} 
-            onFilter={handleFilter} 
-            apiEndpoint={'/costmgt/categories'} 
-            fieldOptions={fieldOptions} 
+          <CostMgtFilterComponent
+            checkBtn={false}
+            flag={2}
+            onFilter={handleFilter}
+            apiEndpoint={'/costmgt/categories'}
+            fieldOptions={fieldOptions}
           />
         </div>
-        <div className="rounded p-2">
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-            <thead className="bg-gray-100 border-b border-gray-200">
+        <div className="max-h-[500px] overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-sm">
+          <table className="min-w-full">
+            <thead className="bg-gray-100 sticky top-0 z-10">
               <tr>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Name</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Parent</th>
@@ -120,9 +120,10 @@ const getAllSubcategoryNames = (category) => {
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {categoryData.map((category) => (
-                <tr key={category.id} className="border-b border-gray-200">
+                <tr key={category.id} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="py-2 px-4 text-gray-800">{category.name}</td>
                   <td className="py-2 px-4 text-gray-800">
                     {category.parent_name ? category.parent_name : "Root"}
@@ -133,31 +134,22 @@ const getAllSubcategoryNames = (category) => {
                       : "—"}
                   </td>
                   <td className="py-2 px-4">
-                    <button
-                      onClick={() => handleViewClick(category.id)}
-                      className="bg-green-500 text-white px-2 py-1 rounded mr-2"
-                    >
+                    <button onClick={() => handleViewClick(category.id)} className="bg-green-500 text-white px-2 py-1 rounded mr-2">
                       View
                     </button>
-                    <button
-                      onClick={() => handleEdit(category.id)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded mr-2"
-                    >
+                    <button onClick={() => handleEdit(category.id)} className="bg-yellow-500 text-white px-2 py-1 rounded mr-2">
                       Edit
                     </button>
-                    <button
-                      onClick={() => handleDelete(category.id)}
-                      className="bg-red-500 text-white px-2 py-1 rounded"
-                    >
+                    <button onClick={() => handleDelete(category.id)} className="bg-red-500 text-white px-2 py-1 rounded">
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
-
             </tbody>
           </table>
         </div>
+
       </div>
 
       {/* Modal for Category Details */}

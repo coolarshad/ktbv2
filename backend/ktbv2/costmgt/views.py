@@ -20,7 +20,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filterset_class = CategoryFilter
 
 class PackingViewSet(viewsets.ModelViewSet):
-    queryset = Packing.objects.all()
+    queryset = Packing.objects.all().order_by('-id')  # latest first
     serializer_class = PackingSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = PackingFilter
@@ -32,7 +32,7 @@ class RawCategoryViewSet(viewsets.ModelViewSet):
     filterset_class = RawCategoryFilter
 
 class RawMaterialViewSet(viewsets.ModelViewSet):
-    queryset = RawMaterial.objects.all()
+    queryset = RawMaterial.objects.all().order_by('-id') 
     serializer_class = RawMaterialSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = RawMaterialFilter

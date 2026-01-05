@@ -9,9 +9,9 @@ const PackingTable = ({ data , onDelete, onView }) => { // Default value for dat
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="max-h-[450px] overflow-auto bg-white border border-gray-200 rounded-lg shadow-sm">
       <table className="min-w-full bg-white">
-        <thead>
+        <thead className='sticky top-0 z-10 bg-white'>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>

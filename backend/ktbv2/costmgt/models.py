@@ -17,6 +17,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
+        ordering = ['-id']  
 
     def __str__(self):
         full_path = [self.name]
@@ -45,9 +46,21 @@ class Packing(models.Model):
     class Meta:
         verbose_name = _("Packing")
         verbose_name_plural = _("Packings")
+        ordering = ['-id'] 
 
     def __str__(self):
         return f"{self.category} -> {self.name}" if self.category else self.name
+    
+
+class PackingExtra(models.Model):
+    packing = models.ForeignKey(
+        "Packing", 
+        on_delete=models.CASCADE,
+        related_name="extras"  # ← add this
+    )
+    name = models.CharField(max_length=50)
+    rate = models.FloatField(null=True, blank=True)
+
 
 
 class RawCategory(models.Model):
@@ -63,6 +76,7 @@ class RawCategory(models.Model):
     class Meta:
         verbose_name = _("RawCategory")
         verbose_name_plural = _("RawCategories")
+        ordering = ['-id'] 
 
     def __str__(self):
         full_path = [self.name]
@@ -93,12 +107,22 @@ class RawMaterial(models.Model):
     class Meta:
         verbose_name = _("RawMaterial")
         verbose_name_plural = _("RawMaterials")
+        ordering = ['-id'] 
         
     def __str__(self):
         return f"{self.parent.name} -> {self.name}" if self.parent else self.name
     
     def get_absolute_url(self):
         return reverse("RawMaterial_detail", kwargs={"pk": self.pk})
+
+class RMExtra(models.Model):
+    rm = models.ForeignKey(
+        "RawMaterial", 
+        on_delete=models.CASCADE,
+        related_name="extras"  # ← add this
+    )
+    name = models.CharField(max_length=50)
+    rate = models.FloatField(null=True, blank=True)
 
 
 class AdditiveCategory(models.Model):
@@ -114,6 +138,7 @@ class AdditiveCategory(models.Model):
     class Meta:
         verbose_name = _("AdditiveCategory")
         verbose_name_plural = _("AdditiveCategories")
+        ordering = ['-id'] 
 
     def __str__(self):
         full_path = [self.name]
@@ -146,12 +171,22 @@ class Additive(models.Model):
     class Meta:
         verbose_name = _("Additive")
         verbose_name_plural = _("Additives")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
         return reverse("Additive_detail", kwargs={"pk": self.pk})
+
+class AdditiveExtra(models.Model):
+    additive = models.ForeignKey(
+        "Additive", 
+        on_delete=models.CASCADE,
+        related_name="extras"  # ← add this
+    )
+    name = models.CharField(max_length=50)
+    rate = models.FloatField(null=True, blank=True)
 
 
 class ConsumptionFormula(models.Model):
@@ -167,6 +202,7 @@ class ConsumptionFormula(models.Model):
     class Meta:
         verbose_name = _("Consumption")
         verbose_name_plural = _("Consumptions")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -182,6 +218,7 @@ class ConsumptionFormulaAdditive(models.Model):
     class Meta:
         verbose_name = _("ConsumptionFormulaAdditive")
         verbose_name_plural = _("ConsumptionFormulaAdditives")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -197,6 +234,7 @@ class ConsumptionFormulaBaseOil(models.Model):
     class Meta:
         verbose_name = _("ConsumptionFormulaBaseOil")
         verbose_name_plural = _("ConsumptionFormulaBaseOils")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -223,6 +261,7 @@ class Consumption(models.Model):
     class Meta:
         verbose_name = _("Consumption")
         verbose_name_plural = _("Consumptions")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -241,6 +280,7 @@ class ConsumptionAdditive(models.Model):
     class Meta:
         verbose_name = _("ConsumptionAdditive")
         verbose_name_plural = _("ConsumptionAdditives")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -259,6 +299,7 @@ class ConsumptionBaseOil(models.Model):
     class Meta:
         verbose_name = _("ConsumptionBaseOil")
         verbose_name_plural = _("ConsumptionBaseOils")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -297,6 +338,7 @@ class FinalProduct(models.Model):
     class Meta:
         verbose_name = _("FinalProduct")
         verbose_name_plural = _("FinalProducts")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -309,12 +351,17 @@ class FinalProductItem(models.Model):
     label=models.CharField(max_length=100)
     value=models.FloatField()
 
+    class Meta:
+        ordering = ['-id'] 
+   
+
 class PackingType(models.Model):
     name=models.CharField(_("name"), max_length=50)
     
     class Meta:
         verbose_name = _("PackingType")
         verbose_name_plural = _("PackingTypes")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -332,6 +379,7 @@ class ProductFormula(models.Model):
     class Meta:
         verbose_name = _("ProductFormula")
         verbose_name_plural = _("ProductFormulas")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.formula_name
@@ -341,11 +389,18 @@ class ProductFormulaItem(models.Model):
     label=models.CharField(max_length=100)
     value=models.FloatField()
 
+    class Meta:
+        ordering = ['-id'] 
+   
+
 
 class PackingSize(models.Model):
     name = models.CharField(max_length=255)
     bottles_per_pack=models.CharField(max_length=10)
     litres_per_pack = models.CharField(max_length=10)  # e.g., "KP", "SP", etc.
+
+    class Meta:
+        ordering = ['-id'] 
    
     def __str__(self):
         return self.name

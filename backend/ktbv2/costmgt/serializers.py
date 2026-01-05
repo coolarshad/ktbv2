@@ -20,11 +20,16 @@ class CategorySerializer(serializers.ModelSerializer):
             return CategorySerializer(obj.children.all(), many=True).data
         return []
 
-    
+
+class PackingExtraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PackingExtra
+        fields = ['id', 'name', 'rate']
 
 class PackingSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
-    
+    extras = PackingExtraSerializer(many=True, required=False)  # nested extras
+
     class Meta:
         model = Packing
         fields = [
@@ -36,8 +41,31 @@ class PackingSerializer(serializers.ModelSerializer):
             'category_name',
             'packing_type',
             'remarks',
-            'approved'
+            'approved',
+            'extras'
         ]
+
+    def create(self, validated_data):
+        extras_data = validated_data.pop('extras', [])
+        packing = Packing.objects.create(**validated_data)
+        for extra in extras_data:
+            PackingExtra.objects.create(packing=packing, **extra)
+        return packing
+
+    def update(self, instance, validated_data):
+        extras_data = validated_data.pop('extras', [])
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update extras: simple approach is to delete all and recreate
+        if extras_data:
+            instance.extras.all().delete()
+            for extra in extras_data:
+                PackingExtra.objects.create(packing=instance, **extra)
+
+        return instance
+
 
 
 from rest_framework import serializers
@@ -57,9 +85,14 @@ class RawCategorySerializer(serializers.ModelSerializer):
             return RawCategorySerializer(obj.children.all(), many=True).data
         return []
 
+class RMExtraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RMExtra
+        fields = ['id', 'name', 'rate']
 
 class RawMaterialSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
+    extras = RMExtraSerializer(many=True, required=False)  # nested extras
 
     class Meta:
         model = RawMaterial
@@ -76,7 +109,30 @@ class RawMaterialSerializer(serializers.ModelSerializer):
             'approved',
             'category',
             'category_name',
+            'extras'
         ]
+
+    def create(self, validated_data):
+        extras_data = validated_data.pop('extras', [])
+        obj = RawMaterial.objects.create(**validated_data)
+        for extra in extras_data:
+            RMExtra.objects.create(rm=obj, **extra)
+        return obj
+
+    def update(self, instance, validated_data):
+        extras_data = validated_data.pop('extras', [])
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update extras: simple approach is to delete all and recreate
+        if extras_data:
+            instance.extras.all().delete()
+            for extra in extras_data:
+                RMExtra.objects.create(rm=instance, **extra)
+
+        return instance
+
 
 
 class AdditiveCategorySerializer(serializers.ModelSerializer):
@@ -92,9 +148,14 @@ class AdditiveCategorySerializer(serializers.ModelSerializer):
             return AdditiveCategorySerializer(obj.children.all(), many=True).data
         return []
 
+class AdditiveExtraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditiveExtra
+        fields = ['id', 'name', 'rate']
 
 class AdditiveSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
+    extras = AdditiveExtraSerializer(many=True, required=False)  # nested extras
 
     class Meta:
         model = Additive
@@ -111,7 +172,30 @@ class AdditiveSerializer(serializers.ModelSerializer):
             'approved',
             'category',
             'category_name',
+            'extras'
         ]
+    
+    def create(self, validated_data):
+        extras_data = validated_data.pop('extras', [])
+        obj = Additive.objects.create(**validated_data)
+        for extra in extras_data:
+            AdditiveExtra.objects.create(additive=obj, **extra)
+        return obj
+
+    def update(self, instance, validated_data):
+        extras_data = validated_data.pop('extras', [])
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update extras: simple approach is to delete all and recreate
+        if extras_data:
+            instance.extras.all().delete()
+            for extra in extras_data:
+                AdditiveExtra.objects.create(additive=instance, **extra)
+
+        return instance
+
 
 class ConsumptionFormulaAdditiveSerializer(serializers.ModelSerializer):
     class Meta:

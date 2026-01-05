@@ -23,6 +23,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     density: '',
     remarks: '',
     category: '', // ✅ correct field
+    extras: [],
   });
 
   // Fetch categories for dropdown
@@ -52,6 +53,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             density: data.density || '',
             remarks: data.remarks || '',
             category: data.category || '', // ✅ use category not parent
+            extras: data.extras || [],
           });
         })
         .catch((error) => {
@@ -111,6 +113,24 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleExtraChange = (index, field, value) => {
+    const updated = [...formData.extras];
+    updated[index][field] = value;
+    setFormData({ ...formData, extras: updated });
+  };
+
+  const addExtraRow = () => {
+    setFormData({
+      ...formData,
+      extras: [...formData.extras, { name: "", rate: "" }],
+    });
+  };
+
+  const removeExtraRow = (index) => {
+    const updated = formData.extras.filter((_, i) => i !== index);
+    setFormData({ ...formData, extras: updated });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -122,8 +142,19 @@ const RawMaterialForm = ({ mode = 'add' }) => {
       setValidationErrors({ category: 'Category is required' });
       return;
     }
+    // Validate extras
+    formData.extras.forEach((extra, index) => {
+      if (!extra.name.trim() || extra.rate === "") {
+        errors[`extras_${index}`] = "Both name and rate are required!";
+      }
+    });
 
-    const payload = { ...formData };
+    const payload = {
+      ...formData,
+      extras: formData.extras.filter(
+        (extra) => extra.name.trim() !== "" && extra.rate !== ""
+      ),
+    };
 
     if (mode === 'add') {
       axios
@@ -226,9 +257,8 @@ const RawMaterialForm = ({ mode = 'add' }) => {
                   filteredCategories.map((category) => (
                     <div
                       key={category.id}
-                      className={`p-2 cursor-pointer ${
-                        selectedCategory?.id === category.id ? 'bg-blue-100' : 'hover:bg-gray-100'
-                      }`}
+                      className={`p-2 cursor-pointer ${selectedCategory?.id === category.id ? 'bg-blue-100' : 'hover:bg-gray-100'
+                        }`}
                       onClick={() => handleSelectCategory(category)}
                     >
                       {category.name}
@@ -244,7 +274,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
         </div>
 
         {/* Other fields */}
-       
+
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Buy Price</label>
@@ -279,7 +309,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
           />
         </div>
 
-         <div>
+        <div>
           <label className="block text-sm font-medium text-gray-700">Density</label>
           <input
             name="density"
@@ -300,7 +330,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
           />
         </div>
-          
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Cost Per Litre</label>
           <input
@@ -311,7 +341,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
           />
         </div>
-       
+
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Remarks</label>
@@ -322,6 +352,49 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+        </div>
+      </div>
+      <div className="p-4 border rounded bg-gray-50 relative">
+        <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
+
+        {formData.extras.map((row, index) => (
+          <div key={index} className="grid grid-cols-5 gap-3 items-center mb-2">
+            <input
+              type="text"
+              placeholder="Name"
+              value={row.name}
+              onChange={(e) =>
+                handleExtraChange(index, "name", e.target.value)
+              }
+              className="border p-2 rounded col-span-2"
+            />
+            <input
+              type="text"
+              placeholder="Rate"
+              value={row.rate}
+              onChange={(e) =>
+                handleExtraChange(index, "rate", e.target.value)
+              }
+              className="border p-2 rounded col-span-2"
+            />
+            <button
+              type="button"
+              onClick={() => removeExtraRow(index)}
+              className="bg-red-500 text-white px-3 py-1 rounded"
+            >
+              ✖
+            </button>
+          </div>
+        ))}
+
+        <div className="flex justify-end mt-2">
+          <button
+            type="button"
+            onClick={addExtraRow}
+            className="bg-blue-500 text-white px-4 py-1 rounded"
+          >
+            + Add More
+          </button>
         </div>
       </div>
 

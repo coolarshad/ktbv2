@@ -22,6 +22,7 @@ const PackingForm = ({ mode = "add" }) => {
     category: "", // now references Category model
     packing_type: "",
     remarks: "",
+    extras: [],
   });
 
   // Fetch categories for dropdown
@@ -46,34 +47,34 @@ const PackingForm = ({ mode = "add" }) => {
 
   // Fetch existing data in update mode
   useEffect(() => {
-    if (mode === "update" && id) {
-      axios
-        .get(`/costmgt/packings/${id}/`)
-        .then((response) => {
-          const data = response.data;
-          setFormData({
-            date: data.date || "",
-            name: data.name || "",
-            per_each: data.per_each || "",
-            category: data.category || "",
-            packing_type: data.packing_type || "",
-            remarks: data.remarks || "",
-          });
-        })
-        .catch((error) => console.error("Error fetching packing data:", error));
-    }
-  }, [mode, id, categories]);
-
+  if (mode === "update" && id) {
+    axios
+      .get(`/costmgt/packings/${id}/`)
+      .then((response) => {
+        const data = response.data;
+        setFormData({
+          date: data.date || "",
+          name: data.name || "",
+          per_each: data.per_each || "",
+          category: data.category || "",
+          packing_type: data.packing_type || "",
+          remarks: data.remarks || "",
+          extras: data.extras || [],  // <-- default to empty array
+        });
+      })
+      .catch((error) => console.error("Error fetching packing data:", error));
+  }
+}, [mode, id, categories]);
 
   useEffect(() => {
-  if (formData.category && categories.length > 0) {
-    const cat = categories.find((c) => c.id === formData.category);
-    if (cat) {
-      setSelectedCategory(cat);
-      setSearchTerm(cat.name); // also show category name in input
+    if (formData.category && categories.length > 0) {
+      const cat = categories.find((c) => c.id === formData.category);
+      if (cat) {
+        setSelectedCategory(cat);
+        setSearchTerm(cat.name); // also show category name in input
+      }
     }
-  }
-}, [formData.category, categories]);
+  }, [formData.category, categories]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -95,28 +96,52 @@ const PackingForm = ({ mode = "add" }) => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleExtraChange = (index, field, value) => {
+    const updated = [...formData.extras];
+    updated[index][field] = value;
+    setFormData({ ...formData, extras: updated });
+  };
+
+  const addExtraRow = () => {
+    setFormData({
+      ...formData,
+      extras: [...formData.extras, { name: "", rate: "" }],
+    });
+  };
+
+  const removeExtraRow = (index) => {
+    const updated = formData.extras.filter((_, i) => i !== index);
+    setFormData({ ...formData, extras: updated });
+  };
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     let errors = {};
 
-    // Define fields to skip validation for
+    // Validate main fields
     const skipValidation = [];
     for (const [key, value] of Object.entries(formData)) {
-      if (!skipValidation.includes(key) && value === "") {
+      if (!skipValidation.includes(key) && value === "" && key !== "extras") {
         errors[key] = `${capitalizeKey(key)} cannot be empty!`;
       }
     }
 
+    // Validate extras
+    formData.extras.forEach((extra, index) => {
+      if (!extra.name.trim() || extra.rate === "") {
+        errors[`extras_${index}`] = "Both name and rate are required!";
+      }
+    });
+
     setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
-    if (Object.keys(errors).length > 0) {
-      return;
-    } else {
-      setValidationErrors({});
-    }
-
-    const payload = { ...formData };
+    const payload = {
+      ...formData,
+      extras: formData.extras.filter(
+        (extra) => extra.name.trim() !== "" && extra.rate !== ""
+      ),
+    };
 
     if (mode === "add") {
       axios
@@ -244,11 +269,10 @@ const PackingForm = ({ mode = "add" }) => {
                     filteredCategories.map((category) => (
                       <div
                         key={category.id}
-                        className={`p-2 cursor-pointer ${
-                          selectedCategory?.id === category.id
-                            ? "bg-blue-100"
-                            : "hover:bg-gray-100"
-                        }`}
+                        className={`p-2 cursor-pointer ${selectedCategory?.id === category.id
+                          ? "bg-blue-100"
+                          : "hover:bg-gray-100"
+                          }`}
                         onClick={() => handleSelectCategory(category)}
                       >
                         {category.name}
@@ -305,6 +329,52 @@ const PackingForm = ({ mode = "add" }) => {
           )}
         </div>
       </div>
+
+      <div className="p-4 border rounded bg-gray-50 relative">
+        <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
+
+        {formData.extras.map((row, index) => (
+          <div key={index} className="grid grid-cols-5 gap-3 items-center mb-2">
+            <input
+              type="text"
+              placeholder="Name"
+              value={row.name}
+              onChange={(e) =>
+                handleExtraChange(index, "name", e.target.value)
+              }
+              className="border p-2 rounded col-span-2"
+            />
+            <input
+              type="text"
+              placeholder="Rate"
+              value={row.rate}
+              onChange={(e) =>
+                handleExtraChange(index, "rate", e.target.value)
+              }
+              className="border p-2 rounded col-span-2"
+            />
+            <button
+              type="button"
+              onClick={() => removeExtraRow(index)}
+              className="bg-red-500 text-white px-3 py-1 rounded"
+            >
+              ✖
+            </button>
+          </div>
+        ))}
+
+        <div className="flex justify-end mt-2">
+          <button
+            type="button"
+            onClick={addExtraRow}
+            className="bg-blue-500 text-white px-4 py-1 rounded"
+          >
+            + Add More
+          </button>
+        </div>
+      </div>
+
+
 
       <div className="grid grid-cols-3 gap-4 mb-4">
         <button
