@@ -57,7 +57,29 @@ class ConsumptionBaseOilViewSet(viewsets.ModelViewSet):
     queryset = ConsumptionBaseOil.objects.all()
     serializer_class = ConsumptionBaseOilSerializer
 
+def get_next_consumption_ref():
+    from django.db.models import Max
+    from .models import ConsumptionFormula
 
+    last_ref = (
+        ConsumptionFormula.objects
+        .aggregate(max_ref=Max('ref'))['max_ref']
+    )
+
+    if last_ref:
+        last_number = int(last_ref.split('-')[1])
+        next_number = last_number + 1
+    else:
+        next_number = 1
+
+    return f"BFR-{next_number:07d}"
+
+class NextConsumptionRef(APIView):
+    def get(self, request):
+        return Response({
+            "next_ref": get_next_consumption_ref()
+        })
+    
 class ConsumptionFormulaView(APIView):
     # filter_backends = [DjangoFilterBackend]
     # filterset_class = ConsumptionFilter
@@ -297,9 +319,11 @@ class ConsumptionView(APIView):
         while f'consumptionAdditive[{l}].name' in data:
             additives_data = {
                 'name': data.get(f'consumptionAdditive[{l}].name'),
+                'sub_name': data.get(f'consumptionAdditive[{l}].sub_name'),
                 'qty_in_percent': data.get(f'consumptionAdditive[{l}].qty_in_percent'),
                 'qty_in_litre': data.get(f'consumptionAdditive[{l}].qty_in_litre'),
                 'value': data.get(f'consumptionAdditive[{l}].value'),
+                'rate': data.get(f'consumptionAdditive[{l}].rate'),
             }
             c_additives_data.append(additives_data)
             l += 1
@@ -308,9 +332,11 @@ class ConsumptionView(APIView):
         while f'consumptionBaseOil[{m}].name' in data:
             base_oils_data = {
                 'name': data.get(f'consumptionBaseOil[{m}].name'),
+                'sub_name': data.get(f'consumptionBaseOil[{m}].sub_name'),
                 'qty_in_percent': data.get(f'consumptionBaseOil[{m}].qty_in_percent'),
                 'qty_in_litre': data.get(f'consumptionBaseOil[{m}].qty_in_litre'),
                 'value': data.get(f'consumptionBaseOil[{m}].value'),
+                'rate': data.get(f'consumptionBaseOil[{m}].rate'),
             }
             c_base_oils_data.append(base_oils_data)
             m += 1
@@ -369,9 +395,11 @@ class ConsumptionView(APIView):
         while f'consumptionAdditive[{l}].name' in data:
             additives_data = {
                 'name': data.get(f'consumptionAdditive[{l}].name'),
+                'sub_name': data.get(f'consumptionAdditive[{l}].sub_name'),
                 'qty_in_percent': data.get(f'consumptionAdditive[{l}].qty_in_percent'),
                 'qty_in_litre': data.get(f'consumptionAdditive[{l}].qty_in_litre'),
                 'value': data.get(f'consumptionAdditive[{l}].value'),
+                'rate': data.get(f'consumptionAdditive[{l}].rate'),
             }
             c_additives_data.append(additives_data)
             l += 1
@@ -380,9 +408,11 @@ class ConsumptionView(APIView):
         while f'consumptionBaseOil[{m}].name' in data:
             base_oils_data = {
                 'name': data.get(f'consumptionBaseOil[{m}].name'),
+                'sub_name': data.get(f'consumptionBaseOil[{m}].sub_name'),
                 'qty_in_percent': data.get(f'consumptionBaseOil[{m}].qty_in_percent'),
                 'qty_in_litre': data.get(f'consumptionBaseOil[{m}].qty_in_litre'),
                 'value': data.get(f'consumptionBaseOil[{m}].value'),
+                'rate': data.get(f'consumptionBaseOil[{m}].rate'),
             }
             c_base_oils_data.append(base_oils_data)
             m += 1

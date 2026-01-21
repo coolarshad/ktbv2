@@ -122,7 +122,10 @@ const Consumption = () => {
 
                   <tbody>
 
-
+                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Formula Ref</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedConsumption?.formula?.ref}</td>
+                    </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.alias}</td>
@@ -177,6 +180,8 @@ const Consumption = () => {
                   <thead>
                     <tr>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sub Name</th>
+                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty in Percent</th>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty in Litre</th>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Value</th>
@@ -186,7 +191,9 @@ const Consumption = () => {
                     {selectedConsumption.consumptionAdditive.map((item, index) =>
                       item.name && ( // Check if both fields exist
                         <tr key={index}>
+                          <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.additive?.category_name}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.additive?.name}</td>
+                          <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.rate}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_percent}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_litre}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
@@ -202,6 +209,8 @@ const Consumption = () => {
                   <thead>
                     <tr>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sub Name</th>
+                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty in Percent</th>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty in Litre</th>
                       <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Value</th>
@@ -211,7 +220,9 @@ const Consumption = () => {
                     {selectedConsumption.consumptionBaseOil.map((item, index) =>
                       item.name && ( // Check if both fields exist
                         <tr key={index}>
+                          <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.raw?.category_name}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.raw?.name}</td>
+                          <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.rate}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_percent}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_litre}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>

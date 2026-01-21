@@ -189,12 +189,13 @@ class AdditiveExtra(models.Model):
     rate = models.FloatField(null=True, blank=True)
 
 
+from django.db.models import Max
 class ConsumptionFormula(models.Model):
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False,null=True,blank=True)
     name=models.CharField(max_length=50)
     grade=models.CharField(max_length=50)
     sae=models.CharField(max_length=50)
-
+    ref=models.CharField(max_length=50,unique=True, editable=False)
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
 
@@ -209,6 +210,23 @@ class ConsumptionFormula(models.Model):
 
     def get_absolute_url(self):
         return reverse("Consumption_detail", kwargs={"pk": self.pk})
+    
+    def save(self, *args, **kwargs):
+        if not self.ref:
+            last_ref = (
+                ConsumptionFormula.objects
+                .aggregate(max_ref=Max('ref'))['max_ref']
+            )
+
+            if last_ref:
+                last_number = int(last_ref.split('-')[1])
+                new_number = last_number + 1
+            else:
+                new_number = 1
+
+            self.ref = f"BFR-{new_number:07d}"
+
+        super().save(*args, **kwargs)
 
 class ConsumptionFormulaAdditive(models.Model):
     consumption=models.ForeignKey(ConsumptionFormula,on_delete=models.CASCADE,null=True)
@@ -272,10 +290,11 @@ class Consumption(models.Model):
 class ConsumptionAdditive(models.Model):
     consumption=models.ForeignKey(Consumption,on_delete=models.CASCADE,null=True)
     name=models.CharField(max_length=50)
+    sub_name=models.CharField(max_length=50)
     qty_in_percent=models.FloatField()
     qty_in_litre=models.FloatField()
     value=models.FloatField()
-
+    rate=models.FloatField()
 
     class Meta:
         verbose_name = _("ConsumptionAdditive")
@@ -291,9 +310,11 @@ class ConsumptionAdditive(models.Model):
 class ConsumptionBaseOil(models.Model):
     consumption=models.ForeignKey(Consumption,on_delete=models.CASCADE,null=True)
     name=models.CharField(max_length=50)
+    sub_name=models.CharField(max_length=50)
     qty_in_percent=models.FloatField()
     qty_in_litre=models.FloatField()
     value=models.FloatField()
+    rate=models.FloatField()
 
 
     class Meta:

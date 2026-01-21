@@ -14,7 +14,7 @@ const ConsumptionFormulaTable = ({ data , onDelete, onView }) => { // Default va
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Ref</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Grade</th>
@@ -29,7 +29,7 @@ const ConsumptionFormulaTable = ({ data , onDelete, onView }) => { // Default va
           {data?.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ref}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.grade}</td>

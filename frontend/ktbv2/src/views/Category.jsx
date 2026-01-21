@@ -110,7 +110,7 @@ const Category = () => {
             fieldOptions={fieldOptions}
           />
         </div>
-        <div className="max-h-[500px] overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="max-h-[95vh] overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-sm">
           <table className="min-w-full">
             <thead className="bg-gray-100 sticky top-0 z-10">
               <tr>

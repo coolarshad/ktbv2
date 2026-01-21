@@ -207,22 +207,10 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
       <p className="text-xl text-center">Raw Material Pricing Form</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-        {/* Name */}
+
+         {/* Category Dropdown */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>}
-        </div>
-
-        {/* Category Dropdown */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
           <div className="relative" ref={dropdownRef}>
             <div className="flex items-center border border-gray-300 rounded overflow-hidden">
               <input
@@ -272,6 +260,21 @@ const RawMaterialForm = ({ mode = 'add' }) => {
           </div>
           {validationErrors.category && <p className="text-red-500">{validationErrors.category}</p>}
         </div>
+
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Sub-Name</label>
+          <input
+            name="name"
+            type="text"
+            value={formData.name}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+          {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>}
+        </div>
+
+       
 
         {/* Other fields */}
 
@@ -354,7 +357,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
           />
         </div>
       </div>
-      <div className="p-4 border rounded bg-gray-50 relative">
+      {/* <div className="p-4 border rounded bg-gray-50 relative">
         <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
 
         {formData.extras.map((row, index) => (
@@ -396,7 +399,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             + Add More
           </button>
         </div>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-3 gap-4 mb-4">
         <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">

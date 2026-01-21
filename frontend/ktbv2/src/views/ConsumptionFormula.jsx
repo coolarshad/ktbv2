@@ -124,7 +124,10 @@ const ConsumptionFormula = () => {
              
                 <tbody>
                   
-                 
+                 <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Ref</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedConsumption.ref}</td>
+                  </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
                     <td className="py-2 px-4 text-gray-800">{selectedConsumption.name}</td>
@@ -168,7 +171,7 @@ const ConsumptionFormula = () => {
                   {selectedConsumption.consumptionFormulaAdditive.map((item, index) =>
                     item.name && ( // Check if both fields exist
                       <tr key={index}>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.additive?.name}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.additive?.category_name}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_percent}</td>
                      
                       </tr>
@@ -191,7 +194,7 @@ const ConsumptionFormula = () => {
                   {selectedConsumption.consumptionFormulaBaseOil.map((item, index) =>
                     item.name && ( // Check if both fields exist
                       <tr key={index}>
-                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.raw?.name}</td>
+                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.raw?.category_name}</td>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty_in_percent}</td>
                      
                       </tr>

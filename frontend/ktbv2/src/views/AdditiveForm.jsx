@@ -180,32 +180,9 @@ const AdditiveForm = ({ mode = 'add' }) => {
     <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
       <p className="text-xl text-center">Additive Pricing Form</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-        </div>
-
-        {/* Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Date</label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-        </div>
-
         {/* Category Dropdown */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <label className="block text-sm font-medium text-gray-700">Name</label>
           <div className="relative" ref={dropdownRef}>
             <div className="flex items-center border border-gray-300 rounded overflow-hidden">
               <input
@@ -254,6 +231,31 @@ const AdditiveForm = ({ mode = 'add' }) => {
             )}
           </div>
         </div>
+
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700"> Sub-Name</label>
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        {/* Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Date</label>
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+        
 
         {/* Remaining fields */}
         <div>
@@ -327,7 +329,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
           />
         </div>
       </div>
-      <div className="p-4 border rounded bg-gray-50 relative">
+      {/* <div className="p-4 border rounded bg-gray-50 relative">
         <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
 
         {formData.extras.map((row, index) => (
@@ -369,7 +371,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             + Add More
           </button>
         </div>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-3 gap-4 mb-4">
         <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
