@@ -204,9 +204,9 @@ class ConsumptionFormulaAdditiveSerializer(serializers.ModelSerializer):
 
     def get_additive_details(self, obj):
         try:
-            instance = Additive.objects.get(id=obj.name)
-            return AdditiveSerializer(instance).data
-        except Additive.DoesNotExist:
+            instance = AdditiveCategory.objects.get(id=obj.name)
+            return AdditiveCategorySerializer(instance).data
+        except AdditiveCategory.DoesNotExist:
             return None
         
     def to_representation(self, instance):
@@ -221,9 +221,9 @@ class ConsumptionFormulaBaseOilSerializer(serializers.ModelSerializer):
 
     def get_raw_details(self, obj):
         try:
-            instance = RawMaterial.objects.get(id=obj.name)
-            return RawMaterialSerializer(instance).data
-        except RawMaterial.DoesNotExist:
+            instance = RawCategory.objects.get(id=obj.name)
+            return RawCategorySerializer(instance).data
+        except RawCategory.DoesNotExist:
             return None
         
     def to_representation(self, instance):
