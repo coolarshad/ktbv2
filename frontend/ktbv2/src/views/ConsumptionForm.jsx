@@ -66,26 +66,29 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         total_value: data.total_value || '',
                         per_litre_cost: data.per_litre_cost || '',
                         remarks: data.remarks || '',
-                        consumptionAdditive: data.consumptionAdditive && data.consumptionAdditive.length > 0
+                        consumptionAdditive: data.consumptionAdditive?.length
                             ? data.consumptionAdditive.map(item => ({
-                                name: item.name || '',
+                                name: item.additive?.id || item.name || '',
+                                display_name: item.additive?.name || '',
                                 sub_name: item.sub_name || '',
                                 rate: item.rate || '',
                                 qty_in_percent: item.qty_in_percent || '',
                                 qty_in_litre: item.qty_in_litre || '',
                                 value: item.value || ''
                             }))
-                            : [{ name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
-                        consumptionBaseOil: data.consumptionBaseOil && data.consumptionBaseOil.length > 0
+                            : [{ name: '', display_name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+                        consumptionBaseOil: data.consumptionBaseOil?.length
                             ? data.consumptionBaseOil.map(item => ({
-                                name: item.name || '',
+                                name: item.raw?.id || item.name || '',
+                                display_name: item.raw?.name || '',
                                 sub_name: item.sub_name || '',
                                 rate: item.rate || '',
                                 qty_in_percent: item.qty_in_percent || '',
                                 qty_in_litre: item.qty_in_litre || '',
                                 value: item.value || ''
                             }))
-                            : [{ name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+                            : [{ name: '', display_name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+
                     }));
                 })
                 .catch((error) => {
