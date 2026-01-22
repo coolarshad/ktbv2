@@ -244,107 +244,107 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     };
 
 
-   const handleChange = async (e, section, index) => {
-    const { name, value, files } = e.target;
-    const actualValue = files ? files[0] : (value || '');
+    const handleChange = async (e, section, index) => {
+        const { name, value, files } = e.target;
+        const actualValue = files ? files[0] : (value || '');
 
-    if (section) {
-        setFormData((prev) => {
-            const updatedSection = [...prev[section]];
-            const updatedItem = { ...updatedSection[index], [name]: actualValue };
+        if (section) {
+            setFormData((prev) => {
+                const updatedSection = [...prev[section]];
+                const updatedItem = { ...updatedSection[index], [name]: actualValue };
 
-            // 🔹 Auto-update rate if additive/base oil name is selected
-            if (section === 'consumptionAdditive' && name === 'name') {
-                const selectedAdditive = additiveOptions.find(opt => opt.id === parseInt(value));
-                updatedItem.rate = selectedAdditive ? selectedAdditive.costPriceInLiter : '';
-            }
+                // 🔹 Auto-update rate if additive/base oil name is selected
+                if (section === 'consumptionAdditive' && name === 'name') {
+                    const selectedAdditive = additiveOptions.find(opt => opt.id === parseInt(value));
+                    updatedItem.rate = selectedAdditive ? selectedAdditive.costPriceInLiter : '';
+                }
 
-            if (section === 'consumptionBaseOil' && name === 'name') {
-                const selectedBaseOil = baseOilOptions.find(opt => opt.id === parseInt(value));
-                updatedItem.rate = selectedBaseOil ? selectedBaseOil.cost_per_liter : '';
-            }
+                if (section === 'consumptionBaseOil' && name === 'name') {
+                    const selectedBaseOil = baseOilOptions.find(opt => opt.id === parseInt(value));
+                    updatedItem.rate = selectedBaseOil ? selectedBaseOil.cost_per_liter : '';
+                }
 
-            // 🔹 Auto-fetch rate when Sub Name is selected
-            if (name === 'sub_name' && actualValue) {
-                const endpoint =
-                    section === 'consumptionAdditive'
-                        ? `/costmgt/additives/${actualValue}/`
-                        : `/costmgt/raw-materials/${actualValue}/`;
+                // 🔹 Auto-fetch rate when Sub Name is selected
+                if (name === 'sub_name' && actualValue) {
+                    const endpoint =
+                        section === 'consumptionAdditive'
+                            ? `/costmgt/additives/${actualValue}/`
+                            : `/costmgt/raw-materials/${actualValue}/`;
 
-                axios.get(endpoint)
-                    .then(res => {
-                        const rate =
-                            section === 'consumptionAdditive'
-                                ? res.data.costPriceInLiter || 0
-                                : res.data.cost_per_liter || 0;
+                    axios.get(endpoint)
+                        .then(res => {
+                            const rate =
+                                section === 'consumptionAdditive'
+                                    ? res.data.costPriceInLiter || 0
+                                    : res.data.cost_per_liter || 0;
 
-                        const qtyInLitre = (parseFloat(updatedItem.qty_in_percent || 0) / 100) *
-                            parseFloat(formData.net_blending_qty || 0);
-                        const value = qtyInLitre * rate;
+                            const qtyInLitre = (parseFloat(updatedItem.qty_in_percent || 0) / 100) *
+                                parseFloat(formData.net_blending_qty || 0);
+                            const value = qtyInLitre * rate;
 
-                        updatedSection[index] = {
-                            ...updatedItem,
-                            rate: rate,
-                            qty_in_litre: qtyInLitre.toFixed(2),
-                            value: value.toFixed(2)
-                        };
+                            updatedSection[index] = {
+                                ...updatedItem,
+                                rate: rate,
+                                qty_in_litre: qtyInLitre.toFixed(2),
+                                value: value.toFixed(2)
+                            };
 
-                        // Recalc totals
+                            // Recalc totals
+                            const totals = recalcTotalsFromRates(
+                                parseFloat(formData.net_blending_qty || 0),
+                                section === 'consumptionAdditive' ? updatedSection : prev.consumptionAdditive,
+                                section === 'consumptionBaseOil' ? updatedSection : prev.consumptionBaseOil
+                            );
+
+                            setFormData((prev2) => ({
+                                ...prev2,
+                                [section]: updatedSection,
+                                cross_check: totals.cross_check,
+                                gross_vol_crosscheck: totals.gross_vol_crosscheck,
+                                total_value: totals.total_value,
+                                per_litre_cost: totals.per_litre_cost,
+                            }));
+                        })
+                        .catch(err => console.error(`Error fetching ${section} sub_name ${actualValue}:`, err));
+                } else {
+                    updatedSection[index] = updatedItem;
+                }
+
+                return { ...prev, [section]: updatedSection };
+            });
+        } else {
+            // 🔹 If net_blending_qty changes, recalc totals if rates exist
+            setFormData((prev) => {
+                let updatedData = { ...prev, [name]: actualValue };
+
+                if (name === 'net_blending_qty') {
+                    const netQty = parseFloat(actualValue);
+                    const ratesFilled = prev.consumptionAdditive.every(a => a.rate) &&
+                        prev.consumptionBaseOil.every(b => b.rate);
+
+                    if (!isNaN(netQty) && ratesFilled) {
                         const totals = recalcTotalsFromRates(
-                            parseFloat(formData.net_blending_qty || 0),
-                            section === 'consumptionAdditive' ? updatedSection : prev.consumptionAdditive,
-                            section === 'consumptionBaseOil' ? updatedSection : prev.consumptionBaseOil
+                            netQty,
+                            prev.consumptionAdditive,
+                            prev.consumptionBaseOil
                         );
 
-                        setFormData((prev2) => ({
-                            ...prev2,
-                            [section]: updatedSection,
+                        updatedData = {
+                            ...updatedData,
+                            consumptionAdditive: totals.updatedAdditives,
+                            consumptionBaseOil: totals.updatedBaseOils,
                             cross_check: totals.cross_check,
                             gross_vol_crosscheck: totals.gross_vol_crosscheck,
                             total_value: totals.total_value,
                             per_litre_cost: totals.per_litre_cost,
-                        }));
-                    })
-                    .catch(err => console.error(`Error fetching ${section} sub_name ${actualValue}:`, err));
-            } else {
-                updatedSection[index] = updatedItem;
-            }
-
-            return { ...prev, [section]: updatedSection };
-        });
-    } else {
-        // 🔹 If net_blending_qty changes, recalc totals if rates exist
-        setFormData((prev) => {
-            let updatedData = { ...prev, [name]: actualValue };
-
-            if (name === 'net_blending_qty') {
-                const netQty = parseFloat(actualValue);
-                const ratesFilled = prev.consumptionAdditive.every(a => a.rate) &&
-                                    prev.consumptionBaseOil.every(b => b.rate);
-
-                if (!isNaN(netQty) && ratesFilled) {
-                    const totals = recalcTotalsFromRates(
-                        netQty,
-                        prev.consumptionAdditive,
-                        prev.consumptionBaseOil
-                    );
-
-                    updatedData = {
-                        ...updatedData,
-                        consumptionAdditive: totals.updatedAdditives,
-                        consumptionBaseOil: totals.updatedBaseOils,
-                        cross_check: totals.cross_check,
-                        gross_vol_crosscheck: totals.gross_vol_crosscheck,
-                        total_value: totals.total_value,
-                        per_litre_cost: totals.per_litre_cost,
-                    };
+                        };
+                    }
                 }
-            }
 
-            return updatedData;
-        });
-    }
-};
+                return updatedData;
+            });
+        }
+    };
 
 
     const handleNameChange = async (e) => {
@@ -367,23 +367,28 @@ const ConsumptionForm = ({ mode = 'add' }) => {
             const res = await axios.get(`/costmgt/consumption-formula/${selectedName}/`);
             const data = res.data;
 
-            const additives = (data.consumptionFormulaAdditive || []).map((item) => ({
-                id: item.id || '',
-                name: item.name || '',
-                rate: item.rate || '',
+            const additives = (data.consumptionFormulaAdditive || []).map(item => ({
+                id: item.id,
+                name: item.additive?.id || '',
+                display_name: item.additive?.name || '',   // ✅ THIS
+                rate: '',
                 qty_in_percent: item.qty_in_percent || '',
                 qty_in_litre: '',
-                value: ''
+                value: '',
+                sub_name: ''
             }));
 
-            const baseOils = (data.consumptionFormulaBaseOil || []).map((item) => ({
-                id: item.id || '',
-                name: item.name || '',
-                rate: item.rate || '',
+            const baseOils = (data.consumptionFormulaBaseOil || []).map(item => ({
+                id: item.id,
+                name: item.raw?.id || '',
+                display_name: item.raw?.name || '',         // ✅ THIS
+                rate: '',
                 qty_in_percent: item.qty_in_percent || '',
                 qty_in_litre: '',
-                value: ''
+                value: '',
+                sub_name: ''
             }));
+
 
             setFormData((prev) => ({
                 ...prev,
@@ -741,11 +746,8 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
                             <input
                                 type="text"
-                                name='name'
                                 readOnly
-                                value={
-                                    additiveOptions.find(opt => opt.id === Number(item.name))?.category_name || ''
-                                }
+                                value={item.display_name || ''}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
                         </div>
@@ -869,11 +871,8 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
                             <input
                                 type="text"
-                                name='name'
                                 readOnly
-                                value={
-                                    baseOilOptions.find(opt => opt.id === Number(item.name))?.category_name || ''
-                                }
+                                value={item.display_name || ''}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
                         </div>
