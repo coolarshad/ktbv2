@@ -128,7 +128,7 @@ const Consumption = () => {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedConsumption.alias}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedConsumption?.formula?.name}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>

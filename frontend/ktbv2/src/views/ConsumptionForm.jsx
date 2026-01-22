@@ -30,6 +30,9 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     const [additiveOptions, setAdditiveOptions] = useState([]);
     const [baseOilOptions, setBaseOilOptions] = useState([]);
 
+
+    const [selectedAlias, setSelectedAlias] = useState(null);
+
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
             const response = await axios.get(url, { params });
@@ -169,7 +172,6 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     }, [mode, formData.net_blending_qty]);
 
 
-
     // const handleChange = (e, section, index) => {
     //     const { name, value, files } = e.target;
     //     const actualValue = files ? files[0] : (value || '');
@@ -246,6 +248,14 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         };
     };
 
+    const handleAliasChange = (option) => {
+        setSelectedAlias(option);
+
+        setFormData(prev => ({
+            ...prev,
+            alias: option ? option.value : '',
+        }));
+    };
 
     const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
@@ -532,7 +542,27 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         label: opt.ref
     }));
 
+    const namesOptions = nameOptions.map(opt => ({
+        value: Number(opt.id), // ensure it's a number
+        label: opt.name
+    }));
+    useEffect(() => {
+        if (mode !== 'update') return;
+        if (!formData.alias) return;
+        if (!namesOptions.length) return;
+
+        const matched = namesOptions.find(
+            opt => opt.value === Number(formData.alias)
+        ) || null;
+
+        setSelectedAlias(prev => {
+            if (prev?.value === matched?.value) return prev; // ✅ guard
+            return matched;
+        });
+    }, [mode, formData.alias, namesOptions]);
+
     const selectedFormula = formulaOptions.find(opt => opt.value === Number(formData.name)) || null;
+    const selectedNames = namesOptions.find(opt => opt.value === Number(formData.name)) || null;
 
     const additiveOptionsMapped = additiveOptions.map(opt => ({
         value: Number(opt.id), // store id as value
@@ -564,33 +594,25 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 {/* Name Input */}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-                    <input
+                    {/* <input
                         id="alias"
                         name="alias"
                         type="text"
                         value={formData.alias || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    /> */}
+                    <Select
+                        name='alias'
+                        value={selectedAlias}
+                        onChange={handleAliasChange}
+                        options={namesOptions}
+                        placeholder="Select Name"
+                        isSearchable
+                        isClearable
                     />
                 </div>
 
-                {/* <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Formula</label>
-                    <select
-                        id="name"
-                        name="name"
-                        value={formData.name || ''} // Ensure never undefined
-                        onChange={handleNameChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select Option</option>
-                        {nameOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
-                </div> */}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Formula Ref</label>
                     <Select
