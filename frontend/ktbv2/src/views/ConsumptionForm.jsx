@@ -566,12 +566,12 @@ const ConsumptionForm = ({ mode = 'add' }) => {
 
     const additiveOptionsMapped = additiveOptions.map(opt => ({
         value: Number(opt.id), // store id as value
-        label: opt.name
+        label: opt.subname_name
     }));
 
     const baseOilOptionsMapped = baseOilOptions.map(opt => ({
         value: Number(opt.id),  // store id
-        label: opt.name         // display name
+        label: opt.subname_name         // display name
     }));
 
     return (
@@ -643,6 +643,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         value={formData.grade || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly
                     />
                 </div>
 
@@ -656,6 +657,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         value={formData.sae || ''} // Ensure never undefined
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly
                     />
                 </div>
 

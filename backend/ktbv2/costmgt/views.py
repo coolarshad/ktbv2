@@ -31,6 +31,17 @@ class RawCategoryViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = RawCategoryFilter
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        leaf = self.request.query_params.get('leaf')
+        if leaf in ['1', 'true', 'True']:
+            qs = qs.filter(children__isnull=True)
+        else:
+            qs = qs.filter(children__isnull=False).distinct()
+
+        return qs
+
+
 class RawMaterialViewSet(viewsets.ModelViewSet):
     queryset = RawMaterial.objects.all().order_by('-id') 
     serializer_class = RawMaterialSerializer
@@ -42,6 +53,16 @@ class AdditiveCategoryViewSet(viewsets.ModelViewSet):
     serializer_class = AdditiveCategorySerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = AdditiveCategoryFilter
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        leaf = self.request.query_params.get('leaf')
+        if leaf in ['1', 'true', 'True']:
+            qs = qs.filter(children__isnull=True)
+        else:
+            qs = qs.filter(children__isnull=False).distinct()
+
+        return qs
 
 class AdditiveViewSet(viewsets.ModelViewSet):
     queryset = Additive.objects.all()

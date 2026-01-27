@@ -125,8 +125,16 @@ const RawMaterial = () => {
                 <tbody>
 
                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Product Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.name}</td>
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.date}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.category_name}</td>
+                  </tr>
+                   <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Sub Name</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.subname_name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">cost_per_liter</td>
@@ -159,7 +167,7 @@ const RawMaterial = () => {
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.approve? "Yes":"No"}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.approved? "Yes":"No"}</td>
                   </tr>
                  
                 </tbody>

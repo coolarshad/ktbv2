@@ -16,6 +16,7 @@ const AdditiveTable = ({ data , onDelete, onView }) => { // Default value for da
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sub Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">CFR Price/KG in USD</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add Cost</th>
@@ -30,8 +31,8 @@ const AdditiveTable = ({ data , onDelete, onView }) => { // Default value for da
           {data?.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.category_name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.subname_name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.crfPrice}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.addCost}</td>

@@ -6,14 +6,20 @@ const RawMaterialForm = ({ mode = 'add' }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const nameDropdownRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
+  const [subNames, setSubNames] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchNameTerm, setSearchNameTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNameDropdownOpen, setIsNameDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubName, setSelectedSubName] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
 
   const [formData, setFormData] = useState({
+    date: '',
     name: '',
     cost_per_liter: '',
     buy_price_pmt: '',
@@ -36,6 +42,15 @@ const RawMaterialForm = ({ mode = 'add' }) => {
       .catch((error) => console.error('Error fetching categories:', error));
   }, []);
 
+  useEffect(() => {
+    axios
+      .get('/costmgt/raw-categories?leaf=1')
+      .then((response) => {
+        setSubNames(response.data);
+      })
+      .catch((error) => console.error('Error fetching sub names:', error));
+  }, []);
+
   // Fetch existing data in update mode
   useEffect(() => {
     if (mode === 'update' && id) {
@@ -44,6 +59,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
         .then((response) => {
           const data = response.data;
           setFormData({
+            date: data.date || '',
             name: data.name || '',
             cost_per_liter: data.cost_per_liter || '',
             buy_price_pmt: data.buy_price_pmt || '',
@@ -73,11 +89,51 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     }
   }, [categories, formData.category]);
 
+  useEffect(() => {
+    if (subNames.length > 0 && formData.name) {
+      const sub = subNames.find((s) => s.id === formData.name);
+      if (sub) {
+        setSelectedSubName(sub);
+        setSearchNameTerm(sub.name);
+      }
+    }
+  }, [subNames, formData.name]);
+
+  useEffect(() => {
+    if (mode === 'add') {
+      setSelectedSubName(null);
+      setFormData((prev) => ({ ...prev, name: '' }));
+      setSearchNameTerm('');
+    }
+  }, [selectedCategory, mode]);
+
+  useEffect(() => {
+    if (mode === 'add') {
+      setSelectedSubName(null);
+      setFormData((prev) => ({ ...prev, name: '' }));
+      setSearchNameTerm('');
+    }
+  }, [selectedCategory, mode]);
+
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (nameDropdownRef.current && !nameDropdownRef.current.contains(event.target)) {
+        setIsNameDropdownOpen(false);
       }
     };
 
@@ -131,6 +187,8 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setFormData({ ...formData, extras: updated });
   };
 
+
+  const errors = {};
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -148,6 +206,11 @@ const RawMaterialForm = ({ mode = 'add' }) => {
         errors[`extras_${index}`] = "Both name and rate are required!";
       }
     });
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
 
     const payload = {
       ...formData,
@@ -187,10 +250,23 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setIsDropdownOpen(false);
   };
 
+  const handleNameSelectCategory = (sub) => {
+    setSelectedSubName(sub);
+    setFormData({ ...formData, name: sub.id });
+    setSearchNameTerm(sub.name);
+    setIsNameDropdownOpen(false);
+  };
+
   const handleClearCategory = () => {
     setSelectedCategory(null);
     setFormData({ ...formData, category: '' });
     setSearchTerm('');
+  };
+
+  const handleClearSubName = () => {
+    setSelectedSubName(null);
+    setFormData({ ...formData, name: '' });
+    setSearchNameTerm('');
   };
 
   const handleSearchChange = (e) => {
@@ -199,16 +275,40 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setIsDropdownOpen(true);
   };
 
+  const handleNameSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchNameTerm(term);
+    setIsNameDropdownOpen(true);
+  };
+
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredNames = subNames.filter((sub) =>
+    sub.name.toLowerCase().includes(searchNameTerm.toLowerCase()) &&
+    (!selectedCategory || sub.parent === selectedCategory.id)
+  );
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
       <p className="text-xl text-center">Raw Material Pricing Form</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
 
-         {/* Category Dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Date</label>
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+        </div>
+
+
+        {/* Category Dropdown */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Name</label>
           <div className="relative" ref={dropdownRef}>
@@ -262,7 +362,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
         </div>
 
         {/* Name */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700">Sub-Name</label>
           <input
             name="name"
@@ -272,9 +372,63 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
           />
           {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>}
+        </div> */}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Sub Name</label>
+          <div className="relative" ref={nameDropdownRef}>
+            <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+              <input
+                type="text"
+                placeholder="Search Sub Name..."
+                value={searchNameTerm}
+                onChange={handleNameSearchChange}
+                onClick={() => setIsNameDropdownOpen(true)}
+                className="p-2 w-full outline-none"
+              />
+              {selectedSubName && (
+                <button
+                  type="button"
+                  onClick={handleClearSubName}
+                  className="px-2 text-gray-500 hover:text-gray-700"
+                >
+                  ✖
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsNameDropdownOpen(!isNameDropdownOpen)}
+                className="px-2 text-gray-500 hover:text-gray-700"
+              >
+                {isNameDropdownOpen ? '▲' : '▼'}
+              </button>
+            </div>
+
+            {isNameDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
+                {filteredNames.length > 0 ? (
+                  filteredNames.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className={`p-2 cursor-pointer ${selectedSubName?.id === sub.id
+                        ? 'bg-blue-100'
+                        : 'hover:bg-gray-100'
+                        }`}
+                      onClick={() => handleNameSelectCategory(sub)}
+                    >
+                      {sub.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-2 text-gray-500">No matches found</div>
+                )}
+
+              </div>
+            )}
+          </div>
+          {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>}
         </div>
 
-       
 
         {/* Other fields */}
 

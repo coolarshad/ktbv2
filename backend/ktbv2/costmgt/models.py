@@ -87,7 +87,8 @@ class RawCategory(models.Model):
         return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
     
 class RawMaterial(models.Model):
-    name = models.CharField(max_length=50)
+    # name = models.CharField(max_length=50)
+    date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
     cost_per_liter = models.FloatField(null=True,blank=True)
     buy_price_pmt = models.FloatField(null=True,blank=True)
     add_cost = models.FloatField(null=True,blank=True)
@@ -100,6 +101,13 @@ class RawMaterial(models.Model):
         null=True,
         blank=True,
         related_name="rawmaterials"
+    )
+    name = models.ForeignKey(
+        RawCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rawmaterials_name"
     )
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
@@ -149,7 +157,7 @@ class AdditiveCategory(models.Model):
         return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
     
 class Additive(models.Model):
-    name=models.CharField(max_length=50)
+    # name=models.CharField(max_length=50)
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
     crfPrice=models.FloatField()
     addCost=models.FloatField()
@@ -166,6 +174,14 @@ class Additive(models.Model):
         null=True,
         blank=True,
         related_name="additives"
+    )
+
+    name = models.ForeignKey(
+        AdditiveCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="additives_name"
     )
 
     class Meta:

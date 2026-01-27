@@ -5,14 +5,14 @@ class AdditiveFilter(django_filters.FilterSet):
     class Meta:
         model = Additive
         fields = {
-            'name': ['exact', 'icontains'],
+            'remarks': ['exact', 'icontains'],
         }
 
 class RawMaterialFilter(django_filters.FilterSet):
     class Meta:
         model = RawMaterial
         fields = {
-            'name': ['exact', 'icontains'],
+            'remarks': ['exact', 'icontains'],
         }
 
 class PackingFilter(django_filters.FilterSet):

@@ -14,7 +14,9 @@ const RawMaterialTable = ({ data , onDelete, onView }) => { // Default value for
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sub Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Cost Per Liter</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buy Price</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add. Cost</th>
@@ -31,7 +33,9 @@ const RawMaterialTable = ({ data , onDelete, onView }) => { // Default value for
           {data?.map((item, index) => (
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.category_name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.subname_name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.cost_per_liter}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.buy_price_pmt}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.add_cost}</td>

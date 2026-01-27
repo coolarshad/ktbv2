@@ -92,13 +92,16 @@ class RMExtraSerializer(serializers.ModelSerializer):
 
 class RawMaterialSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
+    subname_name = serializers.CharField(source="name.name", read_only=True)
     extras = RMExtraSerializer(many=True, required=False)  # nested extras
 
     class Meta:
         model = RawMaterial
         fields = [
             'id',
+            'date',
             'name',
+            'subname_name',
             'cost_per_liter',
             'buy_price_pmt',
             'add_cost',
@@ -155,6 +158,7 @@ class AdditiveExtraSerializer(serializers.ModelSerializer):
 
 class AdditiveSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
+    subname_name = serializers.CharField(source="name.name", read_only=True)
     extras = AdditiveExtraSerializer(many=True, required=False)  # nested extras
 
     class Meta:
@@ -162,6 +166,7 @@ class AdditiveSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'subname_name',
             'date',
             'crfPrice',
             'addCost',
@@ -243,16 +248,23 @@ class ConsumptionAdditiveSerializer(serializers.ModelSerializer):
         model = ConsumptionAdditive
         fields = '__all__'
 
-    def get_additive_details(self, obj):
+    def get_additive_name_details(self, obj):
         try:
             instance = AdditiveCategory.objects.get(id=obj.name)
             return AdditiveCategorySerializer(instance).data
         except AdditiveCategory.DoesNotExist:
             return None
+    def get_additive_subname_details(self, obj):
+        try:
+            instance = Additive.objects.get(id=obj.sub_name)
+            return AdditiveSerializer(instance).data
+        except Additive.DoesNotExist:
+            return None
         
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        ret['additive'] = self.get_additive_details(instance)
+        ret['additive'] = self.get_additive_name_details(instance)
+        ret['additive_subname'] = self.get_additive_subname_details(instance)
         return ret
 
 class ConsumptionBaseOilSerializer(serializers.ModelSerializer):
@@ -266,10 +278,17 @@ class ConsumptionBaseOilSerializer(serializers.ModelSerializer):
             return RawCategorySerializer(instance).data
         except RawCategory.DoesNotExist:
             return None
+    def get_raw_name_details(self, obj):
+        try:
+            instance = RawMaterial.objects.get(id=obj.sub_name)
+            return RawMaterialSerializer(instance).data
+        except RawMaterial.DoesNotExist:
+            return None
         
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['raw'] = self.get_raw_details(instance)
+        ret['raw_subname'] = self.get_raw_name_details(instance)
         return ret
 
 

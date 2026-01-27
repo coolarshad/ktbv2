@@ -6,11 +6,16 @@ const AdditiveForm = ({ mode = 'add' }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const nameDropdownRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
+  const [subNames, setSubNames] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchNameTerm, setSearchNameTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNameDropdownOpen, setIsNameDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubName, setSelectedSubName] = useState(null);
   const [formData, setFormData] = useState({
     date: '',
     name: '',
@@ -30,6 +35,15 @@ const AdditiveForm = ({ mode = 'add' }) => {
       .get('/costmgt/additive-categories/')
       .then((res) => setCategories(res.data))
       .catch((err) => console.error('Error fetching categories:', err));
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get('/costmgt/additive-categories?leaf=1')
+      .then((response) => {
+        setSubNames(response.data);
+      })
+      .catch((error) => console.error('Error fetching sub names:', error));
   }, []);
 
   // Fetch existing additive in update mode
@@ -67,6 +81,49 @@ const AdditiveForm = ({ mode = 'add' }) => {
     }
   }, [categories, formData.category]);
 
+  useEffect(() => {
+    if (!subNames.length || !formData.name) return;
+
+    const sub = subNames.find((s) => s.id === formData.name);
+    if (!sub) return;
+
+    setSelectedSubName(sub);
+    setSearchNameTerm(sub.name);
+
+    // 🔥 ensure parent category is set
+    if (!selectedCategory && sub.parent) {
+      const parentCat = categories.find((c) => c.id === sub.parent);
+      if (parentCat) {
+        setSelectedCategory(parentCat);
+        setSearchTerm(parentCat.name);
+        setFormData((prev) => ({ ...prev, category: parentCat.id }));
+      }
+    }
+  }, [subNames, formData.name, categories]);
+
+  useEffect(() => {
+    if (mode === 'add') {
+      setSelectedSubName(null);
+      setFormData((prev) => ({ ...prev, name: '' }));
+      setSearchNameTerm('');
+    }
+  }, [selectedCategory, mode]);
+
+  useEffect(() => {
+    if (
+      mode !== 'update' ||
+      !formData.name ||
+      !subNames.length
+    ) return;
+
+    const sub = subNames.find((s) => s.id === formData.name);
+    if (!sub) return;
+
+    setSelectedSubName(sub);
+    setSearchNameTerm(sub.name);
+  }, [mode, formData.name, subNames]);
+
+
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -76,6 +133,19 @@ const AdditiveForm = ({ mode = 'add' }) => {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (nameDropdownRef.current && !nameDropdownRef.current.contains(event.target)) {
+        setIsNameDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleChange = (e) => {
@@ -105,6 +175,12 @@ const AdditiveForm = ({ mode = 'add' }) => {
     setIsDropdownOpen(true);
   };
 
+  const handleNameSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchNameTerm(term);
+    setIsNameDropdownOpen(true);
+  };
+
   const handleSelectCategory = (category) => {
     setSelectedCategory(category);
     setFormData({ ...formData, category: category.id });
@@ -112,10 +188,23 @@ const AdditiveForm = ({ mode = 'add' }) => {
     setIsDropdownOpen(false);
   };
 
+  const handleNameSelectCategory = (sub) => {
+    setSelectedSubName(sub);
+    setFormData({ ...formData, name: sub.id });
+    setSearchNameTerm(sub.name);
+    setIsNameDropdownOpen(false);
+  };
+
   const handleClearCategory = () => {
     setSelectedCategory(null);
     setFormData({ ...formData, category: '' });
     setSearchTerm('');
+  };
+
+  const handleClearSubName = () => {
+    setSelectedSubName(null);
+    setFormData({ ...formData, name: '' });
+    setSearchNameTerm('');
   };
 
   // Auto-calculations
@@ -141,6 +230,17 @@ const AdditiveForm = ({ mode = 'add' }) => {
   const filteredCategories = categories.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredNames = subNames.filter((sub) => {
+    // allow auto-load in update mode
+    if (selectedSubName && sub.id === selectedSubName.id) return true;
+
+    return (
+      sub.name.toLowerCase().includes(searchNameTerm.toLowerCase()) &&
+      (!selectedCategory || sub.parent === selectedCategory.id)
+    );
+  });
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -233,7 +333,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
         </div>
 
         {/* Name */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700"> Sub-Name</label>
           <input
             name="name"
@@ -241,6 +341,60 @@ const AdditiveForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+        </div> */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Sub Name</label>
+          <div className="relative" ref={nameDropdownRef}>
+            <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+              <input
+                type="text"
+                placeholder="Search Sub Name..."
+                value={searchNameTerm}
+                onChange={handleNameSearchChange}
+                onClick={() => setIsNameDropdownOpen(true)}
+                className="p-2 w-full outline-none"
+              />
+              {selectedSubName && (
+                <button
+                  type="button"
+                  onClick={handleClearSubName}
+                  className="px-2 text-gray-500 hover:text-gray-700"
+                >
+                  ✖
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsNameDropdownOpen(!isNameDropdownOpen)}
+                className="px-2 text-gray-500 hover:text-gray-700"
+              >
+                {isNameDropdownOpen ? '▲' : '▼'}
+              </button>
+            </div>
+
+            {isNameDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
+                {filteredNames.length > 0 ? (
+                  filteredNames.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className={`p-2 cursor-pointer ${selectedSubName?.id === sub.id
+                        ? 'bg-blue-100'
+                        : 'hover:bg-gray-100'
+                        }`}
+                      onClick={() => handleNameSelectCategory(sub)}
+                    >
+                      {sub.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-2 text-gray-500">No matches found</div>
+                )}
+
+              </div>
+            )}
+          </div>
+          {/* {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>} */}
         </div>
 
         {/* Date */}
@@ -255,7 +409,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
           />
         </div>
 
-        
+
 
         {/* Remaining fields */}
         <div>
