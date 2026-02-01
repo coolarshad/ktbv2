@@ -100,6 +100,30 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         }
     }, [mode, id]);
 
+
+    const getAdditiveSubOptions = (categoryId) => {
+        if (!categoryId) return [];
+
+        return additiveOptions
+            .filter(item => item.category === categoryId)
+            .map(item => ({
+                value: item.id,
+                label: item.subname_name
+            }));
+    };
+
+    const getBaseOilSubOptions = (categoryId) => {
+        if (!categoryId) return [];
+
+        return baseOilOptions
+            .filter(item => item.category === categoryId)
+            .map(item => ({
+                value: item.id,
+                label: item.subname_name
+            }));
+    };
+
+
     // useEffect(() => {
     //     if (mode === 'update' && formData.net_blending_qty) {
     //         const fetchRatesAndRecalculate = async () => {
@@ -781,12 +805,28 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         <div className="col-span-1 md:col-span-2">
                             <div className="col-span-1 md:col-span-2">
                                 <label htmlFor="sub_name" className="block text-sm font-medium text-gray-700">Sub Name</label>
-                                <Select
+                                {/* <Select
                                     options={additiveOptionsMapped}
                                     value={additiveOptionsMapped.find(opt => opt.value === Number(item.sub_name)) || null} // select current value
                                     onChange={(selectedOption) => handleChange({ target: { name: 'sub_name', value: selectedOption.value } }, 'consumptionAdditive', index)}
                                     placeholder="Select Additive"
                                     isSearchable={true}
+                                /> */}
+                                <Select
+                                    options={getAdditiveSubOptions(item.name)}
+                                    value={
+                                        getAdditiveSubOptions(item.name)
+                                            .find(opt => opt.value === Number(item.sub_name)) || null
+                                    }
+                                    onChange={(selectedOption) =>
+                                        handleChange(
+                                            { target: { name: 'sub_name', value: selectedOption.value } },
+                                            'consumptionAdditive',
+                                            index
+                                        )
+                                    }
+                                    placeholder="Select Additive Sub Name"
+                                    isSearchable
                                 />
                             </div>
                         </div>
@@ -905,7 +945,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         </div>
                         <div className="col-span-1 md:col-span-2">
                             <label htmlFor="sub_name" className="block text-sm font-medium text-gray-700">Sub Name</label>
-                            <Select
+                            {/* <Select
                                 options={baseOilOptionsMapped}
                                 value={baseOilOptionsMapped.find(opt => opt.value === Number(item.sub_name)) || null} // current selection
                                 onChange={(selectedOption) =>
@@ -917,7 +957,24 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 }
                                 placeholder="Select Base Oil"
                                 isSearchable={true}
+                            /> */}
+                            <Select
+                                options={getBaseOilSubOptions(item.name)}
+                                value={
+                                    getBaseOilSubOptions(item.name)
+                                        .find(opt => opt.value === Number(item.sub_name)) || null
+                                }
+                                onChange={(selectedOption) =>
+                                    handleChange(
+                                        { target: { name: 'sub_name', value: selectedOption.value } },
+                                        'consumptionBaseOil',
+                                        index
+                                    )
+                                }
+                                placeholder="Select Base Oil Sub Name"
+                                isSearchable
                             />
+
                         </div>
 
                         {/* Rate */}

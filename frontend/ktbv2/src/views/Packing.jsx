@@ -136,9 +136,13 @@ const Packing = () => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Per Each</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPacking.per_each}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Category</td>
                     <td className="py-2 px-4 text-gray-800">{selectedPacking.category}</td>
+                  </tr> */}
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing Type</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPacking?.packing_type_detail?.name}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
@@ -147,7 +151,7 @@ const Packing = () => {
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking.approve? "Yes":"No"}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPacking.approved? "Yes":"No"}</td>
                   </tr>
                  
                 </tbody>

@@ -129,11 +129,23 @@ const ProductFormula = () => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Consumption Name </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedFormula?.consumption?.alias}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedFormula?.consumption?.formula?.name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Consumption Qty </td>
+                    <td className="py-2 px-4 text-gray-800">{selectedFormula?.consumption_qty}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing Type</td>
                     <td className="py-2 px-4 text-gray-800">{selectedFormula?.packing?.name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bottles Per Pack</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedFormula?.bottle_per_pack}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Litres Per Pack</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedFormula?.litre_per_pack}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
@@ -146,17 +158,19 @@ const ProductFormula = () => {
               <table className="min-w-full bg-white">
                 <thead>
                   <tr>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Value</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing</th>
+                    <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty</th>
                   
                   </tr>
                 </thead>
                 <tbody>
                   {selectedFormula.items.map((item, index) =>
-                    item.label && ( // Check if both fields exist
+                    item.packing_label && ( // Check if both fields exist
                       <tr key={index}>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.label}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.value}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packings_type?.name}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packings?.name}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.qty}</td>
                      
                       </tr>
                     ) 

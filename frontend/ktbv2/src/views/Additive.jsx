@@ -159,6 +159,10 @@ const Additive = () => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost Price in Liters</td>
                     <td className="py-2 px-4 text-gray-800">{selectedAdditive.costPriceInLiter}</td>
                   </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.remarks}</td>
+                  </tr>
                  
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>

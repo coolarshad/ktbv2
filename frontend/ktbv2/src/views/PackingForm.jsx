@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../axiosConfig";
 import { capitalizeKey } from "../utils";
+import Select from 'react-select'
 
 const PackingForm = ({ mode = "add" }) => {
   const { id } = useParams();
@@ -19,7 +20,7 @@ const PackingForm = ({ mode = "add" }) => {
     date: "",
     name: "",
     per_each: "",
-    category: "", // now references Category model
+    // category: "", // now references Category model
     packing_type: "",
     remarks: "",
     extras: [],
@@ -47,24 +48,24 @@ const PackingForm = ({ mode = "add" }) => {
 
   // Fetch existing data in update mode
   useEffect(() => {
-  if (mode === "update" && id) {
-    axios
-      .get(`/costmgt/packings/${id}/`)
-      .then((response) => {
-        const data = response.data;
-        setFormData({
-          date: data.date || "",
-          name: data.name || "",
-          per_each: data.per_each || "",
-          category: data.category || "",
-          packing_type: data.packing_type || "",
-          remarks: data.remarks || "",
-          extras: data.extras || [],  // <-- default to empty array
-        });
-      })
-      .catch((error) => console.error("Error fetching packing data:", error));
-  }
-}, [mode, id, categories]);
+    if (mode === "update" && id) {
+      axios
+        .get(`/costmgt/packings/${id}/`)
+        .then((response) => {
+          const data = response.data;
+          setFormData({
+            date: data.date || "",
+            name: data.name || "",
+            per_each: data.per_each || "",
+            // category: data.category || "",
+            packing_type: data.packing_type ? Number(data.packing_type) : "",
+            remarks: data.remarks || "",
+            extras: data.extras || [],  // <-- default to empty array
+          });
+        })
+        .catch((error) => console.error("Error fetching packing data:", error));
+    }
+  }, [mode, id, categories]);
 
   useEffect(() => {
     if (formData.category && categories.length > 0) {
@@ -117,7 +118,7 @@ const PackingForm = ({ mode = "add" }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     let errors = {};
-
+    console.log(formData)
     // Validate main fields
     const skipValidation = [];
     for (const [key, value] of Object.entries(formData)) {
@@ -183,6 +184,22 @@ const PackingForm = ({ mode = "add" }) => {
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const packingOptionsMapped = packingTypes.map(opt => ({
+    value: Number(opt.id),
+    label: opt.name
+  }));
+
+  const selectedPackingType = packingOptionsMapped.find(
+    opt => opt.value === formData.packing_type
+  ) || null;
+
+  const handlePackingTypeChange = (selectedOption) => {
+    setFormData({
+      ...formData,
+      packing_type: selectedOption ? selectedOption.value : ""
+    });
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
       <p className="text-xl text-center">Packing Price Form</p>
@@ -229,91 +246,20 @@ const PackingForm = ({ mode = "add" }) => {
           )}
         </div>
 
-        {/* Category Dropdown */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Category
-          </label>
-          <div className="relative" ref={dropdownRef}>
-            <div className="relative">
-              <div className="flex items-center border border-gray-300 rounded overflow-hidden">
-                <input
-                  type="text"
-                  placeholder="Search category..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  onClick={() => setIsDropdownOpen(true)}
-                  className="p-2 w-full outline-none"
-                />
-                {selectedCategory && (
-                  <button
-                    type="button"
-                    onClick={handleClearCategory}
-                    className="px-2 text-gray-500 hover:text-gray-700"
-                  >
-                    ✖
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="px-2 text-gray-500 hover:text-gray-700"
-                >
-                  {isDropdownOpen ? "▲" : "▼"}
-                </button>
-              </div>
+        <div className="col-span-1 md:col-span-1">
+          <label className="block text-sm font-medium text-gray-700"> Packing Type</label>
 
-              {isDropdownOpen && (
-                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
-                  {filteredCategories.length > 0 ? (
-                    filteredCategories.map((category) => (
-                      <div
-                        key={category.id}
-                        className={`p-2 cursor-pointer ${selectedCategory?.id === category.id
-                          ? "bg-blue-100"
-                          : "hover:bg-gray-100"
-                          }`}
-                        onClick={() => handleSelectCategory(category)}
-                      >
-                        {category.name}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-2 text-gray-500">No matches found</div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-          {validationErrors.category && (
-            <p className="text-red-500">{validationErrors.category}</p>
-          )}
+          <Select
+            options={packingOptionsMapped}
+            value={selectedPackingType}
+            onChange={handlePackingTypeChange}
+            placeholder="Select Packing Type"
+            isSearchable
+            isClearable
+          />
         </div>
 
-        {/* Packing Type Dropdown */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Packing Type
-          </label>
-          <select
-            name="packing_type"
-            value={formData.packing_type}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          >
-            <option value="">Select packing type</option>
-            {packingTypes.map((type, index) => (
-              <option key={index} value={type.name}>
-                {type.name}
-              </option>
-            ))}
-          </select>
-          {validationErrors.packing_type && (
-            <p className="text-red-500">{validationErrors.packing_type}</p>
-          )}
-        </div>
-
-        <div>
+        <div className="col-span-1 md:col-span-2">
           <label className="block text-sm font-medium text-gray-700">
             Remarks
           </label>
@@ -330,7 +276,7 @@ const PackingForm = ({ mode = "add" }) => {
         </div>
       </div>
 
-      <div className="p-4 border rounded bg-gray-50 relative">
+      {/* <div className="p-4 border rounded bg-gray-50 relative">
         <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
 
         {formData.extras.map((row, index) => (
@@ -372,7 +318,7 @@ const PackingForm = ({ mode = "add" }) => {
             + Add More
           </button>
         </div>
-      </div>
+      </div> */}
 
 
 

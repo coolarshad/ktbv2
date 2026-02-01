@@ -783,21 +783,27 @@ class ProductFormulaView(APIView):
         c_data = {
             'formula_name': data.get('formula_name'),
             'consumption_name': data.get('consumption_name'),
+            'consumption_qty': data.get('consumption_qty'),
             'packing_type': data.get('packing_type'),
+            'bottle_per_pack': data.get('bottle_per_pack'),
+            'litre_per_pack': data.get('litre_per_pack'),
             'remarks': data.get('remarks'),
         }
         c_items_data = []
       
        
-        l = 0
-        while f'attributes[{l}].label' in data:
-            item_data = {
-                'label': data.get(f'attributes[{l}].label'),
-                'value': data.get(f'attributes[{l}].value'),
-            }
-            c_items_data.append(item_data)
-            l += 1
+        attributes = data.get("attributes", [])
 
+        c_items_data = []
+        for item in attributes:
+            c_items_data.append({
+                "packing_type": item.get("packing_type"),
+                "packing_label": item.get("packing_label"),
+                "qty": item.get("qty"),
+            })
+
+
+        # import pdb;pdb.set_trace()
         with transaction.atomic():
             p_serializer = ProductFormulaSerializer(data=c_data)
             if p_serializer.is_valid():
@@ -826,21 +832,26 @@ class ProductFormulaView(APIView):
         c_data = {
             'formula_name': data.get('formula_name'),
             'consumption_name': data.get('consumption_name'),
+            'consumption_qty': data.get('consumption_qty'),
             'packing_type': data.get('packing_type'),
+            'bottle_per_pack': data.get('bottle_per_pack'),
+            'litre_per_pack': data.get('litre_per_pack'),
             'remarks': data.get('remarks'),
         }
         c_items_data = []
       
        
-        l = 0
-        while f'attributes[{l}].label' in data:
-            item_data = {
-                'label': data.get(f'attributes[{l}].label'),
-                'value': data.get(f'attributes[{l}].value'),
-            }
-            c_items_data.append(item_data)
-            l += 1
-       
+        attributes = data.get("attributes", [])
+
+        c_items_data = []
+        for item in attributes:
+            c_items_data.append({
+                "packing_type": item.get("packing_type"),
+                "packing_label": item.get("packing_label"),
+                "qty": item.get("qty"),
+            })
+
+        # import pdb;pdb.set_trace()
         with transaction.atomic():
             formula_serializer = ProductFormulaSerializer(formula, data=c_data, partial=True)
             if formula_serializer.is_valid():

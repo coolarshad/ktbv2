@@ -26,9 +26,22 @@ class PackingExtraSerializer(serializers.ModelSerializer):
         model = PackingExtra
         fields = ['id', 'name', 'rate']
 
+class PackingTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PackingType
+        fields = '__all__'
+
 class PackingSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source="category.name", read_only=True)
-    extras = PackingExtraSerializer(many=True, required=False)  # nested extras
+    # category_name = serializers.CharField(source="category.name", read_only=True)
+    # extras = PackingExtraSerializer(many=True, required=False)  # nested extras
+    packing_type = serializers.PrimaryKeyRelatedField(
+        queryset=PackingType.objects.all()
+    )
+
+    packing_type_detail = PackingTypeSerializer(
+        source="packing_type",
+        read_only=True
+    )
 
     class Meta:
         model = Packing
@@ -37,9 +50,10 @@ class PackingSerializer(serializers.ModelSerializer):
             'date',
             'name',
             'per_each',
-            'category',
-            'category_name',
+            # 'category',
+            # 'category_name',
             'packing_type',
+            'packing_type_detail',
             'remarks',
             'approved',
             'extras'
@@ -336,6 +350,26 @@ class ProductFormulaItemSerializer(serializers.ModelSerializer):
         model = ProductFormulaItem
         fields = '__all__'
 
+    def get_packings_type_details(self, obj):
+        try:
+            instance = PackingType.objects.get(id=obj.packing_type)
+            return PackingTypeSerializer(instance).data
+        except PackingType.DoesNotExist:
+            return None
+    def get_packings_details(self, obj):
+        try:
+            instance = Packing.objects.get(id=obj.packing_label)
+            return PackingSerializer(instance).data
+        except Packing.DoesNotExist:
+            return None
+        
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['packings_type'] = self.get_packings_type_details(instance)
+        ret['packings'] = self.get_packings_details(instance)
+        return ret
+
+
 
 class ProductFormulaSerializer(serializers.ModelSerializer):
     formula_item = ProductFormulaItemSerializer(many=True, read_only=True)
@@ -352,9 +386,9 @@ class ProductFormulaSerializer(serializers.ModelSerializer):
     
     def get_packing_details(self, obj):
         try:
-            instance = Packing.objects.get(id=obj.packing_type)
-            return PackingSerializer(instance).data
-        except Packing.DoesNotExist:
+            instance = PackingSize.objects.get(id=obj.packing_type)
+            return PackingSizeSerializer(instance).data
+        except PackingSize.DoesNotExist:
             return None
         
     def to_representation(self, instance):

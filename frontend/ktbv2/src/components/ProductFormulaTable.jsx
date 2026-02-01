@@ -15,7 +15,7 @@ const ProductFormulaTable = ({ data , onDelete, onView }) => { // Default value 
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Formula Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Consumption Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
@@ -31,7 +31,7 @@ const ProductFormulaTable = ({ data , onDelete, onView }) => { // Default value 
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.formula_name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.consumption?.alias}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.consumption?.formula?.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.packing?.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
              

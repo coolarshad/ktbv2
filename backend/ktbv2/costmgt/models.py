@@ -28,18 +28,39 @@ class Category(models.Model):
         return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
 
 
+class PackingType(models.Model):
+    name=models.CharField(_("name"), max_length=50)
+    
+    class Meta:
+        verbose_name = _("PackingType")
+        verbose_name_plural = _("PackingTypes")
+        ordering = ['-id'] 
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("PackingType_detail", kwargs={"pk": self.pk})
+
 class Packing(models.Model):
     date = models.DateField(_("date"), null=True, blank=True)
     name = models.CharField(max_length=50)
     per_each = models.FloatField(null=True, blank=True)
-    category = models.ForeignKey(
-        Category,
+    # category = models.ForeignKey(
+    #     Category,
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name="packings"
+    # )
+    # packing_type = models.CharField(max_length=255, blank=True, null=True)
+    packing_type = models.ForeignKey(
+        PackingType,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="packings"
     )
-    packing_type = models.CharField(max_length=255, blank=True, null=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
 
@@ -392,25 +413,16 @@ class FinalProductItem(models.Model):
         ordering = ['-id'] 
    
 
-class PackingType(models.Model):
-    name=models.CharField(_("name"), max_length=50)
-    
-    class Meta:
-        verbose_name = _("PackingType")
-        verbose_name_plural = _("PackingTypes")
-        ordering = ['-id'] 
 
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("PackingType_detail", kwargs={"pk": self.pk})
     
 
 class ProductFormula(models.Model):
     formula_name=models.CharField(max_length=100)
     consumption_name=models.CharField(max_length=100)
+    consumption_qty=models.FloatField()
     packing_type=models.CharField(max_length=100,blank=True,null=True)
+    bottle_per_pack=models.FloatField()
+    litre_per_pack=models.FloatField()
     remarks=models.CharField(max_length=100,null=True,blank=True)
 
     class Meta:
@@ -423,8 +435,9 @@ class ProductFormula(models.Model):
     
 class ProductFormulaItem(models.Model):
     product_formula=models.ForeignKey('ProductFormula',on_delete=models.CASCADE,related_name='product_formula_items')
-    label=models.CharField(max_length=100)
-    value=models.FloatField()
+    packing_type=models.CharField(max_length=100)
+    packing_label=models.CharField(max_length=100)
+    qty=models.FloatField()
 
     class Meta:
         ordering = ['-id'] 
