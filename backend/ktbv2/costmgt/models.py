@@ -424,6 +424,7 @@ class ProductFormula(models.Model):
     bottle_per_pack=models.FloatField()
     litre_per_pack=models.FloatField()
     remarks=models.CharField(max_length=100,null=True,blank=True)
+    approved=models.BooleanField(null=True,default=False)
 
     class Meta:
         verbose_name = _("ProductFormula")

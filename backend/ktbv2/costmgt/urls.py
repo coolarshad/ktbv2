@@ -34,6 +34,7 @@ urlpatterns = [
     path('consumption-formula-approve/<int:pk>/', ConsumptionFormulaApprovalView.as_view(), name='consumption-formula-approve'),
     path('consumption-approve/<int:pk>/', ConsumptionApprovalView.as_view(), name='consumption-approve'),
     path('final-product-approve/<int:pk>/', FinalProductApprovalView.as_view(), name='final-product-approve'),
+    path('product-formula-approve/<int:pk>/', ProductFormulaApprovalView.as_view(), name='product-formula-approve'),
 
     path('next-consumption-ref/',NextConsumptionRef.as_view(),name="consumption-ref")
 

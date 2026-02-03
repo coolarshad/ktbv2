@@ -290,7 +290,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                             Delete
                         </button>
                     </div>
-                    <div>
+                    {/* <div>
                         <button
                             type="button"
                             onClick={addAttribute}
@@ -298,11 +298,19 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                         >
                             Add Attribute
                         </button>
-                    </div>
+                    </div> */}
                 </>
             ))}
 
-
+            <div>
+                <button
+                    type="button"
+                    onClick={addAttribute}
+                    className="bg-green-500 text-white px-4 py-2 rounded"
+                >
+                    Add Attribute
+                </button>
+            </div>
 
             <button className="bg-blue-600 text-white px-5 py-2 rounded">
                 Submit

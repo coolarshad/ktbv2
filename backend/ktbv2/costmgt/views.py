@@ -916,6 +916,27 @@ class FinalProductApprovalView(APIView):
             return Response({'detail': 'Final Product Cost not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ProductFormulaApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+    
+        if not pk:
+            return Response({'detail': 'Product formulation id not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = ProductFormula.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+
+                serializer = ProductFormulaSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except ProductFormula.DoesNotExist:
+            return Response({'detail': 'Product formulation not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class ConsumptionApprovalView(APIView):
     def get(self, request, *args, **kwargs):
