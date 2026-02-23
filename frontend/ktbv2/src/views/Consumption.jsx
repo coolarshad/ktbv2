@@ -130,6 +130,10 @@ const Consumption = () => {
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption?.formula?.name}</td>
                     </tr>
+                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Batch Number </td>
+                      <td className="py-2 px-4 text-gray-800">{selectedConsumption.batch}</td>
+                    </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.date}</td>

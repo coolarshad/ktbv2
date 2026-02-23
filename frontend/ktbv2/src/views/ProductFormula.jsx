@@ -139,14 +139,14 @@ const ProductFormula = () => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing Type</td>
                     <td className="py-2 px-4 text-gray-800">{selectedFormula?.packing?.name}</td>
                   </tr>
-                  <tr className="border-b border-gray-200">
+                  {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bottles Per Pack</td>
                     <td className="py-2 px-4 text-gray-800">{selectedFormula?.bottle_per_pack}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Litres Per Pack</td>
                     <td className="py-2 px-4 text-gray-800">{selectedFormula?.litre_per_pack}</td>
-                  </tr>
+                  </tr> */}
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
                     <td className="py-2 px-4 text-gray-800">{selectedFormula.remarks}</td>

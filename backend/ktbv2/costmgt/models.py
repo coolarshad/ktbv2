@@ -311,6 +311,7 @@ class Consumption(models.Model):
     per_litre_cost=models.FloatField()
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    batch=models.CharField(max_length=50,null=True,blank=True)
 
 
     class Meta:
@@ -421,8 +422,8 @@ class ProductFormula(models.Model):
     consumption_name=models.CharField(max_length=100)
     consumption_qty=models.FloatField()
     packing_type=models.CharField(max_length=100,blank=True,null=True)
-    bottle_per_pack=models.FloatField()
-    litre_per_pack=models.FloatField()
+    # bottle_per_pack=models.FloatField()
+    # litre_per_pack=models.FloatField()
     remarks=models.CharField(max_length=100,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
 

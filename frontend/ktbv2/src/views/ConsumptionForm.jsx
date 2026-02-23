@@ -22,6 +22,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         total_value: '',
         per_litre_cost: '',
         remarks: '',
+        batch: '',
         consumptionAdditive: [{ name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
         consumptionBaseOil: [{ name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
     });
@@ -69,6 +70,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         total_value: data.total_value || '',
                         per_litre_cost: data.per_litre_cost || '',
                         remarks: data.remarks || '',
+                        batch: data.batch || '',
                         consumptionAdditive: data.consumptionAdditive?.length
                             ? data.consumptionAdditive.map(item => ({
                                 name: item.additive?.id || item.name || '',
@@ -656,7 +658,17 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     />
                 </div>
 
-
+                <div>
+                    <label htmlFor="batch" className="block text-sm font-medium text-gray-700">Batch Number</label>
+                    <input
+                        id="batch"
+                        name="batch"
+                        type="text"
+                        value={formData.batch || ''} // Ensure never undefined
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                </div>
                 {/* Grade Input */}
                 <div>
                     <label htmlFor="grade" className="block text-sm font-medium text-gray-700">Grade</label>

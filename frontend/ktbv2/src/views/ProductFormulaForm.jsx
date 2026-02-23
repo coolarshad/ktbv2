@@ -14,8 +14,8 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         consumption_name: "",
         consumption_qty: "",
         packing_type: "",
-        bottle_per_pack: "",
-        litre_per_pack: "",
+        // bottle_per_pack: "",
+        // litre_per_pack: "",
         remarks: "",
         attributes: [{ packing_type: "", packing_label: "", qty: "" }],
     });
@@ -59,8 +59,8 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                     consumption_name: Number(data.consumption_name),
                     consumption_qty: data.consumption_qty || "",
                     packing_type: Number(data.packing_type),
-                    bottle_per_pack: data.bottle_per_pack || "",
-                    litre_per_pack: data.litre_per_pack || "",
+                    // bottle_per_pack: data.bottle_per_pack || "",
+                    // litre_per_pack: data.litre_per_pack || "",
                     remarks: data.remarks || "",
                     attributes,
                 });
@@ -106,8 +106,8 @@ const ProductFormulaForm = ({ mode = "add" }) => {
             setFormData(prev => ({
                 ...prev,
                 packing_type: "",
-                bottle_per_pack: "",
-                litre_per_pack: "",
+                // bottle_per_pack: "",
+                // litre_per_pack: "",
             }));
             return;
         }
@@ -115,8 +115,8 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         setFormData(prev => ({
             ...prev,
             packing_type: selected.value,
-            bottle_per_pack: Number(selected.bottles_per_pack),
-            litre_per_pack: Number(selected.litres_per_pack),
+            // bottle_per_pack: Number(selected.bottles_per_pack),
+            // litre_per_pack: Number(selected.litres_per_pack),
         }));
     };
 
@@ -153,8 +153,8 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         const payload = {
             ...formData,
             consumption_qty: Number(formData.consumption_qty),
-            bottle_per_pack: Number(formData.bottle_per_pack),
-            litre_per_pack: Number(formData.litre_per_pack),
+            // bottle_per_pack: Number(formData.bottle_per_pack),
+            // litre_per_pack: Number(formData.litre_per_pack),
         };
 
         const apiCall = mode === "add" ? axios.post : axios.put;
@@ -217,7 +217,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                     />
                 </div>
 
-                <div>
+                {/* <div>
                     <label className="block text-sm font-medium">Bottles / Pack</label>
                     <input
                         readOnly
@@ -233,7 +233,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                         value={formData.litre_per_pack}
                         className="border p-2 rounded w-full bg-gray-100"
                     />
-                </div>
+                </div> */}
             </div>
 
             <div>

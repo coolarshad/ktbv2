@@ -332,6 +332,7 @@ class ConsumptionView(APIView):
             'total_value': data.get('total_value'),
             'per_litre_cost': data.get('per_litre_cost'),
             'remarks': data.get('remarks'),
+            'batch': data.get('batch'),
         }
         c_additives_data = []
         c_base_oils_data = []
@@ -408,6 +409,7 @@ class ConsumptionView(APIView):
             'total_value': data.get('total_value'),
             'per_litre_cost': data.get('per_litre_cost'),
             'remarks': data.get('remarks'),
+            'batch': data.get('batch')
         }
         c_additives_data = []
         c_base_oils_data = []
@@ -785,8 +787,8 @@ class ProductFormulaView(APIView):
             'consumption_name': data.get('consumption_name'),
             'consumption_qty': data.get('consumption_qty'),
             'packing_type': data.get('packing_type'),
-            'bottle_per_pack': data.get('bottle_per_pack'),
-            'litre_per_pack': data.get('litre_per_pack'),
+            # 'bottle_per_pack': data.get('bottle_per_pack'),
+            # 'litre_per_pack': data.get('litre_per_pack'),
             'remarks': data.get('remarks'),
         }
         c_items_data = []
@@ -834,8 +836,8 @@ class ProductFormulaView(APIView):
             'consumption_name': data.get('consumption_name'),
             'consumption_qty': data.get('consumption_qty'),
             'packing_type': data.get('packing_type'),
-            'bottle_per_pack': data.get('bottle_per_pack'),
-            'litre_per_pack': data.get('litre_per_pack'),
+            # 'bottle_per_pack': data.get('bottle_per_pack'),
+            # 'litre_per_pack': data.get('litre_per_pack'),
             'remarks': data.get('remarks'),
         }
         c_items_data = []
