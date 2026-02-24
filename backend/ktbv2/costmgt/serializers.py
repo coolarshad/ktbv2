@@ -372,7 +372,7 @@ class ProductFormulaItemSerializer(serializers.ModelSerializer):
 
 
 class ProductFormulaSerializer(serializers.ModelSerializer):
-    formula_item = ProductFormulaItemSerializer(many=True, read_only=True)
+    product_formula_items = ProductFormulaItemSerializer(many=True, read_only=True)
     class Meta:
         model = ProductFormula
         fields = '__all__'

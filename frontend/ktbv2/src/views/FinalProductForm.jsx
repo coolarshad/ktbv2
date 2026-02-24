@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
+import axios from '../axiosConfig';
 
 export default function FinalProductForm() {
 
@@ -7,30 +8,7 @@ export default function FinalProductForm() {
      DUMMY DATA
   =============================== */
 
-  const formulaOptions = [
-    { value: 1, label: "Formula A" },
-    { value: 2, label: "Formula B" }
-  ];
 
-  const consumerOptions = [
-    { value: 1, label: "Consumer A" },
-    { value: 2, label: "Consumer B" }
-  ];
-
-  const batchOptions = [
-    { value: 1, label: "Batch-001", per_litre_cost: 120 },
-    { value: 2, label: "Batch-002", per_litre_cost: 150 }
-  ];
-
-  const packingSizeOptions = [
-    { value: 1, label: "1L x 12", bottles_per_pack: 12, litres_per_pack: 12 },
-    { value: 2, label: "500ML x 24", bottles_per_pack: 24, litres_per_pack: 12 }
-  ];
-
-  const unitOptions = [
-    { value: 1, label: "Packs" },
-    { value: 2, label: "Boxes" }
-  ];
 
   const packingSelectionOptions = [
     { value: 1, label: "Small Box - 10", rate: 10 },
@@ -45,7 +23,7 @@ export default function FinalProductForm() {
   const [formData, setFormData] = useState({
     date: "",
     formula: null,
-    consumer: null,
+    consumption: null,
     batch: null,
 
     consumption_qty: "",
@@ -60,6 +38,9 @@ export default function FinalProductForm() {
     qty_in_litres: "",
     per_litre_cost: "",
     total_oil_consumed: "",
+
+    total_cfr_pricing: "",
+    remarks: "",
 
     packing_items: [
       {
@@ -77,9 +58,91 @@ export default function FinalProductForm() {
     ]
   });
 
+  const [formulaList, setFormulaList] = useState([]);
+  const [batchList, setBatchList] = useState([]);
+  const [unitOptions, setUnitOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [allPackings, setAllPackings] = useState([]);
   /* ===============================
      AUTO CALCULATIONS
   =============================== */
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('/costmgt/product-formula/');
+        setFormulaList(response.data);
+      } catch (error) {
+        setError('Failed to fetch final products data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchPackings = async () => {
+      try {
+        const res = await axios.get('/trademgt/packings/');
+        const formatted = res.data.map(item => ({
+          value: item.id,
+          label: item.name
+        }));
+        setUnitOptions(formatted);
+      } catch (err) {
+        console.error("Failed to load packings");
+      }
+    };
+
+    fetchPackings();
+  }, []);
+
+  useEffect(() => {
+    const fetchPackings = async () => {
+      try {
+        const res = await axios.get('/costmgt/packings/');
+        setAllPackings(res.data);
+      } catch (err) {
+        console.error("Failed to load packings");
+      }
+    };
+
+    fetchPackings();
+  }, []);
+
+  useEffect(() => {
+
+    const perLitreCost = Number(formData.per_litre_cost || 0);
+    const totalOilConsumed = Number(formData.total_oil_consumed || 0);
+
+    const packingTotal = formData.packing_items.reduce(
+      (acc, item) => acc + Number(item.value || 0),
+      0
+    );
+
+    const additionalCostTotal = formData.additional_costs.reduce(
+      (acc, item) => acc + Number(item.value || 0),
+      0
+    );
+
+    const cfr =
+      (perLitreCost * totalOilConsumed) +
+      packingTotal +
+      additionalCostTotal;
+
+    setFormData(prev => ({
+      ...prev,
+      total_cfr_pricing: cfr.toFixed(4)
+    }));
+
+  }, [
+    formData.per_litre_cost,
+    formData.total_oil_consumed,
+    formData.packing_items,
+    formData.additional_costs
+  ]);
 
   useEffect(() => {
 
@@ -91,7 +154,7 @@ export default function FinalProductForm() {
     setFormData(prev => ({
       ...prev,
       qty_in_litres: (totalQty * litresPerPack).toFixed(4),
-      total_oil_consumed: (consumptionQty * perLitreCost).toFixed(4)
+      total_oil_consumed: (consumptionQty * totalQty * litresPerPack).toFixed(4)
     }));
 
   }, [
@@ -104,6 +167,12 @@ export default function FinalProductForm() {
   /* ===============================
      HANDLER
   =============================== */
+
+  const formulaOptions = formulaList.map(item => ({
+    value: item.id,
+    label: item.formula_name,
+    raw: item   // store full object for later use
+  }));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -151,8 +220,12 @@ export default function FinalProductForm() {
         updated[index].value = qty * rate;
       }
 
-      if (field === "packing_selection" && value?.rate) {
-        updated[index].rate = value.rate;
+      if (field === "packing_selection") {
+        updated[index].packing_selection = value;
+        updated[index].rate = value?.rate || 0;
+
+        const qty = Number(updated[index].qty || 0);
+        updated[index].value = qty * Number(value?.rate || 0);
       }
 
       return { ...prev, packing_items: updated };
@@ -184,9 +257,11 @@ export default function FinalProductForm() {
       const updated = [...prev.additional_costs];
       updated[index][field] = value;
 
-      if (field === "rate") {
-        updated[index].value = Number(value || 0);
-      }
+      const rate = Number(updated[index].rate || 0);
+      const totalQty = Number(prev.total_qty || 0);
+
+      // ✅ Value = Rate × Total Qty
+      updated[index].value = rate * totalQty;
 
       return { ...prev, additional_costs: updated };
     });
@@ -227,38 +302,98 @@ export default function FinalProductForm() {
 
         <div>
           <label className="block font-medium">Formula Name</label>
-          <Select options={formulaOptions}
-            onChange={opt =>
-              setFormData(prev => ({ ...prev, formula: opt }))
-            }
+          <Select
+            options={formulaOptions}
+            value={formData.formula}
+            onChange={(opt) => {
+
+              const selected = opt.raw;
+
+              // Filter batches where formula id matches
+              const filteredBatches = formulaList
+                .filter(item =>
+                  item.consumption.formula.id === selected.consumption.formula.id
+                )
+                .map(item => ({
+                  value: item.consumption.id,
+                  label: item.consumption.batch || "No Batch",
+                  per_litre_cost: item.consumption.per_litre_cost
+                }));
+
+              setBatchList(filteredBatches);
+
+              // 🔥 BUILD PACKING ITEMS FROM API
+              const mappedPackingItems = selected.product_formula_items.map(p => ({
+                packing_type: p.packings_type?.name || "",
+                packing: p.packings?.name || "",
+                packing_selection: null,
+                qty: p.qty || "",
+                rate: p.packings?.per_each || "",
+                value:
+                  Number(p.qty || 0) *
+                  Number(p.packings?.per_each || 0)
+              }));
+
+              setFormData(prev => ({
+                ...prev,
+                formula: opt,
+                consumption: {
+                  label: selected.consumption.formula.name,
+                  value: selected.consumption.formula.id
+                },
+                consumption_qty: selected.consumption_qty,
+                packing_size: {
+                  label: selected.packing.name,
+                  value: selected.packing.id
+                },
+                bottles_per_pack: selected.packing.bottles_per_pack,
+                litres_per_pack: selected.packing.litres_per_pack,
+                batch: null,
+                per_litre_cost: "",
+                packing_items:
+                  mappedPackingItems.length > 0
+                    ? mappedPackingItems
+                    : [{
+                      packing_type: "",
+                      packing: "",
+                      packing_selection: null,
+                      qty: "",
+                      rate: "",
+                      value: 0
+                    }]
+              }));
+            }}
           />
         </div>
 
         <div>
-          <label className="block font-medium">Consumer Name</label>
-          <Select options={consumerOptions}
-            onChange={opt =>
-              setFormData(prev => ({ ...prev, consumer: opt }))
-            }
+          <label className="block font-medium">Consumption Name</label>
+          <Select
+            value={formData.consumption}
+            isDisabled
           />
         </div>
 
         <div>
           <label className="block font-medium">Batch Number</label>
-          <Select options={batchOptions}
-            onChange={opt =>
+          <Select
+            options={batchList}
+            value={batchList.find(o => o.value === formData.batch) || null}
+            isSearchable
+            onChange={(opt) => {
               setFormData(prev => ({
                 ...prev,
-                batch: opt,
-                per_litre_cost: opt?.per_litre_cost || ""
-              }))
-            }
+                batch: opt.value,                 // ✅ store only ID
+                per_litre_cost: opt.per_litre_cost
+              }));
+            }}
           />
         </div>
 
         <div>
           <label className="block font-medium">Consumption Qty</label>
           <input name="consumption_qty"
+            value={formData.consumption_qty}
             onChange={handleChange}
             className="border p-2 rounded w-full"
           />
@@ -266,15 +401,9 @@ export default function FinalProductForm() {
 
         <div>
           <label className="block font-medium">Packing Size</label>
-          <Select options={packingSizeOptions}
-            onChange={opt =>
-              setFormData(prev => ({
-                ...prev,
-                packing_size: opt,
-                bottles_per_pack: opt?.bottles_per_pack || "",
-                litres_per_pack: opt?.litres_per_pack || ""
-              }))
-            }
+          <Select
+            value={formData.packing_size}
+            isDisabled
           />
         </div>
 
@@ -295,16 +424,42 @@ export default function FinalProductForm() {
         <div>
           <label className="block font-medium">Total Qty</label>
           <input name="total_qty"
-            onChange={handleChange}
+            onChange={(e) => {
+
+              const { name, value } = e.target;
+
+              setFormData(prev => {
+
+                const totalQty = Number(value || 0);
+
+                const updatedCosts = prev.additional_costs.map(cost => ({
+                  ...cost,
+                  value: Number(cost.rate || 0) * totalQty
+                }));
+
+                return {
+                  ...prev,
+                  [name]: value,
+                  additional_costs: updatedCosts
+                };
+              });
+
+            }}
             className="border p-2 rounded w-full"
           />
         </div>
 
         <div>
           <label className="block font-medium">Qty Unit</label>
-          <Select options={unitOptions}
+          <Select
+            options={unitOptions}
+            value={formData.qty_unit}
+            isSearchable={true}
             onChange={opt =>
-              setFormData(prev => ({ ...prev, qty_unit: opt }))
+              setFormData(prev => ({
+                ...prev,
+                qty_unit: opt
+              }))
             }
           />
         </div>
@@ -319,6 +474,7 @@ export default function FinalProductForm() {
         <div>
           <label className="block font-medium">Per Litre Cost</label>
           <input name="per_litre_cost"
+            value={formData.per_litre_cost}
             onChange={handleChange}
             className="border p-2 rounded w-full"
           />
@@ -328,6 +484,25 @@ export default function FinalProductForm() {
           <label className="block font-medium">Total Oil Consumed</label>
           <input readOnly value={formData.total_oil_consumed}
             className="border p-2 rounded w-full bg-gray-100"
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium">Total CFR Pricing</label>
+          <input
+            readOnly
+            value={formData.total_cfr_pricing}
+            className="border p-2 rounded w-full bg-gray-100"
+          />
+        </div>
+
+        <div className="md:col-span-3">
+          <label className="block font-medium">Remarks</label>
+          <textarea
+            name="remarks"
+            value={formData.remarks}
+            onChange={handleChange}
+            className="border p-2 rounded w-full"
           />
         </div>
 
@@ -376,8 +551,20 @@ export default function FinalProductForm() {
 
             <div>
               <label>Packing Selection</label>
-              <Select options={packingSelectionOptions}
-                onChange={opt =>
+              <Select
+                options={
+                  allPackings
+                    .filter(p =>
+                      p.packing_type_detail?.name === item.packing_type
+                    )
+                    .map(p => ({
+                      value: p.id,
+                      label: p.name,
+                      rate: p.per_each
+                    }))
+                }
+                value={item.packing_selection}
+                onChange={(opt) =>
                   handlePackingChange(index, "packing_selection", opt)
                 }
               />
@@ -402,7 +589,7 @@ export default function FinalProductForm() {
 
             <button type="button"
               onClick={() => removePackingRow(index)}
-              className="bg-red-500 text-white p-2 rounded"
+              className="bg-red-500 text-white p-1 rounded"
             >
               Remove
             </button>
@@ -427,7 +614,7 @@ export default function FinalProductForm() {
 
         {formData.additional_costs.map((item, index) => (
           <div key={index}
-            className="grid md:grid-cols-4 gap-4 border p-4 rounded mb-4">
+            className="grid md:grid-cols-4 gap-4 border p-2 rounded mb-4">
 
             <div>
               <label>Name</label>
