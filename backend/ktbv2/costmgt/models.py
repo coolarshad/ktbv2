@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from trademgt.models import Packing
 # Create your models here.
 
 
@@ -366,56 +367,6 @@ class ConsumptionBaseOil(models.Model):
     def get_absolute_url(self):
         return reverse("ConsumptionBaseOil_detail", kwargs={"pk": self.pk})
 
-class FinalProduct(models.Model):
-    date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
-    name=models.ForeignKey(Consumption,on_delete=models.CASCADE,null=True)
-    packing_size=models.CharField(max_length=50,null=True,blank=True)
-    bottles_per_pack=models.FloatField(null=True,blank=True)
-    liters_per_pack=models.FloatField(null=True,blank=True)
-    total_qty=models.FloatField(null=True,blank=True)
-    total_qty_unit=models.CharField(max_length=50,null=True,blank=True)
-    qty_in_liters=models.FloatField(null=True,blank=True)
-    per_liter_cost=models.FloatField(null=True,blank=True)
-    cost_per_case=models.FloatField(null=True,blank=True)
-    # dk_cost=models.FloatField(null=True,blank=True)
-    price_per_bottle=models.CharField(_("price_per_bottle"), max_length=50)
-    price_per_label=models.CharField(_("price_per_label"), max_length=50)
-    price_per_bottle_cap=models.CharField(_("price_per_bottle_cap"), max_length=50)
-    bottle_per_case=models.FloatField(_("bottle_per_case"))
-    label_per_case=models.FloatField(_("label_per_case"))
-    bottle_cap_per_case=models.FloatField(_("bottle_cap_per_case"))
-    price_per_carton=models.CharField(_("price_per_carton"), max_length=50)
-    # dk_exprice=models.FloatField(null=True,blank=True)
-    # ks_cost=models.FloatField(null=True,blank=True)
-    # total_factory_price=models.FloatField(null=True,blank=True)
-    # freight_logistic=models.FloatField(null=True,blank=True)
-    total_cif_price=models.FloatField(null=True,blank=True)
-    remarks=models.CharField(max_length=50,null=True,blank=True)
-    approved=models.BooleanField(null=True,default=False)
-    formula=models.CharField(max_length=5)
-
-    class Meta:
-        verbose_name = _("FinalProduct")
-        verbose_name_plural = _("FinalProducts")
-        ordering = ['-id'] 
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("FinalProduct_detail", kwargs={"pk": self.pk})
-    
-class FinalProductItem(models.Model):
-    final_product=models.ForeignKey('FinalProduct',on_delete=models.CASCADE,related_name='final_product_items')
-    label=models.CharField(max_length=100)
-    value=models.FloatField()
-
-    class Meta:
-        ordering = ['-id'] 
-   
-
-
-    
 
 class ProductFormula(models.Model):
     formula_name=models.CharField(max_length=100)
@@ -459,3 +410,105 @@ class PackingSize(models.Model):
     
     def get_absolute_url(self):
         return reverse("PackingSize_detail", kwargs={"pk": self.pk})
+    
+
+
+class FinalProduct(models.Model):
+
+    date = models.DateField()
+
+    # FK to Consumption (you were using name before)
+    consumption = models.CharField(max_length=50,null=True,blank=True)
+    formula = models.ForeignKey(
+        'ProductFormula',
+        on_delete=models.CASCADE,
+        related_name='final_product',
+        null=True,
+        blank=True
+    )
+
+    batch = models.ForeignKey(
+        'Consumption',
+        on_delete=models.CASCADE,
+        related_name='final_product',
+        null=True,
+        blank=True
+    )
+
+    packing_size = models.ForeignKey(
+        'PackingSize',
+        on_delete=models.CASCADE,
+        related_name='final_product',
+        null=True,
+        blank=True
+    )
+    consumption_qty = models.FloatField(null=True, blank=True)
+    bottles_per_pack = models.FloatField(null=True, blank=True)
+    litres_per_pack = models.FloatField(null=True, blank=True)
+
+    total_qty = models.FloatField(null=True, blank=True)
+    total_qty_unit =models.ForeignKey('Packing', on_delete=models.CASCADE,related_name='final_product_packing',null=True,blank=True)
+
+    qty_in_litres = models.FloatField(null=True, blank=True)
+    total_oil_consumed = models.FloatField(null=True, blank=True)
+
+    per_litre_cost = models.FloatField(null=True, blank=True)
+
+    total_cfr_pricing = models.FloatField(null=True, blank=True)
+
+    remarks = models.TextField(null=True, blank=True)
+
+    approved = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Final Product - {self.date}"
+
+class FinalProductPackingItem(models.Model):
+
+    final_product = models.ForeignKey(
+        FinalProduct,
+        on_delete=models.CASCADE,
+        related_name='packing_items'
+    )
+
+    packing_type = models.CharField(max_length=100)
+    packing = models.CharField(max_length=100)
+    selected_packing = models.ForeignKey("Packing",on_delete=models.CASCADE,related_name="final_product_item",null=True,blank=True)
+    qty = models.FloatField(default=0)
+    rate = models.FloatField(default=0)
+    value = models.FloatField(default=0)
+
+    class Meta:
+        ordering = ['-id']
+
+    def save(self, *args, **kwargs):
+        self.value = (self.qty or 0) * (self.rate or 0)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.packing_type} - {self.packing}"
+
+class FinalProductAdditionalCost(models.Model):
+
+    final_product = models.ForeignKey(
+        FinalProduct,
+        on_delete=models.CASCADE,
+        related_name='additional_costs'
+    )
+
+    name = models.CharField(max_length=100)
+    rate = models.FloatField(default=0)
+    value = models.FloatField(default=0)
+
+    class Meta:
+        ordering = ['-id']
+
+    def save(self, *args, **kwargs):
+        # Value will depend on total_qty, can be calculated in serializer
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+

@@ -121,7 +121,7 @@ const getAllSubcategoryNames = (category) => {
               </tr>
             </thead>
             <tbody>
-              {categoryData.map((category) => (
+              {categoryData?.map((category) => (
                 <tr key={category.id} className="border-b border-gray-200">
                   <td className="py-2 px-4 text-gray-800">{category.name}</td>
                   <td className="py-2 px-4 text-gray-800">
