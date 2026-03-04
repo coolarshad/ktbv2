@@ -61,6 +61,7 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   const [unitOptions, setUnitOptions] = useState([]);
 
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
 
@@ -470,38 +471,49 @@ export default function FinalProductForm({ mode = 'add' }) {
   }, [formData.total_qty, formData.litres_per_pack, formData.bottles_per_pack, formData.per_litre_cost]);
 
 
+  const validateForm = () => {
+    let newErrors = {};
+
+    // Main fields validation
+    if (!formData.formula) newErrors.formula = "Formula is required";
+    if (!formData.consumption) newErrors.consumption = "Consumption is required";
+    if (!formData.batch) newErrors.batch = "Batch is required";
+    if (!formData.packing_size) newErrors.packing_size = "Packing size is required";
+    if (!formData.total_qty) newErrors.total_qty = "Total quantity is required";
+
+    // Packing items validation
+    formData.packing_items.forEach((item, index) => {
+      if (!item.packing_type)
+        newErrors[`packing_type_${index}`] = "Packing type is required";
+
+      if (!item.packing_selection)
+        newErrors[`packing_selection_${index}`] = "Selected packing is required";
+
+      if (!item.qty || Number(item.qty) <= 0)
+        newErrors[`qty_${index}`] = "Qty must be greater than 0";
+
+      if (!item.rate || Number(item.rate) <= 0)
+        newErrors[`rate_${index}`] = "Rate must be greater than 0";
+    });
+
+    // Additional costs validation
+    formData.additional_costs.forEach((cost, index) => {
+      if (!cost.name)
+        newErrors[`cost_name_${index}`] = "Cost name is required";
+
+      if (!cost.rate || Number(cost.rate) <= 0)
+        newErrors[`cost_rate_${index}`] = "Rate must be greater than 0";
+    });
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!validateForm()) return; // 🚀 STOP if invalid
     try {
-
-      // const payload = {
-      //   ...formData,
-
-      //   formula: formData.formula?.value || null,
-
-      //   packing_size: formData.packing_size?.value || null,
-
-      //   consumption: formData.consumption?.value?.toString() || "",
-
-      //   total_qty_unit: formData.total_qty_unit?.value || null,
-
-      //   packing_items: formData.packing_items.map(item => ({
-      //     packing_type: item.packing_type,
-      //     packing: item.packing,
-      //     selected_packing: item.packing_selection?.value || item.selected_packing || null,
-      //     qty: Number(item.qty || 0),
-      //     rate: Number(item.rate || 0),
-      //     value: Number(item.qty || 0) * Number(item.rate || 0)
-      //   })),
-
-      //   additional_costs: formData.additional_costs.map(cost => ({
-      //     name: cost.name,
-      //     rate: Number(cost.rate || 0),
-      //     value: Number(cost.rate || 0) * Number(formData.total_qty || 0)
-      //   }))
-      // };
 
       const payload = {
         ...formData,

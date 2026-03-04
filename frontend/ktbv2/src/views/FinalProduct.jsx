@@ -210,8 +210,8 @@ const FinalProduct = () => {
 
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packing_type}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packing}</td>
-                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.selected_packing}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.selected_packing_details?.name}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.rate}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
                                                 </tr>
