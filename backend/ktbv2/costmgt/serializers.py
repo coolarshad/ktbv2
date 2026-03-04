@@ -412,6 +412,13 @@ class FinalProductPackingItemSerializer(serializers.ModelSerializer):
             "value",
         ]
         read_only_fields = ["value"]
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["selected_packing_details"] = PackingSerializer(
+            instance.selected_packing
+        ).data
+        return representation
 
 # ================================
 # Additional Cost Serializer

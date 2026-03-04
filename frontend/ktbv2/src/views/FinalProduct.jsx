@@ -128,15 +128,27 @@ const FinalProduct = () => {
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.date}</td>
                                         </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Formula Name</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct?.formula_detail.formula_name}</td>
+                                        </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Consumption Name</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct?.formula_detail?.consumption?.formula?.name}</td>
+                                        </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Consumption Qty</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.consumption_qty}</td>
+                                        </tr>
 
                                         <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct?.consumption?.alias}</td>
+                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Batch Number</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct?.batch_detail?.batch}</td>
                                         </tr>
 
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing Size</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.packing_size}</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.packing_size_detail?.label}</td>
                                         </tr>
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bottles Per Pack</td>
@@ -144,82 +156,26 @@ const FinalProduct = () => {
                                         </tr>
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Liters Per Pack</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.liters_per_pack}</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.litres_per_pack}</td>
                                         </tr>
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Qty</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.total_qty} {selectedProduct.total_qty_unit}</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.total_qty}</td>
                                         </tr>
 
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Qty in Litres</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.qty_in_liters}</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.qty_in_litres}</td>
                                         </tr>
 
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Per Litre Cost</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.per_liter_cost}</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.per_litre_cost}</td>
                                         </tr>
 
                                         <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost Per Case</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.cost_per_case}</td>
-                                        </tr>
-
-                                        {/* <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">DK Cost</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.dk_cost}</td>
-                                        </tr> */}
-
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Price Per Bottle</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.price_per_bottle}</td>
-                                        </tr>
-
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Price Per Label</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.price_per_label}</td>
-                                        </tr>
-
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Price Per Bottle Cap</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.price_per_bottle_cap}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bottle Per Case</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.bottle_per_case}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Label Per Case</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.label_per_case}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bottle Cap Per Case</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.bottle_cap_per_case}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Price Per Carton</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.price_per_carton}</td>
-                                        </tr>
-                                        {/* <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">DK Ex Price</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.dk_exprice}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">KS Cost</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.ks_cost}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Factory Price</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.total_factory_price}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Freight & Logistic</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.freight_logistic}</td>
-                                        </tr> */}
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total CIF Price</td>
-                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.total_cif_price}</td>
+                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total CFR Pricing</td>
+                                            <td className="py-2 px-4 text-gray-800">{selectedProduct.total_cfr_pricing}</td>
                                         </tr>
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
@@ -234,6 +190,61 @@ const FinalProduct = () => {
 
                                     </tbody>
                                 </table>
+
+                                <h3 className="text-lg mt-4 text-center">Packing Items</h3>
+                                <table className="min-w-full bg-white">
+                                    <thead>
+                                        <tr>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Selection</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedProduct.packing_items?.map((item, index) =>
+                                            item && ( // Check if both fields exist
+                                                <tr key={index}>
+
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packing_type}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packing}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.selected_packing}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.rate}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
+                                                </tr>
+                                            )
+                                        )}
+                                    </tbody>
+                                </table>
+
+
+                                <h3 className="text-lg mt-4 text-center">Additional Cost</h3>
+                                <table className="min-w-full bg-white">
+                                    <thead>
+                                        <tr>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedProduct.additional_costs?.map((item, index) =>
+                                            item && ( // Check if both fields exist
+                                                <tr key={index}>
+
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.name}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.rate}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
+                                                </tr>
+                                            )
+                                        )}
+                                    </tbody>
+                                </table>
+
+
                                 {selectedProduct.approved ? '' :
                                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                                         <button onClick={approveFinalProduct} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>

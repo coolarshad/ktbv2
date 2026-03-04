@@ -15,28 +15,18 @@ const FinalProductTable = ({ data , onDelete, onView }) => { // Default value fo
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-            
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Formula Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Consumption Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Size</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Bottles Per Pack</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Liters Per Pack</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Qty</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty in Litres</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Per Litre Cost</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Cost Per Case</th>
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">DK Cost</th> */}
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Price Per Bottle</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Price Per Label</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Price Per Bottle Cap</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Bottle Per Case</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Label Per Case</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Bottle Cap Per Case</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Price Per Carton</th>
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">DK Ex Price</th> */}
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">KS Cost</th> */}
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Factory Price</th> */}
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Freight & Logistic</th> */}
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total CIF Price</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Oil Consumed</th>
+          
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total CFR Pricing</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
@@ -48,28 +38,19 @@ const FinalProductTable = ({ data , onDelete, onView }) => { // Default value fo
             <tr key={index}>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.consumption?.alias}</td>
-              
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_size}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.formula_name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.consumption?.formula.name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.batch_detail?.batch}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_size_detail?.label}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottles_per_pack}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.liters_per_pack}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_qty} {item.total_qty_unit}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.qty_in_liters}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_liter_cost}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.cost_per_case}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.litres_per_pack}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_qty}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.qty_in_litres}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_litre_cost}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_oil_consumed}</td>
               {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.dk_cost}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.price_per_bottle}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.price_per_label}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.price_per_bottle_cap}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottle_per_case}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.label_per_case}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottle_cap_per_case}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.price_per_carton}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.dk_exprice}</td> */}
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ks_cost}</td> */}
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_factory_price}</td> */}
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.freight_logistic}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cif_price}</td>
+            
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cfr_pricing}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
           
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
