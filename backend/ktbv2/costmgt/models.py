@@ -94,6 +94,7 @@ class RawCategory(models.Model):
         blank=True,
         related_name='children'
     )
+    approved = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("RawCategory")
@@ -164,6 +165,7 @@ class AdditiveCategory(models.Model):
         blank=True,
         related_name='children'
     )
+    approved = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("AdditiveCategory")
@@ -274,7 +276,7 @@ class ConsumptionFormulaAdditive(models.Model):
     class Meta:
         verbose_name = _("ConsumptionFormulaAdditive")
         verbose_name_plural = _("ConsumptionFormulaAdditives")
-        ordering = ['-id'] 
+        # ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -290,7 +292,7 @@ class ConsumptionFormulaBaseOil(models.Model):
     class Meta:
         verbose_name = _("ConsumptionFormulaBaseOil")
         verbose_name_plural = _("ConsumptionFormulaBaseOils")
-        ordering = ['-id'] 
+        # ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -338,7 +340,7 @@ class ConsumptionAdditive(models.Model):
     class Meta:
         verbose_name = _("ConsumptionAdditive")
         verbose_name_plural = _("ConsumptionAdditives")
-        ordering = ['-id'] 
+        # ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -359,7 +361,7 @@ class ConsumptionBaseOil(models.Model):
     class Meta:
         verbose_name = _("ConsumptionBaseOil")
         verbose_name_plural = _("ConsumptionBaseOils")
-        ordering = ['-id'] 
+        # ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -447,7 +449,7 @@ class FinalProduct(models.Model):
     litres_per_pack = models.FloatField(null=True, blank=True)
 
     total_qty = models.FloatField(null=True, blank=True)
-    total_qty_unit =models.ForeignKey('Packing', on_delete=models.CASCADE,related_name='final_product_packing',null=True,blank=True)
+    # total_qty_unit =models.ForeignKey('Packing', on_delete=models.CASCADE,related_name='final_product_packing',null=True,blank=True)
 
     qty_in_litres = models.FloatField(null=True, blank=True)
     total_oil_consumed = models.FloatField(null=True, blank=True)
@@ -479,6 +481,8 @@ class FinalProductPackingItem(models.Model):
     qty = models.FloatField(default=0)
     rate = models.FloatField(default=0)
     value = models.FloatField(default=0)
+    total_qty = models.FloatField(default=0)
+    total_value = models.FloatField(default=0)
 
     class Meta:
         ordering = ['-id']

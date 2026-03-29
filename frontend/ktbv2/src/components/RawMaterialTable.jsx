@@ -21,7 +21,7 @@ const RawMaterialTable = ({ data , onDelete, onView }) => { // Default value for
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buy Price</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add. Cost</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ML To KG</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">MT To KG</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Density</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
            

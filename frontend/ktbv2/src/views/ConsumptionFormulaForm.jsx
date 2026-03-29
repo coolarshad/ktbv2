@@ -145,7 +145,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
-            <p className="text-xl text-center">Blending Formation Form</p>
+            <p className="text-xl text-center">Blending Formulation Form</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
                     <label htmlFor="date" className="block text-sm font-medium text-gray-700">REF</label>

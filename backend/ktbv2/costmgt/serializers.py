@@ -94,7 +94,7 @@ class RawCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RawCategory
-        fields = ['id', 'name', 'parent', 'parent_name', 'children']
+        fields = ['id', 'name', 'parent', 'approved' ,'parent_name', 'children']
 
     def get_children(self, obj):
         if obj.children.exists():
@@ -160,7 +160,7 @@ class AdditiveCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AdditiveCategory
-        fields = ['id', 'name', 'parent', 'parent_name', 'children']
+        fields = ['id', 'name', 'parent','approved' ,'parent_name', 'children']
 
     def get_children(self, obj):
         if obj.children.exists():
@@ -410,6 +410,8 @@ class FinalProductPackingItemSerializer(serializers.ModelSerializer):
             "qty",
             "rate",
             "value",
+            "total_qty",
+            "total_value",
         ]
         read_only_fields = ["value"]
     
@@ -581,7 +583,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
             "bottles_per_pack",
             "litres_per_pack",
             "total_qty",
-            "total_qty_unit",
+            # "total_qty_unit",
             "qty_in_litres",
             "total_oil_consumed",
             "per_litre_cost",

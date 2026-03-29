@@ -740,47 +740,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     />
                 </div>
 
-                {/* Total Value Input */}
-                <div>
-                    <label htmlFor="total_value" className="block text-sm font-medium text-gray-700">Total Value</label>
-                    <input
-                        id="total_value"
-                        name="total_value"
-                        type="number"
-                        value={formData.total_value || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        step={0.01}
-                        readOnly
-                    />
-                </div>
-
-                {/* Per Litre Cost Input */}
-                <div>
-                    <label htmlFor="per_litre_cost" className="block text-sm font-medium text-gray-700">Per Litre Cost</label>
-                    <input
-                        id="per_litre_cost"
-                        name="per_litre_cost"
-                        type="number"
-                        value={formData.per_litre_cost || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        step={0.01}
-                        readOnly
-                    />
-                </div>
-
-                {/* Remarks Input */}
-                <div className="col-span-3">
-                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                    <textarea
-                        id="remarks"
-                        name="remarks"
-                        value={formData.remarks || ''}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full"
-                    ></textarea>
-                </div>
+                
             </div>
 
             {/* Section for Consumption Additive */}
@@ -1071,7 +1031,50 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 </div> */}
             </div>
             <hr className="my-6" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                {/* Total Value Input */}
+                <div>
+                    <label htmlFor="total_value" className="block text-sm font-medium text-gray-700">Total Value</label>
+                    <input
+                        id="total_value"
+                        name="total_value"
+                        type="number"
+                        value={formData.total_value || ''} // Ensure never undefined
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        step={0.01}
+                        readOnly
+                    />
+                </div>
 
+                {/* Per Litre Cost Input */}
+                <div>
+                    <label htmlFor="per_litre_cost" className="block text-sm font-medium text-gray-700">Per Litre Cost</label>
+                    <input
+                        id="per_litre_cost"
+                        name="per_litre_cost"
+                        type="number"
+                        value={formData.per_litre_cost || ''} // Ensure never undefined
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        step={0.01}
+                        readOnly
+                    />
+                </div>
+
+                {/* Remarks Input */}
+                <div className="col-span-3">
+                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
+                    <textarea
+                        id="remarks"
+                        name="remarks"
+                        value={formData.remarks || ''}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded w-full"
+                    ></textarea>
+                </div>
+            </div>
+            <hr className='my-6' />
             {/* Submit Button */}
             <div className='grid grid-cols-3 gap-4 mb-4'>
                 <button

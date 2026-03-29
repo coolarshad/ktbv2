@@ -836,3 +836,46 @@ class ConsumptionApprovalView(APIView):
             return Response({'detail': 'Consumption not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class AdditiveCategoryApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+    
+        if not pk:
+            return Response({'detail': 'Additive Category ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = AdditiveCategory.objects.get(pk=pk)
+                # import pdb;pdb.set_trace()
+                obj.approved = True
+                obj.save()
+
+                serializer = AdditiveCategorySerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except AdditiveCategory.DoesNotExist:
+            return Response({'detail': 'Additive Category not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class RawCategoryApprovalView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+    
+        if not pk:
+            return Response({'detail': 'Raw Category ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                obj = RawCategory.objects.get(pk=pk)
+
+                obj.approved = True
+                obj.save()
+
+                serializer = RawCategorySerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except RawCategory.DoesNotExist:
+            return Response({'detail': 'Raw Category not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

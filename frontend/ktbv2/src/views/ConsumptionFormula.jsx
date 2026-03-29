@@ -92,7 +92,7 @@ const ConsumptionFormula = () => {
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl"> Blending Formation</p>
+        <p className="text-xl"> Blending Formulation</p>
         <button
           onClick={handleAddConsumptionClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"

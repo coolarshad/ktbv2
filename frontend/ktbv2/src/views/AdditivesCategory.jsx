@@ -17,7 +17,7 @@ const AdditivesCategory = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('/costmgt/additive-categories/'); 
+        const response = await axios.get('/costmgt/additive-categories/');
         setCategoryData(response.data);
       } catch (error) {
         setError('Failed to fetch category data');
@@ -70,18 +70,30 @@ const AdditivesCategory = () => {
     navigate(`/additive-category-form/${id}`);  // Navigate to TradeForm with tradeId
   };
 
+  const approveAdditive = async () => {
+    try {
+      await axios.get(`/costmgt/additive-category-approve/${selectedCategory.id}/`);
+      setIsModalOpen(false);
+      setSelectedCategory(null);
+      // Reload the page
+      window.location.reload();
+    } catch (error) {
+      console.error('Error approving additive category:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
 
   // Helper function in React to flatten children recursively
-const getAllSubcategoryNames = (category) => {
-  let names = [];
-  if (category.children && category.children.length > 0) {
-    category.children.forEach((child) => {
-      names.push(child.name);
-      names = names.concat(getAllSubcategoryNames(child));
-    });
-  }
-  return names;
-};
+  const getAllSubcategoryNames = (category) => {
+    let names = [];
+    if (category.children && category.children.length > 0) {
+      category.children.forEach((child) => {
+        names.push(child.name);
+        names = names.concat(getAllSubcategoryNames(child));
+      });
+    }
+    return names;
+  };
 
 
   const fieldOptions = [
@@ -102,12 +114,12 @@ const getAllSubcategoryNames = (category) => {
           +
         </button>
         <div>
-          <CostMgtFilterComponent 
-            checkBtn={false} 
-            flag={2} 
-            onFilter={handleFilter} 
-            apiEndpoint={'/costmgt/additive-categories'} 
-            fieldOptions={fieldOptions} 
+          <CostMgtFilterComponent
+            checkBtn={false}
+            flag={2}
+            onFilter={handleFilter}
+            apiEndpoint={'/costmgt/additive-categories'}
+            fieldOptions={fieldOptions}
           />
         </div>
         <div className="rounded p-2">
@@ -132,6 +144,10 @@ const getAllSubcategoryNames = (category) => {
                       ? getAllSubcategoryNames(category).join(", ")
                       : "—"}
                   </td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={category.approved} onChange={() => { }} />
+                  </td>
+
                   <td className="py-2 px-4">
                     <button
                       onClick={() => handleViewClick(category.id)}
@@ -186,8 +202,17 @@ const getAllSubcategoryNames = (category) => {
                       </td>
                     </tr>
                   )}
+                  <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedCategory.approved ? "Yes" : "No"}</td>
+                  </tr>
                 </tbody>
               </table>
+              {selectedCategory.approved ? '' :
+                <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                  <button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                </div>
+              }
             </div>
           </div>
         )}

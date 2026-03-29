@@ -23,7 +23,7 @@ export default function FinalProductForm({ mode = 'add' }) {
     litres_per_pack: "",
 
     total_qty: "",
-    total_qty_unit: null,
+    // total_qty_unit: null,
 
     qty_in_litres: "",
     per_litre_cost: "",
@@ -38,8 +38,10 @@ export default function FinalProductForm({ mode = 'add' }) {
         packing: "",
         packing_selection: null,
         qty: "",
+        total_qty: "",
         rate: "",
-        value: 0
+        value: 0,
+        total_value: 0
       }
     ],
 
@@ -106,74 +108,6 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   }, []);
 
-  //  useEffect(() => {
-
-  //   if (mode === "update" && id && formulaOptions.length && consumptionList.length && unitOptions.length) {
-
-  //     axios.get(`/costmgt/final-product/${id}`).then(res => {
-
-  //       const data = res.data;
-
-  //       // 1️⃣ Find formula option
-  //       const selectedFormula = formulaOptions.find(
-  //         f => f.value === data.formula
-  //       );
-
-  //       // 2️⃣ Build batch list from consumption list (same logic as create)
-  //       const filteredBatches = consumptionList
-  //         .filter(item => item.formula?.id === data.formula)
-  //         .map(item => ({
-  //           value: item.id,
-  //           label: item.batch || "No Batch",
-  //           per_litre_cost: item.per_litre_cost
-  //         }));
-
-  //       setBatchList(filteredBatches);
-
-  //       // 3️⃣ Find selected batch option
-  //       const selectedBatch = filteredBatches.find(
-  //         b => b.value === data.batch
-  //       );
-
-  //       // 4️⃣ Find qty unit option
-  //       const selectedUnit = unitOptions.find(
-  //         u => u.value === data.total_qty_unit
-  //       );
-
-  //       setFormData(prev => ({
-  //         ...prev,
-  //         ...data,
-
-  //         formula: selectedFormula || null,
-
-  //         consumption: data.consumption_detail
-  //           ? {
-  //             value: data.consumption_detail.formula?.id,
-  //             label: data.consumption_detail.formula?.name
-  //           }
-  //           : null,
-
-  //         batch: selectedBatch || null,
-
-  //         total_qty_unit: selectedUnit || null,
-
-  //         packing_size: data.packing_size_detail
-  //           ? {
-  //             value: data.packing_size_detail.value,
-  //             label: data.packing_size_detail.label
-  //           }
-  //           : null,
-
-  //         packing_items: data.packing_items || [],
-  //         additional_costs: data.additional_costs || []
-  //       }));
-
-  //     });
-
-  //   }
-
-  // }, [mode, id, formulaOptions, consumptionList, unitOptions]);
-
   useEffect(() => {
 
     if (
@@ -208,9 +142,9 @@ export default function FinalProductForm({ mode = 'add' }) {
         );
 
         // ✅ Unit Select
-        const selectedUnit = unitOptions.find(
-          u => u.value === data.total_qty_unit
-        );
+        // const selectedUnit = unitOptions.find(
+        //   u => u.value === data.total_qty_unit
+        // );
 
         // ✅ Packing Items Mapping (VERY IMPORTANT)
         const mappedPackingItems = (data.packing_items || []).map(item => {
@@ -246,7 +180,7 @@ export default function FinalProductForm({ mode = 'add' }) {
             : null,
 
           batch: selectedBatch || null,
-          total_qty_unit: selectedUnit || null,
+          // total_qty_unit: selectedUnit || null,
 
           packing_size: data.packing_size_detail
             ? {
@@ -378,7 +312,9 @@ export default function FinalProductForm({ mode = 'add' }) {
           packing_selection: null,
           qty: "",
           rate: "",
-          value: 0
+          value: 0,
+          total_qty: "",
+          total_value: 0,
         }
       ]
     }));
@@ -396,17 +332,34 @@ export default function FinalProductForm({ mode = 'add' }) {
   const handlePackingChange = (index, field, value) => {
     setFormData(prev => {
       const newItems = [...prev.packing_items];
+      const formTotalQty = Number(prev.total_qty) || 0;
 
       if (field === "packing_selection") {
         newItems[index].packing_selection = value;
-        newItems[index].packing_type = newItems[index].packing_type; // keep type
         newItems[index].packing = value?.label || "";
         newItems[index].rate = value?.rate || 0;
-        newItems[index].value = (Number(newItems[index].qty) || 0) * (Number(value?.rate) || 0);
+
+        const qty = Number(newItems[index].qty) || 0;
+        const rate = Number(value?.rate) || 0;
+
+        const itemValue = Number((qty * rate).toFixed(2));
+
+        newItems[index].value = itemValue;
+        newItems[index].total_qty = qty * formTotalQty;
+        newItems[index].total_value = Number((itemValue * formTotalQty).toFixed(2));
+
       } else {
         newItems[index][field] = value;
+
         if (field === "qty" || field === "rate") {
-          newItems[index].value = (Number(newItems[index].qty) || 0) * (Number(newItems[index].rate) || 0);
+          const qty = Number(newItems[index].qty) || 0;
+          const rate = Number(newItems[index].rate) || 0;
+
+          const itemValue = Number((qty * rate).toFixed(2));
+
+          newItems[index].value = itemValue;
+          newItems[index].total_qty = qty * formTotalQty;
+          newItems[index].total_value = Number((itemValue * formTotalQty).toFixed(2));
         }
       }
 
@@ -522,7 +475,7 @@ export default function FinalProductForm({ mode = 'add' }) {
         consumption: formData.consumption?.value || null,
         batch: formData.batch?.value || null,
         packing_size: formData.packing_size?.value || null,
-        total_qty_unit: formData.total_qty_unit?.value || null,
+        // total_qty_unit: formData.total_qty_unit?.value || null,
 
         packing_items: formData.packing_items.map(item => ({
           packing_type: item.packing_type,
@@ -530,71 +483,73 @@ export default function FinalProductForm({ mode = 'add' }) {
           selected_packing: item.packing_selection?.value || null,
           qty: Number(item.qty || 0),
           rate: Number(item.rate || 0),
-          value: Number(item.qty || 0) * Number(item.rate || 0)
-        })),
+          value: Number(item.qty || 0) * Number(item.rate || 0),
+          total_qty: Number(item.total_qty || 0),
+          total_value: Number(item.total_value || 0)
+      })),
 
         additional_costs: formData.additional_costs.map(cost => ({
           name: cost.name,
           rate: Number(cost.rate || 0),
           value: Number(cost.rate || 0) * Number(formData.total_qty || 0)
         }))
-      };
-      if (mode === "add") {
-        await axios.post("/costmgt/final-product/", payload);
-      } else {
-        await axios.put(`/costmgt/final-product/${id}/`, payload);
-      }
-
-      navigate("/final-products");
-
-    } catch (err) {
-      console.error(err.response?.data || err);
+    };
+    if (mode === "add") {
+      await axios.post("/costmgt/final-product/", payload);
+    } else {
+      await axios.put(`/costmgt/final-product/${id}/`, payload);
     }
-  };
 
-  return (
-    <form onSubmit={handleSubmit} className="w-11/12 lg:w-2/3 mx-auto space-y-10">
+    navigate("/final-products");
 
-      <h2 className="text-2xl font-bold text-center">
-        Final Production Form
-      </h2>
+  } catch (err) {
+    console.error(err.response?.data || err);
+  }
+};
 
-      {/* ===============================
+return (
+  <form onSubmit={handleSubmit} className="w-11/12 lg:w-2/3 mx-auto space-y-10">
+
+    <h2 className="text-2xl font-bold text-center">
+      Final Production Form
+    </h2>
+
+    {/* ===============================
          PRODUCTION INFO
       =============================== */}
 
-      <div className="grid md:grid-cols-3 gap-6 border p-4 rounded">
+    <div className="grid md:grid-cols-3 gap-6 border p-4 rounded">
 
-        <div>
-          <label className="block font-medium">Date</label>
-          <input type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-          />
-        </div>
+      <div>
+        <label className="block font-medium">Date</label>
+        <input type="date"
+          name="date"
+          value={formData.date}
+          onChange={handleChange}
+          className="border p-2 rounded w-full"
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Formula Name</label>
-          <Select
-            options={formulaOptions}
-            value={formData.formula}
-            onChange={handleFormulaChange}
-          />
-        </div>
+      <div>
+        <label className="block font-medium">Formula Name</label>
+        <Select
+          options={formulaOptions}
+          value={formData.formula}
+          onChange={handleFormulaChange}
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Consumption Name</label>
-          <Select
-            value={formData.consumption}
-            isDisabled
-          />
-        </div>
+      <div>
+        <label className="block font-medium">Consumption Name</label>
+        <Select
+          value={formData.consumption}
+          isDisabled
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Batch Number</label>
-          {/* <Select
+      <div>
+        <label className="block font-medium">Batch Number</label>
+        {/* <Select
             options={batchList}
             value={batchList.find(o => o.value === formData.batch)}
             onChange={(opt) =>
@@ -605,80 +560,92 @@ export default function FinalProductForm({ mode = 'add' }) {
               }))
             }
           /> */}
-          <Select
-            options={batchList}
-            value={formData.batch}
-            onChange={(opt) =>
-              setFormData(prev => ({
-                ...prev,
-                batch: opt,
-                per_litre_cost: opt.per_litre_cost
-              }))
-            }
-          />
-        </div>
+        <Select
+          options={batchList}
+          value={formData.batch}
+          onChange={(opt) =>
+            setFormData(prev => ({
+              ...prev,
+              batch: opt,
+              per_litre_cost: opt.per_litre_cost
+            }))
+          }
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Consumption Qty</label>
-          <input name="consumption_qty"
-            value={formData.consumption_qty}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-          />
-        </div>
+      <div>
+        <label className="block font-medium">Consumption Qty</label>
+        <input name="consumption_qty"
+          value={formData.consumption_qty}
+          onChange={handleChange}
+          className="border p-2 rounded w-full"
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Packing Size</label>
-          <Select
-            value={formData.packing_size}
-            isDisabled
-          />
-        </div>
+      <div>
+        <label className="block font-medium">Packing Size</label>
+        <Select
+          value={formData.packing_size}
+          isDisabled
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Bottles Per Pack</label>
-          <input readOnly value={formData.bottles_per_pack}
-            className="border p-2 rounded w-full bg-gray-100"
-          />
-        </div>
+      <div>
+        <label className="block font-medium">Bottles Per Pack</label>
+        <input readOnly value={formData.bottles_per_pack}
+          className="border p-2 rounded w-full bg-gray-100"
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Litres Per Pack</label>
-          <input readOnly value={formData.litres_per_pack}
-            className="border p-2 rounded w-full bg-gray-100"
-          />
-        </div>
+      <div>
+        <label className="block font-medium">Litres Per Pack</label>
+        <input readOnly value={formData.litres_per_pack}
+          className="border p-2 rounded w-full bg-gray-100"
+        />
+      </div>
 
-        <div>
-          <label className="block font-medium">Total Qty</label>
-          <input name="total_qty"
-            value={formData.total_qty}
-            onChange={(e) => {
+      <div>
+        <label className="block font-medium">Total Qty</label>
+        <input name="total_qty"
+          value={formData.total_qty}
+          onChange={(e) => {
+            const { name, value } = e.target;
 
-              const { name, value } = e.target;
+            setFormData(prev => {
 
-              setFormData(prev => {
+              const totalQty = Number(value || 0);
 
-                const totalQty = Number(value || 0);
+              // ✅ Update additional costs
+              const updatedCosts = prev.additional_costs.map(cost => ({
+                ...cost,
+                value: Number(cost.rate || 0) * totalQty
+              }));
 
-                const updatedCosts = prev.additional_costs.map(cost => ({
-                  ...cost,
-                  value: Number(cost.rate || 0) * totalQty
-                }));
+              // ✅ 🔥 ADD THIS BLOCK (packing recalculation)
+              const updatedPacking = prev.packing_items.map(item => {
+                const qty = Number(item.qty) || 0;
+                const itemValue = Number(item.value) || 0;
 
                 return {
-                  ...prev,
-                  [name]: value,
-                  additional_costs: updatedCosts
+                  ...item,
+                  total_qty: Number((qty * totalQty).toFixed(2)),
+                  total_value: Number((itemValue * totalQty).toFixed(2))
                 };
               });
 
-            }}
-            className="border p-2 rounded w-full"
-          />
-        </div>
+              return {
+                ...prev,
+                [name]: value,
+                additional_costs: updatedCosts,
+                packing_items: updatedPacking   // ✅ important
+              };
+            });
+          }}
+          className="border p-2 rounded w-full"
+        />
+      </div>
 
-        <div>
+      {/* <div>
           <label className="block font-medium">Qty Unit</label>
           <Select
             options={unitOptions}
@@ -691,199 +658,222 @@ export default function FinalProductForm({ mode = 'add' }) {
               }))
             }
           />
-        </div>
+        </div> */}
 
-        <div>
-          <label className="block font-medium">Qty in Litres</label>
-          <input readOnly value={formData.qty_in_litres}
-            className="border p-2 rounded w-full bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Per Litre Cost</label>
-          <input name="per_litre_cost"
-            value={formData.per_litre_cost}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Total Oil Consumed</label>
-          <input readOnly value={formData.total_oil_consumed}
-            className="border p-2 rounded w-full bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Total CFR Pricing</label>
-          <input
-            readOnly
-            value={formData.total_cfr_pricing}
-            className="border p-2 rounded w-full bg-gray-100"
-          />
-        </div>
-
-        <div className="md:col-span-3">
-          <label className="block font-medium">Remarks</label>
-          <textarea
-            name="remarks"
-            value={formData.remarks}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-          />
-        </div>
-
+      <div>
+        <label className="block font-medium">Qty in Litres</label>
+        <input readOnly value={formData.qty_in_litres}
+          className="border p-2 rounded w-full bg-gray-100"
+        />
       </div>
 
-      {/* ===============================
+
+
+    </div>
+
+    {/* ===============================
          PACKING ITEMS
       =============================== */}
 
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Packing Items</h3>
+    <div>
+      <h3 className="text-xl font-semibold mb-4">Packing Items</h3>
 
-        {formData.packing_items.map((item, index) => (
-          <div key={index}
-            className="grid md:grid-cols-6 gap-4 border p-4 rounded mb-4">
+      {formData.packing_items.map((item, index) => (
+        <div key={index}
+          className="grid md:grid-cols-6 gap-4 border p-4 rounded mb-4">
 
-            <div>
-              <label>Packing Type</label>
-              <input value={item.packing_type}
-                onChange={e =>
-                  handlePackingChange(index, "packing_type", e.target.value)
-                }
-                className="border p-2 rounded w-full"
-              />
-            </div>
+          <div>
+            <label>Packing Type</label>
+            <input value={item.packing_type}
+              onChange={e =>
+                handlePackingChange(index, "packing_type", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+              readOnly
+            />
+          </div>
 
-            <div>
-              <label>Packing</label>
-              <input value={item.packing}
-                onChange={e =>
-                  handlePackingChange(index, "packing", e.target.value)
-                }
-                className="border p-2 rounded w-full"
-              />
-            </div>
+          <div>
+            <label>Packing</label>
+            <input value={item.packing}
+              onChange={e =>
+                handlePackingChange(index, "packing", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+              readOnly
+            />
+          </div>
 
-            <div>
-              <label>Qty</label>
-              <input value={item.qty}
-                onChange={e =>
-                  handlePackingChange(index, "qty", e.target.value)
-                }
-                className="border p-2 rounded w-full"
-              />
-            </div>
+          <div>
+            <label>Qty</label>
+            <input value={item.qty}
+              onChange={e =>
+                handlePackingChange(index, "qty", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+              readOnly
+            />
+          </div>
+          <div>
+            <label>Total Qty</label>
+            <input value={item.total_qty}
+              onChange={e =>
+                handlePackingChange(index, "total_qty", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+              readOnly
+            />
+          </div>
 
-            <div>
-              <label>Packing Selection</label>
-              <Select
-                options={allPackings
-                  .filter(p => p.packing_type_detail?.name === item.packing_type)
-                  .map(p => ({ value: p.id, label: p.name, rate: p.per_each }))}
-                value={item.packing_selection}
-                onChange={(opt) => handlePackingChange(index, "packing_selection", opt)}
-              />
-            </div>
+          <div>
+            <label>Packing Selection</label>
+            <Select
+              options={allPackings
+                .filter(p => p.packing_type_detail?.name === item.packing_type)
+                .map(p => ({ value: p.id, label: p.name, rate: p.per_each }))}
+              value={item.packing_selection}
+              onChange={(opt) => handlePackingChange(index, "packing_selection", opt)}
+            />
+          </div>
 
-            <div>
-              <label>Rate</label>
-              <input value={item.rate}
-                onChange={e =>
-                  handlePackingChange(index, "rate", e.target.value)
-                }
-                className="border p-2 rounded w-full"
-              />
-            </div>
+          <div>
+            <label>Rate</label>
+            <input value={item.rate}
+              onChange={e =>
+                handlePackingChange(index, "rate", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+              readOnly
+            />
+          </div>
 
-            <div>
-              <label>Value</label>
-              <input readOnly value={item.value}
-                className="border p-2 rounded w-full bg-gray-100"
-              />
-            </div>
+          <div>
+            <label>Value</label>
+            <input readOnly value={item.value}
+              className="border p-2 rounded w-full bg-gray-100"
+            />
+          </div>
+          <div>
+            <label>Total Value</label>
+            <input readOnly value={item.total_value} step={0.2}
+              className="border p-2 rounded w-full bg-gray-100"
+            />
+          </div>
 
-            <button type="button"
+          {/* <button type="button"
               onClick={() => removePackingRow(index)}
               className="bg-red-500 text-white p-1 rounded"
             >
               Remove
-            </button>
+            </button> */}
 
-          </div>
-        ))}
+        </div>
+      ))}
 
-        <button type="button"
+      {/* <button type="button"
           onClick={addPackingRow}
           className="bg-green-500 text-white px-4 py-2 rounded"
         >
           Add Packing Row
-        </button>
-      </div>
+        </button> */}
+    </div>
 
-      {/* ===============================
+    {/* ===============================
          ADDITIONAL COST
       =============================== */}
 
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Additional Cost</h3>
+    <div>
+      <h3 className="text-xl font-semibold mb-4">Additional Cost</h3>
 
-        {formData.additional_costs.map((item, index) => (
-          <div key={index}
-            className="grid md:grid-cols-4 gap-4 border p-2 rounded mb-4">
+      {formData.additional_costs.map((item, index) => (
+        <div key={index}
+          className="grid md:grid-cols-4 gap-4 border p-2 rounded mb-4">
 
-            <div>
-              <label>Name</label>
-              <input value={item.name}
-                onChange={e =>
-                  handleCostChange(index, "name", e.target.value)
-                }
-                className="border p-2 rounded w-full"
-              />
-            </div>
-
-            <div>
-              <label>Rate</label>
-              <input value={item.rate}
-                onChange={e =>
-                  handleCostChange(index, "rate", e.target.value)
-                }
-                className="border p-2 rounded w-full"
-              />
-            </div>
-
-            <div>
-              <label>Value</label>
-              <input readOnly value={item.value}
-                className="border p-2 rounded w-full bg-gray-100"
-              />
-            </div>
-
-            <button type="button"
-              onClick={() => removeCostRow(index)}
-              className="bg-red-500 text-white p-2 rounded"
-            >
-              Remove
-            </button>
-
+          <div>
+            <label>Name</label>
+            <input value={item.name}
+              onChange={e =>
+                handleCostChange(index, "name", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+            />
           </div>
-        ))}
 
-        <button type="button"
-          onClick={addCostRow}
-          className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          Add Cost Row
-        </button>
+          <div>
+            <label>Rate</label>
+            <input value={item.rate}
+              onChange={e =>
+                handleCostChange(index, "rate", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+            />
+          </div>
+
+          <div>
+            <label>Value</label>
+            <input readOnly value={item.value}
+              className="border p-2 rounded w-full bg-gray-100"
+            />
+          </div>
+
+          <button type="button"
+            onClick={() => removeCostRow(index)}
+            className="bg-red-500 text-white p-2 rounded"
+          >
+            Remove
+          </button>
+
+        </div>
+      ))}
+
+      <button type="button"
+        onClick={addCostRow}
+        className="bg-green-500 text-white px-4 py-2 rounded"
+      >
+        Add Cost Row
+      </button>
+    </div>
+    <hr />
+    <div className="grid md:grid-cols-3 gap-6 border p-4 rounded">
+      <div>
+        <label className="block font-medium">Per Litre Cost</label>
+        <input name="per_litre_cost"
+          value={formData.per_litre_cost}
+          onChange={handleChange}
+          className="border p-2 rounded w-full"
+        />
       </div>
 
-      <button className="w-full bg-blue-600 text-white p-3 rounded text-lg">
-        Submit
-      </button>
+      <div>
+        <label className="block font-medium">Total Oil Consumed</label>
+        <input readOnly value={formData.total_oil_consumed}
+          className="border p-2 rounded w-full bg-gray-100"
+        />
+      </div>
 
-    </form>
-  );
+      <div>
+        <label className="block font-medium">Total CFR Pricing</label>
+        <input
+          readOnly
+          value={formData.total_cfr_pricing}
+          className="border p-2 rounded w-full bg-gray-100"
+        />
+      </div>
+
+      <div className="md:col-span-3">
+        <label className="block font-medium">Remarks</label>
+        <textarea
+          name="remarks"
+          value={formData.remarks}
+          onChange={handleChange}
+          className="border p-2 rounded w-full"
+        />
+      </div>
+    </div>
+    <button className="w-full bg-blue-600 text-white p-3 rounded text-lg">
+      Submit
+    </button>
+
+  </form>
+);
 }

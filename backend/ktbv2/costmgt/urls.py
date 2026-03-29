@@ -34,6 +34,9 @@ urlpatterns = [
     path('final-product-approve/<int:pk>/', FinalProductApprovalView.as_view(), name='final-product-approve'),
     path('product-formula-approve/<int:pk>/', ProductFormulaApprovalView.as_view(), name='product-formula-approve'),
 
-    path('next-consumption-ref/',NextConsumptionRef.as_view(),name="consumption-ref")
+    path('next-consumption-ref/',NextConsumptionRef.as_view(),name="consumption-ref"),
+
+    path('raw-category-approve/<int:pk>/', RawCategoryApprovalView.as_view(), name='raw-category-approve'),
+    path('additive-category-approve/<int:pk>/', AdditiveCategoryApprovalView.as_view(), name='additive-category-approve'),
 
 ]+ router.urls

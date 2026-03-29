@@ -121,11 +121,11 @@ const MenuBar = () => {
             <Link to="/packingtype" className="block px-4 py-2 hover:bg-gray-700">Packing Type List</Link>
             {/* <Link to="/categories" className="block px-4 py-2 hover:bg-gray-700">Packing Category</Link> */}
             <Link to="/packings" className="block px-4 py-2 hover:bg-gray-700">Packing Price</Link>
-            <Link to="/raw-categories" className="block px-4 py-2 hover:bg-gray-700">Raw Category</Link>
+            <Link to="/raw-categories" className="block px-4 py-2 hover:bg-gray-700">Raw Material Category</Link>
             <Link to="/raw-materials" className="block px-4 py-2 hover:bg-gray-700">Raw Material Pricing</Link>
-            <Link to="/additive-categories" className="block px-4 py-2 hover:bg-gray-700">Additives Category</Link>
+            <Link to="/additive-categories" className="block px-4 py-2 hover:bg-gray-700">Additives Pricing Category</Link>
             <Link to="/additives" className="block px-4 py-2 hover:bg-gray-700">Additive Pricing</Link>
-            <Link to="/consumption-formula" className="block px-4 py-2 hover:bg-gray-700">Blending Formation</Link>
+            <Link to="/consumption-formula" className="block px-4 py-2 hover:bg-gray-700">Blending Formulation</Link>
             <Link to="/consumptions" className="block px-4 py-2 hover:bg-gray-700">Consumption</Link>
             <Link to="/product-formula" className="block px-4 py-2 hover:bg-gray-700">Packing Formulation</Link>
             <Link to="/final-products" className="block px-4 py-2 hover:bg-gray-700">Final Product Cost</Link>

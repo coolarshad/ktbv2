@@ -172,7 +172,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 w-full lg:w-2/3 mx-auto">
-            <h2 className="text-xl text-center">Packing Formation Form</h2>
+            <h2 className="text-xl text-center">Packing Formulation Form</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 

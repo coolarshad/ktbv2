@@ -478,7 +478,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Ml to KG</label>
+          <label className="block text-sm font-medium text-gray-700">MT to KG</label>
           <input
             name="ml_to_kl"
             type="text"
