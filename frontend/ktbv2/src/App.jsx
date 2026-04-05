@@ -65,6 +65,9 @@ import PackingTypeList from './views/PackingTypeList';
 import ProductFormulaForm from './views/ProductFormulaForm';
 import ProductFormula from './views/ProductFormula';
 import PackingSize from './views/PackingSize';
+import AdditiveConsumption from './views/AddititveConsumption';
+import RawConsumption from './views/RawConsumption';
+import PackingConsumption from './views/PackingConsumption';
 
 function App() {
  
@@ -157,6 +160,10 @@ function App() {
           <Route path="/inventory" element={<Inventory />} />
 
           <Route path="/trade-report" element={<TradeReport />} />
+
+          <Route path="/packing-consumptions" element={<PackingConsumption />} />
+          <Route path="/additive-consumptions" element={<AdditiveConsumption />} />
+          <Route path="/raw-consumptions" element={<RawConsumption />} />
           
           <Route path="/users" element={<Users />} />
           <Route path="/user-form" element={<UserForm />} />

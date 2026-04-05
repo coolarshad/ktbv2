@@ -321,10 +321,24 @@ class ConsumptionSerializer(serializers.ModelSerializer):
             return ConsumptionFormulaSerializer(instance).data
         except ConsumptionFormula.DoesNotExist:
             return None
+    def get_additives(self, obj):
+        try:
+            instances = ConsumptionAdditive.objects.filter(consumption=obj)
+            return ConsumptionAdditiveSerializer(instances, many=True).data
+        except Exception:
+            return []
+    def get_base_oils(self, obj):
+        try:
+            instances = ConsumptionBaseOil.objects.filter(consumption=obj)
+            return ConsumptionBaseOilSerializer(instances, many=True).data
+        except Exception:
+            return []
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['formula'] = self.get_formula(instance)
+        ret['additives'] = self.get_additives(instance)
+        ret['baseoil'] = self.get_base_oils(instance)
         return ret
 
 class PackingTypeSerializer(serializers.ModelSerializer):

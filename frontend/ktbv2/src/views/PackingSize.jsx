@@ -14,6 +14,9 @@ const PackingSize = ({ mode = 'add', id = null }) => {
   const [currentMode, setCurrentMode] = useState(mode);
   const [pid, setId] = useState(id);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredPackingSize, setFilteredPackingSize] = useState([]);
+
   useEffect(() => {
     const fetchPackingSize = async () => {
       try {
@@ -21,6 +24,8 @@ const PackingSize = ({ mode = 'add', id = null }) => {
         const response = await axios.get('/costmgt/packing-size');
         if (Array.isArray(response.data)) {
           setPackingSize(response.data);
+          setPackingSize(response.data);
+          setFilteredPackingSize(response.data); // initialize filtered list
         } else {
           console.error('Expected an array but got:', response.data);
         }
@@ -52,6 +57,20 @@ const PackingSize = ({ mode = 'add', id = null }) => {
     }
   }, [currentMode, pid]);
 
+
+  const handleSearch = () => {
+    const filtered = packingSize.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredPackingSize(filtered);
+  };
+
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredPackingSize(packingSize);
+    }
+  }, [searchTerm, packingSize]);
+
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData((prevState) => ({
@@ -78,9 +97,9 @@ const PackingSize = ({ mode = 'add', id = null }) => {
         });
         setPackingSize((prevData) => [...prevData, response.data]);
         setFormData({
-            name: '',
-            bottles_per_pack: '',
-            litres_per_pack: '',
+          name: '',
+          bottles_per_pack: '',
+          litres_per_pack: '',
         }); // Reset form after add
       } else if (currentMode === 'update' && pid) {
         const response = await axios.put(`/costmgt/packing-size/${pid}/`, formDataObj, {
@@ -94,9 +113,9 @@ const PackingSize = ({ mode = 'add', id = null }) => {
         setCurrentMode('add'); // Reset to 'add' mode after update
         setId(null); // Reset currentCompanyId
         setFormData({
-            name: '',
-            bottles_per_pack: '',
-            litres_per_pack: '',
+          name: '',
+          bottles_per_pack: '',
+          litres_per_pack: '',
         }); // Reset form after update
       } else {
         console.error('Update mode is enabled but companyId is missing.');
@@ -179,44 +198,59 @@ const PackingSize = ({ mode = 'add', id = null }) => {
       <hr className="my-6" />
 
       <div className="space-y-4 w-full lg:w-2/3 mx-auto">
-  <h2 className="text-xl font-semibold mb-4">Existing Packing Size</h2>
-  <ul className="space-y-4">
-    {packingSize.map((packing) => (
-      <li
-        key={packing.id}
-        className="border border-gray-300 p-4 rounded flex justify-between items-center"
-      >
-        <div className="flex space-x-4">
-    
-          {/* Display Text Information */}
-          <div>
-            <h3 className="text-lg font-medium">{packing.name}</h3>
-            <p>Bottles Per Pack: {packing.bottles_per_pack}</p>
-            <p>Litres Per Pack: {packing.litres_per_pack}</p>
-          </div>
+        <h2 className="text-xl font-semibold mb-4">Existing Packing Size</h2>
+        <div className="flex space-x-2 mb-4 w-full lg:w-2/3 mx-auto">
+          <input
+            type="text"
+            placeholder="Search Packing Size..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-500 text-white px-4 rounded"
+          >
+            Search
+          </button>
         </div>
+        <ul className="space-y-4">
+          {filteredPackingSize.map((packing) => (
+            <li
+              key={packing.id}
+              className="border border-gray-300 p-4 rounded flex justify-between items-center"
+            >
+              <div className="flex space-x-4">
 
-        {/* Action Buttons */}
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handleUpdate(packing.id)}
-            className="bg-green-500 text-white p-2 rounded"
-            disabled={loading}
-          >
-            Update
-          </button>
-          <button
-            onClick={() => handleDelete(packing.id)}
-            className="bg-red-500 text-white p-2 rounded"
-            disabled={loading}
-          >
-            Delete
-          </button>
-        </div>
-      </li>
-    ))}
-  </ul>
-</div>
+                {/* Display Text Information */}
+                <div>
+                  <h3 className="text-lg font-medium">{packing.name}</h3>
+                  <p>Bottles Per Pack: {packing.bottles_per_pack}</p>
+                  <p>Litres Per Pack: {packing.litres_per_pack}</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleUpdate(packing.id)}
+                  className="bg-green-500 text-white p-2 rounded"
+                  disabled={loading}
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => handleDelete(packing.id)}
+                  className="bg-red-500 text-white p-2 rounded"
+                  disabled={loading}
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
 
     </div>
   );
