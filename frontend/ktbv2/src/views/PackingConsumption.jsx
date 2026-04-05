@@ -22,7 +22,7 @@ function PackingConsumption() {
                     id: item.id,
                     date: item.date,
                     final_product_name: item.formula_detail?.formula_name || "",
-                    raw_material_name: "",
+                    packing_name: "",
                     quantity: 0,
                     rate: 0,
                     value: 0,
@@ -34,7 +34,7 @@ function PackingConsumption() {
                 id: item.id + "_" + (p.id || Math.random()), // unique key
                 date: item.date,
                 final_product_name: item.formula_detail?.formula_name || "",
-                raw_material_name: p?.packing || "",
+                packing_name: p?.packing || "",
                 quantity: Number(p?.total_qty || 0).toFixed(2),
                 rate: Number(p?.rate || 0).toFixed(2),
                 value: Number(p?.total_value || 0).toFixed(2),
@@ -105,7 +105,7 @@ function PackingConsumption() {
                         onChange={(e) => setSearchField(e.target.value)}
                     >
                         <option value="final_product_name">Final Product</option>
-                        <option value="raw_material_name">Packing</option>
+                        <option value="packing_name">Packing</option>
                     </select>
 
                     <input
@@ -167,7 +167,7 @@ function PackingConsumption() {
                             filteredData.map((item) => (
                                 <tr key={item.id} className="text-center">
                                     <td className="border p-2">{item.final_product_name}</td>
-                                    <td className="border p-2">{item.raw_material_name}</td>
+                                    <td className="border p-2">{item.packing_name}</td>
                                     <td className="border p-2">{item.date}</td>
                                     <td className="border p-2">{item.quantity}</td>
                                     <td className="border p-2">{item.rate}</td>
