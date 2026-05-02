@@ -16,7 +16,7 @@ from datetime import date
 from django.conf import settings
 from accounts.models import CustomUser
 from .utils.email_service import send_async_email
-
+from notifications.services import NotificationService
 
 BATCH_SIZE = getattr(settings, 'TRADE_PRODUCT_BATCH_SIZE', 100)
 
@@ -224,7 +224,23 @@ class TradeView(APIView):
             try:
                 company = Company.objects.get(id=data.get('company'))
                 company.save_counter(data.get('trn'))
-                send_async_email(subject, body, emails)
+                
+                # Notify explicitly assigned users
+                NotificationService.notify_users_explicit(
+                    actor=request.user, 
+                    notified_user_ids=notified_user_ids,
+                    verb="Trade Created", 
+                    message=f"You have been assigned to Trade {trade.trn} by {request.user.name if hasattr(request.user, 'name') else 'User'}",
+                    target_url=f"/trade-form/{trade.id}"
+                )
+                
+                # Also fire a general broadcast
+                NotificationService.notify_all_general(
+                    actor=request.user,
+                    verb="New Trade",
+                    message=f"Trade {trade.trn} was created.",
+                    target_url=f"/trade-form/{trade.id}"
+                )
             except Company.DoesNotExist:
                 return Response({'error': 'Company not found.'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -448,7 +464,24 @@ class TradeView(APIView):
                     TradeExtraCost.objects.bulk_create(trade_extra_costs)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            send_async_email(subject, body, emails)
+            
+            # Notify explicitly assigned users
+            NotificationService.notify_users_explicit(
+                actor=request.user, 
+                notified_user_ids=notified_user_ids,
+                verb="Trade Updated", 
+                message=f"You have been assigned or updated on Trade {trade.trn} by {request.user.name if hasattr(request.user, 'name') else 'User'}",
+                target_url=f"/trade-form/{trade.id}"
+            )
+            
+            # General Broadcast
+            NotificationService.notify_all_general(
+                actor=request.user,
+                verb="Trade Updated",
+                message=f"Trade {trade.trn} was updated.",
+                target_url=f"/trade-form/{trade.id}"
+            )
+            
         return Response(trade_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
@@ -509,6 +542,13 @@ class TradeApproveView(APIView):
                 # Update trade approval status
                 trade.approved = True
                 trade.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Trade Approved",
+                    message=f"Trade {trade.trn} has been approved.",
+                    target_url=f"/trade-approved"
+                )
 
                 # Serialize and return the approved trade
                 serializer = TradeSerializer(trade)
@@ -537,6 +577,14 @@ class TradeReviewView(APIView):
                 trade.reviewed = True
                 trade.approval_date = date.today()
                 trade.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Trade Reviewed",
+                    message=f"Trade {trade.trn} has been reviewed.",
+                    target_url=f"/trade-approval"
+                )
+                
                 # Serialize and return the approved trade
                 serializer = TradeSerializer(trade)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -627,6 +675,9 @@ class PreSalePurchaseView(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        
         # Prepare trade data separately
         pre_sp_data = {
             'trn': data.get('trn'),
@@ -693,6 +744,21 @@ class PreSalePurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="PreSalePurchase Created", 
+                message=f"You have been assigned to PreSalePurchase {pre_sp.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/pre-sale-purchase"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="New PreSalePurchase",
+                message=f"PreSalePurchase {pre_sp.trn} was created.",
+                target_url=f"/pre-sale-purchase"
+            )
+
         return Response(pre_sp_serializer.data, status=status.HTTP_201_CREATED)
 
     
@@ -705,6 +771,9 @@ class PreSalePurchaseView(APIView):
             pre_sp = PreSalePurchase.objects.get(pk=pk)
         except PreSalePurchase.DoesNotExist:
             return Response({'error': 'PreSalePurchase not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
 
         # Prepare trade data separately
         pre_sp_data = {
@@ -789,6 +858,21 @@ class PreSalePurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="PreSalePurchase Updated", 
+                message=f"You have been assigned to updated PreSalePurchase {pre_sp.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/pre-sale-purchase"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="PreSalePurchase Updated",
+                message=f"PreSalePurchase {pre_sp.trn} was updated.",
+                target_url=f"/pre-sale-purchase"
+            )
+
         return Response(pre_sp_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
@@ -836,6 +920,14 @@ class PreSalePurchaseApprove(APIView):
                 presp = PreSalePurchase.objects.get(id=presp_id)
                 presp.approved = True
                 presp.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="PreSalePurchase Approved",
+                    message=f"PreSalePurchase {presp.trn if hasattr(presp, 'trn') else presp_id} has been approved.",
+                    target_url=f"/pre-sale-purchase"
+                )
+                
                 serializer = PreSalePurchaseSerializer(presp)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except PrePayment.DoesNotExist:
@@ -884,6 +976,9 @@ class PrePaymentView(APIView):
     
     def post(self, request, *args, **kwargs):
         data = request.data
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        
         # Prepare trade data separately
         prepayment_data = {
             'trn': data.get('trn'),
@@ -967,11 +1062,29 @@ class PrePaymentView(APIView):
                 prepayment.advance_amount= prepayment.advance_received
             prepayment.save()
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="PrePayment Created", 
+                message=f"You have been assigned to PrePayment {prepayment.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/pre-payment"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="New PrePayment",
+                message=f"PrePayment {prepayment.trn} was created.",
+                target_url=f"/pre-payment"
+            )
+
         return Response(prepayment_serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         data = request.data
+        
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
         
         try:
             prepayment = PrePayment.objects.get(pk=pk)
@@ -1090,6 +1203,21 @@ class PrePaymentView(APIView):
                 prepayment.advance_amount+= prepayment.advance_received
             prepayment.save()
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="PrePayment Updated", 
+                message=f"You have been assigned to updated PrePayment {prepayment.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/pre-payment"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="PrePayment Updated",
+                message=f"PrePayment {prepayment.trn} was updated.",
+                target_url=f"/pre-payment"
+            )
+
         return Response(prepayment_serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, *args, **kwargs):
@@ -1133,6 +1261,14 @@ class PrePaymentReview(APIView):
                 prepay = PrePayment.objects.get(id=prepay_id)
                 prepay.reviewed = True
                 prepay.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="PrePayment Reviewed",
+                    message=f"PrePayment has been reviewed.",
+                    target_url=f"/pre-payment"
+                )
+                
                 serializer = PrePaymentSerializer(prepay)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except PrePayment.DoesNotExist:
@@ -1190,6 +1326,9 @@ class SalesPurchaseView(APIView):
     
     def post(self, request, *args, **kwargs):
         data = request.data
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         # Prepare trade data separately
         sp_data = {
             'trn': data.get('trn'),
@@ -1296,8 +1435,24 @@ class SalesPurchaseView(APIView):
            
             for product in sp_products:
                 pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,trade_type=sp.trn.trade_type).first()
-                pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
-                pending_product.save()
+                if pending_product:
+                    pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                    pending_product.save()
+
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="SalesPurchase Created", 
+                message=f"You have been assigned to SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/sales-purchases"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="New SalesPurchase",
+                message=f"SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} was created.",
+                target_url=f"/sales-purchases"
+            )
 
         return Response(sp_serializer.data, status=status.HTTP_201_CREATED)
     
@@ -1309,6 +1464,9 @@ class SalesPurchaseView(APIView):
             sp = SalesPurchase.objects.get(pk=pk)
         except SalesPurchase.DoesNotExist:
             return Response({'error': 'SalesPurchase not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
 
         # Prepare trade data separately
         sp_data = {
@@ -1547,6 +1705,21 @@ class SalesPurchaseView(APIView):
                         print(f"Error updating or creating Inventory: {e}")
                         raise
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="SalesPurchase Updated", 
+                message=f"You have been assigned to updated SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/sales-purchases"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="SalesPurchase Updated",
+                message=f"SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} was updated.",
+                target_url=f"/sales-purchases"
+            )
+
         return Response(sp_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
@@ -1631,6 +1804,14 @@ class SalesPurchaseApprove(APIView):
                 sp = SalesPurchase.objects.get(id=sp_id)
                 sp.reviewed = True
                 sp.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="SalesPurchase Approved",
+                    message=f"Sales/Purchase {sp.sp_number if hasattr(sp, 'sp_number') else sp_id} has been approved.",
+                    target_url=f"/sales-purchases"
+                )
+                
                 salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
                 if sp.trn.trade_type.lower() == "sales":
                     for product in salesPurchaseProducts:
@@ -1732,6 +1913,9 @@ class PaymentFinanceView(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         # Prepare trade data separately
         pf_data = {
             'sp': data.get('sp'),
@@ -1801,12 +1985,30 @@ class PaymentFinanceView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="PaymentFinance Created", 
+                message=f"You have been assigned to PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/payment-finances"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="New PaymentFinance",
+                message=f"PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} was created.",
+                target_url=f"/payment-finances"
+            )
+
         return Response(pf_serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         data = request.data
         
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             pf = PaymentFinance.objects.get(pk=pk)
         except PaymentFinance.DoesNotExist:
@@ -1897,6 +2099,21 @@ class PaymentFinanceView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="PaymentFinance Updated", 
+                message=f"You have been assigned to updated PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/payment-finances"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="PaymentFinance Updated",
+                message=f"PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} was updated.",
+                target_url=f"/payment-finances"
+            )
+
         return Response(pf_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
@@ -1940,6 +2157,14 @@ class PFReview(APIView):
                 pf = PaymentFinance.objects.get(id=pf_id)
                 pf.reviewed = True
                 pf.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Payment/Finance Reviewed",
+                    message=f"Payment/Finance record has been reviewed.",
+                    target_url=f"/payment-finance"
+                )
+                
                 serializer = PaymentFinanceSerializer(pf)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except PaymentFinance.DoesNotExist:
@@ -1966,6 +2191,13 @@ class KycApproveOneView(APIView):
 
                 kyc.approve1 = True
                 kyc.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="KYC Level 1 Approved",
+                    message=f"KYC {kyc.kyc_number if hasattr(kyc, 'kyc_number') else kyc_id} Level 1 has been approved.",
+                    target_url=f"/kyc"
+                )
 
                 serializer = KycSerializer(kyc)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1987,6 +2219,13 @@ class KycApproveTwoView(APIView):
 
                 kyc.approve2 = True
                 kyc.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="KYC Level 2 Approved",
+                    message=f"KYC {kyc.kyc_number if hasattr(kyc, 'kyc_number') else kyc_id} Level 2 has been approved.",
+                    target_url=f"/kyc"
+                )
 
                 serializer = KycSerializer(kyc)
                 return Response(serializer.data, status=status.HTTP_200_OK)

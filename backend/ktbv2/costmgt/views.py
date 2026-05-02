@@ -10,8 +10,47 @@ from .serializers import *
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
+from notifications.services import NotificationService
 # Create your views here.
 
+class NotificationViewSetMixin:
+    notification_verb = "Record"
+    notification_target_url = "/"
+
+    def _dispatch_notifications(self, request, is_update=False):
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        if not notified_users:
+            notified_users = request.data.get('notifiedUsers', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
+        action = "Updated" if is_update else "Created"
+        
+        if notified_user_ids:
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                notified_user_ids=notified_user_ids,
+                verb=f"{self.notification_verb} {action}",
+                message=f"You have been assigned to {self.notification_verb} by {request.user.name if hasattr(request, 'user') and hasattr(request.user, 'name') else 'System'}",
+                target_url=self.notification_target_url
+            )
+            
+        if not is_update:
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb=f"New {self.notification_verb}",
+                message=f"A new {self.notification_verb} was created.",
+                target_url=self.notification_target_url
+            )
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        self._dispatch_notifications(request, is_update=False)
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        self._dispatch_notifications(request, is_update=True)
+        return response
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -19,7 +58,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = CategoryFilter
 
-class PackingViewSet(viewsets.ModelViewSet):
+class PackingViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+    notification_verb = "Packing Price"
+    notification_target_url = "/packings"
+
     queryset = Packing.objects.all().order_by('-id')  # latest first
     serializer_class = PackingSerializer
     filter_backends = [DjangoFilterBackend]
@@ -44,7 +86,10 @@ class RawCategoryViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class RawMaterialViewSet(viewsets.ModelViewSet):
+class RawMaterialViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+    notification_verb = "Raw Material Pricing"
+    notification_target_url = "/raw-materials"
+
     queryset = RawMaterial.objects.all().order_by('-id') 
     serializer_class = RawMaterialSerializer
     filter_backends = [DjangoFilterBackend]
@@ -66,7 +111,10 @@ class AdditiveCategoryViewSet(viewsets.ModelViewSet):
 
         return qs
 
-class AdditiveViewSet(viewsets.ModelViewSet):
+class AdditiveViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+    notification_verb = "Additive Pricing"
+    notification_target_url = "/additives"
+
     queryset = Additive.objects.all()
     serializer_class = AdditiveSerializer
     filter_backends = [DjangoFilterBackend]
@@ -141,6 +189,9 @@ class ConsumptionFormulaView(APIView):
     
     def post(self, request, *args, **kwargs):
         data = request.data
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         # Prepare trade data separately
         c_data = {
             'date': data.get('date'),
@@ -193,6 +244,20 @@ class ConsumptionFormulaView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="Consumption Formula Created", 
+                message=f"You have been assigned to Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/consumption-formulas"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="New Consumption Formula",
+                message=f"Consumption Formula {consumption.name if consumption.name else consumption.id} was created.",
+                target_url=f"/consumption-formulas"
+            )
 
         return Response(c_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -200,6 +265,9 @@ class ConsumptionFormulaView(APIView):
         pk = kwargs.get('pk')
         data = request.data
         
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             consumption = ConsumptionFormula.objects.get(pk=pk)
         except ConsumptionFormula.DoesNotExist:
@@ -265,6 +333,21 @@ class ConsumptionFormulaView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="Consumption Formula Updated", 
+                message=f"You have been assigned to updated Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/consumption-formulas"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="Consumption Formula Updated",
+                message=f"Consumption Formula {consumption.name if consumption.name else consumption.id} was updated.",
+                target_url=f"/consumption-formulas"
+            )
+
         return Response(c_serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, *args, **kwargs):
@@ -321,6 +404,9 @@ class ConsumptionView(APIView):
     
     def post(self, request, *args, **kwargs):
         data = request.data
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         # Prepare trade data separately
         c_data = {
             'date': data.get('date'),
@@ -386,6 +472,20 @@ class ConsumptionView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="Consumption Created", 
+                message=f"You have been assigned to Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/consumptions"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="New Consumption",
+                message=f"Consumption {consumption.name if consumption.name else consumption.id} was created.",
+                target_url=f"/consumptions"
+            )
 
         return Response(c_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -393,6 +493,9 @@ class ConsumptionView(APIView):
         pk = kwargs.get('pk')
         data = request.data
         
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             consumption = Consumption.objects.get(pk=pk)
         except Consumption.DoesNotExist:
@@ -470,6 +573,21 @@ class ConsumptionView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="Consumption Updated", 
+                message=f"You have been assigned to updated Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/consumptions"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="Consumption Updated",
+                message=f"Consumption {consumption.name if consumption.name else consumption.id} was updated.",
+                target_url=f"/consumptions"
+            )
+
         return Response(c_serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, *args, **kwargs):
@@ -491,7 +609,10 @@ class ConsumptionView(APIView):
 
 
 
-class FinalProductViewSet(viewsets.ModelViewSet):
+class FinalProductViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+    notification_verb = "Final Product Cost"
+    notification_target_url = "/final-products"
+
     serializer_class = FinalProductSerializer
     queryset = FinalProduct.objects.select_related(
         "formula",
@@ -513,7 +634,9 @@ class FinalProductViewSet(viewsets.ModelViewSet):
                 status=400
             )
 
-        return super().update(request, *args, **kwargs)
+        response = super().update(request, *args, **kwargs)
+        self._dispatch_notifications(request, is_update=True)
+        return response
 
 
     # ----------------------------------
@@ -544,6 +667,14 @@ class PackingApprovalView(APIView):
 
                 obj.approved = True
                 obj.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Packing Approved",
+                    message=f"Packing entry has been approved.",
+                    target_url=f"/packings"
+                )
+                
                 serializer = PackingSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Packing.DoesNotExist:
@@ -564,6 +695,13 @@ class RawMaterialApprovalView(APIView):
 
                 obj.approved = True
                 obj.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Raw Material Approved",
+                    message=f"Raw Material {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+                    target_url=f"/raw-materials"
+                )
 
                 serializer = RawMaterialSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -585,6 +723,13 @@ class AdditiveApprovalView(APIView):
 
                 obj.approved = True
                 obj.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Additive Approved",
+                    message=f"Additive {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+                    target_url=f"/additives"
+                )
 
                 serializer = AdditiveSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -607,6 +752,13 @@ class ConsumptionFormulaApprovalView(APIView):
 
                 obj.approved = True
                 obj.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Consumption Formula Approved",
+                    message=f"Consumption Formula {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+                    target_url=f"/consumption-formula"
+                )
 
                 serializer = ConsumptionFormulaSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -659,6 +811,9 @@ class ProductFormulaView(APIView):
         
     def post(self, request, *args, **kwargs):
         data = request.data
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        
         # Prepare trade data separately
         c_data = {
             'formula_name': data.get('formula_name'),
@@ -697,6 +852,21 @@ class ProductFormulaView(APIView):
                     ProductFormulaItem.objects.bulk_create(items)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="Product Formula Created", 
+                message=f"You have been assigned to Product Formula {p_formula.formula_name if p_formula.formula_name else p_formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/product-formulas"
+            )
+            
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="New Product Formula",
+                message=f"Product Formula {p_formula.formula_name if p_formula.formula_name else p_formula.id} was created.",
+                target_url=f"/product-formulas"
+            )
             
         return Response(p_serializer.data, status=status.HTTP_201_CREATED)
     
@@ -704,6 +874,9 @@ class ProductFormulaView(APIView):
         pk = kwargs.get('pk')
         data = request.data
         
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             formula = ProductFormula.objects.get(pk=pk)
         except ProductFormula.DoesNotExist:
@@ -749,7 +922,21 @@ class ProductFormulaView(APIView):
                     ProductFormulaItem.objects.bulk_create(items)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            NotificationService.notify_users_explicit(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                notified_user_ids=notified_user_ids,
+                verb="Product Formula Updated", 
+                message=f"You have been assigned to updated Product Formula {formula.formula_name if formula.formula_name else formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                target_url=f"/product-formulas"
+            )
             
+            NotificationService.notify_all_general(
+                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                verb="Product Formula Updated",
+                message=f"Product Formula {formula.formula_name if formula.formula_name else formula.id} was updated.",
+                target_url=f"/product-formulas"
+            )
 
         return Response(formula_serializer.data, status=status.HTTP_200_OK)
     
@@ -790,6 +977,13 @@ class FinalProductApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Final Product Approved",
+                    message=f"Final Product Cost entry has been approved.",
+                    target_url=f"/final-products"
+                )
+
                 serializer = FinalProductSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except FinalProduct.DoesNotExist:
@@ -811,6 +1005,13 @@ class ProductFormulaApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Product Formula Approved",
+                    message=f"Product Formula {obj.formula_name if hasattr(obj, 'formula_name') else pk} has been approved.",
+                    target_url=f"/product-formula"
+                )
+
                 serializer = ProductFormulaSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except ProductFormula.DoesNotExist:
@@ -830,6 +1031,13 @@ class ConsumptionApprovalView(APIView):
 
                 obj.approved = True
                 obj.save()
+                
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Consumption Approved",
+                    message=f"Consumption entry {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+                    target_url=f"/consumptions"
+                )
                 serializer = ConsumptionSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Consumption.DoesNotExist:
@@ -852,6 +1060,13 @@ class AdditiveCategoryApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Additive Category Approved",
+                    message=f"Additive Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+                    target_url=f"/additive-categories"
+                )
+
                 serializer = AdditiveCategorySerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except AdditiveCategory.DoesNotExist:
@@ -872,6 +1087,13 @@ class RawCategoryApprovalView(APIView):
 
                 obj.approved = True
                 obj.save()
+
+                NotificationService.notify_all_general(
+                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    verb="Raw Category Approved",
+                    message=f"Raw Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+                    target_url=f"/raw-categories"
+                )
 
                 serializer = RawCategorySerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_filters',
     'excel',
     'accounts',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -158,3 +159,11 @@ EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'ktb_info@ourkismat.com'   # Your email
 EMAIL_HOST_PASSWORD = '46lZsXr[3g9('  # App-specific password (not your Gmail password)
+
+# Celery Configuration
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
