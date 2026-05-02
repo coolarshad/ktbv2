@@ -149,7 +149,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
@@ -211,7 +211,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
 
       <hr className="my-6" />
 
-      <div className="space-y-4 w-full lg:w-2/3 mx-auto">
+      <div className="space-y-4 w-full">
   <h2 className="text-xl font-semibold mb-4">Existing Companies</h2>
   <ul className="space-y-4">
     {companies.map((company) => (

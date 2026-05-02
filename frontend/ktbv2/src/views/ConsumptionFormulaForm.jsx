@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
-import Select from 'react-select'
+import Select from 'react-select';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 
 const ConsumptionFormulaForm = ({ mode = 'add' }) => {
@@ -25,6 +26,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
         remarks: '',
         consumptionAdditive: [{ name: '', qty_in_percent: null }],
         consumptionBaseOil: [{ name: '', qty_in_percent: null }],
+        notifiedUsers: [],
     });
 
     useEffect(() => {
@@ -99,6 +101,10 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
         setFormData({ ...formData, [section]: updatedSection });
     };
 
+    const handleUsersChange = (users) => {
+        setFormData(prev => ({ ...prev, notifiedUsers: users }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const formDataToSend = new FormData();
@@ -144,7 +150,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
 
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <p className="text-xl text-center">Blending Formulation Form</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
@@ -397,6 +403,17 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                     </button>
                 </div>
             </div>
+
+            {/* Notify Users Section */}
+            <hr className="my-6" />
+            <div className="p-4">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={handleUsersChange}
+                />
+            </div>
+            
             <hr className="my-6" />
 
             {/* Submit Button */}

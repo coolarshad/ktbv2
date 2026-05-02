@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
 import { capitalizeKey } from '../utils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
+import MultiUserSelector from '../components/MultiUserSelector';
 import debounce from 'lodash/debounce';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
@@ -30,7 +31,8 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         remarks: '',
         lcCopies: [{ name: '', lc_copy: null }],
         lcAmmendments: [{ name: '', lc_ammendment: null }],
-        advanceTTCopies: [{ name: '', advance_tt_copy: null }]
+        advanceTTCopies: [{ name: '', advance_tt_copy: null }],
+        notifiedUsers: []
     });
 
     useEffect(() => {
@@ -185,6 +187,10 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         }
     };
     
+    const handleUsersChange = (users) => {
+        setFormData(prev => ({ ...prev, notifiedUsers: users }));
+    };
+    
 
     const handleAddRow = (section) => {
         const newRow = { name: '', [section === 'lcCopies' ? 'lc_copy' : section === 'lcAmmendments' ? 'lc_ammendment' : 'advance_tt_copy']: null };
@@ -240,7 +246,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
         // Check each regular field for empty value (except files and those in skipValidation)
         for (const [key, value] of Object.entries(formData)) {
-            if (!skipValidation.includes(key) && value === '') {
+            if (!skipValidation.includes(key) && value === '' && key !== 'notifiedUsers') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
             }
         }
@@ -342,7 +348,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     : [];
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <h2 className="text-2xl mb-2 text-center">Prepayment Document</h2>
             {data && (
 
@@ -697,7 +703,14 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 </div>
             )}
 
-
+            {/* Notify Users Section */}
+            <div className="mt-0 p-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={handleUsersChange}
+                />
+            </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">
                 <button

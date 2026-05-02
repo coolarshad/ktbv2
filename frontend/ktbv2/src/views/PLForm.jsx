@@ -168,7 +168,7 @@ const PLForm = ({ mode = 'add' }) => {
 
     return (
         <>
-           <form onSubmit={handleSubmit} className="space-y-2 w-full lg:w-2/3 mx-auto">
+           <form onSubmit={handleSubmit} className="space-y-2 w-full">
             <h2 className="text-2xl mb-2 text-center">P&L Document</h2>
             
           <hr />

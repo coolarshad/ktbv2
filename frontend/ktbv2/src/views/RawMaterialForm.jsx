@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const RawMaterialForm = ({ mode = 'add' }) => {
   const { id } = useParams();
@@ -30,6 +31,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     remarks: '',
     category: '', // ✅ correct field
     extras: [],
+    notifiedUsers: [],
   });
 
   // Fetch categories for dropdown
@@ -187,6 +189,9 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setFormData({ ...formData, extras: updated });
   };
 
+  const handleUsersChange = (users) => {
+    setFormData((prev) => ({ ...prev, notifiedUsers: users }));
+  };
 
   const errors = {};
   const handleSubmit = (e) => {
@@ -292,7 +297,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
 
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <p className="text-xl text-center">Raw Material Pricing Form</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
 
@@ -554,6 +559,15 @@ const RawMaterialForm = ({ mode = 'add' }) => {
           </button>
         </div>
       </div> */}
+
+      <hr className="my-6" />
+      <div className="p-4">
+        <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+        <MultiUserSelector
+            selectedUsers={formData.notifiedUsers}
+            onChange={handleUsersChange}
+        />
+      </div>
 
       <div className="grid grid-cols-3 gap-4 mb-4">
         <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">

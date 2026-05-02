@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { capitalizeKey } from '../utils';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const PreSalePurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -34,7 +35,8 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         remarks: '',
         documentRequired: [{ name: '' }], // Ensure all sections are initialized as arrays
         acknowledgedPI: [{ ackn_pi: null, ackn_pi_name: '' }],
-        acknowledgedPO: [{ ackn_po: null, ackn_po_name: '' }]
+        acknowledgedPO: [{ ackn_po: null, ackn_po_name: '' }],
+        notifiedUsers: []
     });
     const [data, setData] = useState(null);
     const [trnOptions, setTrnOptions] = useState([]);
@@ -141,6 +143,10 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         });
     };
 
+    const handleUsersChange = (users) => {
+        setFormData(prev => ({ ...prev, notifiedUsers: users }));
+    };
+
     // Dynamically apply red border to invalid fields
     const getFieldErrorClass = (fieldName) => {
         return validationErrors[fieldName] ? 'border-red-500' : '';
@@ -162,7 +168,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
 
         // Check each regular field for empty value (except files and those in skipValidation)
         for (const [key, value] of Object.entries(formData)) {
-            if (!skipValidation.includes(key) && value === '') {
+            if (!skipValidation.includes(key) && value === '' && key !== 'notifiedUsers') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
             }
         }
@@ -267,7 +273,7 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
     
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <h2 className="text-2xl mb-2 text-center">Pre Sales/Purchase Document</h2>
             {data && (
                 <>
@@ -534,6 +540,16 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 </div>
                 
             </div>
+            
+            {/* Notify Users Section */}
+            <div className="mt-0 p-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={handleUsersChange}
+                />
+            </div>
+            
             <div className='grid grid-cols-3 gap-4 mb-4'>
             <button
                 type="submit"

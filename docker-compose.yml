@@ -8,8 +8,9 @@ services:
     container_name: frontend_container
     ports:
       - "5173:80"  # Serve frontend on port 80
+    restart: unless-stopped
     depends_on:
-      - backend  # Ensure backend starts before frontend
+      - backend
 
   backend:
     build:
@@ -20,4 +21,38 @@ services:
       - "8000:8000"  # Expose Django on port 8000
     volumes:
       - ./backend/ktbv2:/app
-   
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_container
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    # Port is not exposed to the host machine for production safety.
+    # It is only accessible to other containers on the internal Docker network.
+
+  celery_worker:
+    build:
+      context: ./backend/ktbv2
+      dockerfile: Dockerfile
+    container_name: celery_worker_container
+    # Ensure this matches your celery app name ('ktbv2')
+    command: celery -A ktbv2 worker -l info
+    volumes:
+      - ./backend/ktbv2:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - backend
+
+volumes:
+  redis_data:

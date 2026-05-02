@@ -11,6 +11,7 @@ const Users = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [allPermissions, setAllPermissions] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -23,8 +24,27 @@ const Users = () => {
         setLoading(false);
       }
     };
+
+    const fetchPermissions = async () => {
+      try {
+        const res = await axios.get('/accounts/permissions/');
+        setAllPermissions(res.data);
+      } catch (err) {
+        console.error('Failed to fetch permissions');
+      }
+    };
+
     fetchUsers();
+    fetchPermissions();
   }, []);
+
+  const groupedPermissions = allPermissions.reduce((acc, perm) => {
+    const parts = perm.code.split('_');
+    const module = parts.slice(1).join('_');
+    if (!acc[module]) acc[module] = [];
+    acc[module].push(perm);
+    return acc;
+  }, {});
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
@@ -118,52 +138,57 @@ const Users = () => {
 
       {/* Modal for detailed view */}
       {isModalOpen && selectedUser && (
-        <Modal isOpen={isModalOpen} onClose={closeModal}>
-          <div className="max-w-4xl w-full max-h-[80vh] overflow-y-auto p-6 bg-white rounded shadow-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">{selectedUser.name}</h2>
-              <button
-                onClick={closeModal}
-                className="text-red-500 font-bold hover:text-red-700 text-xl"
-              >
-                ×
-              </button>
+        <Modal isOpen={isModalOpen} onClose={closeModal} maxWidth="max-w-5xl">
+          <div>
+            <div className="flex justify-between items-center border-b pb-2 mb-4">
+              <h2 className="text-2xl font-semibold">User Details</h2>
             </div>
 
-            <div className="space-y-3 text-gray-700">
-              <div className="flex">
-                <span className="w-40 font-medium">Email:</span>
-                <span>{selectedUser.email}</span>
-              </div>
-              <div className="flex">
-                <span className="w-40 font-medium">Phone:</span>
-                <span>{selectedUser.phone || 'N/A'}</span>
-              </div>
-              <div className="flex">
-                <span className="w-40 font-medium">Role:</span>
-                <span>{selectedUser.role || 'N/A'}</span>
-              </div>
-              <div className="flex">
-                <span className="w-40 font-medium">Designation:</span>
-                <span>{selectedUser.designation || 'N/A'}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="w-40 font-medium">Permissions:</span>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {selectedUser.permissions && selectedUser.permissions.length > 0 ? (
-                    selectedUser.permissions.map(p => (
-                      <span
-                        key={p.id}
-                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
-                      >
-                        {p.name}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-gray-500">No permissions assigned</span>
-                  )}
+            {/* Basic Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {['name', 'email', 'phone', 'designation', 'role'].map(field => (
+                <div key={field}>
+                  <label className="block mb-1 font-medium">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+                  <input
+                    name={field}
+                    value={selectedUser[field] || ''}
+                    readOnly
+                    className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed text-gray-700 focus:outline-none"
+                  />
                 </div>
-              </div>
+              ))}
+            </div>
+
+            {/* Permissions Section */}
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold mb-4 border-b pb-2 flex justify-between items-center">
+                Permissions
+              </h3>
+
+              {Object.entries(groupedPermissions).map(([module, perms]) => {
+                const userPermIds = (selectedUser.permissions || []).map(p => typeof p === 'object' ? p.id : p);
+                return (
+                  <div key={module} className="mb-6 p-4 border rounded bg-gray-50">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-semibold capitalize">{module.replace('_', ' ')}</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      {perms.map(perm => (
+                        <label key={perm.id} className="flex items-center gap-2 p-2 border rounded bg-white cursor-not-allowed opacity-80">
+                          <input
+                            type="checkbox"
+                            checked={userPermIds.includes(perm.id)}
+                            readOnly
+                            disabled
+                            className="cursor-not-allowed"
+                          />
+                          {perm.name}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </Modal>

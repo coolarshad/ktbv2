@@ -52,7 +52,7 @@ const TradeReport = () => {
 
     return (
         <div className='h-full overflow-y-scroll'>
-            <form onSubmit={handleSubmit} className="space-y-2 w-full lg:w-2/3 mx-auto">
+            <form onSubmit={handleSubmit} className="space-y-2 w-full">
                 <h2 className="text-xl font-semibold text-center">Trade Report</h2>
                 <div className="grid grid-cols-1 gap-2 p-2">
                     <select
@@ -81,7 +81,7 @@ const TradeReport = () => {
             <hr className="my-6" />
         
             {/* List of Existing Documents */}
-            <div className="space-y-4 w-full lg:w-2/3 mx-auto">
+            <div className="space-y-4 w-full">
                 <p>Trade</p>
                 {reportData && reportData.trade ? (
                     <>

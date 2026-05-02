@@ -5,6 +5,7 @@ import { FaTrash } from 'react-icons/fa';
 import { capitalizeKey } from '../utils';
 import debounce from 'lodash.debounce';
 import DateInputWithIcon from '../components/DateInputWithIcon';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -60,9 +61,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         ],
         extraCharges: [{ name: '', charge: '' }],
         packingLists: [{ name: '', packing_list: null }],
-        // blCopies: [{ name: '', bl_copy: null }],
-        // invoices: [{ name: '', invoice: null }],
-        // coas: [{ name: '', coa: null }],
+        notifiedUsers: [],
     });
 
     // Move the debounced submit logic to component level
@@ -498,6 +497,10 @@ const handleChange = async (e, arrayName = null, index = null) => {
         }));
     };
 
+    const handleUsersChange = (users) => {
+        setFormData(prev => ({ ...prev, notifiedUsers: users }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (submittingRef.current) return;
@@ -508,7 +511,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
 
         // Check each regular field for empty value (except files and those in skipValidation)
         for (const [key, value] of Object.entries(formData)) {
-            if (!skipValidation.includes(key) && value === '') {
+            if (!skipValidation.includes(key) && value === '' && key !== 'notifiedUsers') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
             }
         }
@@ -636,7 +639,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
     : [];
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <h2 className="text-2xl mb-2 text-center">Sales / Purchase Document</h2>
             {data && (
                 <>
@@ -1389,7 +1392,16 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 </div> */}
                
             </div>
-            <hr className="my-6" />
+            {/* Notify Users Section */}
+            <div className="mt-0 p-4">
+                <hr className="my-6 border-t border-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={handleUsersChange}
+                />
+            </div>
+            <hr className="my-6 border-t border-gray-300" />
             <div className='grid grid-cols-3 gap-4 mb-4'>
             <button
                     type="submit"

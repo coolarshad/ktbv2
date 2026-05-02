@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
 import SearchableSelect from '../components/SearchableSelect';
-import Select from 'react-select'
+import Select from 'react-select';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const ConsumptionForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -25,6 +26,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         batch: '',
         consumptionAdditive: [{ name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
         consumptionBaseOil: [{ name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
+        notifiedUsers: [],
     });
 
     const [nameOptions, setNameOptions] = useState([]);
@@ -444,6 +446,10 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         }
     };
 
+    const handleUsersChange = (users) => {
+        setFormData((prev) => ({ ...prev, notifiedUsers: users }));
+    };
+
 
 
     const updateConsumptionData = async (currentFormData, netBlendingQty) => {
@@ -536,11 +542,17 @@ const ConsumptionForm = ({ mode = 'add' }) => {
 
         for (const [key, value] of Object.entries(formData)) {
             if (Array.isArray(value)) {
-                value.forEach((item, index) => {
-                    for (const [subKey, subValue] of Object.entries(item)) {
-                        formDataToSend.append(`${key}[${index}].${subKey}`, subValue || '');
-                    }
-                });
+                if (key === 'notifiedUsers') {
+                    value.forEach(item => {
+                        formDataToSend.append(`${key}[]`, item);
+                    });
+                } else {
+                    value.forEach((item, index) => {
+                        for (const [subKey, subValue] of Object.entries(item)) {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue || '');
+                        }
+                    });
+                }
             } else {
                 formDataToSend.append(key, value || '');
             }
@@ -601,7 +613,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     }));
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <p className="text-xl text-center">Consumption & Blending Form</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 {/* Date Input */}
@@ -884,6 +896,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 </div> */}
             </div>
 
+
             {/* Section for Consumption Base Oil */}
             <div className="p-4">
                 <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
@@ -1075,6 +1088,16 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 </div>
             </div>
             <hr className='my-6' />
+
+            <div className="p-4">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={handleUsersChange}
+                />
+            </div>
+            <hr className="my-6" />
+
             {/* Submit Button */}
             <div className='grid grid-cols-3 gap-4 mb-4'>
                 <button

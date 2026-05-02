@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../axiosConfig";
 import { capitalizeKey } from "../utils";
-import Select from 'react-select'
+import Select from 'react-select';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const PackingForm = ({ mode = "add" }) => {
   const { id } = useParams();
@@ -24,6 +25,7 @@ const PackingForm = ({ mode = "add" }) => {
     packing_type: "",
     remarks: "",
     extras: [],
+    notifiedUsers: [],
   });
 
   // Fetch categories for dropdown
@@ -114,6 +116,11 @@ const PackingForm = ({ mode = "add" }) => {
     const updated = formData.extras.filter((_, i) => i !== index);
     setFormData({ ...formData, extras: updated });
   };
+
+  const handleUsersChange = (users) => {
+    setFormData((prev) => ({ ...prev, notifiedUsers: users }));
+  };
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -201,7 +208,7 @@ const PackingForm = ({ mode = "add" }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <p className="text-xl text-center">Packing Price Form</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
         <div>
@@ -320,7 +327,14 @@ const PackingForm = ({ mode = "add" }) => {
         </div>
       </div> */}
 
-
+      <hr className="my-6" />
+      <div className="p-4">
+        <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+        <MultiUserSelector
+            selectedUsers={formData.notifiedUsers}
+            onChange={handleUsersChange}
+        />
+      </div>
 
       <div className="grid grid-cols-3 gap-4 mb-4">
         <button

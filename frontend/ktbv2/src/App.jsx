@@ -15,7 +15,8 @@ import PreSalePurchaseForm from './views/PreSalePurchaseForm'
 import PrePaymentForm from './views/PrePaymentForm'
 import SalesPurchaseForm from './views/SalesPurchaseForm'
 import PaymentFinanceForm from './views/PaymentFinanceForm'
-import MenuBar from './components/MenuBar'
+import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
 import SalesInvoice from './views/SalesInvoice';
 import PurchaseInvoice from './views/PurchaseInvoice';
 import Dashboard from './views/Dashboard';
@@ -69,14 +70,20 @@ import AdditiveConsumption from './views/AddititveConsumption';
 import RawConsumption from './views/RawConsumption';
 import PackingConsumption from './views/PackingConsumption';
 
+import NotificationCenter from './views/NotificationCenter';
+
 function App() {
  
   return (
     <Router>
-      <MenuBar />
-      <div className="p-0">
-        <Routes>
+      <div className="flex w-screen h-screen overflow-hidden bg-gray-50">
+        <Sidebar />
+        <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+          <Topbar />
+          <main className="w-full flex-grow">
+            <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/trade-approval" element={<TradeApproval />} />
           <Route path="/trade-approved" element={<TradeApproved />} />
           <Route path="/pre-sale-purchase" element={<PreSalePurchase />} />
@@ -171,7 +178,9 @@ function App() {
 
           <Route path="/packing-size" element={<PackingSize />} />
         </Routes>
-        <ToastContainer position="top-right" autoClose={3000} />
+            <ToastContainer position="top-right" autoClose={3000} />
+          </main>
+        </div>
       </div>
     </Router>
   )

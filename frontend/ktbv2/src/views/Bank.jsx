@@ -98,7 +98,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
@@ -144,7 +144,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
       <hr className="my-6" />
 
       {/* List of Existing Banks */}
-      <div className='space-y-4 w-full lg:w-2/3 mx-auto'>
+      <div className='space-y-4 w-full'>
         <h2 className="text-xl font-semibold mb-4">Existing Banks</h2>
         <ul className="space-y-4">
           {banks.map(bank => (

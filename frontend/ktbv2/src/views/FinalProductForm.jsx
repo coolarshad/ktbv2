@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 export default function FinalProductForm({ mode = 'add' }) {
   const { id } = useParams();
@@ -47,7 +48,8 @@ export default function FinalProductForm({ mode = 'add' }) {
 
     additional_costs: [
       { name: "", rate: "", value: "" }
-    ]
+    ],
+    notifiedUsers: []
   });
 
   // Dropdown options
@@ -423,6 +425,9 @@ export default function FinalProductForm({ mode = 'add' }) {
     }
   }, [formData.total_qty, formData.litres_per_pack, formData.bottles_per_pack, formData.per_litre_cost]);
 
+  const handleUsersChange = (users) => {
+    setFormData((prev) => ({ ...prev, notifiedUsers: users }));
+  };
 
   const validateForm = () => {
     let newErrors = {};
@@ -508,7 +513,7 @@ export default function FinalProductForm({ mode = 'add' }) {
 };
 
 return (
-  <form onSubmit={handleSubmit} className="w-11/12 lg:w-2/3 mx-auto space-y-10">
+  <form onSubmit={handleSubmit} className="w-11/12 space-y-10">
 
     <h2 className="text-2xl font-bold text-center">
       Final Production Form
@@ -870,6 +875,16 @@ return (
         />
       </div>
     </div>
+    
+    <hr className="my-6" />
+    <div className="p-4">
+        <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+        <MultiUserSelector
+            selectedUsers={formData.notifiedUsers}
+            onChange={handleUsersChange}
+        />
+    </div>
+
     <button className="w-full bg-blue-600 text-white p-3 rounded text-lg">
       Submit
     </button>

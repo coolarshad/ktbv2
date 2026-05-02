@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
+import MultiUserSelector from "../components/MultiUserSelector";
 
 const ProductFormulaForm = ({ mode = "add" }) => {
     const { id } = useParams();
@@ -18,6 +19,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         // litre_per_pack: "",
         remarks: "",
         attributes: [{ packing_type: "", packing_label: "", qty: "" }],
+        notifiedUsers: [],
     });
 
     const [consumptions, setConsumptions] = useState([]);
@@ -145,6 +147,10 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         }));
     };
 
+    const handleUsersChange = (users) => {
+        setFormData(prev => ({ ...prev, notifiedUsers: users }));
+    };
+
     /* ---------------- SUBMIT ---------------- */
 
     const handleSubmit = (e) => {
@@ -171,7 +177,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
     /* ---------------- UI ---------------- */
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-6 w-full">
             <h2 className="text-xl text-center">Packing Formulation Form</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -311,6 +317,17 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                     Add Attribute
                 </button>
             </div>
+
+            {/* Notify Users Section */}
+            <hr className="my-6" />
+            <div className="mt-0">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={handleUsersChange}
+                />
+            </div>
+            <hr className="my-6" />
 
             <button className="bg-blue-600 text-white px-5 py-2 rounded">
                 Submit

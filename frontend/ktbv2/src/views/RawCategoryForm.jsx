@@ -133,7 +133,7 @@ const RawCategoryForm = ({ mode = "add" }) => {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <p className="text-xl text-center">Raw Material Category Form</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">

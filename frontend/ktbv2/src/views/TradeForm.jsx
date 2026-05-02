@@ -609,7 +609,7 @@ const TradeForm = ({ mode = 'add' }) => {
         if (submittingRef.current) return;
         let errors = {};
 
-         console.log("Submitting formData:", formData);  // Debug here
+        console.log("Submitting formData:", formData);  // Debug here
         // Define fields to skip validation for
         const skipValidation = ['loi', 'relatedTrades', 'approved_by', 'ref_balance'];
 
@@ -768,7 +768,7 @@ const TradeForm = ({ mode = 'add' }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6  w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-6  w-full mx-auto">
 
             <div className="grid grid-cols-3 gap-4 p-4 ">
                 <div>

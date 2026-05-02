@@ -5,6 +5,7 @@ import { paymentDueDate,calculatePFCommissionValue } from '../dateUtils';
 import { capitalizeKey } from '../utils';
 import debounce from 'lodash/debounce';
 import DateInputWithIcon from '../components/DateInputWithIcon';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
     const { id } = useParams();
@@ -36,6 +37,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         remarks: '',
         ttCopies: [{ name: '', tt_copy: null }],
         pfCharges: [{ name: '', charge: '' }],
+        notifiedUsers: [],
     });
 
     useEffect(() => {
@@ -227,6 +229,10 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         const updatedSection = formData[section].filter((_, i) => i !== index);
         setFormData({ ...formData, [section]: updatedSection });
     };
+
+    const handleUsersChange = (users) => {
+        setFormData(prev => ({ ...prev, notifiedUsers: users }));
+    };
     
 
     // Create a debounced submit handler
@@ -265,7 +271,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
         // Check each regular field for empty value (except files and those in skipValidation)
         for (const [key, value] of Object.entries(formData)) {
-            if (!skipValidation.includes(key) && value === '') {
+            if (!skipValidation.includes(key) && value === '' && key !== 'notifiedUsers') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
             }
         }
@@ -421,7 +427,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     }, [debouncedAdvanceCheck]);
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full lg:w-2/3 mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <h2 className="text-2xl mb-2 text-center">Payment / Finance Document</h2>
             {data && (
                 <>
@@ -778,7 +784,15 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 </div>
             )}
 
-
+            {/* Notify Users Section */}
+            <hr className="my-6" />
+            <div className="mt-0">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={handleUsersChange}
+                />
+            </div>
 
             <hr className="my-6" />
             <div className='grid grid-cols-3 gap-4 mb-4'>
