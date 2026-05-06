@@ -1,7 +1,7 @@
-import React, { useState, useEffect,useCallback } from 'react';
-import { useParams,useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import { today, addDaysToDate,advanceToPay,advanceToReceive } from '../dateUtils';
+import { today, addDaysToDate, advanceToPay, advanceToReceive } from '../dateUtils';
 import { capitalizeKey } from '../utils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
@@ -9,16 +9,16 @@ import debounce from 'lodash/debounce';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
     const { id } = useParams();
-    const navigate=useNavigate()
-  
+    const navigate = useNavigate()
+
     const [validationErrors, setValidationErrors] = useState({});
     // Sample options for TRN dropdown
-    const [trnOptions, setTrnOptions] = useState([]); 
-    const [data, setData] = useState(null); 
+    const [trnOptions, setTrnOptions] = useState([]);
+    const [data, setData] = useState(null);
 
     const [formData, setFormData] = useState({
         trn: '',
-        adv_due_date:'',
+        adv_due_date: '',
         // as_per_pi_advance: '',
         lc_number: '',
         lc_opening_bank: '',
@@ -55,27 +55,27 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         latest_shipment_date_in_lc: data.latest_shipment_date_in_lc,
                         remarks: data.remarks,
                         lcCopies: data.lcCopies || [{ name: '', lc_copy: null }],
-                        lcAmmendments: data.lcAmmendments  || [{ name: '', lc_ammendment: null }],
-                        advanceTTCopies: data.advanceTTCopies  || [{ name: '', advance_tt_copy: null }]
+                        lcAmmendments: data.lcAmmendments || [{ name: '', lc_ammendment: null }],
+                        advanceTTCopies: data.advanceTTCopies || [{ name: '', advance_tt_copy: null }]
                     }));
-                // Call the second API after the first one is complete
-              return axios.get(`/trademgt/prepay/${data.trn.id}`);
-            })
-            .then(response => {
-                setData(response.data)
-            })
-            .catch(error => {
-              console.error('There was an error fetching the data!', error);
-            });
+                    // Call the second API after the first one is complete
+                    return axios.get(`/trademgt/prepay/${data.trn.id}`);
+                })
+                .then(response => {
+                    setData(response.data)
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the data!', error);
+                });
         }
-      }, [mode, id]);
-    
+    }, [mode, id]);
+
     //   useEffect(() => {
     //     if (data) {
     //         const calculatedAdvance = data.trade_type === 'Sales'
     //             ? advanceToReceive(data)
     //             : advanceToPay(data);
-    
+
     //         setFormData(prevState => ({
     //             ...prevState,
     //             // as_per_pi_advance: calculatedAdvance || '',
@@ -88,7 +88,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             const calculatedAdvance = data.trade_type === 'Sales'
                 ? advanceToReceive(data)
                 : advanceToPay(data);
-    
+
             setFormData(prevState => ({
                 ...prevState,
                 adv_due_date: data.presp.trade.paymentTerm.advance_within === 'NA' ? 'NA' : addDaysToDate(data.presp.doc_issuance_date, data.presp.trade.paymentTerm.advance_within),
@@ -99,30 +99,30 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     }
                     : {
                         advance_paid: '0',
-                        date_of_payment:'NA'
+                        date_of_payment: 'NA'
                     })
             }));
         }
     }, [data]);
-    
+
 
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
-          const response = await axios.get(url, { params });  // Pass params to axios.get
-          setStateFunction(response.data);
+            const response = await axios.get(url, { params });  // Pass params to axios.get
+            setStateFunction(response.data);
         } catch (error) {
-          console.error(`Error fetching data from ${url}:`, error);
+            console.error(`Error fetching data from ${url}:`, error);
         }
-      };
-    
-      // Combined useEffect for all API calls
-      useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true,reviewed: true }, setTrnOptions);  // Example with params
-      }, []);
+    };
 
-      const handleChange = async (e, section, index) => {
+    // Combined useEffect for all API calls
+    useEffect(() => {
+        fetchData('/trademgt/trades', { approved: true, reviewed: true }, setTrnOptions);  // Example with params
+    }, []);
+
+    const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
-    
+
         if (section) {
             const updatedSection = formData[section].map((item, i) =>
                 i === index ? { ...item, [name]: files ? files[0] : value } : item
@@ -130,7 +130,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             setFormData({ ...formData, [section]: updatedSection });
         } else {
             let updatedFormData = { ...formData, [name]: value };
-    
+
             // Check for lc_number being 'na' or 'NA'
             // if (name === "lc_number" && value.toLowerCase() === "na") {
             //     updatedFormData = {
@@ -152,14 +152,14 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             } else if (name === "lc_number" && value.toLowerCase() != "na") {
                 updatedFormData = {
                     ...updatedFormData,
-                    advance_received:0,
-                    advance_paid:0,
+                    advance_received: 0,
+                    advance_paid: 0,
                     date_of_receipt: 'NA',
                     date_of_payment: 'NA',
                     advanceTTCopies: [{ name: '', advance_tt_copy: null }],
                 };
             }
-    
+
             // Mutually exclusive logic for advance_received and advance_paid
             if (name === "advance_received" && parseFloat(value) == 0) {
                 updatedFormData = {
@@ -172,10 +172,10 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     date_of_payment: 'NA'
                 };
             }
-    
+
             setFormData(updatedFormData);
         }
-    
+
         // Handle TRN-specific logic
         if (name === "trn") {
             try {
@@ -186,11 +186,11 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             }
         }
     };
-    
+
     const handleUsersChange = (users) => {
         setFormData(prev => ({ ...prev, notifiedUsers: users }));
     };
-    
+
 
     const handleAddRow = (section) => {
         const newRow = { name: '', [section === 'lcCopies' ? 'lc_copy' : section === 'lcAmmendments' ? 'lc_ammendment' : 'advance_tt_copy']: null };
@@ -204,13 +204,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
     const handleDateChange = (date) => {
         const day = String(date.getDate()).padStart(2, "0"); // Ensure 2 digits
-            const month = String(date.getMonth() + 1).padStart(2, "0"); // Ensure 2 digits
-            const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // Ensure 2 digits
+        const year = date.getFullYear();
 
-            const formattedDate = `${day}/${month}/${year}`;
-            setFormData((prev) => ({ ...prev, lc_expiry_date: formattedDate }));
+        const formattedDate = `${day}/${month}/${year}`;
+        setFormData((prev) => ({ ...prev, lc_expiry_date: formattedDate }));
     };
-    
+
     const debouncedSubmit = useCallback(
         debounce((formDataToSend, config) => {
             if (mode === 'add') {
@@ -265,7 +265,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     }
                 });
             }
-    
+
             // if (formData.lcAmmendments.length === 0) {
             //     alert('LC Amendments cannot be empty!');
             //     return;
@@ -293,13 +293,18 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 });
             }
         }
+
+        // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
         setValidationErrors(errors);
-    
+
         if (Object.keys(errors).length > 0) {
             console.log(errors)
             return; // Don't proceed if there are validation errors
-        }else{
-             setValidationErrors({});  
+        } else {
+            setValidationErrors({});
         }
 
         // console.log(formData);
@@ -331,21 +336,21 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     };
 
     const tradeData = data
-    ? [
-        { label: 'Date', text: data.presp.date || '' },
-        { label: 'Trade Type', text: data.trade_type || '' },
-        { label: 'Payment Term', text: data.presp.trade.paymentTerm.name || '' },
-        { label: 'Buyer/Seller Name', text: data.presp.trade.customer.name || '' },
-        { label: 'Value of Contract', text: data.presp.trade.contract_value || '' },
-        { label: 'Advance to Pay', text: advanceToPay(data) || '0' },
-        { label: 'Advance to Receive', text: advanceToReceive(data) || '0' },
-        { label: 'Advance/LC Due Date', text: data.presp.trade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(data.presp.doc_issuance_date,data.presp.trade.paymentTerm.advance_within)},
-        { label: 'Trader Name', text: data.trader_name || '' },
-        { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
-    
-        // { label: 'Remarks', text: data.remarks || '' },
-      ]
-    : [];
+        ? [
+            { label: 'Date', text: data.presp.date || '' },
+            { label: 'Trade Type', text: data.trade_type || '' },
+            { label: 'Payment Term', text: data.presp.trade.paymentTerm.name || '' },
+            { label: 'Buyer/Seller Name', text: data.presp.trade.customer.name || '' },
+            { label: 'Value of Contract', text: data.presp.trade.contract_value || '' },
+            { label: 'Advance to Pay', text: advanceToPay(data) || '0' },
+            { label: 'Advance to Receive', text: advanceToReceive(data) || '0' },
+            { label: 'Advance/LC Due Date', text: data.presp.trade.paymentTerm.advance_within == 'NA' ? 'NA' : addDaysToDate(data.presp.doc_issuance_date, data.presp.trade.paymentTerm.advance_within) },
+            { label: 'Trader Name', text: data.trader_name || '' },
+            { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
+
+            // { label: 'Remarks', text: data.remarks || '' },
+        ]
+        : [];
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
@@ -380,8 +385,8 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     </select>
                     {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
-                
-                
+
+
                 <div>
                     <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">LC Number / LC Date</label>
                     <input
@@ -394,7 +399,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.lc_number && <p className="text-red-500">{validationErrors.lc_number}</p>}
                 </div>
-               
+
                 <div>
                     <label htmlFor="lc_opening_bank" className="block text-sm font-medium text-gray-700">LC Opening Bank</label>
                     <input
@@ -418,7 +423,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                         readOnly={data?.trade_type === 'Purchase' || formData.lc_number.toLowerCase() != "na"}
-                        
+
                     />
                     {validationErrors.advance_received && <p className="text-red-500">{validationErrors.advance_received}</p>}
                 </div>
@@ -469,7 +474,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.date_of_payment && <p className="text-red-500">{validationErrors.date_of_payment}</p>}
                 </div> */}
-                 <DateInputWithIcon
+                <DateInputWithIcon
                     formData={formData}
                     handleChange={handleChange}
                     validationErrors={validationErrors}
@@ -512,7 +517,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     />
                      {validationErrors.latest_shipment_date_in_lc && <p className="text-red-500">{validationErrors.latest_shipment_date_in_lc}</p>}
                 </div> */}
-                 <DateInputWithIcon
+                <DateInputWithIcon
                     formData={formData}
                     handleChange={handleChange}
                     validationErrors={validationErrors}
@@ -531,7 +536,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
-                     {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
+                    {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
                 </div>
             </div>
 
@@ -649,7 +654,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 </div>
             )}
             {/* AdvanceTTCopy Section */}
-            {(formData.lc_number.toLowerCase() === "na"|| formData.lc_number === '') && (
+            {(formData.lc_number.toLowerCase() === "na" || formData.lc_number === '') && (
                 <div className="space-y-4 p-4">
                     <h3 className="text-lg font-medium text-gray-900">Advance TT Copies</h3>
                     {formData.advanceTTCopies.map((advanceTTCopy, index) => (
@@ -710,6 +715,10 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
                 />
+                {validationErrors.notifiedUsers && (
+                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                )}
+
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">

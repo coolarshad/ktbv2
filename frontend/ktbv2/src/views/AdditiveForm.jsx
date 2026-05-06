@@ -17,6 +17,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
   const [isNameDropdownOpen, setIsNameDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubName, setSelectedSubName] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
   const [formData, setFormData] = useState({
     date: '',
     name: '',
@@ -251,6 +252,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+     let errors = {};
     if (!formData.name || !formData.category) {
       alert('Name and Category are required!');
       return;
@@ -263,6 +265,15 @@ const AdditiveForm = ({ mode = 'add' }) => {
       }
     });
 
+    // Validate notifiedUsers
+    if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+      errors.notifiedUsers = 'At least one notification recipient must be selected!';
+    }
+     if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
     const payload = {
       ...formData,
       extras: formData.extras.filter(
@@ -538,9 +549,12 @@ const AdditiveForm = ({ mode = 'add' }) => {
       <div className="p-4">
         <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
         <MultiUserSelector
-            selectedUsers={formData.notifiedUsers}
-            onChange={handleUsersChange}
+          selectedUsers={formData.notifiedUsers}
+          onChange={handleUsersChange}
         />
+        {validationErrors.notifiedUsers && (
+                <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+            )}
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-4">

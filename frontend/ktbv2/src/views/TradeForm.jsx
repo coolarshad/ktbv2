@@ -659,6 +659,11 @@ const TradeForm = ({ mode = 'add' }) => {
                 }
             }
         });
+
+        // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
         setValidationErrors(errors);
 
         if (Object.keys(errors).length > 0) {
@@ -1883,7 +1888,9 @@ const TradeForm = ({ mode = 'add' }) => {
                 selectedUsers={formData.notifiedUsers}
                 onChange={handleUserSelect}
             />
-
+            {validationErrors.notifiedUsers && (
+                <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+            )}
 
 
             <div className='grid grid-cols-3 gap-4 mb-4'>

@@ -7,6 +7,7 @@ import MultiUserSelector from "../components/MultiUserSelector";
 const ProductFormulaForm = ({ mode = "add" }) => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [validationErrors, setValidationErrors] = useState({});
 
     /* ---------------- STATE ---------------- */
 
@@ -155,7 +156,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+        let errors = {};
         const payload = {
             ...formData,
             consumption_qty: Number(formData.consumption_qty),
@@ -163,6 +164,14 @@ const ProductFormulaForm = ({ mode = "add" }) => {
             // litre_per_pack: Number(formData.litre_per_pack),
         };
 
+        // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
         const apiCall = mode === "add" ? axios.post : axios.put;
         const url =
             mode === "add"
@@ -326,6 +335,10 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
                 />
+                {validationErrors.notifiedUsers && (
+                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                )}
+
             </div>
             <hr className="my-6" />
 

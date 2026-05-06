@@ -11,7 +11,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
 from notifications.services import NotificationService
+from accounts.models import CustomUser
 # Create your views here.
+
+
+actor=CustomUser.objects.first()
 
 class NotificationViewSetMixin:
     notification_verb = "Record"
@@ -27,7 +31,8 @@ class NotificationViewSetMixin:
         
         if notified_user_ids:
             NotificationService.notify_users_explicit(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb=f"{self.notification_verb} {action}",
                 message=f"You have been assigned to {self.notification_verb} by {request.user.name if hasattr(request, 'user') and hasattr(request.user, 'name') else 'System'}",
@@ -36,7 +41,8 @@ class NotificationViewSetMixin:
             
         if not is_update:
             NotificationService.notify_all_general(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 verb=f"New {self.notification_verb}",
                 message=f"A new {self.notification_verb} was created.",
                 target_url=self.notification_target_url
@@ -245,7 +251,8 @@ class ConsumptionFormulaView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
             NotificationService.notify_users_explicit(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Formula Created", 
                 message=f"You have been assigned to Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
@@ -253,7 +260,8 @@ class ConsumptionFormulaView(APIView):
             )
             
             NotificationService.notify_all_general(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 verb="New Consumption Formula",
                 message=f"Consumption Formula {consumption.name if consumption.name else consumption.id} was created.",
                 target_url=f"/consumption-formulas"
@@ -334,7 +342,8 @@ class ConsumptionFormulaView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             NotificationService.notify_users_explicit(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Formula Updated", 
                 message=f"You have been assigned to updated Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
@@ -342,7 +351,8 @@ class ConsumptionFormulaView(APIView):
             )
             
             NotificationService.notify_all_general(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 verb="Consumption Formula Updated",
                 message=f"Consumption Formula {consumption.name if consumption.name else consumption.id} was updated.",
                 target_url=f"/consumption-formulas"
@@ -473,7 +483,8 @@ class ConsumptionView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
             NotificationService.notify_users_explicit(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Created", 
                 message=f"You have been assigned to Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
@@ -481,7 +492,8 @@ class ConsumptionView(APIView):
             )
             
             NotificationService.notify_all_general(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 verb="New Consumption",
                 message=f"Consumption {consumption.name if consumption.name else consumption.id} was created.",
                 target_url=f"/consumptions"
@@ -574,7 +586,8 @@ class ConsumptionView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             NotificationService.notify_users_explicit(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Updated", 
                 message=f"You have been assigned to updated Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
@@ -582,7 +595,8 @@ class ConsumptionView(APIView):
             )
             
             NotificationService.notify_all_general(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 verb="Consumption Updated",
                 message=f"Consumption {consumption.name if consumption.name else consumption.id} was updated.",
                 target_url=f"/consumptions"
@@ -854,7 +868,8 @@ class ProductFormulaView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             NotificationService.notify_users_explicit(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Product Formula Created", 
                 message=f"You have been assigned to Product Formula {p_formula.formula_name if p_formula.formula_name else p_formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
@@ -862,7 +877,8 @@ class ProductFormulaView(APIView):
             )
             
             NotificationService.notify_all_general(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 verb="New Product Formula",
                 message=f"Product Formula {p_formula.formula_name if p_formula.formula_name else p_formula.id} was created.",
                 target_url=f"/product-formulas"
@@ -924,7 +940,8 @@ class ProductFormulaView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             NotificationService.notify_users_explicit(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
+                actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Product Formula Updated", 
                 message=f"You have been assigned to updated Product Formula {formula.formula_name if formula.formula_name else formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
@@ -932,7 +949,8 @@ class ProductFormulaView(APIView):
             )
             
             NotificationService.notify_all_general(
-                actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor=actor,
                 verb="Product Formula Updated",
                 message=f"Product Formula {formula.formula_name if formula.formula_name else formula.id} was updated.",
                 target_url=f"/product-formulas"

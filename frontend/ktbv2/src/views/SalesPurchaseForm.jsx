@@ -1,5 +1,5 @@
-import React, { useState, useEffect,useCallback,useRef } from 'react';
-import { useParams,useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
 import { capitalizeKey } from '../utils';
@@ -9,9 +9,9 @@ import MultiUserSelector from '../components/MultiUserSelector';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { id } = useParams();
-    const [trnOptions, setTrnOptions] = useState([]); 
+    const [trnOptions, setTrnOptions] = useState([]);
     const [validationErrors, setValidationErrors] = useState({});
-    const [data, setData] = useState(null); 
+    const [data, setData] = useState(null);
     const navigate = useNavigate();
     const submittingRef = useRef(false);
     const debouncedSubmitRef = useRef(null);
@@ -31,7 +31,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         // total_packing_cost: '',
         // packaging_supplier: '',
         // logistic_supplier: '',
-        
+
         logistic_cost: '',
         logistic_cost_due_date: '',
         liner: '',
@@ -56,7 +56,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 selected_currency_rate: '',
                 rate_in_usd: '',
                 logistic: '',
-                max_logistic:'',
+                max_logistic: '',
             }
         ],
         extraCharges: [{ name: '', charge: '' }],
@@ -138,11 +138,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             axios.get(`/trademgt/sales-purchases/${id}`)
                 .then(response => {
                     const data = response.data;
-                  
+
                     const newPackingLists = data.prepayment?.presp?.documentRequired || [];
                     const savedPackingLists = data.packingLists || [];
 
-                    
+
                     const mergedPackingLists = newPackingLists.map(newItem => {
                         const match = savedPackingLists.find(savedItem => savedItem.name === newItem.doc.name);
                         return {
@@ -152,7 +152,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                     });
 
                     // console.log(savedPackingLists)
-                  
+
                     setFormData(prevState => ({
                         ...prevState,
                         trn: data.trn.id,
@@ -202,19 +202,19 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                             ],
                         extraCharges: data.extraCharges || [{ name: '', charge: '' }],
                         packingLists: mergedPackingLists,
-                        
+
                     }));
-                // Call the second API after the first one is complete
-              return axios.get(`/trademgt/sp/${data.trn.id}`);
-            })
-            .then(response => {
-                setData(response.data)
-            })
-            .catch(error => {
-              console.error('There was an error fetching the data!', error);
-            });
+                    // Call the second API after the first one is complete
+                    return axios.get(`/trademgt/sp/${data.trn.id}`);
+                })
+                .then(response => {
+                    setData(response.data)
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the data!', error);
+                });
         }
-      }, [mode, id]);
+    }, [mode, id]);
 
     const [unitOptions, setUnitOptions] = useState([]);
     const [productOptions, setProductOptions] = useState([]);
@@ -230,39 +230,39 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
     // Combined useEffect for all API calls
     useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true,reviewed: true }, setTrnOptions);  // Example with params
-        fetchData('/trademgt/unit',{}, setUnitOptions);
-        fetchData('/trademgt/product-names',{}, setProductOptions);
-        fetchData('/trademgt/sp-purchase-bl',{}, setPurchaseBLOptions);
+        fetchData('/trademgt/trades', { approved: true, reviewed: true }, setTrnOptions);  // Example with params
+        fetchData('/trademgt/unit', {}, setUnitOptions);
+        fetchData('/trademgt/product-names', {}, setProductOptions);
+        fetchData('/trademgt/sp-purchase-bl', {}, setPurchaseBLOptions);
     }, []);
 
     function calculateTotalWithTolerance(qty, tolerance) {
         const toleranceValue = (tolerance / 100) * qty;
         // console.log(qty + toleranceValue)
         return qty + toleranceValue;
-      }
+    }
 
-  
-    
+
+
     // Function to debounce API calls
-   // Debounced API call function
-   const debouncedApiCall = useCallback(
-    debounce(async (trn, product_code, product_name,purchase_bl_number, index, arrayName) => {
-        try {
-            const response = await axios.get('/trademgt/pending-balance', {
-                params: {
-                    trn,
-                    product_code,
-                    product_name,
-                    // hs_code,
-                    purchase_bl_number
-                },
-            });
-            const result = response.data;
-            // if (pending_balance !== undefined) {
+    // Debounced API call function
+    const debouncedApiCall = useCallback(
+        debounce(async (trn, product_code, product_name, purchase_bl_number, index, arrayName) => {
+            try {
+                const response = await axios.get('/trademgt/pending-balance', {
+                    params: {
+                        trn,
+                        product_code,
+                        product_name,
+                        // hs_code,
+                        purchase_bl_number
+                    },
+                });
+                const result = response.data;
+                // if (pending_balance !== undefined) {
                 setFormData((prev) => {
                     const updatedArray = [...prev[arrayName]];
-                    updatedArray[index].pending_qty = result.pending_balance.balance_qty; 
+                    updatedArray[index].pending_qty = result.pending_balance.balance_qty;
                     updatedArray[index].selected_currency_rate = result.pending_balance.selected_currency_rate;
                     updatedArray[index].rate_in_usd = result.pending_balance.rate_in_usd;
                     updatedArray[index].trade_qty_unit = result.pending_balance.balance_qty_unit;
@@ -278,182 +278,182 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
                     return { ...prev, [arrayName]: updatedArray };
                 });
-            // }
-        } catch (error) {
-            console.error('Error fetching pending balance:', error);
-        }
-    }, 1500), [] // Adjust the debounce delay as needed
-);
-
-function debounce(func, delay) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => func.apply(this, args), delay);
-    };
-}
-
-const handleLogisticCostChange = debounce((value, prev) => {
-    const logisticCost = parseFloat(value) || 0;
-    if (logisticCost > data.estimated_logistic_cost || logisticCost < 0) {
-        alert(`Logistic cost cannot exceed the estimated logistic cost: ${data.estimated_logistic_cost}`);
-        setFormData({
-            ...prev,
-            logistic_cost: data.estimated_logistic_cost.toString(), // Reset the value
-        });
-    } else {
-        setFormData({ ...prev, logistic_cost: value });
-    }
-}, 250); 
-
-
-const handleChange = async (e, arrayName = null, index = null) => {
-    const { name, value, type, files } = e.target;
-
-    setFormData((prev) => {
-        let updatedFormData;
-
-        // Handle file input
-        if (type === 'file' && arrayName !== null && index !== null) {
-            if (Array.isArray(prev[arrayName])) {
-                const updatedArray = [...prev[arrayName]];
-                updatedArray[index][name] = files[0];
-                updatedFormData = { ...prev, [arrayName]: updatedArray };
-            } else {
-                console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
-                return prev;
+                // }
+            } catch (error) {
+                console.error('Error fetching pending balance:', error);
             }
+        }, 1500), [] // Adjust the debounce delay as needed
+    );
+
+    function debounce(func, delay) {
+        let timer;
+        return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    const handleLogisticCostChange = debounce((value, prev) => {
+        const logisticCost = parseFloat(value) || 0;
+        if (logisticCost > data.estimated_logistic_cost || logisticCost < 0) {
+            alert(`Logistic cost cannot exceed the estimated logistic cost: ${data.estimated_logistic_cost}`);
+            setFormData({
+                ...prev,
+                logistic_cost: data.estimated_logistic_cost.toString(), // Reset the value
+            });
+        } else {
+            setFormData({ ...prev, logistic_cost: value });
         }
-        // Handle array input
-        else if (arrayName !== null && index !== null) {
-            if (Array.isArray(prev[arrayName])) {
-                const updatedArray = [...prev[arrayName]];
-                updatedArray[index][name] = value;
+    }, 250);
 
-                // Additional logic for batch_number and production_date
-                if (name === 'batch_number' && value.toLowerCase() === 'na') {
-                    updatedArray[index]['production_date'] = 'NA';
+
+    const handleChange = async (e, arrayName = null, index = null) => {
+        const { name, value, type, files } = e.target;
+
+        setFormData((prev) => {
+            let updatedFormData;
+
+            // Handle file input
+            if (type === 'file' && arrayName !== null && index !== null) {
+                if (Array.isArray(prev[arrayName])) {
+                    const updatedArray = [...prev[arrayName]];
+                    updatedArray[index][name] = files[0];
+                    updatedFormData = { ...prev, [arrayName]: updatedArray };
+                } else {
+                    console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
+                    return prev;
                 }
-
-                if (
-                    name === 'product_code' || 
-                    name === 'product_name' 
-                    // name === 'hs_code'
-                  ) {
-                    const { product_code, product_name, hs_code } = updatedArray[index];
-                    
-                    if (product_code && product_name) { // Ensure all are not null or empty
-                      debouncedApiCall(
-                        formData.trn,
-                        product_code,
-                        product_name,
-                        // hs_code,
-                        formData.bl_number,
-                        index,
-                        arrayName
-                      );
-                    }
-                  }
-
-                if (name === 'bl_qty') {
-                    const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
-                    const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
-                    updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2);
-                }
-
-                if (name === 'logistic') {
-                    const entered = parseFloat(value);
-                    const max = parseFloat(updatedArray[index].max_logistic);
-
+            }
+            // Handle array input
+            else if (arrayName !== null && index !== null) {
+                if (Array.isArray(prev[arrayName])) {
+                    const updatedArray = [...prev[arrayName]];
                     updatedArray[index][name] = value;
 
-                    if (!isNaN(max) && entered > max) {
-                        setValidationErrors(prev => ({
-                            ...prev,
-                            [`${arrayName}[${index}].logistic`]: `Logistic cost cannot exceed ${max}`,
-                        }));
-                    } else {
-                        setValidationErrors(prev => {
-                            const copy = { ...prev };
-                            delete copy[`${arrayName}[${index}].logistic`];
-                            return copy;
-                        });
+                    // Additional logic for batch_number and production_date
+                    if (name === 'batch_number' && value.toLowerCase() === 'na') {
+                        updatedArray[index]['production_date'] = 'NA';
                     }
+
+                    if (
+                        name === 'product_code' ||
+                        name === 'product_name'
+                        // name === 'hs_code'
+                    ) {
+                        const { product_code, product_name, hs_code } = updatedArray[index];
+
+                        if (product_code && product_name) { // Ensure all are not null or empty
+                            debouncedApiCall(
+                                formData.trn,
+                                product_code,
+                                product_name,
+                                // hs_code,
+                                formData.bl_number,
+                                index,
+                                arrayName
+                            );
+                        }
+                    }
+
+                    if (name === 'bl_qty') {
+                        const blQty = parseFloat(updatedArray[index].bl_qty) || 0;
+                        const rateInUsd = parseFloat(updatedArray[index].rate_in_usd) || 0;
+                        updatedArray[index].bl_value = (blQty * rateInUsd).toFixed(2);
+                    }
+
+                    if (name === 'logistic') {
+                        const entered = parseFloat(value);
+                        const max = parseFloat(updatedArray[index].max_logistic);
+
+                        updatedArray[index][name] = value;
+
+                        if (!isNaN(max) && entered > max) {
+                            setValidationErrors(prev => ({
+                                ...prev,
+                                [`${arrayName}[${index}].logistic`]: `Logistic cost cannot exceed ${max}`,
+                            }));
+                        } else {
+                            setValidationErrors(prev => {
+                                const copy = { ...prev };
+                                delete copy[`${arrayName}[${index}].logistic`];
+                                return copy;
+                            });
+                        }
+                    }
+
+
+
+                    updatedFormData = { ...prev, [arrayName]: updatedArray };
+                } else {
+                    console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
+                    return prev;
                 }
+            }
+            // Handle non-array input
+            else {
+                if (name === 'purchase_bl_number') {
+                    const bl = purchaseBLOptions.find((bl) => bl.bl_number === value);
+                    updatedFormData = {
+                        ...prev,
+                        purchase_bl_number: value,
+                        bl_number: value,
+                        bl_date: bl.bl_date,
+                        bl_collection_cost: bl.bl_collection_cost,
+                        bl_fees: bl.bl_fees,
+                    };
+                } else if (name === 'logistic_cost') {
+                    handleLogisticCostChange(value, prev); // Use the debounced function
+                    return prev; // Prevent immediate update
+                } else {
+                    updatedFormData = { ...prev, [name]: value };
+                }
+            }
 
+            // Automatically sum `bl_value` fields and update `invoice_amount`
+            if (arrayName === 'salesPurchaseProducts') {
+                const totalBlValue = updatedFormData.salesPurchaseProducts.reduce(
+                    (sum, product) => sum + (parseFloat(product.bl_value) || 0),
+                    0
+                );
+                updatedFormData.invoice_amount = totalBlValue.toFixed(2);
+            }
 
+            return updatedFormData;
+        });
 
-                updatedFormData = { ...prev, [arrayName]: updatedArray };
-            } else {
-                console.error(`Expected an array for ${arrayName}, but got`, prev[arrayName]);
-                return prev;
+        if (name === 'trn') {
+            try {
+                const response = await axios.get(`/trademgt/sp/${value}`);
+
+                if (response.data.prepayment.reviewed) {
+                    setData(response.data);
+                    setFormData((prev) => ({
+                        ...prev,
+                        logistic_cost: response.data.estimated_logistic_cost,
+                        bl_fees: response.data.bl_fee,
+                        packingLists: response.data.prepayment.presp.documentRequired.map((doc) => ({
+                            name: doc.doc.name || '',
+                            packing_list: doc.packing_list || null,
+                        })),
+                    }));
+                } else {
+                    alert('No Prepayment Found or Prepayment not reviewed !');
+                }
+            } catch (error) {
+                console.error('Error fetching TRN data:', error);
             }
         }
-        // Handle non-array input
-        else {
-            if (name === 'purchase_bl_number') {
-                const bl = purchaseBLOptions.find((bl) => bl.bl_number === value);
-                updatedFormData = {
-                    ...prev,
-                    purchase_bl_number: value,
-                    bl_number: value,
-                    bl_date: bl.bl_date,
-                    bl_collection_cost: bl.bl_collection_cost,
-                    bl_fees: bl.bl_fees,
-                };
-            } else if (name === 'logistic_cost') {
-                handleLogisticCostChange(value, prev); // Use the debounced function
-                return prev; // Prevent immediate update
-            } else {
-                updatedFormData = { ...prev, [name]: value };
-            }
-        }
-
-        // Automatically sum `bl_value` fields and update `invoice_amount`
-        if (arrayName === 'salesPurchaseProducts') {
-            const totalBlValue = updatedFormData.salesPurchaseProducts.reduce(
-                (sum, product) => sum + (parseFloat(product.bl_value) || 0),
-                0
-            );
-            updatedFormData.invoice_amount = totalBlValue.toFixed(2);
-        }
-
-        return updatedFormData;
-    });
-
-    if (name === 'trn') {
-        try {
-            const response = await axios.get(`/trademgt/sp/${value}`);
-        
-            if (response.data.prepayment.reviewed) {
-                setData(response.data);
-                setFormData((prev) => ({
-                    ...prev,
-                    logistic_cost: response.data.estimated_logistic_cost,
-                    bl_fees: response.data.bl_fee,
-                    packingLists: response.data.prepayment.presp.documentRequired.map((doc) => ({
-                        name: doc.doc.name || '',
-                        packing_list: doc.packing_list || null,
-                    })),
-                }));
-            } else {
-                alert('No Prepayment Found or Prepayment not reviewed !');
-            }
-        } catch (error) {
-            console.error('Error fetching TRN data:', error);
-        }
-    }
-};
+    };
 
 
-    
-    
-      const handleAddProduct = () => {
+
+
+    const handleAddProduct = () => {
         setFormData((prevState) => ({
-          ...prevState,
-          salesPurchaseProducts: [
-            ...prevState.salesPurchaseProducts,
-            {
+            ...prevState,
+            salesPurchaseProducts: [
+                ...prevState.salesPurchaseProducts,
+                {
                     product_code: '',
                     product_name: '',
                     hs_code: '',
@@ -471,17 +471,17 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 },
             ],
         }));
-      };
-    
-      // Handle removing a product from the salesPurchaseProducts array
-      const handleRemoveProduct = (index) => {
+    };
+
+    // Handle removing a product from the salesPurchaseProducts array
+    const handleRemoveProduct = (index) => {
         setFormData((prevState) => {
-          const updatedProducts = prevState.salesPurchaseProducts.filter(
-            (_, i) => i !== index
-          );
-          return { ...prevState, salesPurchaseProducts: updatedProducts };
+            const updatedProducts = prevState.salesPurchaseProducts.filter(
+                (_, i) => i !== index
+            );
+            return { ...prevState, salesPurchaseProducts: updatedProducts };
         });
-      };
+    };
 
     const handleAddRow = (arrayName) => {
         setFormData(prev => ({
@@ -516,39 +516,39 @@ const handleChange = async (e, arrayName = null, index = null) => {
             }
         }
 
-         // Validate tradeProducts array fields but skip 'loi'
-         formData.salesPurchaseProducts.forEach((product, index) => {
+        // Validate tradeProducts array fields but skip 'loi'
+        formData.salesPurchaseProducts.forEach((product, index) => {
             for (const [key, value] of Object.entries(product)) {
                 if (!skipValidation.includes(key) && value === '') {
                     errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
                 }
-        
+
                 // Validation specific to `bl_qty`
                 if (key === 'bl_qty') {
-                    
-                        // const maxAllowedQty = calculateTotalWithTolerance(product.pending_qty, product.tolerance);
-                        const maxAllowedQty = product.pending_qty;
 
-                        if (value > maxAllowedQty || value <= 0) {
-                            alert(`BL Quantity exceeds tolerance for ${product.product_code || 'this product'}`);
-                            errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
-                        }
-                    
+                    // const maxAllowedQty = calculateTotalWithTolerance(product.pending_qty, product.tolerance);
+                    const maxAllowedQty = product.pending_qty;
+
+                    if (value > maxAllowedQty || value <= 0) {
+                        alert(`BL Quantity exceeds tolerance for ${product.product_code || 'this product'}`);
+                        errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
+                    }
+
                 }
 
                 if (key === 'logistic') {
                     const maxAllowed = product.max_logistic;
                     if (value > maxAllowed) {
-                            alert(`Logistic cost exceeds for ${product.product_code || 'this product'}`);
-                            errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds logistic cost!`;
-                        }
+                        alert(`Logistic cost exceeds for ${product.product_code || 'this product'}`);
+                        errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds logistic cost!`;
+                    }
                 }
             }
         });
 
-         // Validate tradeProducts array fields but skip 'loi'
-         formData.extraCharges.forEach((product, index) => {
-            for (const [key, value] of Object.entries(product)) { 
+        // Validate tradeProducts array fields but skip 'loi'
+        formData.extraCharges.forEach((product, index) => {
+            for (const [key, value] of Object.entries(product)) {
                 if (!skipValidation.includes(key) && value === '') {
                     errors[`extraCharges[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
                 }
@@ -557,26 +557,29 @@ const handleChange = async (e, arrayName = null, index = null) => {
 
         // Validate tradeProducts array fields but skip 'loi'
         formData.packingLists.forEach((product, index) => {
-            for (const [key, value] of Object.entries(product)) { 
-                if (!skipValidation.includes(key) && (value === '' || value==null)) {
-                    if(key=='name'){
+            for (const [key, value] of Object.entries(product)) {
+                if (!skipValidation.includes(key) && (value === '' || value == null)) {
+                    if (key == 'name') {
                         errors[`packingLists[${index}].${key}`] = `Document name cannot be empty!`;
                     }
-                    if(key=='packing_list'){
+                    if (key == 'packing_list') {
                         errors[`packingLists[${index}].${key}`] = `Please upload document!`;
                     }
                     // errors[`packingLists[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
                 }
             }
         });
-
+        // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
         setValidationErrors(errors);
-    
+
         if (Object.keys(errors).length > 0) {
             console.log(errors)
             return; // Don't proceed if there are validation errors
-        }else{
-             setValidationErrors({});  
+        } else {
+            setValidationErrors({});
         }
 
         const formDataToSend = new FormData();
@@ -621,77 +624,77 @@ const handleChange = async (e, arrayName = null, index = null) => {
     };
 
     const tradeData = data
-    ? [
-        { label: 'Trade Type', text: data.trade_type || '' },
-        // { label: 'Markings', text: data.markings_in_packaging || '' },
-        
-        { label: 'Buyer/Seller Name', text: data.prepayment.kyc?.name || '' },
-        { label: 'LC Details', text: data.prepayment.lc_number || '' },
-        { label: 'Commission Agent', text: data.commission_agent || '' },
-        { label: 'Commission Value', text: calculateCommissionValue(formData.salesPurchaseProducts,data.trade_products) || 0 },
-        // { label: 'Tolerance', text: data.commission_value || '' },
-        { label: 'Logistic Provider', text: data.logistic_provider || '' },
-        { label: 'Trader Name', text: data.trader_name || '' },
-        { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
-        
-        
-      ]
-    : [];
+        ? [
+            { label: 'Trade Type', text: data.trade_type || '' },
+            // { label: 'Markings', text: data.markings_in_packaging || '' },
+
+            { label: 'Buyer/Seller Name', text: data.prepayment.kyc?.name || '' },
+            { label: 'LC Details', text: data.prepayment.lc_number || '' },
+            { label: 'Commission Agent', text: data.commission_agent || '' },
+            { label: 'Commission Value', text: calculateCommissionValue(formData.salesPurchaseProducts, data.trade_products) || 0 },
+            // { label: 'Tolerance', text: data.commission_value || '' },
+            { label: 'Logistic Provider', text: data.logistic_provider || '' },
+            { label: 'Trader Name', text: data.trader_name || '' },
+            { label: 'Insurance Policy Number', text: data.insurance_policy_number || '' },
+
+
+        ]
+        : [];
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <h2 className="text-2xl mb-2 text-center">Sales / Purchase Document</h2>
             {data && (
                 <>
-                
-                <div className="grid grid-cols-4 gap-1 py-2">
-                    {tradeData.map((item, index) => (
-                        <div key={index} className="p-2 border rounded shadow-sm">
-                            <div className="font-semibold">{item.label}</div>
-                            <div>{item.text}</div>
-                        </div>
-                    ))}
-                </div>
-                <table className="min-w-full bg-white">
-               <thead>
-                 <tr>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty Unit</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
-                 
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">USD Rate</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Marking</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
-                   <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
-                 </tr>
-               </thead>
-               <tbody>
-                 {data.trade_products.map(product => (
-                   <tr key={product.id}>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
 
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_in_usd}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
+                    <div className="grid grid-cols-4 gap-1 py-2">
+                        {tradeData.map((item, index) => (
+                            <div key={index} className="p-2 border rounded shadow-sm">
+                                <div className="font-semibold">{item.label}</div>
+                                <div>{item.text}</div>
+                            </div>
+                        ))}
+                    </div>
+                    <table className="min-w-full bg-white">
+                        <thead>
+                            <tr>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">HS Code</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Contract Qty Unit</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Tolerance</th>
+
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty Unit</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Selected Currency Rate</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">USD Rate</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Marking</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Packing Cost</th>
+                                <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packaging Supplier</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.trade_products.map(product => (
+                                <tr key={product.id}>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
+
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_in_usd}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </>
             )}
             {/* SalesPurchase Fields */}
@@ -738,21 +741,21 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     />
                     {validationErrors.invoice_number && <p className="text-red-500">{validationErrors.invoice_number}</p>}
                 </div>
-           
-            <div>
-                <label htmlFor="invoice_amount" className="block text-sm font-medium text-gray-700">Invoice Amount</label>
-                <input
-                    id="invoice_amount"
-                    name="invoice_amount"
-                    type="number"
-                    value={formData.invoice_amount}
-                    onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    readOnly={true}
-                />
-                 {validationErrors.invoice_amount && <p className="text-red-500">{validationErrors.invoice_amount}</p>}
-            </div>
-            {/* <div>
+
+                <div>
+                    <label htmlFor="invoice_amount" className="block text-sm font-medium text-gray-700">Invoice Amount</label>
+                    <input
+                        id="invoice_amount"
+                        name="invoice_amount"
+                        type="number"
+                        value={formData.invoice_amount}
+                        onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={true}
+                    />
+                    {validationErrors.invoice_amount && <p className="text-red-500">{validationErrors.invoice_amount}</p>}
+                </div>
+                {/* <div>
                 <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
                 <input
                     id="commission_value"
@@ -763,28 +766,28 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
             </div> */}
-            <div>
-                <label htmlFor="bl_number" className="block text-sm font-medium text-gray-700">BL Number</label>
-                <input
-                    id="bl_number"
-                    name="bl_number"
-                    type="text"
-                    value={formData.bl_number}
-                    onChange={(e) => setFormData({ ...formData, bl_number: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    readOnly={data?.trade_type=='Sales'?true:false}
-                />
-                 {validationErrors.bl_number && <p className="text-red-500">{validationErrors.bl_number}</p>}
-            </div>
-            <div>
-                <label htmlFor="purchase_bl_number" className="block text-sm font-medium text-gray-700">Purchase BL Number</label>
-                <select
+                <div>
+                    <label htmlFor="bl_number" className="block text-sm font-medium text-gray-700">BL Number</label>
+                    <input
+                        id="bl_number"
+                        name="bl_number"
+                        type="text"
+                        value={formData.bl_number}
+                        onChange={(e) => setFormData({ ...formData, bl_number: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={data?.trade_type == 'Sales' ? true : false}
+                    />
+                    {validationErrors.bl_number && <p className="text-red-500">{validationErrors.bl_number}</p>}
+                </div>
+                <div>
+                    <label htmlFor="purchase_bl_number" className="block text-sm font-medium text-gray-700">Purchase BL Number</label>
+                    <select
                         id="purchase_bl_number"
                         name="purchase_bl_number"
                         value={formData.purchase_bl_number}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        disabled={data?.trade_type=='Purchase'?true:false}
+                        disabled={data?.trade_type == 'Purchase' ? true : false}
                     >
                         <option value="">Select BL Number</option>
                         {purchaseBLOptions.map(option => (
@@ -793,9 +796,9 @@ const handleChange = async (e, arrayName = null, index = null) => {
                             </option>
                         ))}
                     </select>
-                   
-            </div>
-            {/* <div>
+
+                </div>
+                {/* <div>
                 <label htmlFor="bl_qty" className="block text-sm font-medium text-gray-700">BL Quantity</label>
                 <input
                     id="bl_qty"
@@ -807,44 +810,44 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 />
                 {validationErrors.bl_qty && <p className="text-red-500">{validationErrors.bl_qty}</p>}
             </div> */}
-            <div>
-                <label htmlFor="bl_fees" className="block text-sm font-medium text-gray-700">BL Fees</label>
-                <input
-                    id="bl_fees"
-                    name="bl_fees"
-                    type="number"
-                    value={formData.bl_fees}
-                    onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    readOnly={true}
-                />
-                 {validationErrors.bl_fees && <p className="text-red-500">{validationErrors.bl_fees}</p>}
-            </div>
-            <div>
-                <label htmlFor="bl_collection_cost" className="block text-sm font-medium text-gray-700">BL Collection Cost</label>
-                <input
-                    id="bl_collection_cost"
-                    name="bl_collection_cost"
-                    type="number"
-                    value={formData.bl_collection_cost}
-                    onChange={(e) => setFormData({ ...formData, bl_collection_cost: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                 {validationErrors.bl_collection_cost && <p className="text-red-500">{validationErrors.bl_collection_cost}</p>}
-            </div>
-            <div>
-                <label htmlFor="bl_date" className="block text-sm font-medium text-gray-700">BL Date</label>
-                <input
-                    id="bl_date"
-                    name="bl_date"
-                    type="date"
-                    value={formData.bl_date}
-                    onChange={(e) => setFormData({ ...formData, bl_date: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                 {validationErrors.bl_date && <p className="text-red-500">{validationErrors.bl_date}</p>}
-            </div>
-            {/* <div>
+                <div>
+                    <label htmlFor="bl_fees" className="block text-sm font-medium text-gray-700">BL Fees</label>
+                    <input
+                        id="bl_fees"
+                        name="bl_fees"
+                        type="number"
+                        value={formData.bl_fees}
+                        onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        readOnly={true}
+                    />
+                    {validationErrors.bl_fees && <p className="text-red-500">{validationErrors.bl_fees}</p>}
+                </div>
+                <div>
+                    <label htmlFor="bl_collection_cost" className="block text-sm font-medium text-gray-700">BL Collection Cost</label>
+                    <input
+                        id="bl_collection_cost"
+                        name="bl_collection_cost"
+                        type="number"
+                        value={formData.bl_collection_cost}
+                        onChange={(e) => setFormData({ ...formData, bl_collection_cost: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.bl_collection_cost && <p className="text-red-500">{validationErrors.bl_collection_cost}</p>}
+                </div>
+                <div>
+                    <label htmlFor="bl_date" className="block text-sm font-medium text-gray-700">BL Date</label>
+                    <input
+                        id="bl_date"
+                        name="bl_date"
+                        type="date"
+                        value={formData.bl_date}
+                        onChange={(e) => setFormData({ ...formData, bl_date: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.bl_date && <p className="text-red-500">{validationErrors.bl_date}</p>}
+                </div>
+                {/* <div>
                 <label htmlFor="total_packing_cost" className="block text-sm font-medium text-gray-700">Total Packing Cost</label>
                 <input
                     id="total_packing_cost"
@@ -855,7 +858,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
             </div> */}
-            {/* <div>
+                {/* <div>
                 <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
                 <input
                     id="packaging_supplier"
@@ -866,7 +869,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
             </div> */}
-           
+
                 {/* <div>
                     <label htmlFor="logistic_supplier" className="block text-sm font-medium text-gray-700">Logistic Provider</label>
                     <input
@@ -878,20 +881,20 @@ const handleChange = async (e, arrayName = null, index = null) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
                 </div> */}
-           
-            <div>
-                <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
-                <input
-                    id="logistic_cost"
-                    name="logistic_cost"
-                    type="number"
-                    value={formData.logistic_cost}
-                    onChange={(e) => handleChange(e)}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                 {validationErrors.logistic_cost && <p className="text-red-500">{validationErrors.logistic_cost}</p>}
-            </div>
-            {/* <div>
+
+                <div>
+                    <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
+                    <input
+                        id="logistic_cost"
+                        name="logistic_cost"
+                        type="number"
+                        value={formData.logistic_cost}
+                        onChange={(e) => handleChange(e)}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.logistic_cost && <p className="text-red-500">{validationErrors.logistic_cost}</p>}
+                </div>
+                {/* <div>
                 <label htmlFor="logistic_cost_due_date" className="block text-sm font-medium text-gray-700">Logistic Cost Due Date</label>
                 <input
                     id="logistic_cost_due_date"
@@ -903,102 +906,102 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 />
                   {validationErrors.logistic_cost_due_date && <p className="text-red-500">{validationErrors.logistic_cost_due_date}</p>}
             </div> */}
-             <DateInputWithIcon
+                <DateInputWithIcon
                     formData={formData}
                     handleChange={handleChange}
                     validationErrors={validationErrors}
                     fieldName="logistic_cost_due_date"
                     label="Logistic Cost Due Date"
-                    
-                />
-            <div>
-                <label htmlFor="liner" className="block text-sm font-medium text-gray-700">Liner</label>
-                <input
-                    id="liner"
-                    name="liner"
-                    type="text"
-                    value={formData.liner}
-                    onChange={(e) => setFormData({ ...formData, liner: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                 {validationErrors.liner && <p className="text-red-500">{validationErrors.liner}</p>}
-            </div>
 
-            <div>
-                <label htmlFor="pod" className="block text-sm font-medium text-gray-700">POD</label>
-                <input
-                    id="pod"
-                    name="pod"
-                    type="text"
-                    value={formData.pod}
-                    onChange={(e) => setFormData({ ...formData, pod: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
                 />
-                  {validationErrors.pod && <p className="text-red-500">{validationErrors.pod}</p>}
-            </div>
-            <div>
-                <label htmlFor="pol" className="block text-sm font-medium text-gray-700">POL</label>
-                <input
-                    id="pol"
-                    name="pol"
-                    type="text"
-                    value={formData.pol}
-                    onChange={(e) => setFormData({ ...formData, pol: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                  {validationErrors.pol && <p className="text-red-500">{validationErrors.pol}</p>}
-            </div>
-            <div>
-                <label htmlFor="etd" className="block text-sm font-medium text-gray-700">ETD</label>
-                <input
-                    id="etd"
-                    name="etd"
-                    type="date"
-                    value={formData.etd}
-                    onChange={(e) => setFormData({ ...formData, etd: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                  {validationErrors.etd && <p className="text-red-500">{validationErrors.etd}</p>}
-            </div>
+                <div>
+                    <label htmlFor="liner" className="block text-sm font-medium text-gray-700">Liner</label>
+                    <input
+                        id="liner"
+                        name="liner"
+                        type="text"
+                        value={formData.liner}
+                        onChange={(e) => setFormData({ ...formData, liner: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.liner && <p className="text-red-500">{validationErrors.liner}</p>}
+                </div>
+
+                <div>
+                    <label htmlFor="pod" className="block text-sm font-medium text-gray-700">POD</label>
+                    <input
+                        id="pod"
+                        name="pod"
+                        type="text"
+                        value={formData.pod}
+                        onChange={(e) => setFormData({ ...formData, pod: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.pod && <p className="text-red-500">{validationErrors.pod}</p>}
+                </div>
+                <div>
+                    <label htmlFor="pol" className="block text-sm font-medium text-gray-700">POL</label>
+                    <input
+                        id="pol"
+                        name="pol"
+                        type="text"
+                        value={formData.pol}
+                        onChange={(e) => setFormData({ ...formData, pol: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.pol && <p className="text-red-500">{validationErrors.pol}</p>}
+                </div>
+                <div>
+                    <label htmlFor="etd" className="block text-sm font-medium text-gray-700">ETD</label>
+                    <input
+                        id="etd"
+                        name="etd"
+                        type="date"
+                        value={formData.etd}
+                        onChange={(e) => setFormData({ ...formData, etd: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.etd && <p className="text-red-500">{validationErrors.etd}</p>}
+                </div>
 
 
 
-            <div>
-                <label htmlFor="eta" className="block text-sm font-medium text-gray-700">ETA</label>
-                <input
-                    id="eta"
-                    name="eta"
-                    type="date"
-                    value={formData.eta}
-                    onChange={(e) => setFormData({ ...formData, eta: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                  {validationErrors.eta && <p className="text-red-500">{validationErrors.eta}</p>}
-            </div>
-            <div>
-                <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
-                <input
-                    id="shipment_status"
-                    name="shipment_status"
-                    type="text"
-                    value={formData.shipment_status}
-                    onChange={(e) => setFormData({ ...formData, shipment_status: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                 {validationErrors.shipment_status && <p className="text-red-500">{validationErrors.shipment_status}</p>}
-            </div>
-            <div>
-                <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                <input
-                    id="remarks"
-                    name="remarks"
-                    type="text"
-                    value={formData.remarks}
-                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                />
-                  {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
-            </div>
+                <div>
+                    <label htmlFor="eta" className="block text-sm font-medium text-gray-700">ETA</label>
+                    <input
+                        id="eta"
+                        name="eta"
+                        type="date"
+                        value={formData.eta}
+                        onChange={(e) => setFormData({ ...formData, eta: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.eta && <p className="text-red-500">{validationErrors.eta}</p>}
+                </div>
+                <div>
+                    <label htmlFor="shipment_status" className="block text-sm font-medium text-gray-700">Shipment Status</label>
+                    <input
+                        id="shipment_status"
+                        name="shipment_status"
+                        type="text"
+                        value={formData.shipment_status}
+                        onChange={(e) => setFormData({ ...formData, shipment_status: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.shipment_status && <p className="text-red-500">{validationErrors.shipment_status}</p>}
+                </div>
+                <div>
+                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
+                    <input
+                        id="remarks"
+                        name="remarks"
+                        type="text"
+                        value={formData.remarks}
+                        onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                    />
+                    {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
+                </div>
             </div>
 
             {/* Add more SalesPurchase fields as needed */}
@@ -1026,7 +1029,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     </p>
                                 )}
                             </div>
-                           
+
                             <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
                                 <select
@@ -1050,7 +1053,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 )}
                             </div>
 
-                         
+
                             <div>
                                 <label htmlFor="hs_code" className="block text-sm font-medium text-gray-700">HS Code</label>
                                 <input
@@ -1068,7 +1071,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 )}
                             </div>
 
-                           
+
                             {/* <div>
                                 <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
                                 <input
@@ -1087,7 +1090,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 )}
                             </div> */}
 
-                           
+
                             <div>
                                 <label htmlFor="batch_number" className="block text-sm font-medium text-gray-700">Batch Number</label>
                                 <input
@@ -1105,7 +1108,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 )}
                             </div>
 
-                           
+
                             {/* <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="production_date" className="block text-sm font-medium text-gray-700">Production Date</label>
                                 <input
@@ -1149,7 +1152,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     </p>
                                 )}
                             </div>
-                           
+
                             <div>
                                 <label htmlFor="bl_qty" className="block text-sm font-medium text-gray-700">BL Quantity</label>
                                 <input
@@ -1159,7 +1162,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Trade Quantity"
                                     className="border border-gray-300 p-2 rounded w-full"
-                                    readOnly={data?.trade_type=='Sales'}
+                                    readOnly={data?.trade_type == 'Sales'}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].bl_qty`] && (
                                     <p className="text-red-500">
@@ -1168,7 +1171,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 )}
                             </div>
 
-                           
+
                             <div>
                                 <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
                                 <select
@@ -1244,7 +1247,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 )}
                             </div>
 
-                             <div>
+                            <div>
                                 <label htmlFor="bl_value" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
                                 <input
                                     type="number"
@@ -1253,7 +1256,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Logistic"
                                     className="border border-gray-300 p-2 rounded w-full"
-                                    // readOnly={true}
+                                // readOnly={true}
                                 />
                                 {validationErrors[`salesPurchaseProducts[${index}].logistic`] && (
                                     <p className="text-red-500">
@@ -1288,7 +1291,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                 </div>
             </div>
             <hr className="my-6" />
-                        
+
             {/* SalesPurchaseExtraCharge Section */}
             <div className="space-y-4 px-4">
                 <h3 className="text-lg font-medium text-gray-900">Other Charges</h3>
@@ -1304,11 +1307,11 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 onChange={(e) => handleChange(e, 'extraCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
-                             {validationErrors[`extraCharges[${index}].name`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`extraCharges[${index}].name`]}
-                                    </p>
-                                )}
+                            {validationErrors[`extraCharges[${index}].name`] && (
+                                <p className="text-red-500">
+                                    {validationErrors[`extraCharges[${index}].name`]}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <label htmlFor={`extra_charge_${index}`} className="block text-sm font-medium text-gray-700">Charge</label>
@@ -1320,11 +1323,11 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 onChange={(e) => handleChange(e, 'extraCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
-                             {validationErrors[`extraCharges[${index}].charge`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`extraCharges[${index}].charge`]}
-                                    </p>
-                                )}
+                            {validationErrors[`extraCharges[${index}].charge`] && (
+                                <p className="text-red-500">
+                                    {validationErrors[`extraCharges[${index}].charge`]}
+                                </p>
+                            )}
                         </div>
                         <div className="flex items-end">
                             <button type="button" onClick={() => handleRemoveRow('extraCharges', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -1334,11 +1337,11 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     </div>
                 ))}
                 <div className="text-right">
-                <button type="button" onClick={() => handleAddRow('extraCharges')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add Extra Charge
-                </button>
+                    <button type="button" onClick={() => handleAddRow('extraCharges')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Add Extra Charge
+                    </button>
                 </div>
-               
+
             </div>
             <hr className="my-6" />
             {/* PackingList Section */}
@@ -1358,10 +1361,10 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 readOnly={true}
                             />
                             {validationErrors[`packingLists[${index}].name`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`packingLists[${index}].name`]}
-                                    </p>
-                                )}
+                                <p className="text-red-500">
+                                    {validationErrors[`packingLists[${index}].name`]}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <label htmlFor={`packing_list_file_${index}`} className="block text-sm font-medium text-gray-700">Document</label>
@@ -1373,10 +1376,10 @@ const handleChange = async (e, arrayName = null, index = null) => {
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"
                             />
                             {validationErrors[`packingLists[${index}].packing_list`] && (
-                                    <p className="text-red-500">
-                                        {validationErrors[`packingLists[${index}].packing_list`]}
-                                    </p>
-                                )}
+                                <p className="text-red-500">
+                                    {validationErrors[`packingLists[${index}].packing_list`]}
+                                </p>
+                            )}
                         </div>
                         {/* <div className="flex items-end">
                             <button type="button" onClick={() => handleRemoveRow('packingLists', index)} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -1390,7 +1393,7 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     Add Documents
                 </button>
                 </div> */}
-               
+
             </div>
             {/* Notify Users Section */}
             <div className="mt-0 p-4">
@@ -1400,10 +1403,13 @@ const handleChange = async (e, arrayName = null, index = null) => {
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
                 />
+                {validationErrors.notifiedUsers && (
+                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                )}
             </div>
             <hr className="my-6 border-t border-gray-300" />
             <div className='grid grid-cols-3 gap-4 mb-4'>
-            <button
+                <button
                     type="submit"
                     className="bg-blue-500 text-white p-2 rounded col-span-3"
                     disabled={submittingRef.current}

@@ -10,6 +10,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const debounceTimerRef = useRef(null);
+    const [validationErrors, setValidationErrors] = useState({});
     // Initialize with proper default values to prevent undefined
     const [formData, setFormData] = useState({
         date: '',
@@ -538,6 +539,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        let errors = {};
         const formDataToSend = new FormData();
 
         for (const [key, value] of Object.entries(formData)) {
@@ -556,6 +558,14 @@ const ConsumptionForm = ({ mode = 'add' }) => {
             } else {
                 formDataToSend.append(key, value || '');
             }
+        }
+        // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return;
         }
 
         const apiCall = mode === 'add' ? axios.post : axios.put;
@@ -752,7 +762,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     />
                 </div>
 
-                
+
             </div>
 
             {/* Section for Consumption Additive */}
@@ -1095,6 +1105,10 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
                 />
+                {validationErrors.notifiedUsers && (
+                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                )}
+
             </div>
             <hr className="my-6" />
 

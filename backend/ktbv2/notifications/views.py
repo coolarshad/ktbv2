@@ -4,13 +4,16 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Notification
 from .serializers import NotificationSerializer
+from accounts.models import CustomUser
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = NotificationSerializer
 
+    # def get_queryset(self):
+    #     return Notification.objects.filter(recipient=self.request.user)
     def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user)
+        return Notification.objects.all()
 
     @action(detail=False, methods=['get'])
     def unread(self, request):

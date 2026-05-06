@@ -7,6 +7,7 @@ import MultiUserSelector from '../components/MultiUserSelector';
 export default function FinalProductForm({ mode = 'add' }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [validationErrors, setValidationErrors] = useState({});
   /* ===============================
      FORM STATE
   =============================== */
@@ -470,7 +471,18 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let errors = {};
     if (!validateForm()) return; // 🚀 STOP if invalid
+
+     // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
+
     try {
 
       const payload = {
@@ -883,6 +895,9 @@ return (
             selectedUsers={formData.notifiedUsers}
             onChange={handleUsersChange}
         />
+        {validationErrors.notifiedUsers && (
+                <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+            )}
     </div>
 
     <button className="w-full bg-blue-600 text-white p-3 rounded text-lg">

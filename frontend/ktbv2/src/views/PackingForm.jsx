@@ -141,6 +141,10 @@ const PackingForm = ({ mode = "add" }) => {
       }
     });
 
+    // Validate notifiedUsers
+    if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+      errors.notifiedUsers = 'At least one notification recipient must be selected!';
+    }
     setValidationErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -331,9 +335,12 @@ const PackingForm = ({ mode = "add" }) => {
       <div className="p-4">
         <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
         <MultiUserSelector
-            selectedUsers={formData.notifiedUsers}
-            onChange={handleUsersChange}
+          selectedUsers={formData.notifiedUsers}
+          onChange={handleUsersChange}
         />
+        {validationErrors.notifiedUsers && (
+          <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-4">

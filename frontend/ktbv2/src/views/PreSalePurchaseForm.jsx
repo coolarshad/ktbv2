@@ -181,6 +181,10 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 }
             }
         });
+         // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
 
         setValidationErrors(errors);
     
@@ -548,6 +552,10 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
                 />
+                {validationErrors.notifiedUsers && (
+                <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+            )}
+            
             </div>
             
             <div className='grid grid-cols-3 gap-4 mb-4'>
