@@ -5,6 +5,7 @@ import React, { useEffect, useState,useRef } from 'react';
 import PFTable from "../components/PFTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
+import MultiUserSelector from '../components/MultiUserSelector';
 import { BASE_URL } from '../utils';
 import { paymentDueDate,calculateRemainingContractValue, calculatePFCommissionValue,dateFormatter } from '../dateUtils';
 import ReactToPrint from 'react-to-print';
@@ -17,6 +18,7 @@ function PaymentFinance() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPF, setPF] = useState(null);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
@@ -59,11 +61,18 @@ function PaymentFinance() {
   };
 
   const reviewTrade = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before reviewing.");
+      return;
+    }
     try {
-      await axios.get(`/trademgt/payment-finances-review/${selectedPF.id}/`);
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/payment-finances-review/${selectedPF.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setPF(null);
+      setNotifiedUsers([]);
       window.location.reload();
     } catch (error) {
       console.error('Error reviewing trade:', error);
@@ -84,6 +93,7 @@ function PaymentFinance() {
   const closeModal = () => {
     setIsModalOpen(false);
     setPF(null);
+    setNotifiedUsers([]);
   };
 
 
@@ -372,6 +382,16 @@ function PaymentFinance() {
                   )}
               </div>
               </div>
+
+              {!selectedPF.reviewed && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
               {selectedPF.reviewed ? '' : 
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>

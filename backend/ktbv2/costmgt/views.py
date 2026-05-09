@@ -675,6 +675,9 @@ class PackingApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Packing ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = Packing.objects.get(pk=pk)
@@ -682,11 +685,46 @@ class PackingApprovalView(APIView):
                 obj.approved = True
                 obj.save()
                 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+                
+                NotificationService.notify_users_explicit(
+
+                
+                    actor=actor,
+
+                
+                    notified_user_ids=notified_user_ids,
+
+                
                     verb="Packing Approved",
-                    message=f"Packing entry has been approved.",
+
+                
+                    message=f"You have been notified that " + f"Packing entry has been approved.",
+
+                
                     target_url=f"/packings"
+
+                
+                )
+
+
+                
+                NotificationService.notify_all_general(
+
+                
+                    actor=actor,
+
+                
+                    verb="Packing Approved",
+
+                
+                    message=f"Packing entry has been approved.",
+
+                
+                    target_url=f"/packings"
+
+                
                 )
                 
                 serializer = PackingSerializer(obj)
@@ -703,6 +741,9 @@ class RawMaterialApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Raw Material ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = RawMaterial.objects.get(pk=pk)
@@ -710,11 +751,46 @@ class RawMaterialApprovalView(APIView):
                 obj.approved = True
                 obj.save()
                 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+                
+                NotificationService.notify_users_explicit(
+
+                
+                    actor=actor,
+
+                
+                    notified_user_ids=notified_user_ids,
+
+                
                     verb="Raw Material Approved",
-                    message=f"Raw Material {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    message=f"You have been notified that " + f"Raw Material {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
                     target_url=f"/raw-materials"
+
+                
+                )
+
+
+                
+                NotificationService.notify_all_general(
+
+                
+                    actor=actor,
+
+                
+                    verb="Raw Material Approved",
+
+                
+                    message=f"Raw Material {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    target_url=f"/raw-materials"
+
+                
                 )
 
                 serializer = RawMaterialSerializer(obj)
@@ -731,6 +807,9 @@ class AdditiveApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Additive ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = Additive.objects.get(pk=pk)
@@ -738,11 +817,46 @@ class AdditiveApprovalView(APIView):
                 obj.approved = True
                 obj.save()
                 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+                
+                NotificationService.notify_users_explicit(
+
+                
+                    actor=actor,
+
+                
+                    notified_user_ids=notified_user_ids,
+
+                
                     verb="Additive Approved",
-                    message=f"Additive {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    message=f"You have been notified that " + f"Additive {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
                     target_url=f"/additives"
+
+                
+                )
+
+
+                
+                NotificationService.notify_all_general(
+
+                
+                    actor=actor,
+
+                
+                    verb="Additive Approved",
+
+                
+                    message=f"Additive {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    target_url=f"/additives"
+
+                
                 )
 
                 serializer = AdditiveSerializer(obj)
@@ -760,6 +874,9 @@ class ConsumptionFormulaApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Consumption Formula ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = ConsumptionFormula.objects.get(pk=pk)
@@ -767,11 +884,46 @@ class ConsumptionFormulaApprovalView(APIView):
                 obj.approved = True
                 obj.save()
                 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+                
+                NotificationService.notify_users_explicit(
+
+                
+                    actor=actor,
+
+                
+                    notified_user_ids=notified_user_ids,
+
+                
                     verb="Consumption Formula Approved",
-                    message=f"Consumption Formula {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    message=f"You have been notified that " + f"Consumption Formula {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
                     target_url=f"/consumption-formula"
+
+                
+                )
+
+
+                
+                NotificationService.notify_all_general(
+
+                
+                    actor=actor,
+
+                
+                    verb="Consumption Formula Approved",
+
+                
+                    message=f"Consumption Formula {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    target_url=f"/consumption-formula"
+
+                
                 )
 
                 serializer = ConsumptionFormulaSerializer(obj)
@@ -988,6 +1140,9 @@ class FinalProductApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Final Product id not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = FinalProduct.objects.get(pk=pk)
@@ -995,11 +1150,46 @@ class FinalProductApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+
+                NotificationService.notify_users_explicit(
+
+
+                    actor=actor,
+
+
+                    notified_user_ids=notified_user_ids,
+
+
                     verb="Final Product Approved",
-                    message=f"Final Product Cost entry has been approved.",
+
+
+                    message=f"You have been notified that " + f"Final Product Cost entry has been approved.",
+
+
                     target_url=f"/final-products"
+
+
+                )
+
+
+
+                NotificationService.notify_all_general(
+
+
+                    actor=actor,
+
+
+                    verb="Final Product Approved",
+
+
+                    message=f"Final Product Cost entry has been approved.",
+
+
+                    target_url=f"/final-products"
+
+
                 )
 
                 serializer = FinalProductSerializer(obj)
@@ -1016,6 +1206,9 @@ class ProductFormulaApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Product formulation id not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = ProductFormula.objects.get(pk=pk)
@@ -1023,11 +1216,46 @@ class ProductFormulaApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+
+                NotificationService.notify_users_explicit(
+
+
+                    actor=actor,
+
+
+                    notified_user_ids=notified_user_ids,
+
+
                     verb="Product Formula Approved",
-                    message=f"Product Formula {obj.formula_name if hasattr(obj, 'formula_name') else pk} has been approved.",
+
+
+                    message=f"You have been notified that " + f"Product Formula {obj.formula_name if hasattr(obj, 'formula_name') else pk} has been approved.",
+
+
                     target_url=f"/product-formula"
+
+
+                )
+
+
+
+                NotificationService.notify_all_general(
+
+
+                    actor=actor,
+
+
+                    verb="Product Formula Approved",
+
+
+                    message=f"Product Formula {obj.formula_name if hasattr(obj, 'formula_name') else pk} has been approved.",
+
+
+                    target_url=f"/product-formula"
+
+
                 )
 
                 serializer = ProductFormulaSerializer(obj)
@@ -1043,6 +1271,9 @@ class ConsumptionApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Consumption ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = Consumption.objects.get(pk=pk)
@@ -1050,11 +1281,46 @@ class ConsumptionApprovalView(APIView):
                 obj.approved = True
                 obj.save()
                 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+                
+                NotificationService.notify_users_explicit(
+
+                
+                    actor=actor,
+
+                
+                    notified_user_ids=notified_user_ids,
+
+                
                     verb="Consumption Approved",
-                    message=f"Consumption entry {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    message=f"You have been notified that " + f"Consumption entry {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
                     target_url=f"/consumptions"
+
+                
+                )
+
+
+                
+                NotificationService.notify_all_general(
+
+                
+                    actor=actor,
+
+                
+                    verb="Consumption Approved",
+
+                
+                    message=f"Consumption entry {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+                
+                    target_url=f"/consumptions"
+
+                
                 )
                 serializer = ConsumptionSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1071,6 +1337,9 @@ class AdditiveCategoryApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Additive Category ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = AdditiveCategory.objects.get(pk=pk)
@@ -1078,11 +1347,46 @@ class AdditiveCategoryApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+
+                NotificationService.notify_users_explicit(
+
+
+                    actor=actor,
+
+
+                    notified_user_ids=notified_user_ids,
+
+
                     verb="Additive Category Approved",
-                    message=f"Additive Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+
+                    message=f"You have been notified that " + f"Additive Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+
                     target_url=f"/additive-categories"
+
+
+                )
+
+
+
+                NotificationService.notify_all_general(
+
+
+                    actor=actor,
+
+
+                    verb="Additive Category Approved",
+
+
+                    message=f"Additive Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+
+                    target_url=f"/additive-categories"
+
+
                 )
 
                 serializer = AdditiveCategorySerializer(obj)
@@ -1099,6 +1403,9 @@ class RawCategoryApprovalView(APIView):
         if not pk:
             return Response({'detail': 'Raw Category ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 obj = RawCategory.objects.get(pk=pk)
@@ -1106,11 +1413,46 @@ class RawCategoryApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
-                NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+
+
+                NotificationService.notify_users_explicit(
+
+
+                    actor=actor,
+
+
+                    notified_user_ids=notified_user_ids,
+
+
                     verb="Raw Category Approved",
-                    message=f"Raw Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+
+                    message=f"You have been notified that " + f"Raw Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+
                     target_url=f"/raw-categories"
+
+
+                )
+
+
+
+                NotificationService.notify_all_general(
+
+
+                    actor=actor,
+
+
+                    verb="Raw Category Approved",
+
+
+                    message=f"Raw Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
+
+
+                    target_url=f"/raw-categories"
+
+
                 )
 
                 serializer = RawCategorySerializer(obj)

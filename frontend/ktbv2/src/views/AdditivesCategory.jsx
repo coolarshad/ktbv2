@@ -5,6 +5,7 @@ import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 
 import Modal from '../components/Modal';
+import MultiUserSelector from "../components/MultiUserSelector";
 
 const AdditivesCategory = () => {
   const navigate = useNavigate();
@@ -60,6 +61,7 @@ const AdditivesCategory = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedCategory(null);
+      setNotifiedUsers([]);
   };
 
   const handleFilter = (filters) => {
@@ -207,7 +209,16 @@ const AdditivesCategory = () => {
                     <td className="py-2 px-4 text-gray-800">{selectedCategory.approved ? "Yes" : "No"}</td>
                   </tr>
                 </tbody>
-              </table>
+              </table>              {!selectedCategory.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+
               {selectedCategory.approved ? '' :
                 <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                   <button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>

@@ -3,8 +3,9 @@ import React, { useEffect, useState } from 'react';
 import TradeTable from "../components/TradeTable"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import Modal from '../components/Modal';
 import FilterComponent from "../components/FilterComponent";
+import Modal from '../components/Modal';
+import MultiUserSelector from '../components/MultiUserSelector';
 import { BASE_URL } from "../utils";
 import {dateFormatter} from '../dateUtils';
 
@@ -15,6 +16,7 @@ function TradeApproval() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
@@ -79,29 +81,44 @@ function TradeApproval() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedTrade(null);
+    setNotifiedUsers([]);
   };
 
   const approveTrade = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before reviewing.");
+      return;
+    }
     try {
-      await axios.get(`/trademgt/tradeapprove/${selectedTrade.id}/`);
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/tradeapprove/${selectedTrade.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedTrade(null);
+      setNotifiedUsers([]);
       window.location.reload();
     } catch (error) {
-      console.error('Error approving trade:', error);
+      console.error('Error reviewing trade:', error);
       // Optionally, handle the error (e.g., show a user-friendly error message)
     }
   };
   const reviewTrade = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
     try {
-      await axios.get(`/trademgt/tradereview/${selectedTrade.id}/`);
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/tradereview/${selectedTrade.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedTrade(null);
+      setNotifiedUsers([]);
       window.location.reload();
     } catch (error) {
-      console.error('Error reviewing trade:', error);
+      console.error('Error approving trade:', error);
       // Optionally, handle the error (e.g., show a user-friendly error message)
     }
   };
@@ -472,6 +489,16 @@ function TradeApproval() {
                  ))}
                </tbody>
              </table>
+             
+             {(!selectedTrade.approved || !selectedTrade.reviewed) && (
+               <div className="mt-6 border-t pt-4">
+                 <MultiUserSelector 
+                   selectedUsers={notifiedUsers} 
+                   onChange={setNotifiedUsers} 
+                 />
+               </div>
+             )}
+
              {selectedTrade.approved ? '' : 
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={approveTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>

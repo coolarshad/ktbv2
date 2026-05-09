@@ -5,6 +5,7 @@ import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 
 import Modal from '../components/Modal';
+import MultiUserSelector from "../components/MultiUserSelector";
 import RawMaterialTable from '../components/RawMaterialTable';
 
 const RawMaterial = () => {
@@ -59,7 +60,11 @@ const RawMaterial = () => {
     };
 
     const approveRawMaterial = async () => {
-      try {
+      if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
+    try {
         await axios.get(`/costmgt/raw-materials-approve/${selectedMaterial.id}/`);
         setIsModalOpen(false);
         setSelectedMaterial(null);
@@ -74,6 +79,7 @@ const RawMaterial = () => {
     const closeModal = () => {
       setIsModalOpen(false);
       setSelectedMaterial(null);
+      setNotifiedUsers([]);
     };
   
 
@@ -171,7 +177,16 @@ const RawMaterial = () => {
                   </tr>
                  
                 </tbody>
-                </table>
+                </table>              {!selectedMaterial.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+
                 {selectedMaterial.approved ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                       <button onClick={approveRawMaterial} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>

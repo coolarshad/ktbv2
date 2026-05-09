@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
+import MultiUserSelector from "../components/MultiUserSelector";
 import ConsumptionTable from '../components/ConsumptionTable';
 
 const Consumption = () => {
@@ -13,6 +14,7 @@ const Consumption = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedConsumption, setSelectedConsumption] = useState(null);
+    const [notifiedUsers, setNotifiedUsers] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,11 +62,15 @@ const Consumption = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedConsumption(null);
+      setNotifiedUsers([]);
   };
 
   const approveConsumption = async (id) => {
         try {
-            await axios.get(`/costmgt/consumption-approve/${selectedConsumption.id}/`);
+            const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+      await axios.get(`/costmgt/consumption-approve/\$\{selectedConsumption\.id\}/?${params.toString()}`);
+      setNotifiedUsers([]);
             setIsModalOpen(false);
             setConsumptionData(null);
             // Reload the page
@@ -236,7 +242,16 @@ const Consumption = () => {
                       )
                     )}
                   </tbody>
-                </table>
+                </table>              {!selectedConsumption.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+
                 {selectedConsumption.approved ? '' :
                   <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                     <button onClick={approveConsumption} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>

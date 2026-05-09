@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import KycTable from '../components/KycTable';
 import Modal from '../components/Modal';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const Kyc = () => {
 
@@ -14,6 +15,7 @@ const Kyc = () => {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedKyc, setSelectedKyc] = useState(null);
+    const [notifiedUsers, setNotifiedUsers] = useState([]);
 
     useEffect(() => {
       const fetchData = async () => {
@@ -61,6 +63,7 @@ const Kyc = () => {
     const closeModal = () => {
       setIsModalOpen(false);
       setSelectedKyc(null);
+      setNotifiedUsers([]);
     };
   
 
@@ -69,10 +72,17 @@ const Kyc = () => {
     };
 
     const approveKycOne = async () => {
+      if (!notifiedUsers || notifiedUsers.length === 0) {
+        alert("Please select at least one user to notify before approving.");
+        return;
+      }
       try {
-        await axios.get(`/trademgt/kyc-approve-one/${selectedKyc.id}/`);
+        const params = new URLSearchParams();
+        notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+        await axios.get(`/trademgt/kyc-approve-one/${selectedKyc.id}/?${params.toString()}`);
         setIsModalOpen(false);
         setSelectedKyc(null);
+        setNotifiedUsers([]);
         // Reload the page
         window.location.reload();
       } catch (error) {
@@ -82,10 +92,17 @@ const Kyc = () => {
     };
     
     const approveKycTwo = async () => {
+      if (!notifiedUsers || notifiedUsers.length === 0) {
+        alert("Please select at least one user to notify before approving.");
+        return;
+      }
       try {
-        await axios.get(`/trademgt/kyc-approve-two/${selectedKyc.id}/`);
+        const params = new URLSearchParams();
+        notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+        await axios.get(`/trademgt/kyc-approve-two/${selectedKyc.id}/?${params.toString()}`);
         setIsModalOpen(false);
         setSelectedKyc(null);
+        setNotifiedUsers([]);
         // Reload the page
         window.location.reload();
       } catch (error) {
@@ -257,6 +274,15 @@ const Kyc = () => {
                 </tbody>
                 </table>
                 
+                  {(!selectedKyc.approve1 || !selectedKyc.approve2) && (
+                    <div className="mt-6 border-t pt-4">
+                      <MultiUserSelector 
+                        selectedUsers={notifiedUsers} 
+                        onChange={setNotifiedUsers} 
+                      />
+                    </div>
+                  )}
+
                   {selectedKyc.approve1 ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                       <button onClick={approveKycOne} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>

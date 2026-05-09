@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import Modal from '../components/Modal';
+import MultiUserSelector from "../components/MultiUserSelector";
 import FinalProductTable from '../components/FinalProductTable';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 
@@ -73,6 +74,7 @@ const FinalProduct = () => {
     const closeModal = () => {
         setIsModalOpen(false);
         setProductData(null);
+      setNotifiedUsers([]);
     };
 
 
@@ -242,7 +244,16 @@ const FinalProduct = () => {
                                             )
                                         )}
                                     </tbody>
-                                </table>
+                                </table>              {!selectedProduct.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+
 
 
                                 {selectedProduct.approved ? '' :

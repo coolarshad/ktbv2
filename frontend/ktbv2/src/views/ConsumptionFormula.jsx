@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
+import MultiUserSelector from "../components/MultiUserSelector";
 import ConsumptionTable from '../components/ConsumptionTable';
 import ConsumptionFormulaTable from '../components/ConsumptionFormulaTable';
 
@@ -59,7 +60,11 @@ const ConsumptionFormula = () => {
     };
 
     const approveConsumptionFormula = async () => {
-      try {
+      if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
+    try {
         await axios.get(`/costmgt/consumption-formula-approve/${selectedConsumption.id}/`);
         setIsModalOpen(false);
         setConsumptionData(null);
@@ -74,6 +79,7 @@ const ConsumptionFormula = () => {
     const closeModal = () => {
       setIsModalOpen(false);
       setSelectedConsumption(null);
+      setNotifiedUsers([]);
     };
   
 
@@ -201,7 +207,16 @@ const ConsumptionFormula = () => {
                     )
                   )}
                 </tbody>
-              </table>
+              </table>              {!selectedConsumption.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+
               {selectedConsumption.approved ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                       <button onClick={approveConsumptionFormula} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>

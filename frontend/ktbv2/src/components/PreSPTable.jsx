@@ -6,6 +6,7 @@ import ReactToPrint from 'react-to-print';
 import { useReactToPrint } from 'react-to-print';
 import Modal from './Modal';
 import PrintModal from './PrintModal';
+import MultiUserSelector from './MultiUserSelector';
 import axios from '../axiosConfig';
 import { toWords } from 'number-to-words';
 import { today, addDaysToDate,dateFormatter } from '../dateUtils';
@@ -20,6 +21,7 @@ const PreSPTable = ({ data, onDelete }) => {
   const [selectedPresp, setSelectedPresp] = useState(null);
   const [totalTradeQuantity, setTotalTradeQuantity] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
   // const [textAmount, setTextAmount] = useState(0);
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
@@ -28,6 +30,7 @@ const PreSPTable = ({ data, onDelete }) => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedTrade(null);
+    setNotifiedUsers([]);
   };
 
   const closePrintModal = () => {
@@ -59,11 +62,18 @@ const PreSPTable = ({ data, onDelete }) => {
   };
 
   const reviewTrade = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
     try {
-      await axios.get(`/trademgt/pre-sales-purchases-approve/${selectedPresp.id}/`);
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/pre-sales-purchases-approve/${selectedPresp.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedPresp(null);
+      setNotifiedUsers([]);
       window.location.reload();
     } catch (error) {
       console.error('Error approving pre sales/purchase:', error);
@@ -761,7 +771,16 @@ const PreSPTable = ({ data, onDelete }) => {
                   </div>
                 )))}
                 
-                {selectedPresp.approved ? '' : 
+              {!selectedPresp.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+              {selectedPresp.approved ? '' : 
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
              </div>

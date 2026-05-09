@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
+import MultiUserSelector from "../components/MultiUserSelector";
 import ProductFormulaTable from '../components/ProductFormulaTable';
  
 const ProductFormula = () => {
@@ -57,7 +58,11 @@ const ProductFormula = () => {
     };
 
     const approveProductFormula = async () => {
-      try {
+      if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
+    try {
         await axios.get(`/costmgt/product-formula-approve/${selectedFormula.id}/`);
         setIsModalOpen(false);
         setSelectedFormula(null);
@@ -72,6 +77,7 @@ const ProductFormula = () => {
     const closeModal = () => {
       setIsModalOpen(false);
       setSelectedFormula(null);
+      setNotifiedUsers([]);
     };
   
 
@@ -180,7 +186,16 @@ const ProductFormula = () => {
                     ) 
                   )}
                 </tbody>
-              </table>
+              </table>              {!selectedFormula.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+
 
             
               {selectedFormula.approved ? '' :

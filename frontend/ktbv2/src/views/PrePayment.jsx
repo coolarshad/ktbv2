@@ -5,6 +5,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
+import MultiUserSelector from '../components/MultiUserSelector';
 import { today, addDaysToDate,advanceToPay,advanceToReceive,dateFormatter } from '../dateUtils';
 import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
@@ -18,6 +19,7 @@ function PrePayment() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrePayment, setSelectedPrePayment] = useState(null);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
@@ -49,14 +51,22 @@ function PrePayment() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedPrePayment(null);
+    setNotifiedUsers([]);
   };
 
   const reviewTrade = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before reviewing.");
+      return;
+    }
     try {
-      await axios.get(`/trademgt/pre-payments-review/${selectedPrePayment.id}/`);
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/pre-payments-review/${selectedPrePayment.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedPrePayment(null);
+      setNotifiedUsers([]);
       window.location.reload();
     } catch (error) {
       console.error('Error reviewing trade:', error);
@@ -270,6 +280,15 @@ function PrePayment() {
      
            </div>
      
+           {!selectedPrePayment.reviewed && (
+             <div className="mt-6 border-t pt-4">
+               <MultiUserSelector 
+                 selectedUsers={notifiedUsers} 
+                 onChange={setNotifiedUsers} 
+               />
+             </div>
+           )}
+
            {selectedPrePayment.reviewed ? '' : 
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>

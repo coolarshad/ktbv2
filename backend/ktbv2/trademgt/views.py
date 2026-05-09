@@ -537,6 +537,9 @@ class TradeApproveView(APIView):
         # Check if trade_id is provided
         if not trade_id:
             return Response({'detail': 'Trade ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
 
         try:
             # Use atomic block for the approval process
@@ -548,8 +551,18 @@ class TradeApproveView(APIView):
                 trade.approved = True
                 trade.save()
                 
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                
+                NotificationService.notify_users_explicit(
+                    actor=actor,
+                    notified_user_ids=notified_user_ids,
+                    verb="Trade Approved",
+                    message=f"You have been notified that Trade {trade.trn} has been approved.",
+                    target_url=f"/trade-approved"
+                )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    actor=actor,
                     verb="Trade Approved",
                     message=f"Trade {trade.trn} has been approved.",
                     target_url=f"/trade-approved"
@@ -572,6 +585,9 @@ class TradeReviewView(APIView):
         # Check if trade_id is provided
         if not trade_id:
             return Response({'detail': 'Trade ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
 
         try:
             # Use atomic block for the approval process
@@ -583,8 +599,18 @@ class TradeReviewView(APIView):
                 trade.approval_date = date.today()
                 trade.save()
                 
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                
+                NotificationService.notify_users_explicit(
+                    actor=actor,
+                    notified_user_ids=notified_user_ids,
+                    verb="Trade Reviewed",
+                    message=f"You have been notified that Trade {trade.trn} has been reviewed.",
+                    target_url=f"/trade-approval"
+                )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    actor=actor,
                     verb="Trade Reviewed",
                     message=f"Trade {trade.trn} has been reviewed.",
                     target_url=f"/trade-approval"
@@ -1265,14 +1291,27 @@ class PrePaymentReview(APIView):
         if not prepay_id:
             return Response({'detail': 'Pre payment ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 prepay = PrePayment.objects.get(id=prepay_id)
                 prepay.reviewed = True
                 prepay.save()
                 
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                
+                NotificationService.notify_users_explicit(
+                    actor=actor,
+                    notified_user_ids=notified_user_ids,
+                    verb="PrePayment Reviewed",
+                    message=f"You have been notified that PrePayment has been reviewed.",
+                    target_url=f"/pre-payment"
+                )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    actor=actor,
                     verb="PrePayment Reviewed",
                     message=f"PrePayment has been reviewed.",
                     target_url=f"/pre-payment"
@@ -1810,14 +1849,27 @@ class SalesPurchaseApprove(APIView):
         if not sp_id:
             return Response({'detail': 'Sales/Purchase ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 sp = SalesPurchase.objects.get(id=sp_id)
                 sp.reviewed = True
                 sp.save()
                 
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                
+                NotificationService.notify_users_explicit(
+                    actor=actor,
+                    notified_user_ids=notified_user_ids,
+                    verb="SalesPurchase Approved",
+                    message=f"You have been notified that Sales/Purchase {sp.sp_number if hasattr(sp, 'sp_number') else sp_id} has been approved.",
+                    target_url=f"/sales-purchases"
+                )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    actor=actor,
                     verb="SalesPurchase Approved",
                     message=f"Sales/Purchase {sp.sp_number if hasattr(sp, 'sp_number') else sp_id} has been approved.",
                     target_url=f"/sales-purchases"
@@ -2165,14 +2217,27 @@ class PFReview(APIView):
         if not pf_id:
             return Response({'detail': 'Paymnet/Finance ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 pf = PaymentFinance.objects.get(id=pf_id)
                 pf.reviewed = True
                 pf.save()
                 
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                
+                NotificationService.notify_users_explicit(
+                    actor=actor,
+                    notified_user_ids=notified_user_ids,
+                    verb="Payment/Finance Reviewed",
+                    message=f"You have been notified that Payment/Finance record has been reviewed.",
+                    target_url=f"/payment-finance"
+                )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    actor=actor,
                     verb="Payment/Finance Reviewed",
                     message=f"Payment/Finance record has been reviewed.",
                     target_url=f"/payment-finance"
@@ -2197,6 +2262,9 @@ class KycApproveOneView(APIView):
     
         if not kyc_id:
             return Response({'detail': 'Kyc ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
 
         try:
             with transaction.atomic():
@@ -2205,8 +2273,18 @@ class KycApproveOneView(APIView):
                 kyc.approve1 = True
                 kyc.save()
                 
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                
+                NotificationService.notify_users_explicit(
+                    actor=actor,
+                    notified_user_ids=notified_user_ids,
+                    verb="KYC Level 1 Approved",
+                    message=f"You have been notified that KYC Level 1 has been approved.",
+                    target_url=f"/kyc"
+                )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    actor=actor,
                     verb="KYC Level 1 Approved",
                     message=f"KYC {kyc.kyc_number if hasattr(kyc, 'kyc_number') else kyc_id} Level 1 has been approved.",
                     target_url=f"/kyc"
@@ -2226,6 +2304,9 @@ class KycApproveTwoView(APIView):
         if not kyc_id:
             return Response({'detail': 'Kyc ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+
         try:
             with transaction.atomic():
                 kyc = Kyc.objects.get(id=kyc_id)
@@ -2233,8 +2314,18 @@ class KycApproveTwoView(APIView):
                 kyc.approve2 = True
                 kyc.save()
                 
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                
+                NotificationService.notify_users_explicit(
+                    actor=actor,
+                    notified_user_ids=notified_user_ids,
+                    verb="KYC Level 2 Approved",
+                    message=f"You have been notified that KYC Level 2 has been approved.",
+                    target_url=f"/kyc"
+                )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                    actor=actor,
                     verb="KYC Level 2 Approved",
                     message=f"KYC {kyc.kyc_number if hasattr(kyc, 'kyc_number') else kyc_id} Level 2 has been approved.",
                     target_url=f"/kyc"

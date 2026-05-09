@@ -5,6 +5,7 @@ import axios from '../axiosConfig';
 import React, { useEffect, useState, useRef } from 'react';
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
+import MultiUserSelector from '../components/MultiUserSelector';
 import ReactToPrint from 'react-to-print';
 import { BASE_URL } from '../utils'; 
 import { dateFormatter, calculatePFCommissionValue } from "../dateUtils";
@@ -17,6 +18,7 @@ function SalesPurchases() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSP, setSP] = useState(null);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
@@ -70,6 +72,7 @@ function SalesPurchases() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSP(null);
+    setNotifiedUsers([]);
   };
 
   const getSPData = (data, product_code, product_name) => {
@@ -79,10 +82,17 @@ function SalesPurchases() {
 };
 
   const approveSP = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
     try {
-      await axios.get(`/trademgt/sales-purchases-approve/${selectedSP.id}/`);
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/sales-purchases-approve/${selectedSP.id}/?${params.toString()}`);
       setIsModalOpen(false);
       setSP(null);
+      setNotifiedUsers([]);
       // Reload the page
       window.location.reload();
     } catch (error) {
@@ -355,6 +365,15 @@ function SalesPurchases() {
                         </div>
                       ) : null
                     )}
+
+              {!selectedSP.reviewed && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
 
               {selectedSP.reviewed ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>

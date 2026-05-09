@@ -5,6 +5,7 @@ import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 
 import Modal from '../components/Modal';
+import MultiUserSelector from "../components/MultiUserSelector";
 import AdditiveTable from '../components/AdditiveTable';
 
 const Additive = () => {
@@ -14,6 +15,7 @@ const Additive = () => {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAdditive, setSelectedAdditive] = useState(null);
+    const [notifiedUsers, setNotifiedUsers] = useState([]);
 
     useEffect(() => {
       const fetchData = async () => {
@@ -60,8 +62,15 @@ const Additive = () => {
 
     
     const approveAdditive = async () => {
-      try {
-        await axios.get(`/costmgt/additives-approve/${selectedAdditive.id}/`);
+      if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
+    try {
+        const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+      await axios.get(`/costmgt/additives-approve/\$\{selectedAdditive\.id\}/?${params.toString()}`);
+      setNotifiedUsers([]);
         setIsModalOpen(false);
         setSelectedAdditive(null);
         // Reload the page
@@ -76,6 +85,7 @@ const Additive = () => {
     const closeModal = () => {
       setIsModalOpen(false);
       setSelectedAdditive(null);
+      setNotifiedUsers([]);
     };
   
 
@@ -170,7 +180,16 @@ const Additive = () => {
                   </tr>
                  
                 </tbody>
-                </table>
+                </table>              {!selectedAdditive.approved && (
+                <div className="mt-6 border-t pt-4">
+                  <MultiUserSelector 
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                  />
+                </div>
+              )}
+
+
                 {selectedAdditive.approved ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                       <button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
