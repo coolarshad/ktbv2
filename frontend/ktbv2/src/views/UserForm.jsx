@@ -157,7 +157,7 @@ const UserForm = ({ mode }) => {
           return (
             <div key={module} className="mb-6 p-4 border rounded bg-gray-50">
               <div className="flex justify-between items-center mb-2">
-                <h4 className="font-semibold capitalize">{module.replace('_', ' ')}</h4>
+                <h4 className="font-semibold capitalize">{module.replace('_', ' ').toUpperCase()?.replace('_', ' ')?.replace('_', ' ')}</h4>
                 <button
                   type="button"
                   onClick={() => toggleAllInModule(perms, !allSelected)}

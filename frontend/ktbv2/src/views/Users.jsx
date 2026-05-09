@@ -41,6 +41,7 @@ const Users = () => {
   const groupedPermissions = allPermissions.reduce((acc, perm) => {
     const parts = perm.code.split('_');
     const module = parts.slice(1).join('_');
+    console.log(module, acc);
     if (!acc[module]) acc[module] = [];
     acc[module].push(perm);
     return acc;
@@ -170,7 +171,7 @@ const Users = () => {
                 return (
                   <div key={module} className="mb-6 p-4 border rounded bg-gray-50">
                     <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-semibold capitalize">{module.replace('_', ' ')}</h4>
+                      <h4 className="font-semibold capitalize">{module.toUpperCase().replace('_', ' ')?.replace('_', ' ')?.replace('_', ' ')}</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       {perms.map(perm => (
