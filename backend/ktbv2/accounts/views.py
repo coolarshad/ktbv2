@@ -5,10 +5,11 @@ from trademgt.models import Trade, PreSalePurchase, SalesPurchase, PaymentFinanc
 from costmgt.models import FinalProduct, Additive, RawMaterial, ConsumptionFormula, Packing, Category
 from notifications.models import Notification
 # Create your views here.
-from rest_framework import generics
-from accounts.models import CustomUser, Permission
-from .serializers import PermissionSerializer, UserSerializer
-from rest_framework.permissions import BasePermission
+from rest_framework import generics, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from accounts.models import CustomUser, Permission, ActivityLog
+from .serializers import PermissionSerializer, UserSerializer, UserProfileSerializer, ChangePasswordSerializer, ActivityLogSerializer
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 class HasPermission(BasePermission):
     def has_permission(self, request, view):
@@ -120,3 +121,47 @@ class DashboardAPIView(APIView):
                 'recent_notifications': list(recent_notifications)
             }
         })
+
+class UserProfileAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        return self.request.user
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            user.set_password(serializer.validated_data.get("new_password"))
+            user.save()
+            return Response({"detail": "Password successfully updated."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AdminPasswordResetAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user_id = kwargs.get('pk')
+        try:
+            target_user = CustomUser.objects.get(pk=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            target_user.set_password(serializer.validated_data.get("new_password"))
+            target_user.save()
+            return Response({"detail": f"Password successfully reset for {target_user.email}."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ActivityLogListAPIView(generics.ListAPIView):
+    queryset = ActivityLog.objects.all().order_by('-timestamp')
+    serializer_class = ActivityLogSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['actor', 'action']
+    search_fields = ['resource', 'actor__name', 'actor__email']

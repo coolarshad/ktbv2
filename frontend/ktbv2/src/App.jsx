@@ -71,17 +71,38 @@ import RawConsumption from './views/RawConsumption';
 import PackingConsumption from './views/PackingConsumption';
 
 import NotificationCenter from './views/NotificationCenter';
+import Profile from './views/Profile';
+import Logs from './views/Logs';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './views/Login';
 
-function App() {
- 
+const MainLayout = ({ children }) => {
   return (
-    <Router>
-      <div className="flex w-screen h-screen overflow-hidden bg-gray-50">
-        <Sidebar />
-        <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-          <Topbar />
-          <main className="w-full flex-grow">
-            <Routes>
+    <div className="flex w-screen h-screen overflow-hidden bg-gray-50">
+      <Sidebar />
+      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+        <Topbar />
+        <main className="w-full flex-grow">
+          {children}
+          <ToastContainer position="top-right" autoClose={3000} />
+        </main>
+      </div>
+    </div>
+  );
+};
+
+const ProtectedRoutes = () => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div className="h-screen w-screen flex items-center justify-center">Loading...</div>;
+  
+  if (!user) {
+    return <Login />;
+  }
+
+  return (
+    <MainLayout>
+      <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/trade-approval" element={<TradeApproval />} />
@@ -177,11 +198,22 @@ function App() {
           <Route path="/user-form/:id" element={<UserForm mode="update" />} />
 
           <Route path="/packing-size" element={<PackingSize />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/logs" element={<Logs />} />
         </Routes>
-            <ToastContainer position="top-right" autoClose={3000} />
-          </main>
-        </div>
-      </div>
+    </MainLayout>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<ProtectedRoutes />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   )
 }

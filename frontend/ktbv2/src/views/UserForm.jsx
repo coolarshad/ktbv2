@@ -18,6 +18,8 @@ const UserForm = ({ mode }) => {
   const [allPermissions, setAllPermissions] = useState([]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   // 🔹 Fetch all permissions
   useEffect(() => {
@@ -113,6 +115,25 @@ const UserForm = ({ mode }) => {
       });
   };
 
+  // 🔹 Reset Password Handler
+  const handleResetPassword = async () => {
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long.');
+      return;
+    }
+
+    setResettingPassword(true);
+    try {
+      await axios.post(`/accounts/users/${userId}/reset-password/`, { new_password: newPassword });
+      toast.success('Password successfully reset.');
+      setNewPassword('');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to reset password.');
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   if (loading) return <p className="text-center mt-10 text-gray-500">Loading user data...</p>;
 
   const allSelectedGlobally = allPermissions.length > 0 && allPermissions.every(p => selectedPermissions.includes(p.id));
@@ -186,6 +207,34 @@ const UserForm = ({ mode }) => {
       <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
         {userId ? 'Update User' : 'Create User'}
       </button>
+
+      {/* Admin Password Reset Section */}
+      {userId && (
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h3 className="text-xl font-semibold mb-4 text-gray-800">Danger Zone</h3>
+          <div className="bg-red-50 p-4 rounded border border-red-100 flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 w-full">
+              <label className="block mb-1 font-medium text-red-800">Password Reset</label>
+              <input
+                type="password"
+                placeholder="Enter new password (min 8 chars)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border border-red-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+                minLength={8}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleResetPassword}
+              disabled={resettingPassword}
+              className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition disabled:opacity-50 h-[42px]"
+            >
+              {resettingPassword ? 'Resetting...' : 'Force Reset Password'}
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   );
 };

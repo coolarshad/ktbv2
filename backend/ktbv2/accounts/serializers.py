@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, Permission
+from .models import CustomUser, Permission, ActivityLog
 from rest_framework.generics import ListAPIView
 from .models import Permission
 
@@ -39,3 +39,19 @@ class UserSerializer(serializers.ModelSerializer):
         if permissions is not None:
             instance.permissions.set(permissions)
         return instance
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'name', 'email', 'phone', 'designation', 'role']
+        read_only_fields = ['id', 'email', 'role']  # Users typically shouldn't change their own role or email directly here
+
+class ChangePasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True, min_length=8)
+
+class ActivityLogSerializer(serializers.ModelSerializer):
+    actor_name = serializers.CharField(source='actor.name', read_only=True)
+    
+    class Meta:
+        model = ActivityLog
+        fields = ['id', 'actor', 'actor_name', 'action', 'resource', 'ip_address', 'timestamp', 'details']

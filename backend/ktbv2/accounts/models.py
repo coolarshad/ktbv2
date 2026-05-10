@@ -51,3 +51,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+class ActivityLog(models.Model):
+    actor = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='activity_logs')
+    action = models.CharField(max_length=255)
+    resource = models.CharField(max_length=255)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    details = models.JSONField(null=True, blank=True) # Optional extra metadata
+
+    def __str__(self):
+        actor_name = self.actor.name if self.actor else "System"
+        return f"{actor_name} {self.action} {self.resource} at {self.timestamp}"

@@ -20,7 +20,8 @@ const NAV_ITEMS = [
     icon: <FaTachometerAlt />,
     links: [
       { name: 'Dashboard', path: '/' },
-      { name: 'Users', path: '/users' }
+      { name: 'Users', path: '/users' },
+      { name: 'Logs', path: '/logs' }
     ]
   },
   {
