@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import { BASE_URL } from '../utils';
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = async (accessToken) => {
     try {
-      const response = await axios.get('http://localhost:8000/accounts/profile/', {
+      const response = await axios.get(`${BASE_URL}/accounts/profile/`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       setUser(response.data);
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/token/', {
+      const response = await axios.post(`${BASE_URL}/api/token/`, {
         email,
         password,
       });
