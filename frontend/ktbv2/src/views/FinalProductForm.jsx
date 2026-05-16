@@ -433,12 +433,20 @@ export default function FinalProductForm({ mode = 'add' }) {
   const validateForm = () => {
     let newErrors = {};
 
-    // Main fields validation
+    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs', 'total_cfr_pricing', 'total_oil_consumed', 'qty_in_litres', 'litres_per_pack', 'bottles_per_pack'];
+    for (const [key, value] of Object.entries(formData)) {
+      if (!skipValidation.includes(key)) {
+        if (value === "" || value === "NaN" || value === null) {
+          newErrors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
+        }
+      }
+    }
+
     if (!formData.formula) newErrors.formula = "Formula is required";
     if (!formData.consumption) newErrors.consumption = "Consumption is required";
     if (!formData.batch) newErrors.batch = "Batch is required";
     if (!formData.packing_size) newErrors.packing_size = "Packing size is required";
-    if (!formData.total_qty) newErrors.total_qty = "Total quantity is required";
+    if (!formData.total_qty || formData.total_qty === "NaN") newErrors.total_qty = "Total quantity is required";
 
     // Packing items validation
     formData.packing_items.forEach((item, index) => {
@@ -448,10 +456,10 @@ export default function FinalProductForm({ mode = 'add' }) {
       if (!item.packing_selection)
         newErrors[`packing_selection_${index}`] = "Selected packing is required";
 
-      if (!item.qty || Number(item.qty) <= 0)
+      if (!item.qty || Number(item.qty) <= 0 || item.qty === "NaN")
         newErrors[`qty_${index}`] = "Qty must be greater than 0";
 
-      if (!item.rate || Number(item.rate) <= 0)
+      if (!item.rate || Number(item.rate) <= 0 || item.rate === "NaN")
         newErrors[`rate_${index}`] = "Rate must be greater than 0";
     });
 
@@ -460,7 +468,7 @@ export default function FinalProductForm({ mode = 'add' }) {
       if (!cost.name)
         newErrors[`cost_name_${index}`] = "Cost name is required";
 
-      if (!cost.rate || Number(cost.rate) <= 0)
+      if (!cost.rate || Number(cost.rate) <= 0 || cost.rate === "NaN")
         newErrors[`cost_rate_${index}`] = "Rate must be greater than 0";
     });
 
@@ -545,6 +553,7 @@ return (
           onChange={handleChange}
           className="border p-2 rounded w-full"
         />
+        {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
       </div>
 
       <div>
@@ -554,6 +563,7 @@ return (
           value={formData.formula}
           onChange={handleFormulaChange}
         />
+        {errors.formula && <p className="text-red-500 text-sm mt-1">{errors.formula}</p>}
       </div>
 
       <div>
@@ -562,6 +572,7 @@ return (
           value={formData.consumption}
           isDisabled
         />
+        {errors.consumption && <p className="text-red-500 text-sm mt-1">{errors.consumption}</p>}
       </div>
 
       <div>
@@ -588,6 +599,7 @@ return (
             }))
           }
         />
+        {errors.batch && <p className="text-red-500 text-sm mt-1">{errors.batch}</p>}
       </div>
 
       <div>
@@ -597,6 +609,7 @@ return (
           onChange={handleChange}
           className="border p-2 rounded w-full"
         />
+        {errors.consumption_qty && <p className="text-red-500 text-sm mt-1">{errors.consumption_qty}</p>}
       </div>
 
       <div>
@@ -605,6 +618,7 @@ return (
           value={formData.packing_size}
           isDisabled
         />
+        {errors.packing_size && <p className="text-red-500 text-sm mt-1">{errors.packing_size}</p>}
       </div>
 
       <div>
@@ -660,6 +674,7 @@ return (
           }}
           className="border p-2 rounded w-full"
         />
+        {errors.total_qty && <p className="text-red-500 text-sm mt-1">{errors.total_qty}</p>}
       </div>
 
       {/* <div>

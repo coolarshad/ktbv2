@@ -252,10 +252,13 @@ const AdditiveForm = ({ mode = 'add' }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-     let errors = {};
-    if (!formData.name || !formData.category) {
-      alert('Name and Category are required!');
-      return;
+    let errors = {};
+
+    const skipValidation = ['remarks', 'notifiedUsers', 'extras'];
+    for (const [key, value] of Object.entries(formData)) {
+      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+        errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
+      }
     }
 
     // Validate extras
@@ -269,8 +272,9 @@ const AdditiveForm = ({ mode = 'add' }) => {
     if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
       errors.notifiedUsers = 'At least one notification recipient must be selected!';
     }
-     if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
+    
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
     
@@ -348,6 +352,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
               </div>
             )}
           </div>
+          {validationErrors.category && <p className="text-red-500 text-sm mt-1">{validationErrors.category}</p>}
         </div>
 
         {/* Name */}
@@ -412,7 +417,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
               </div>
             )}
           </div>
-          {/* {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>} */}
+          {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
         </div>
 
         {/* Date */}
@@ -425,6 +430,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
         </div>
 
 
@@ -440,6 +446,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
             step={0.01}
           />
+          {validationErrors.crfPrice && <p className="text-red-500 text-sm mt-1">{validationErrors.crfPrice}</p>}
         </div>
 
         <div>
@@ -452,6 +459,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
             step={0.01}
           />
+          {validationErrors.addCost && <p className="text-red-500 text-sm mt-1">{validationErrors.addCost}</p>}
         </div>
 
         <div>
@@ -464,6 +472,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
             step={0.01}
           />
+          {validationErrors.costPriceInLiter && <p className="text-red-500 text-sm mt-1">{validationErrors.costPriceInLiter}</p>}
         </div>
 
         <div>
@@ -476,6 +485,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
             step={0.0001}
           />
+          {validationErrors.density && <p className="text-red-500 text-sm mt-1">{validationErrors.density}</p>}
         </div>
 
         <div>
@@ -488,6 +498,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
             className="border border-gray-300 p-2 rounded w-full"
             step={0.01}
           />
+          {validationErrors.totalCost && <p className="text-red-500 text-sm mt-1">{validationErrors.totalCost}</p>}
         </div>
 
         <div>

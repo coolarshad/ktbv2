@@ -13,6 +13,7 @@ const UserForm = ({ mode }) => {
     phone: '',
     designation: '',
     role: '',
+    reports_to: '',
   });
 
   const [allPermissions, setAllPermissions] = useState([]);
@@ -20,11 +21,16 @@ const UserForm = ({ mode }) => {
   const [loading, setLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [resettingPassword, setResettingPassword] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
 
-  // 🔹 Fetch all permissions
+  // 🔹 Fetch all permissions and users
   useEffect(() => {
     axios.get("/accounts/permissions/")
       .then(res => setAllPermissions(res.data))
+      .catch(err => console.error(err));
+      
+    axios.get("/accounts/users/")
+      .then(res => setAllUsers(res.data))
       .catch(err => console.error(err));
   }, []);
 
@@ -42,6 +48,7 @@ const UserForm = ({ mode }) => {
           phone: data.phone || '',
           designation: data.designation || '',
           role: data.role || '',
+          reports_to: data.reports_to || '',
         });
 
         // Extract permission IDs from data.permissions
@@ -146,7 +153,7 @@ const UserForm = ({ mode }) => {
 
       {/* Basic Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {['name', 'email', 'phone', 'designation', 'role'].map(field => (
+        {['name', 'email', 'phone', 'designation'].map(field => (
           <div key={field}>
             <label className="block mb-1 font-medium">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
             <input
@@ -158,6 +165,42 @@ const UserForm = ({ mode }) => {
             />
           </div>
         ))}
+        
+        <div>
+          <label className="block mb-1 font-medium">Role</label>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+          >
+            <option value="">Select Role</option>
+            <option value="Manager2">Manager2</option>
+            <option value="Manager1">Manager1</option>
+            <option value="Accountant">Accountant</option>
+            <option value="Operator">Operator</option>
+            <option value="Admin">Admin</option>
+            <option value="Chemist">Chemist</option>
+            <option value="Viewer">Viewer</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block mb-1 font-medium">Reports To (Manager)</label>
+          <select
+            name="reports_to"
+            value={formData.reports_to || ''}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+          >
+            <option value="">None (Top Level)</option>
+            {allUsers.map(u => (
+              u.id.toString() !== userId?.toString() && (
+                <option key={u.id} value={u.id}>{u.name || u.email}</option>
+              )
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Permissions Section */}

@@ -193,18 +193,17 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));
   };
 
-  let errors = {};
   const handleSubmit = (e) => {
     e.preventDefault();
+    let errors = {};
 
-    if (!formData.name) {
-      setValidationErrors({ name: 'Name is required' });
-      return;
+    const skipValidation = ['remarks', 'notifiedUsers', 'extras'];
+    for (const [key, value] of Object.entries(formData)) {
+      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+        errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
+      }
     }
-    if (!formData.category) {
-      setValidationErrors({ category: 'Category is required' });
-      return;
-    }
+
     // Validate extras
     formData.extras.forEach((extra, index) => {
       if (!extra.name.trim() || extra.rate === "") {
@@ -217,8 +216,8 @@ const RawMaterialForm = ({ mode = 'add' }) => {
       errors.notifiedUsers = 'At least one notification recipient must be selected!';
     }
 
+    setValidationErrors(errors);
     if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
       return;
     }
 
@@ -315,6 +314,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
         </div>
 
 
@@ -452,6 +452,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.buy_price_pmt && <p className="text-red-500 text-sm mt-1">{validationErrors.buy_price_pmt}</p>}
         </div>
 
         <div>
@@ -463,6 +464,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.add_cost && <p className="text-red-500 text-sm mt-1">{validationErrors.add_cost}</p>}
         </div>
 
         <div>
@@ -474,6 +476,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.total && <p className="text-red-500 text-sm mt-1">{validationErrors.total}</p>}
         </div>
 
         <div>
@@ -485,6 +488,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.density && <p className="text-red-500 text-sm mt-1">{validationErrors.density}</p>}
         </div>
 
         <div>
@@ -496,6 +500,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.ml_to_kl && <p className="text-red-500 text-sm mt-1">{validationErrors.ml_to_kl}</p>}
         </div>
 
         <div>
@@ -507,6 +512,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             onChange={handleChange}
             className="border border-gray-300 p-2 rounded w-full"
           />
+          {validationErrors.cost_per_liter && <p className="text-red-500 text-sm mt-1">{validationErrors.cost_per_liter}</p>}
         </div>
 
 

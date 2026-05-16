@@ -31,15 +31,43 @@ instance.interceptors.response.use(
         // Any status code that lie within the range of 2xx cause this function to trigger
         return response;
     },
-    function (error) {
+    async function (error) {
+        const originalRequest = error.config;
+        
         // Any status codes that falls outside the range of 2xx cause this function to trigger
-        if (error.response && error.response.status === 401) {
-            // Unauthorized, maybe token expired
-            // Clear local storage and redirect to login if not already on login page
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const refreshToken = localStorage.getItem('refresh_token');
+            
+            if (refreshToken) {
+                try {
+                    // Use standard axios to avoid interceptor loop
+                    const response = await axios.post(`${BACKEND_URL}/api/token/refresh/`, {
+                        refresh: refreshToken
+                    });
+                    
+                    const newAccessToken = response.data.access;
+                    localStorage.setItem('access_token', newAccessToken);
+                    
+                    // Update header for the retry
+                    originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken;
+                    return instance(originalRequest);
+                } catch (refreshError) {
+                    // Refresh token is expired or invalid
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    if (window.location.pathname !== '/login') {
+                        window.location.href = '/login';
+                    }
+                    return Promise.reject(refreshError);
+                }
+            } else {
+                // No refresh token available
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
             }
         }
         return Promise.reject(error);

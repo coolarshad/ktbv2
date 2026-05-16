@@ -1,4 +1,5 @@
 # serializers.py
+import math
 from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
 from .models import *
@@ -174,6 +175,22 @@ class TradeSerializer(serializers.ModelSerializer):
         ret['currency'] = self.get_currency_details(instance)
         ret['paymentTerm'] = self.get_payment_term_details(instance)
         # ret['shipmentSize'] = self.get_container_details(instance)
+        
+        # Detect broken records (NaN or Inf)
+        ret['is_broken_record'] = False
+        def clean_nans(d):
+            if isinstance(d, dict):
+                for k, v in list(d.items()):
+                    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+                        d[k] = "NaN"
+                        ret['is_broken_record'] = True
+                    elif isinstance(v, (dict, list)):
+                        clean_nans(v)
+            elif isinstance(d, list):
+                for item in d:
+                    clean_nans(item)
+        
+        clean_nans(ret)
         
         return ret
 

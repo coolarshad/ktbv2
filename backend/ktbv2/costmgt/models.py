@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from django.conf import settings
 from trademgt.models import Packing
 # Create your models here.
 
@@ -64,6 +65,8 @@ class Packing(models.Model):
     )
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
+    per_litre_cost = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         verbose_name = _("Packing")
@@ -117,7 +120,8 @@ class RawMaterial(models.Model):
     add_cost = models.FloatField(null=True,blank=True)
     total = models.FloatField(null=True,blank=True)
     ml_to_kl = models.FloatField(null=True,blank=True)
-    density = models.FloatField(null=True,blank=True)
+    density = models.FloatField(null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.ForeignKey(
         RawCategory,
         on_delete=models.SET_NULL,
@@ -190,6 +194,7 @@ class Additive(models.Model):
     totalCost=models.FloatField()
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
 
     category = models.ForeignKey(
@@ -238,6 +243,7 @@ class ConsumptionFormula(models.Model):
     ref=models.CharField(max_length=50,unique=True, editable=False)
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
 
     class Meta:
@@ -315,6 +321,8 @@ class Consumption(models.Model):
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
     batch=models.CharField(max_length=50,null=True,blank=True)
+    supplier_address = models.CharField(max_length=200, null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
 
     class Meta:
@@ -379,6 +387,7 @@ class ProductFormula(models.Model):
     # litre_per_pack=models.FloatField()
     remarks=models.CharField(max_length=100,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         verbose_name = _("ProductFormula")
@@ -461,6 +470,7 @@ class FinalProduct(models.Model):
     remarks = models.TextField(null=True, blank=True)
 
     approved = models.BooleanField(default=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -482,6 +492,8 @@ class FinalProductPackingItem(models.Model):
     rate = models.FloatField(default=0)
     value = models.FloatField(default=0)
     total_qty = models.FloatField(default=0)
+    total_c_f = models.DecimalField(max_digits=15, decimal_places=4, default=0.0)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     total_value = models.FloatField(default=0)
 
     class Meta:

@@ -157,21 +157,34 @@ const ProductFormulaForm = ({ mode = "add" }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         let errors = {};
-        const payload = {
-            ...formData,
-            consumption_qty: Number(formData.consumption_qty),
-            // bottle_per_pack: Number(formData.bottle_per_pack),
-            // litre_per_pack: Number(formData.litre_per_pack),
-        };
+
+        const skipValidation = ['remarks', 'notifiedUsers', 'attributes'];
+        for (const [key, value] of Object.entries(formData)) {
+            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+                errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
+            }
+        }
+
+        formData.attributes.forEach((item, index) => {
+            if (!item.packing_type || !item.packing_label || item.qty === "" || item.qty === null || item.qty === "NaN") {
+                errors[`attributes_${index}`] = "Packing type, label and qty are required!";
+            }
+        });
 
         // Validate notifiedUsers
         if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
             errors.notifiedUsers = 'At least one notification recipient must be selected!';
         }
+        
+        setValidationErrors(errors);
         if (Object.keys(errors).length > 0) {
-            setValidationErrors(errors);
             return;
         }
+
+        const payload = {
+            ...formData,
+            consumption_qty: Number(formData.consumption_qty),
+        };
         const apiCall = mode === "add" ? axios.post : axios.put;
         const url =
             mode === "add"
@@ -199,6 +212,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                         onChange={handleChange}
                         className="border p-2 rounded w-full"
                     />
+                    {validationErrors.formula_name && <p className="text-red-500 text-sm mt-1">{validationErrors.formula_name}</p>}
                 </div>
 
                 <div>
@@ -210,6 +224,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                             handleChange({ target: { name: "consumption_name", value: opt?.value || "" } })
                         }
                     />
+                    {validationErrors.consumption_name && <p className="text-red-500 text-sm mt-1">{validationErrors.consumption_name}</p>}
                 </div>
 
                 <div>
@@ -221,6 +236,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                         onChange={handleChange}
                         className="border p-2 rounded w-full"
                     />
+                    {validationErrors.consumption_qty && <p className="text-red-500 text-sm mt-1">{validationErrors.consumption_qty}</p>}
                 </div>
 
                 <div>
@@ -230,6 +246,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                         value={packingSizeOptions.find(o => o.value === formData.packing_type)}
                         onChange={handlePackingChange}
                     />
+                    {validationErrors.packing_type && <p className="text-red-500 text-sm mt-1">{validationErrors.packing_type}</p>}
                 </div>
 
                 {/* <div>
@@ -305,6 +322,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                             Delete
                         </button>
                     </div>
+                    {validationErrors[`attributes_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`attributes_${index}`]}</p>}
                     {/* <div>
                         <button
                             type="button"

@@ -77,13 +77,15 @@ useEffect(() => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     let errors = {};
 
-    if (!formData.name) {
-      errors.name = "Category name cannot be empty!";
+    const skipValidation = [];
+    for (const [key, value] of Object.entries(formData)) {
+      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+        errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+      }
     }
 
     setValidationErrors(errors);
@@ -210,6 +212,9 @@ useEffect(() => {
               )}
             </div>
           </div>
+          {validationErrors.parent && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.parent}</p>
+          )}
         </div>
       </div>
 

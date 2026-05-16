@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -8,6 +9,8 @@ logger = logging.getLogger(__name__)
 # Create your models here.
 class Trade(models.Model):
     TRADE_TYPES = [('Sales', 'Sales'), ('Purchase', 'Purchase')]
+    
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     
     company=models.CharField(_("company"), max_length=100)
     trd=models.DateField(_("trd"), auto_now=False, auto_now_add=False)  #actual trade entry date
@@ -285,6 +288,7 @@ class PaymentTerm(models.Model):
 
 
 class PreSalePurchase(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
     # trn=models.CharField(_("trn"), max_length=50)
@@ -367,6 +371,7 @@ class DocumentsRequired(models.Model):
 
 
 class PrePayment(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
     # adv_due_date=models.CharField(_("adv_due_date"), max_length=50)
     # as_per_pi_advance=models.CharField(_("as_per_pi_advance"), max_length=50)
@@ -444,6 +449,7 @@ class AdvanceTTCopy(models.Model):
 
 
 class SalesPurchase(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     trn=models.ForeignKey("Trade", verbose_name=_("trn"), on_delete=models.CASCADE)
     invoice_date=models.DateField(_("invoice_date"), auto_now=False, auto_now_add=False)
     invoice_number=models.CharField(_("invoice_number"), max_length=50)
@@ -589,6 +595,7 @@ class COA(models.Model):
 
 
 class PaymentFinance(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     sp=models.ForeignKey("SalesPurchase",related_name='pfs', on_delete=models.CASCADE)
     # balance_payment=models.FloatField(_("balance_payment"),null=True)
     balance_payment_received=models.FloatField(_("balance_payment_received"),null=True)
@@ -652,6 +659,7 @@ class PFCharges(models.Model):
 
 
 class Kyc(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     date=models.CharField(max_length=255)
     name=models.CharField(max_length=255)
     companyRegNo=models.CharField(max_length=255)
@@ -767,6 +775,7 @@ class TradeProductRef(models.Model):
 #         return reverse("SalesProductTrace_detail", kwargs={"pk": self.pk})
 
 class TradePending(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     TRADE_TYPES = [('Sales', 'Sales'), ('Purchase', 'Purchase')]
 
     trn = models.ForeignKey('Trade', related_name='trade_pending_products', on_delete=models.CASCADE)
@@ -925,8 +934,6 @@ class Company(models.Model):
                 if counter_value > self.counter:
                     self.counter = counter_value
                     self.save()
-                else:
-                    raise ValueError("Provided counter is not greater than the current counter.")
             else:
                 raise ValueError("Initials do not match.")
         except ValueError as e:
@@ -1037,6 +1044,7 @@ class Packing(models.Model):
 
 
 class PL(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     sales_trn=models.ForeignKey("SalesPurchase",related_name='sales_trn', verbose_name=_("sales_trn"), on_delete=models.CASCADE)
     purchase_trn=models.ForeignKey("SalesPurchase",related_name='purchase_trn', verbose_name=_("purchase_trn"), on_delete=models.CASCADE)
     remarks=models.CharField(_("100"), max_length=50)

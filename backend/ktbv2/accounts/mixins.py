@@ -1,0 +1,36 @@
+from django.db import models
+
+
+def get_authorized_queryset(request, queryset):
+    user = request.user
+    if not user.is_authenticated:
+        return queryset.none()
+    
+    if user.role == 'Manager2' or user.is_superuser:
+        return queryset
+
+    subordinate_ids = set()
+    def get_subordinates(u):
+        subs = u.subordinates.all()
+        for sub in subs:
+            if sub.id not in subordinate_ids:
+                subordinate_ids.add(sub.id)
+                get_subordinates(sub)
+                
+    get_subordinates(user)
+    return queryset.filter(created_by_id__in=[user.id] + list(subordinate_ids))
+
+class HierarchicalSecurityMixin:
+    """
+    Mixin for ViewSets to enforce Row-Level Security based on management hierarchy.
+    """
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return get_authorized_queryset(self.request, qs)
+
+    def perform_create(self, serializer):
+        # Automatically assign created_by to the current user
+        if hasattr(serializer.Meta.model, 'created_by'):
+            serializer.save(created_by=self.request.user)
+        else:
+            serializer.save()

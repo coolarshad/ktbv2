@@ -127,9 +127,9 @@ const PackingForm = ({ mode = "add" }) => {
     let errors = {};
     console.log(formData)
     // Validate main fields
-    const skipValidation = [];
+    const skipValidation = ["remarks", "notifiedUsers"];
     for (const [key, value] of Object.entries(formData)) {
-      if (!skipValidation.includes(key) && value === "" && key !== "extras") {
+      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== "extras") {
         errors[key] = `${capitalizeKey(key)} cannot be empty!`;
       }
     }
@@ -268,6 +268,9 @@ const PackingForm = ({ mode = "add" }) => {
             isSearchable
             isClearable
           />
+          {validationErrors.packing_type && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.packing_type}</p>
+          )}
         </div>
 
         <div className="col-span-1 md:col-span-2">

@@ -12,10 +12,11 @@ from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
 from notifications.services import NotificationService
 from accounts.models import CustomUser
+from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
 # Create your views here.
 
 
-actor=CustomUser.objects.first()
+actor = None
 
 class NotificationViewSetMixin:
     notification_verb = "Record"
@@ -64,7 +65,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = CategoryFilter
 
-class PackingViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+class PackingViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewsets.ModelViewSet):
     notification_verb = "Packing Price"
     notification_target_url = "/packings"
 
@@ -92,7 +93,7 @@ class RawCategoryViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class RawMaterialViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+class RawMaterialViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewsets.ModelViewSet):
     notification_verb = "Raw Material Pricing"
     notification_target_url = "/raw-materials"
 
@@ -117,7 +118,7 @@ class AdditiveCategoryViewSet(viewsets.ModelViewSet):
 
         return qs
 
-class AdditiveViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+class AdditiveViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewsets.ModelViewSet):
     notification_verb = "Additive Pricing"
     notification_target_url = "/additives"
 
@@ -184,7 +185,7 @@ class ConsumptionFormulaView(APIView):
             return Response(response_data)
 
         else:  # If `pk` is not provided, list all trades
-            queryset = ConsumptionFormula.objects.all()
+            queryset = get_authorized_queryset(request, ConsumptionFormula.objects.all())
             filterset = ConsumptionFormulaFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -232,7 +233,7 @@ class ConsumptionFormulaView(APIView):
         with transaction.atomic():
             c_serializer = ConsumptionFormulaSerializer(data=c_data)
             if c_serializer.is_valid():
-                consumption = c_serializer.save()
+                consumption = c_serializer.save(created_by=request.user)
             else:
                 return Response(c_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
@@ -403,7 +404,7 @@ class ConsumptionView(APIView):
             return Response(response_data)
 
         else:  # If `pk` is not provided, list all trades
-            queryset = Consumption.objects.all()
+            queryset = get_authorized_queryset(request, Consumption.objects.all())
             filterset = ConsumptionFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -464,7 +465,7 @@ class ConsumptionView(APIView):
         with transaction.atomic():
             c_serializer = ConsumptionSerializer(data=c_data)
             if c_serializer.is_valid():
-                consumption = c_serializer.save()
+                consumption = c_serializer.save(created_by=request.user)
             else:
                 return Response(c_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
@@ -623,7 +624,7 @@ class ConsumptionView(APIView):
 
 
 
-class FinalProductViewSet(NotificationViewSetMixin, viewsets.ModelViewSet):
+class FinalProductViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewsets.ModelViewSet):
     notification_verb = "Final Product Cost"
     notification_target_url = "/final-products"
 
@@ -965,7 +966,7 @@ class ProductFormulaView(APIView):
             return Response(response_data)
 
    
-        queryset = ProductFormula.objects.all()
+        queryset = get_authorized_queryset(request, ProductFormula.objects.all())
         filterset = ProductFormulaFilter(request.GET, queryset=queryset)
 
         if not filterset.is_valid():
@@ -1008,7 +1009,7 @@ class ProductFormulaView(APIView):
         with transaction.atomic():
             p_serializer = ProductFormulaSerializer(data=c_data)
             if p_serializer.is_valid():
-                p_formula = p_serializer.save()
+                p_formula = p_serializer.save(created_by=request.user)
             else:
                 return Response(p_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             

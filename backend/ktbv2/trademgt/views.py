@@ -10,13 +10,13 @@ from .serializers import *
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
-import logging
 import pandas as pd
 from datetime import date
 from django.conf import settings
 from accounts.models import CustomUser
 from .utils.email_service import send_async_email
 from notifications.services import NotificationService
+from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
 
 BATCH_SIZE = getattr(settings, 'TRADE_PRODUCT_BATCH_SIZE', 100)
 
@@ -31,7 +31,7 @@ def negate_trade_type(trade_type):
     else:
         return 'Unknown'
     
-actor=CustomUser.objects.first()
+actor = None
 class TradeView(APIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradeFilter
@@ -62,7 +62,7 @@ class TradeView(APIView):
             # trades = Trade.objects.all()
             # serializer = TradeSerializer(trades, many=True)
             # return Response(serializer.data)
-            queryset = Trade.objects.all()
+            queryset = get_authorized_queryset(request, Trade.objects.all())
             filterset = TradeFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -179,7 +179,7 @@ class TradeView(APIView):
         with transaction.atomic():
             trade_serializer = TradeSerializer(data=trade_data)
             if trade_serializer.is_valid():
-                trade = trade_serializer.save()
+                trade = trade_serializer.save(created_by=request.user)
                 body=f"Trade created {trade.trn}"
                 subject="KTB Notification"
             else:
@@ -671,8 +671,8 @@ class PreSalePurchaseView(APIView):
 
             return Response(response_data)
 
-        else:  # If `pk` is not provided, list all PreSalePurchase entries
-            queryset = PreSalePurchase.objects.all()
+        else:
+            queryset = get_authorized_queryset(request, PreSalePurchase.objects.all())
             filterset = PreSalePurchaseFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -750,7 +750,7 @@ class PreSalePurchaseView(APIView):
         with transaction.atomic():
             pre_sp_serializer = PreSalePurchaseSerializer(data=pre_sp_data)
             if pre_sp_serializer.is_valid():
-                pre_sp = pre_sp_serializer.save()
+                pre_sp = pre_sp_serializer.save(created_by=request.user)
             else:
                 return Response(pre_sp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
@@ -997,8 +997,8 @@ class PrePaymentView(APIView):
 
             return Response(response_data)
 
-        else:  # If `pk` is not provided, list all trades
-            queryset = PrePayment.objects.all()
+        else:
+            queryset = get_authorized_queryset(request, PrePayment.objects.all())
             filterset = PrePaymentFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -1063,7 +1063,7 @@ class PrePaymentView(APIView):
         with transaction.atomic():
             prepayment_serializer = PrePaymentSerializer(data=prepayment_data)
             if prepayment_serializer.is_valid():
-                prepayment = prepayment_serializer.save()
+                prepayment = prepayment_serializer.save(created_by=request.user)
             else:
                 return Response(prepayment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
@@ -1362,8 +1362,8 @@ class SalesPurchaseView(APIView):
 
             return Response(response_data)
 
-        else:  # If `pk` is not provided, list all trades
-            queryset = SalesPurchase.objects.all()
+        else:
+            queryset = get_authorized_queryset(request, SalesPurchase.objects.all())
             filterset = SalesPurchaseFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -1454,7 +1454,7 @@ class SalesPurchaseView(APIView):
         with transaction.atomic():
             sp_serializer = SalesPurchaseSerializer(data=sp_data)
             if sp_serializer.is_valid():
-                sp = sp_serializer.save()
+                sp = sp_serializer.save(created_by=request.user)
             else:
                 return Response(sp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
@@ -1964,8 +1964,8 @@ class PaymentFinanceView(APIView):
             response_data['ttCopies'] = tt_copies_serializer.data
             return Response(response_data)
 
-        else:  # If `pk` is not provided, list all trades
-            queryset = PaymentFinance.objects.all()
+        else:
+            queryset = get_authorized_queryset(request, PaymentFinance.objects.all())
             filterset = PaymentFinanceFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -2025,7 +2025,7 @@ class PaymentFinanceView(APIView):
         with transaction.atomic():
             pf_serializer = PaymentFinanceSerializer(data=pf_data)
             if pf_serializer.is_valid():
-                pf = pf_serializer.save()
+                pf = pf_serializer.save(created_by=request.user)
             else:
                 return Response(pf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             prepayment = PrePayment.objects.filter(trn=pf.sp.trn).first()
@@ -2250,7 +2250,7 @@ class PFReview(APIView):
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
 
-class KycViewSet(viewsets.ModelViewSet):
+class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     queryset = Kyc.objects.all()
     serializer_class = KycSerializer
     filter_backends = [DjangoFilterBackend]
@@ -2352,7 +2352,7 @@ class TradeProductRefViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradeProductRefFilter
    
-class TradePendingViewSet(viewsets.ModelViewSet):
+class TradePendingViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     queryset = TradePending.objects.all()
     serializer_class = TradePendingSerializer
     filter_backends = [DjangoFilterBackend]
@@ -2537,7 +2537,7 @@ class RefProductCodeView(APIView):
         return Response(serializer.data)
 
       
-class ProfitLossViewSet(viewsets.ModelViewSet):
+class ProfitLossViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     queryset = PL.objects.all()
     serializer_class = ProfitLossSerializer
     filter_backends = [DjangoFilterBackend]
@@ -2557,7 +2557,7 @@ class PLView(APIView):
             response_data = trade_serializer.data
             return Response(response_data)
         else:  # If `pk` is not provided, list all trades
-            trades = SalesPurchase.objects.all()
+            trades = get_authorized_queryset(request, SalesPurchase.objects.all())
             serializer = PLSerializer(trades, many=True)
             return Response(serializer.data)
         

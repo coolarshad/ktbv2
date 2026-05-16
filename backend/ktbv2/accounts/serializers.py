@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'name', 'email', 'phone', 'designation', 'role', 'permissions', 'permission_ids']
+        fields = ['id', 'name', 'email', 'phone', 'designation', 'role', 'reports_to', 'permissions', 'permission_ids']
 
     def create(self, validated_data):
         permissions = validated_data.pop('permissions', None)

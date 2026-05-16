@@ -540,6 +540,36 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         let errors = {};
+
+        const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil', 'alias', 'batch'];
+        for (const [key, value] of Object.entries(formData)) {
+            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+                errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
+            }
+        }
+
+        formData.consumptionAdditive.forEach((item, index) => {
+            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === "NaN") {
+                errors[`consumptionAdditive_${index}`] = "Both name and qty in percent are required!";
+            }
+        });
+
+        formData.consumptionBaseOil.forEach((item, index) => {
+            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === "NaN") {
+                errors[`consumptionBaseOil_${index}`] = "Both name and qty in percent are required!";
+            }
+        });
+
+        // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
+        
+        setValidationErrors(errors);
+        if (Object.keys(errors).length > 0) {
+            return;
+        }
+
         const formDataToSend = new FormData();
 
         for (const [key, value] of Object.entries(formData)) {
@@ -558,14 +588,6 @@ const ConsumptionForm = ({ mode = 'add' }) => {
             } else {
                 formDataToSend.append(key, value || '');
             }
-        }
-        // Validate notifiedUsers
-        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
-            errors.notifiedUsers = 'At least one notification recipient must be selected!';
-        }
-        if (Object.keys(errors).length > 0) {
-            setValidationErrors(errors);
-            return;
         }
 
         const apiCall = mode === 'add' ? axios.post : axios.put;
@@ -637,6 +659,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
                 </div>
 
                 {/* Name Input */}
@@ -659,6 +682,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         isSearchable
                         isClearable
                     />
+                    {validationErrors.alias && <p className="text-red-500 text-sm mt-1">{validationErrors.alias}</p>}
                 </div>
 
                 <div>
@@ -678,6 +702,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         isSearchable
                         isClearable
                     />
+                    {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
                 </div>
 
                 <div>
@@ -690,6 +715,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.batch && <p className="text-red-500 text-sm mt-1">{validationErrors.batch}</p>}
                 </div>
                 {/* Grade Input */}
                 <div>
@@ -731,6 +757,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                         step={0.0001}
                     />
+                    {validationErrors.net_blending_qty && <p className="text-red-500 text-sm mt-1">{validationErrors.net_blending_qty}</p>}
                 </div>
 
                 {/* Gross Vol Crosscheck Input */}
@@ -746,6 +773,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         step={0.0001}
                         readOnly
                     />
+                    {validationErrors.gross_vol_crosscheck && <p className="text-red-500 text-sm mt-1">{validationErrors.gross_vol_crosscheck}</p>}
                 </div>
 
                 {/* Cross Check Input */}
@@ -760,6 +788,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                         readOnly
                     />
+                    {validationErrors.cross_check && <p className="text-red-500 text-sm mt-1">{validationErrors.cross_check}</p>}
                 </div>
 
 

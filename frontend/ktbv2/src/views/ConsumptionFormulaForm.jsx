@@ -109,7 +109,37 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-         let errors = {};
+        let errors = {};
+
+        const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil'];
+        for (const [key, value] of Object.entries(formData)) {
+            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+                errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
+            }
+        }
+
+        formData.consumptionAdditive.forEach((item, index) => {
+            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null) {
+                errors[`consumptionAdditive_${index}`] = "Both name and qty in percent are required!";
+            }
+        });
+
+        formData.consumptionBaseOil.forEach((item, index) => {
+            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null) {
+                errors[`consumptionBaseOil_${index}`] = "Both name and qty in percent are required!";
+            }
+        });
+
+        // Validate notifiedUsers
+        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+            errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
+
+        setValidationErrors(errors);
+        if (Object.keys(errors).length > 0) {
+            return;
+        }
+
         const formDataToSend = new FormData();
 
         for (const [key, value] of Object.entries(formData)) {
@@ -122,16 +152,6 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
             } else {
                 formDataToSend.append(key, value);
             }
-        }
-
-        // Validate notifiedUsers
-        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
-            errors.notifiedUsers = 'At least one notification recipient must be selected!';
-        }
-
-        if (Object.keys(errors).length > 0) {
-            setValidationErrors(errors);
-            return;
         }
 
         const apiCall = mode === 'add' ? axios.post : axios.put;
@@ -191,6 +211,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
                 </div>
 
                 {/* Name Input */}
@@ -204,6 +225,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
                 </div>
 
                 {/* Grade Input */}
@@ -217,6 +239,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.grade && <p className="text-red-500 text-sm mt-1">{validationErrors.grade}</p>}
                 </div>
 
                 {/* SAE Input */}
@@ -230,6 +253,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                     />
+                    {validationErrors.sae && <p className="text-red-500 text-sm mt-1">{validationErrors.sae}</p>}
                 </div>
 
                 {/* Remarks Input */}
@@ -301,6 +325,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
+                            {validationErrors[`consumptionAdditive_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditive_${index}`]}</p>}
                         </div>
 
 
@@ -387,6 +412,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
+                            {validationErrors[`consumptionBaseOil_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOil_${index}`]}</p>}
                         </div>
 
 

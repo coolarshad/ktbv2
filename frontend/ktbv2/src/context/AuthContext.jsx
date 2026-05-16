@@ -20,6 +20,9 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data);
     } catch (error) {
       console.error("Failed to fetch user profile", error);
+      if (error.response && error.response.status === 401) {
+        logout();
+      }
     }
   };
 
