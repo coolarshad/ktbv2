@@ -1,4 +1,6 @@
-import json
+import os
+
+new_content = """import json
 from django.urls import resolve
 from accounts.models import ActivityLog
 from django.forms.models import model_to_dict
@@ -13,21 +15,8 @@ class ActivityLogMiddleware:
         try:
             match = resolve(request.path)
             view_class = getattr(match.func, 'view_class', None) or getattr(match.func, 'cls', None)
-            if view_class:
-                if hasattr(view_class, 'queryset') and view_class.queryset is not None:
-                    return view_class, view_class.queryset.model
-                elif hasattr(view_class, 'filterset_class') and hasattr(view_class.filterset_class, 'Meta'):
-                    return view_class, view_class.filterset_class.Meta.model
-                elif hasattr(view_class, 'serializer_class') and hasattr(view_class.serializer_class, 'Meta'):
-                    return view_class, view_class.serializer_class.Meta.model
-                
-                # Manual fallback based on URL
-                if 'tradeapprove' in request.path or 'trades' in request.path or 'tradereview' in request.path:
-                    from trademgt.models import Trade
-                    return view_class, Trade
-                if 'pre-sales-purchases' in request.path:
-                    from trademgt.models import PreSalePurchase
-                    return view_class, PreSalePurchase
+            if view_class and hasattr(view_class, 'queryset') and view_class.queryset is not None:
+                return view_class, view_class.queryset.model
         except Exception:
             pass
         return None, None
@@ -59,11 +48,7 @@ class ActivityLogMiddleware:
 
         response = self.get_response(request)
 
-        # We log POST, PUT, PATCH, DELETE, and GET if it's an approve/review endpoint
-        is_modifying_request = request.method in ['POST', 'PUT', 'PATCH', 'DELETE']
-        is_approval_request = request.method == 'GET' and ('approve' in request.path or 'review' in request.path)
-
-        if (is_modifying_request or is_approval_request) and 200 <= response.status_code < 300:
+        if request.method in ['POST', 'PUT', 'PATCH', 'DELETE'] and 200 <= response.status_code < 300:
             user = request.user if request.user.is_authenticated else None
             
             action_message = None
@@ -145,3 +130,7 @@ class ActivityLogMiddleware:
             )
 
         return response
+"""
+
+with open('/home/saiyad/ktbv2/ktbv2/backend/ktbv2/ktbv2/middleware.py', 'w') as f:
+    f.write(new_content)

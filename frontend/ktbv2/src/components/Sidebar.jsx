@@ -21,7 +21,8 @@ const NAV_ITEMS = [
     links: [
       { name: 'Dashboard', path: '/' },
       { name: 'Users', path: '/users' },
-      { name: 'Logs', path: '/logs' }
+      { name: 'Logs', path: '/logs' },
+      { name: 'Audit Log', path: '/audit-log' }
     ]
   },
   {

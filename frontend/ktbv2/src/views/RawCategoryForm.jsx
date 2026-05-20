@@ -81,7 +81,7 @@ const RawCategoryForm = ({ mode = "add" }) => {
     e.preventDefault();
     let errors = {};
 
-    const skipValidation = [];
+    const skipValidation = ['parent'];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
         errors[key] = `${capitalizeKey(key)} cannot be empty!`;
@@ -197,8 +197,8 @@ const RawCategoryForm = ({ mode = "add" }) => {
                       <div
                         key={category.id}
                         className={`p-2 cursor-pointer ${selectedParent?.id === category.id
-                            ? "bg-blue-100"
-                            : "hover:bg-gray-100"
+                          ? "bg-blue-100"
+                          : "hover:bg-gray-100"
                           }`}
                         onClick={() => handleSelectParent(category)}
                       >
@@ -212,9 +212,9 @@ const RawCategoryForm = ({ mode = "add" }) => {
               )}
             </div>
           </div>
-          {validationErrors.parent && (
+          {/* {validationErrors.parent && (
             <p className="text-red-500 text-sm mt-1">{validationErrors.parent}</p>
-          )}
+          )} */}
         </div>
       </div>
 

@@ -164,4 +164,4 @@ class ActivityLogListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['actor', 'action']
-    search_fields = ['resource', 'actor__name', 'actor__email']
+    search_fields = ['resource', 'actor__name', 'actor__email', 'action']

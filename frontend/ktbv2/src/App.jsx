@@ -73,6 +73,7 @@ import PackingConsumption from './views/PackingConsumption';
 import NotificationCenter from './views/NotificationCenter';
 import Profile from './views/Profile';
 import Logs from './views/Logs';
+import AuditLog from './views/AuditLog';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './views/Login';
 
@@ -200,6 +201,7 @@ const ProtectedRoutes = () => {
           <Route path="/packing-size" element={<PackingSize />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/logs" element={<Logs />} />
+          <Route path="/audit-log" element={<AuditLog />} />
         </Routes>
     </MainLayout>
   );

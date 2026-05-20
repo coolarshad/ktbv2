@@ -30,31 +30,31 @@ const AdditivesCategoryForm = ({ mode = "add" }) => {
   }, []);
 
   // Fetch existing category in update mode
-useEffect(() => {
-  if (mode === "update" && id) {
-    axios
-      .get(`/costmgt/additive-categories/${id}/`)
-      .then((response) => {
-        const data = response.data;
-        setFormData({
-          name: data.name || "",
-          parent: data.parent || "",
-        });
-      })
-      .catch((error) => console.error("Error fetching category:", error));
-  }
-}, [mode, id]);
-
-// ✅ Separate effect: when categories OR formData.parent change, set selectedParent
-useEffect(() => {
-  if (formData.parent && categories.length > 0) {
-    const parentCat = categories.find((c) => c.id === formData.parent);
-    if (parentCat) {
-      setSelectedParent(parentCat);
-      setSearchTerm(parentCat.name); // so input shows the name
+  useEffect(() => {
+    if (mode === "update" && id) {
+      axios
+        .get(`/costmgt/additive-categories/${id}/`)
+        .then((response) => {
+          const data = response.data;
+          setFormData({
+            name: data.name || "",
+            parent: data.parent || "",
+          });
+        })
+        .catch((error) => console.error("Error fetching category:", error));
     }
-  }
-}, [formData.parent, categories]);
+  }, [mode, id]);
+
+  // ✅ Separate effect: when categories OR formData.parent change, set selectedParent
+  useEffect(() => {
+    if (formData.parent && categories.length > 0) {
+      const parentCat = categories.find((c) => c.id === formData.parent);
+      if (parentCat) {
+        setSelectedParent(parentCat);
+        setSearchTerm(parentCat.name); // so input shows the name
+      }
+    }
+  }, [formData.parent, categories]);
 
 
   // Close dropdown when clicking outside
@@ -81,7 +81,7 @@ useEffect(() => {
     e.preventDefault();
     let errors = {};
 
-    const skipValidation = [];
+    const skipValidation = ['parent'];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
         errors[key] = `${capitalizeKey(key)} cannot be empty!`;
@@ -195,11 +195,10 @@ useEffect(() => {
                     filteredCategories.map((category) => (
                       <div
                         key={category.id}
-                        className={`p-2 cursor-pointer ${
-                          selectedParent?.id === category.id
-                            ? "bg-blue-100"
-                            : "hover:bg-gray-100"
-                        }`}
+                        className={`p-2 cursor-pointer ${selectedParent?.id === category.id
+                          ? "bg-blue-100"
+                          : "hover:bg-gray-100"
+                          }`}
                         onClick={() => handleSelectParent(category)}
                       >
                         {category.name}
