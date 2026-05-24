@@ -42,7 +42,7 @@ const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Defaul
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.formula_name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.consumption?.formula.name}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.consumption?.formula?.name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.batch_detail?.batch}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_size_detail?.label}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottles_per_pack}</td>

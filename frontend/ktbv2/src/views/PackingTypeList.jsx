@@ -81,7 +81,7 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
   const handleUpdate = (id) => {
     setCurrentMode('update');
     setCurrentId(id);
-    setFormData(currency.find(curr => curr.id === id) || { name: '' });
+    setFormData(packing.find(curr => curr.id === id) || { name: '' });
   };
 
   return (

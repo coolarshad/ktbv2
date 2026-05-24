@@ -435,7 +435,7 @@ export default function FinalProductForm({ mode = 'add' }) {
   const validateForm = () => {
     let newErrors = {};
 
-    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs', 'total_cfr_pricing', 'total_oil_consumed', 'qty_in_litres', 'litres_per_pack', 'bottles_per_pack'];
+    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs'];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key)) {
         if (value === "" || value === "NaN" || value === null) {
@@ -455,14 +455,26 @@ export default function FinalProductForm({ mode = 'add' }) {
       if (!item.packing_type)
         newErrors[`packing_type_${index}`] = "Packing type is required";
 
+      if (!item.packing)
+        newErrors[`packing_${index}`] = "Packing is required";
+
       if (!item.packing_selection)
         newErrors[`packing_selection_${index}`] = "Selected packing is required";
 
       if (!item.qty || Number(item.qty) <= 0 || item.qty === "NaN")
         newErrors[`qty_${index}`] = "Qty must be greater than 0";
 
-      if (!item.rate || Number(item.rate) <= 0 || item.rate === "NaN")
-        newErrors[`rate_${index}`] = "Rate must be greater than 0";
+      if (!item.total_qty || Number(item.total_qty) <= 0 || item.total_qty === "NaN")
+        newErrors[`packing_total_qty_${index}`] = "Total Qty is required";
+
+      if (item.rate === "" || item.rate === null || item.rate === "NaN" || Number(item.rate) < 0)
+        newErrors[`rate_${index}`] = "Rate must be 0 or greater";
+
+      if (item.value === "" || item.value === null || item.value === "NaN")
+        newErrors[`packing_value_${index}`] = "Value is required";
+
+      if (item.total_value === "" || item.total_value === null || item.total_value === "NaN")
+        newErrors[`packing_total_value_${index}`] = "Total Value is required";
     });
 
     // Additional costs validation
@@ -470,9 +482,17 @@ export default function FinalProductForm({ mode = 'add' }) {
       if (!cost.name)
         newErrors[`cost_name_${index}`] = "Cost name is required";
 
-      if (!cost.rate || Number(cost.rate) <= 0 || cost.rate === "NaN")
-        newErrors[`cost_rate_${index}`] = "Rate must be greater than 0";
+      if (cost.rate === "" || cost.rate === null || cost.rate === "NaN" || Number(cost.rate) < 0)
+        newErrors[`cost_rate_${index}`] = "Rate must be 0 or greater";
+        
+      if (cost.value === "" || cost.value === null || cost.value === "NaN")
+        newErrors[`cost_value_${index}`] = "Value is required";
     });
+    
+    // Validate notifiedUsers
+    if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
+        newErrors.notifiedUsers = 'At least one notification recipient must be selected!';
+    }
 
     setErrors(newErrors);
 
@@ -481,17 +501,7 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let errors = {};
     if (!validateForm()) return; // 🚀 STOP if invalid
-
-     // Validate notifiedUsers
-        if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
-            errors.notifiedUsers = 'At least one notification recipient must be selected!';
-        }
-        if (Object.keys(errors).length > 0) {
-            setValidationErrors(errors);
-            return;
-        }
 
     try {
 
@@ -628,6 +638,7 @@ return (
         <input readOnly value={formData.bottles_per_pack}
           className="border p-2 rounded w-full bg-gray-100"
         />
+        {errors.bottles_per_pack && <p className="text-red-500 text-sm mt-1">{errors.bottles_per_pack}</p>}
       </div>
 
       <div>
@@ -635,6 +646,7 @@ return (
         <input readOnly value={formData.litres_per_pack}
           className="border p-2 rounded w-full bg-gray-100"
         />
+        {errors.litres_per_pack && <p className="text-red-500 text-sm mt-1">{errors.litres_per_pack}</p>}
       </div>
 
       <div>
@@ -699,6 +711,7 @@ return (
         <input readOnly value={formData.qty_in_litres}
           className="border p-2 rounded w-full bg-gray-100"
         />
+        {errors.qty_in_litres && <p className="text-red-500 text-sm mt-1">{errors.qty_in_litres}</p>}
       </div>
 
 
@@ -725,6 +738,7 @@ return (
               className="border p-2 rounded w-full"
               readOnly
             />
+            {errors[`packing_type_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`packing_type_${index}`]}</p>}
           </div>
 
           <div>
@@ -736,6 +750,7 @@ return (
               className="border p-2 rounded w-full"
               readOnly
             />
+            {errors[`packing_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`packing_${index}`]}</p>}
           </div>
 
           <div>
@@ -747,6 +762,7 @@ return (
               className="border p-2 rounded w-full"
               readOnly
             />
+            {errors[`qty_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`qty_${index}`]}</p>}
           </div>
           <div>
             <label>Total Qty</label>
@@ -757,6 +773,7 @@ return (
               className="border p-2 rounded w-full"
               readOnly
             />
+            {errors[`packing_total_qty_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`packing_total_qty_${index}`]}</p>}
           </div>
 
           <div>
@@ -768,6 +785,7 @@ return (
               value={item.packing_selection}
               onChange={(opt) => handlePackingChange(index, "packing_selection", opt)}
             />
+            {errors[`packing_selection_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`packing_selection_${index}`]}</p>}
           </div>
 
           <div>
@@ -779,6 +797,7 @@ return (
               className="border p-2 rounded w-full"
               readOnly
             />
+            {errors[`rate_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`rate_${index}`]}</p>}
           </div>
 
           <div>
@@ -786,12 +805,14 @@ return (
             <input readOnly value={item.value}
               className="border p-2 rounded w-full bg-gray-100"
             />
+            {errors[`packing_value_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`packing_value_${index}`]}</p>}
           </div>
           <div>
             <label>Total Value</label>
             <input readOnly value={item.total_value} step={0.2}
               className="border p-2 rounded w-full bg-gray-100"
             />
+            {errors[`packing_total_value_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`packing_total_value_${index}`]}</p>}
           </div>
 
           {/* <button type="button"
@@ -831,6 +852,7 @@ return (
               }
               className="border p-2 rounded w-full"
             />
+            {errors[`cost_name_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`cost_name_${index}`]}</p>}
           </div>
 
           <div>
@@ -841,6 +863,7 @@ return (
               }
               className="border p-2 rounded w-full"
             />
+            {errors[`cost_rate_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`cost_rate_${index}`]}</p>}
           </div>
 
           <div>
@@ -848,6 +871,7 @@ return (
             <input readOnly value={item.value}
               className="border p-2 rounded w-full bg-gray-100"
             />
+            {errors[`cost_value_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`cost_value_${index}`]}</p>}
           </div>
 
           <button type="button"
@@ -876,6 +900,7 @@ return (
           onChange={handleChange}
           className="border p-2 rounded w-full"
         />
+        {errors.per_litre_cost && <p className="text-red-500 text-sm mt-1">{errors.per_litre_cost}</p>}
       </div>
 
       <div>
@@ -883,6 +908,7 @@ return (
         <input readOnly value={formData.total_oil_consumed}
           className="border p-2 rounded w-full bg-gray-100"
         />
+        {errors.total_oil_consumed && <p className="text-red-500 text-sm mt-1">{errors.total_oil_consumed}</p>}
       </div>
 
       <div>
@@ -892,6 +918,7 @@ return (
           value={formData.total_cfr_pricing}
           className="border p-2 rounded w-full bg-gray-100"
         />
+        {errors.total_cfr_pricing && <p className="text-red-500 text-sm mt-1">{errors.total_cfr_pricing}</p>}
       </div>
 
       <div className="md:col-span-3">
@@ -912,8 +939,8 @@ return (
             selectedUsers={formData.notifiedUsers}
             onChange={handleUsersChange}
         />
-        {validationErrors.notifiedUsers && (
-                <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+        {errors.notifiedUsers && (
+                <span className="error-text text-red-500">{errors.notifiedUsers}</span>
             )}
     </div>
 

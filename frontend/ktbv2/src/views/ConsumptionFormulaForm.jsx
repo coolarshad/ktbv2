@@ -121,14 +121,20 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
         }
 
         formData.consumptionAdditive.forEach((item, index) => {
-            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null) {
-                errors[`consumptionAdditive_${index}`] = "Both name and qty in percent are required!";
+            if (!item.name) {
+                errors[`consumptionAdditiveName_${index}`] = "Additive name is required!";
+            }
+            if (item.qty_in_percent === "" || item.qty_in_percent === null) {
+                errors[`consumptionAdditiveQty_${index}`] = "Qty in percent is required!";
             }
         });
 
         formData.consumptionBaseOil.forEach((item, index) => {
-            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null) {
-                errors[`consumptionBaseOil_${index}`] = "Both name and qty in percent are required!";
+            if (!item.name) {
+                errors[`consumptionBaseOilName_${index}`] = "Base oil name is required!";
+            }
+            if (item.qty_in_percent === "" || item.qty_in_percent === null) {
+                errors[`consumptionBaseOilQty_${index}`] = "Qty in percent is required!";
             }
         });
 
@@ -312,6 +318,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 isSearchable
                                 isClearable
                             />
+                            {validationErrors[`consumptionAdditiveName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveName_${index}`]}</p>}
                         </div>
 
 
@@ -327,7 +334,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
-                            {validationErrors[`consumptionAdditive_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditive_${index}`]}</p>}
+                            {validationErrors[`consumptionAdditiveQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQty_${index}`]}</p>}
                         </div>
 
 
@@ -400,6 +407,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 isSearchable
                                 isClearable
                             />
+                            {validationErrors[`consumptionBaseOilName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilName_${index}`]}</p>}
                         </div>
 
                         {/* Quantity in Percent */}
@@ -414,7 +422,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
-                            {validationErrors[`consumptionBaseOil_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOil_${index}`]}</p>}
+                            {validationErrors[`consumptionBaseOilQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQty_${index}`]}</p>}
                         </div>
 
 

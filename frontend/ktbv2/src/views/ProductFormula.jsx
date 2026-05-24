@@ -18,6 +18,7 @@ const ProductFormula = () => {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedFormula, setSelectedFormula] = useState(null);
+    const [notifiedUsers, setNotifiedUsers] = useState([]);
 
     useEffect(() => {
       const fetchData = async () => {

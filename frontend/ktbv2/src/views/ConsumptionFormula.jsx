@@ -20,6 +20,7 @@ const ConsumptionFormula = () => {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedConsumption, setSelectedConsumption] = useState(null);
+    const [notifiedUsers, setNotifiedUsers] = useState([]);
 
     useEffect(() => {
       const fetchData = async () => {

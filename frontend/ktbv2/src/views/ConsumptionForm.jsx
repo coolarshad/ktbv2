@@ -543,7 +543,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         e.preventDefault();
         let errors = {};
 
-        const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil', 'alias', 'batch'];
+        const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil'];
         for (const [key, value] of Object.entries(formData)) {
             if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
                 errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
@@ -551,15 +551,25 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         }
 
         formData.consumptionAdditive.forEach((item, index) => {
-            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === "NaN") {
-                errors[`consumptionAdditive_${index}`] = "Both name and qty in percent are required!";
+            if (!item.name) errors[`consumptionAdditiveName_${index}`] = "Additive name is required!";
+            if (!item.sub_name) errors[`consumptionAdditiveSubName_${index}`] = "Sub Name is required!";
+            if (item.rate === "" || item.rate === null) errors[`consumptionAdditiveRate_${index}`] = "Rate is required!";
+            if (item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === "NaN") {
+                errors[`consumptionAdditiveQty_${index}`] = "Qty in percent is required!";
             }
+            if (item.qty_in_litre === "" || item.qty_in_litre === null) errors[`consumptionAdditiveQtyLitre_${index}`] = "Qty in litre is required!";
+            if (item.value === "" || item.value === null) errors[`consumptionAdditiveValue_${index}`] = "Value is required!";
         });
 
         formData.consumptionBaseOil.forEach((item, index) => {
-            if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === "NaN") {
-                errors[`consumptionBaseOil_${index}`] = "Both name and qty in percent are required!";
+            if (!item.name) errors[`consumptionBaseOilName_${index}`] = "Base oil name is required!";
+            if (!item.sub_name) errors[`consumptionBaseOilSubName_${index}`] = "Sub Name is required!";
+            if (item.rate === "" || item.rate === null) errors[`consumptionBaseOilRate_${index}`] = "Rate is required!";
+            if (item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === "NaN") {
+                errors[`consumptionBaseOilQty_${index}`] = "Qty in percent is required!";
             }
+            if (item.qty_in_litre === "" || item.qty_in_litre === null) errors[`consumptionBaseOilQtyLitre_${index}`] = "Qty in litre is required!";
+            if (item.value === "" || item.value === null) errors[`consumptionBaseOilValue_${index}`] = "Value is required!";
         });
 
         // Validate notifiedUsers
@@ -826,6 +836,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.display_name || ''}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
+                            {validationErrors[`consumptionAdditiveName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveName_${index}`]}</p>}
                         </div>
                         <div className="col-span-1 md:col-span-2">
                             <div className="col-span-1 md:col-span-2">
@@ -853,6 +864,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                     placeholder="Select Additive Sub Name"
                                     isSearchable
                                 />
+                                {validationErrors[`consumptionAdditiveSubName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveSubName_${index}`]}</p>}
                             </div>
                         </div>
                         {/* Rate */}
@@ -868,6 +880,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 readOnly={true}
                                 step={0.01}
                             />
+                            {validationErrors[`consumptionAdditiveRate_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveRate_${index}`]}</p>}
                         </div>
 
                         {/* Qty in Percent */}
@@ -882,6 +895,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
+                            {validationErrors[`consumptionAdditiveQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQty_${index}`]}</p>}
                         </div>
 
                         {/* Qty in Litre */}
@@ -896,6 +910,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
+                            {validationErrors[`consumptionAdditiveQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQtyLitre_${index}`]}</p>}
                         </div>
 
                         {/* Value */}
@@ -910,6 +925,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.01}
                             />
+                            {validationErrors[`consumptionAdditiveValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveValue_${index}`]}</p>}
                         </div>
 
                         {/* Remove Button - Centered */}
@@ -968,6 +984,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value={item.display_name || ''}
                                 className="border border-gray-300 p-2 rounded w-full"
                             />
+                            {validationErrors[`consumptionBaseOilName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilName_${index}`]}</p>}
                         </div>
                         <div className="col-span-1 md:col-span-2">
                             <label htmlFor="sub_name" className="block text-sm font-medium text-gray-700">Sub Name</label>
@@ -1000,7 +1017,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 placeholder="Select Base Oil Sub Name"
                                 isSearchable
                             />
-
+                            {validationErrors[`consumptionBaseOilSubName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilSubName_${index}`]}</p>}
                         </div>
 
                         {/* Rate */}
@@ -1016,6 +1033,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 readOnly={true}
                                 step={0.01}
                             />
+                            {validationErrors[`consumptionBaseOilRate_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilRate_${index}`]}</p>}
                         </div>
 
                         {/* Quantity in Percent */}
@@ -1030,6 +1048,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
+                            {validationErrors[`consumptionBaseOilQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQty_${index}`]}</p>}
                         </div>
 
                         {/* Quantity in Litre */}
@@ -1044,6 +1063,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
                             />
+                            {validationErrors[`consumptionBaseOilQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQtyLitre_${index}`]}</p>}
                         </div>
 
                         {/* Value */}
@@ -1058,6 +1078,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.01}
                             />
+                            {validationErrors[`consumptionBaseOilValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilValue_${index}`]}</p>}
                         </div>
 
                         {/* Remove Button - Centered */}
@@ -1099,6 +1120,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         step={0.01}
                         readOnly
                     />
+                    {validationErrors.total_value && <p className="text-red-500 text-sm mt-1">{validationErrors.total_value}</p>}
                 </div>
 
                 {/* Per Litre Cost Input */}
@@ -1114,6 +1136,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                         step={0.01}
                         readOnly
                     />
+                    {validationErrors.per_litre_cost && <p className="text-red-500 text-sm mt-1">{validationErrors.per_litre_cost}</p>}
                 </div>
 
                 {/* Remarks Input */}

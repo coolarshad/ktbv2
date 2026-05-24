@@ -19,6 +19,7 @@ const RawCategory = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
