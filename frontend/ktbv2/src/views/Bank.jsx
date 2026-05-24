@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import { hasPermission } from '../utils';
 
 const Bank = ({ mode = 'add', bankId = null }) => {
   const { user } = useAuth();
@@ -100,7 +101,8 @@ const Bank = ({ mode = 'add', bankId = null }) => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      {hasPermission(user, isUpdateMode ? 'update_bank' : 'create_bank') && (
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
@@ -142,6 +144,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
           </button>
         </div>
       </form>
+      )}
 
       <hr className="my-6" />
 
@@ -158,18 +161,22 @@ const Bank = ({ mode = 'add', bankId = null }) => {
                 <p>Swift Code: {bank.swift_code}</p>
               </div>
               <div className="flex space-x-2">
-                <button
-                  onClick={() => handleUpdate(bank.id)}
-                  className="bg-green-500 text-white p-2 rounded"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => handleDelete(bank.id)}
-                  className="bg-red-500 text-white p-2 rounded"
-                >
-                  Delete
-                </button>
+                {hasPermission(user, 'update_bank') && (
+                  <button
+                    onClick={() => handleUpdate(bank.id)}
+                    className="bg-green-500 text-white p-2 rounded"
+                  >
+                    Update
+                  </button>
+                )}
+                {hasPermission(user, 'delete_bank') && (
+                  <button
+                    onClick={() => handleDelete(bank.id)}
+                    className="bg-red-500 text-white p-2 rounded"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </li>
           ))}

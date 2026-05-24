@@ -19,6 +19,7 @@ const FinalProduct = () => {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [notifiedUsers, setNotifiedUsers] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -65,7 +66,11 @@ const FinalProduct = () => {
 
     const approveFinalProduct = async (id) => {
         try {
-            await axios.get(`/costmgt/final-product-approve/${selectedProduct.id}/`);
+            await axios.get(`/costmgt/final-product-approve/${selectedProduct.id}/`, {
+                params: {
+                    notified_users: notifiedUsers.join(',')
+                }
+            });
             setIsModalOpen(false);
             setProductData(null);
             // Reload the page
@@ -117,7 +122,7 @@ const FinalProduct = () => {
 )}
                 <div>
                     {/* <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} /> */}
-                    <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} />
+                    <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} downloadUrl="/excel/export/final-product/" />
 
                 </div>
                 <div className=" rounded p-2">

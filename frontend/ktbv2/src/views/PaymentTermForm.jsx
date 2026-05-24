@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import { hasPermission } from '../utils';
 
 const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   const { user } = useAuth();
@@ -135,7 +136,8 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   ];
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      {hasPermission(user, currentMode === 'add' ? 'create_paymentterm' : 'update_paymentterm') && (
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-2  p-4">
           <div>
             <label htmlFor="advance_within" className="block text-sm font-medium text-gray-700">
@@ -237,6 +239,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
           </button>
         </div>
       </form>
+      )}
 
       <hr className="my-6" />
 
@@ -257,18 +260,22 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button
-                  onClick={() => handleUpdate(term.id)}
-                  className="bg-green-500 text-white p-2 rounded"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => handleDelete(term.id)}
-                  className="bg-red-500 text-white p-2 rounded"
-                >
-                  Delete
-                </button>
+                {hasPermission(user, 'update_paymentterm') && (
+                  <button
+                    onClick={() => handleUpdate(term.id)}
+                    className="bg-green-500 text-white p-2 rounded"
+                  >
+                    Update
+                  </button>
+                )}
+                {hasPermission(user, 'delete_paymentterm') && (
+                  <button
+                    onClick={() => handleDelete(term.id)}
+                    className="bg-red-500 text-white p-2 rounded"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </li>
           ))}

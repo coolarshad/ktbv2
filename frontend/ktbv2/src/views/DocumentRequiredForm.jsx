@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import { hasPermission } from '../utils';
 
 const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
   const { user } = useAuth();
@@ -85,7 +86,8 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      {hasPermission(user, currentMode === 'add' ? 'create_documentsrequired' : 'update_documentsrequired') && (
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
@@ -103,6 +105,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
           </button>
         </div>
       </form>
+      )}
 
       <hr className="my-6" />
 
@@ -116,18 +119,22 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
                 <h3 className="text-lg font-medium">{doc.name}</h3>
               </div>
               <div className="flex space-x-2">
-                <button
-                  onClick={() => handleUpdate(doc.id)}
-                  className="bg-green-500 text-white p-2 rounded"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => handleDelete(doc.id)}
-                  className="bg-red-500 text-white p-2 rounded"
-                >
-                  Delete
-                </button>
+                {hasPermission(user, 'update_documentsrequired') && (
+                  <button
+                    onClick={() => handleUpdate(doc.id)}
+                    className="bg-green-500 text-white p-2 rounded"
+                  >
+                    Update
+                  </button>
+                )}
+                {hasPermission(user, 'delete_documentsrequired') && (
+                  <button
+                    onClick={() => handleDelete(doc.id)}
+                    className="bg-red-500 text-white p-2 rounded"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </li>
           ))}

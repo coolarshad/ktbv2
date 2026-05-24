@@ -50,7 +50,7 @@ class ExportTradeExcelView(APIView):
                 'logistic_provider': trade['trade']['logistic_provider'],
                 'estimated_logistic_cost': trade['trade']['estimated_logistic_cost'],
                 'logistic_cost_tolerence': trade['trade']['logistic_cost_tolerence'],
-                'logistic_cost_remarks': trade['trade']['logistic_cost_remarks'],
+                # 'logistic_cost_remarks': trade['trade']['logistic_cost_remarks'],
                 'bank_name_address': trade['trade']['bank']['name'],
                 'account_number': trade['trade']['account_number'],
                 'swift_code': trade['trade']['swift_code'],
@@ -516,3 +516,697 @@ class ExportKycExcelView(APIView):
             excel_data.append(trade_data)
 
         return excel_data
+
+class ExportConsumptionExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import Consumption
+        from costmgt.serializers import ConsumptionSerializer
+        objs = Consumption.objects.all()
+        serializer = ConsumptionSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+       
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="consumption.xlsx"'
+        df.to_excel(response, index=False)
+
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        
+        # Find maximum number of additives and base oils
+        max_additives = 0
+        max_baseoils = 0
+        for obj in serialized_data:
+            num_additives = len(obj.get('additives', []))
+            num_baseoils = len(obj.get('baseoil', []))
+            if num_additives > max_additives:
+                max_additives = num_additives
+            if num_baseoils > max_baseoils:
+                max_baseoils = num_baseoils
+
+        for obj in serialized_data:
+            trade_data = {
+                'Formula Ref': obj.get('formula', {}).get('ref', '') if obj.get('formula') else '',
+                'Name': obj.get('formula', {}).get('name', '') if obj.get('formula') else '',
+                'Batch Number': obj.get('batch', ''),
+                'Date': obj.get('date', ''),
+                'Grade': obj.get('grade', ''),
+                'SAE': obj.get('sae', ''),
+                'Net Blending Qty': obj.get('net_blending_qty', ''),
+                'Gross Vol Crosscheck': obj.get('gross_vol_crosscheck', ''),
+                'Cross Check': obj.get('cross_check', ''),
+                'Total Value': obj.get('total_value', ''),
+                'Per Litre Cost': obj.get('per_litre_cost', ''),
+                'Supplier Address': obj.get('supplier_address', ''),
+                'Remarks': obj.get('remarks', ''),
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+
+            additives = obj.get('additives', [])
+            for i in range(max_additives):
+                if i < len(additives):
+                    extra = additives[i]
+                    trade_data[f'Additive {i+1} Name'] = extra.get('additive', {}).get('name', '') if extra.get('additive') else ''
+                    trade_data[f'Additive {i+1} Subname'] = extra.get('additive_subname', {}).get('subname_name', '') if extra.get('additive_subname') else ''
+                    trade_data[f'Additive {i+1} Rate'] = extra.get('rate', '')
+                    trade_data[f'Additive {i+1} Qty %'] = extra.get('qty_in_percent', '')
+                    trade_data[f'Additive {i+1} Qty Ltr'] = extra.get('qty_in_litre', '')
+                    trade_data[f'Additive {i+1} Value'] = extra.get('value', '')
+                else:
+                    trade_data[f'Additive {i+1} Name'] = ''
+                    trade_data[f'Additive {i+1} Subname'] = ''
+                    trade_data[f'Additive {i+1} Rate'] = ''
+                    trade_data[f'Additive {i+1} Qty %'] = ''
+                    trade_data[f'Additive {i+1} Qty Ltr'] = ''
+                    trade_data[f'Additive {i+1} Value'] = ''
+
+            baseoils = obj.get('baseoil', [])
+            for i in range(max_baseoils):
+                if i < len(baseoils):
+                    extra = baseoils[i]
+                    trade_data[f'BaseOil {i+1} Name'] = extra.get('raw', {}).get('name', '') if extra.get('raw') else ''
+                    trade_data[f'BaseOil {i+1} Subname'] = extra.get('raw_subname', {}).get('subname_name', '') if extra.get('raw_subname') else ''
+                    trade_data[f'BaseOil {i+1} Rate'] = extra.get('rate', '')
+                    trade_data[f'BaseOil {i+1} Qty %'] = extra.get('qty_in_percent', '')
+                    trade_data[f'BaseOil {i+1} Qty Ltr'] = extra.get('qty_in_litre', '')
+                    trade_data[f'BaseOil {i+1} Value'] = extra.get('value', '')
+                else:
+                    trade_data[f'BaseOil {i+1} Name'] = ''
+                    trade_data[f'BaseOil {i+1} Subname'] = ''
+                    trade_data[f'BaseOil {i+1} Rate'] = ''
+                    trade_data[f'BaseOil {i+1} Qty %'] = ''
+                    trade_data[f'BaseOil {i+1} Qty Ltr'] = ''
+                    trade_data[f'BaseOil {i+1} Value'] = ''
+               
+            excel_data.append(trade_data)
+        
+        return excel_data
+class ExportConsumptionFormulaExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import ConsumptionFormula
+        from costmgt.serializers import ConsumptionFormulaSerializer
+        objs = ConsumptionFormula.objects.all()
+        serializer = ConsumptionFormulaSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="consumption_formula.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        max_additives = max((len(obj.get('consumptionFormulaAdditive', [])) for obj in serialized_data), default=0)
+        max_baseoils = max((len(obj.get('consumptionFormulaBaseOil', [])) for obj in serialized_data), default=0)
+
+        for obj in serialized_data:
+            row = {
+                'Formula Ref': obj.get('ref', ''),
+                'Name': obj.get('name', ''),
+                'Date': obj.get('date', ''),
+                'Grade': obj.get('grade', ''),
+                'SAE': obj.get('sae', ''),
+                'Remarks': obj.get('remarks', ''),
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+
+            additives = obj.get('consumptionFormulaAdditive', [])
+            for i in range(max_additives):
+                if i < len(additives):
+                    extra = additives[i]
+                    row[f'Additive {i+1} Name'] = extra.get('name', '')
+                    row[f'Additive {i+1} Qty %'] = extra.get('qty_in_percent', '')
+                else:
+                    row[f'Additive {i+1} Name'] = ''
+                    row[f'Additive {i+1} Qty %'] = ''
+
+            baseoils = obj.get('consumptionFormulaBaseOil', [])
+            for i in range(max_baseoils):
+                if i < len(baseoils):
+                    extra = baseoils[i]
+                    row[f'BaseOil {i+1} Name'] = extra.get('name', '')
+                    row[f'BaseOil {i+1} Qty %'] = extra.get('qty_in_percent', '')
+                else:
+                    row[f'BaseOil {i+1} Name'] = ''
+                    row[f'BaseOil {i+1} Qty %'] = ''
+               
+            excel_data.append(row)
+        return excel_data
+
+class ExportProductFormulaExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import ProductFormula
+        from costmgt.serializers import ProductFormulaSerializer
+        objs = ProductFormula.objects.all()
+        serializer = ProductFormulaSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="product_formula.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        max_items = max((len(obj.get('product_formula_items', [])) for obj in serialized_data), default=0)
+
+        for obj in serialized_data:
+            row = {
+                'Formula Name': obj.get('formula_name', ''),
+                'Consumption Name': obj.get('consumption', {}).get('formula', {}).get('name', '') if obj.get('consumption') and obj.get('consumption').get('formula') else '',
+                'Consumption Qty': obj.get('consumption_qty', ''),
+                'Packing Type': obj.get('packing', {}).get('name', '') if obj.get('packing') else '',
+                'Remarks': obj.get('remarks', ''),
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+
+            items = obj.get('product_formula_items', [])
+            for i in range(max_items):
+                if i < len(items):
+                    extra = items[i]
+                    row[f'Item {i+1} Packing Type'] = extra.get('packings_type', {}).get('name', '') if extra.get('packings_type') else ''
+                    row[f'Item {i+1} Packing Label'] = extra.get('packings', {}).get('name', '') if extra.get('packings') else ''
+                    row[f'Item {i+1} Qty'] = extra.get('qty', '')
+                else:
+                    row[f'Item {i+1} Packing Type'] = ''
+                    row[f'Item {i+1} Packing Label'] = ''
+                    row[f'Item {i+1} Qty'] = ''
+               
+            excel_data.append(row)
+        return excel_data
+
+class ExportFinalProductExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import FinalProduct
+        from costmgt.serializers import FinalProductSerializer
+        objs = FinalProduct.objects.all()
+        serializer = FinalProductSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="final_product.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        max_packing_items = max((len(obj.get('packing_items', [])) for obj in serialized_data), default=0)
+        max_additional_costs = max((len(obj.get('additional_costs', [])) for obj in serialized_data), default=0)
+
+        for obj in serialized_data:
+            row = {
+                'Date': obj.get('date', ''),
+                'Formula Name': obj.get('formula_detail', {}).get('formula_name', '') if obj.get('formula_detail') else '',
+                'Consumption Name': obj.get('formula_detail', {}).get('consumption', {}).get('formula', {}).get('name', '') if obj.get('formula_detail') and obj.get('formula_detail').get('consumption') and obj.get('formula_detail').get('consumption').get('formula') else '',
+                'Batch': obj.get('batch_detail', {}).get('batch', '') if obj.get('batch_detail') else '',
+                'Packing Size': obj.get('packing_size_detail', {}).get('name', '') if obj.get('packing_size_detail') else '',
+                'Bottles Per Pack': obj.get('bottles_per_pack', ''),
+                'Litres Per Pack': obj.get('litres_per_pack', ''),
+                'Consumption Qty': obj.get('consumption_qty', ''),
+                'Total Qty': obj.get('total_qty', ''),
+                'Qty in Litres': obj.get('qty_in_litres', ''),
+                'Total Oil Consumed': obj.get('total_oil_consumed', ''),
+                'Per Litre Cost': obj.get('per_litre_cost', ''),
+                'Total CFR Pricing': obj.get('total_cfr_pricing', ''),
+                'Remarks': obj.get('remarks', ''),
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+
+            p_items = obj.get('packing_items', [])
+            for i in range(max_packing_items):
+                if i < len(p_items):
+                    extra = p_items[i]
+                    row[f'Packing Item {i+1} Type'] = extra.get('packing_type', '')
+                    row[f'Packing Item {i+1} Name'] = extra.get('selected_packing_details', {}).get('name', '') if extra.get('selected_packing_details') else ''
+                    row[f'Packing Item {i+1} Qty'] = extra.get('qty', '')
+                    row[f'Packing Item {i+1} Rate'] = extra.get('rate', '')
+                    row[f'Packing Item {i+1} Value'] = extra.get('value', '')
+                else:
+                    row[f'Packing Item {i+1} Type'] = ''
+                    row[f'Packing Item {i+1} Name'] = ''
+                    row[f'Packing Item {i+1} Qty'] = ''
+                    row[f'Packing Item {i+1} Rate'] = ''
+                    row[f'Packing Item {i+1} Value'] = ''
+
+            a_costs = obj.get('additional_costs', [])
+            for i in range(max_additional_costs):
+                if i < len(a_costs):
+                    extra = a_costs[i]
+                    row[f'Additional Cost {i+1} Name'] = extra.get('name', '')
+                    row[f'Additional Cost {i+1} Rate'] = extra.get('rate', '')
+                    row[f'Additional Cost {i+1} Value'] = extra.get('value', '')
+                else:
+                    row[f'Additional Cost {i+1} Name'] = ''
+                    row[f'Additional Cost {i+1} Rate'] = ''
+                    row[f'Additional Cost {i+1} Value'] = ''
+               
+            excel_data.append(row)
+        return excel_data
+
+class ExportPackingExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import Packing
+        from costmgt.serializers import PackingSerializer
+        objs = Packing.objects.all()
+        serializer = PackingSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="packing_price.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        max_extras = max((len(obj.get('extras', [])) for obj in serialized_data), default=0)
+
+        for obj in serialized_data:
+            row = {
+                'Date': obj.get('date', ''),
+                'Name': obj.get('name', ''),
+                'Per Each': obj.get('per_each', ''),
+                'Packing Type': obj.get('packing_type_detail', {}).get('name', '') if obj.get('packing_type_detail') else '',
+                'Remarks': obj.get('remarks', ''),
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+
+            extras = obj.get('extras', [])
+            for i in range(max_extras):
+                if i < len(extras):
+                    extra = extras[i]
+                    row[f'Extra {i+1} Name'] = extra.get('name', '')
+                    row[f'Extra {i+1} Rate'] = extra.get('rate', '')
+                else:
+                    row[f'Extra {i+1} Name'] = ''
+                    row[f'Extra {i+1} Rate'] = ''
+               
+            excel_data.append(row)
+        return excel_data
+
+class ExportRawMaterialExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import RawMaterial
+        from costmgt.serializers import RawMaterialSerializer
+        objs = RawMaterial.objects.all()
+        serializer = RawMaterialSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="raw_material_pricing.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        max_extras = max((len(obj.get('extras', [])) for obj in serialized_data), default=0)
+
+        for obj in serialized_data:
+            row = {
+                'Date': obj.get('date', ''),
+                'Category': obj.get('category_name', ''),
+                'Sub Name': obj.get('subname_name', ''),
+                'Density': obj.get('density', ''),
+                'Buy Price (PMT)': obj.get('buy_price_pmt', ''),
+                'ML to KL': obj.get('ml_to_kl', ''),
+                'Cost Per Liter': obj.get('cost_per_liter', ''),
+                'Add Cost': obj.get('add_cost', ''),
+                'Total': obj.get('total', ''),
+                'Remarks': obj.get('remarks', ''),
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+
+            extras = obj.get('extras', [])
+            for i in range(max_extras):
+                if i < len(extras):
+                    extra = extras[i]
+                    row[f'Extra {i+1} Name'] = extra.get('name', '')
+                    row[f'Extra {i+1} Rate'] = extra.get('rate', '')
+                else:
+                    row[f'Extra {i+1} Name'] = ''
+                    row[f'Extra {i+1} Rate'] = ''
+               
+            excel_data.append(row)
+        return excel_data
+
+class ExportAdditiveExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import Additive
+        from costmgt.serializers import AdditiveSerializer
+        objs = Additive.objects.all()
+        serializer = AdditiveSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="additive_pricing.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        max_extras = max((len(obj.get('extras', [])) for obj in serialized_data), default=0)
+
+        for obj in serialized_data:
+            row = {
+                'Date': obj.get('date', ''),
+                'Category': obj.get('category_name', ''),
+                'Sub Name': obj.get('subname_name', ''),
+                'Density': obj.get('density', ''),
+                'CRF Price': obj.get('crfPrice', ''),
+                'Add Cost': obj.get('addCost', ''),
+                'Cost Price In Liter': obj.get('costPriceInLiter', ''),
+                'Total Cost': obj.get('totalCost', ''),
+                'Remarks': obj.get('remarks', ''),
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+
+            extras = obj.get('extras', [])
+            for i in range(max_extras):
+                if i < len(extras):
+                    extra = extras[i]
+                    row[f'Extra {i+1} Name'] = extra.get('name', '')
+                    row[f'Extra {i+1} Rate'] = extra.get('rate', '')
+                else:
+                    row[f'Extra {i+1} Name'] = ''
+                    row[f'Extra {i+1} Rate'] = ''
+               
+            excel_data.append(row)
+        return excel_data
+
+class ExportPackingConsumptionReportExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import FinalProduct
+        from costmgt.serializers import FinalProductSerializer
+        objs = FinalProduct.objects.all()
+        serializer = FinalProductSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="packing_consumption_report.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for item in serialized_data:
+            packing_items = item.get('packing_items', [])
+            if not packing_items:
+                row = {
+                    'Final Product Name': item.get('formula_detail', {}).get('formula_name', '') if item.get('formula_detail') else '',
+                    'Packing Name': '',
+                    'Date': item.get('date', ''),
+                    'Qty': '0.00',
+                    'Rate': '0.00',
+                    'Value': '0.00',
+                }
+                excel_data.append(row)
+            else:
+                for p in packing_items:
+                    row = {
+                        'Final Product Name': item.get('formula_detail', {}).get('formula_name', '') if item.get('formula_detail') else '',
+                        'Packing Name': p.get('packing', ''),
+                        'Date': item.get('date', ''),
+                        'Qty': f"{float(p.get('total_qty') or 0):.2f}",
+                        'Rate': f"{float(p.get('rate') or 0):.2f}",
+                        'Value': f"{float(p.get('total_value') or 0):.2f}",
+                    }
+                    excel_data.append(row)
+        return excel_data
+
+class ExportAdditiveConsumptionReportExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import FinalProduct
+        from costmgt.serializers import FinalProductSerializer
+        objs = FinalProduct.objects.all()
+        serializer = FinalProductSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="additive_consumption_report.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for item in serialized_data:
+            # Check the nested structure
+            formula_detail = item.get('formula_detail', {})
+            consumption = formula_detail.get('consumption', {}) if formula_detail else {}
+            additives = consumption.get('additives', []) if consumption else []
+            
+            additive_names = ", ".join(filter(bool, [a.get('additive', {}).get('name', '') if a.get('additive') else '' for a in additives]))
+            densities = [float(a.get('additive_subname', {}).get('density') or 0) if a.get('additive_subname') else 0 for a in additives]
+            quantities_ltr = [float(a.get('qty_in_litre') or 0) for a in additives]
+            
+            total_kgs = sum(qty * densities[i] for i, qty in enumerate(quantities_ltr))
+            total_ltr = sum(quantities_ltr)
+            rates = [str(float(a.get('rate') or 0)) for a in additives]
+            values = [float(a.get('value') or 0) for a in additives]
+            total_value = sum(values)
+
+            row = {
+                'Final Product Name': item.get('formula_detail', {}).get('formula_name', '') if item.get('formula_detail') else '',
+                'Additive Name': additive_names,
+                'Date': item.get('date', ''),
+                'Serial No': item.get('batch_detail', {}).get('batch', '') if item.get('batch_detail') else '',
+                'Qty (Kgs)': f"{total_kgs:.2f}",
+                'Qty (Ltr)': f"{total_ltr:.2f}",
+                'Rate/Ltr': ", ".join(rates),
+                'Value': f"{total_value:.2f}"
+            }
+            excel_data.append(row)
+        return excel_data
+
+class ExportRawMaterialConsumptionReportExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import FinalProduct
+        from costmgt.serializers import FinalProductSerializer
+        objs = FinalProduct.objects.all()
+        serializer = FinalProductSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="raw_material_consumption_report.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for item in serialized_data:
+            formula_detail = item.get('formula_detail', {})
+            consumption = formula_detail.get('consumption', {}) if formula_detail else {}
+            baseoils = consumption.get('baseoil', []) if consumption else []
+            
+            rm_names = ", ".join(filter(bool, [b.get('raw', {}).get('name', '') if b.get('raw') else '' for b in baseoils]))
+            densities = [float(b.get('raw_subname', {}).get('density') or 0) if b.get('raw_subname') else 0 for b in baseoils]
+            quantities_ltr = [float(b.get('qty_in_litre') or 0) for b in baseoils]
+            
+            total_kgs = sum(qty * densities[i] for i, qty in enumerate(quantities_ltr))
+            rates = [str(float(b.get('rate') or 0)) for b in baseoils]
+            values = [str(float(b.get('value') or 0)) for b in baseoils]
+
+            row = {
+                'Final Product Name': item.get('formula_detail', {}).get('formula_name', '') if item.get('formula_detail') else '',
+                'Raw Material Name': rm_names,
+                'Date': item.get('date', ''),
+                'Batch Number': item.get('batch_detail', {}).get('batch', '') if item.get('batch_detail') else '',
+                'Qty (Kgs)': f"{total_kgs:.2f}",
+                'Qty (Ltr)': ", ".join([str(q) for q in quantities_ltr]),
+                'Rate/Ltr': ", ".join(rates),
+                'Value': ", ".join(values)
+            }
+            excel_data.append(row)
+        return excel_data
+
+class ExportRawCategoryExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import RawCategory
+        from costmgt.serializers import RawCategorySerializer
+        objs = RawCategory.objects.all()
+        serializer = RawCategorySerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="raw_material_category.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        def get_all_subcategory_names(category):
+            names = []
+            children = category.get('children', [])
+            for child in children:
+                names.append(child.get('name', ''))
+                names.extend(get_all_subcategory_names(child))
+            return names
+
+        excel_data = []
+        for obj in serialized_data:
+            children_names = get_all_subcategory_names(obj)
+            row = {
+                'Name': obj.get('name', ''),
+                'Parent': obj.get('parent_name') if obj.get('parent_name') else 'Root',
+                'Children': ", ".join(children_names) if children_names else '—',
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+            excel_data.append(row)
+        return excel_data
+
+class ExportAdditiveCategoryExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from costmgt.models import AdditiveCategory
+        from costmgt.serializers import AdditiveCategorySerializer
+        objs = AdditiveCategory.objects.all()
+        serializer = AdditiveCategorySerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="additive_category.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        def get_all_subcategory_names(category):
+            names = []
+            children = category.get('children', [])
+            for child in children:
+                names.append(child.get('name', ''))
+                names.extend(get_all_subcategory_names(child))
+            return names
+
+        excel_data = []
+        for obj in serialized_data:
+            children_names = get_all_subcategory_names(obj)
+            row = {
+                'Name': obj.get('name', ''),
+                'Parent': obj.get('parent_name') if obj.get('parent_name') else 'Root',
+                'Children': ", ".join(children_names) if children_names else '—',
+                'Approved': 'Yes' if obj.get('approved') else 'No',
+            }
+            excel_data.append(row)
+        return excel_data
+
+class ExportInventoryExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from trademgt.models import Inventory
+        from trademgt.serializers import InventorySerializer
+        objs = Inventory.objects.all()
+        serializer = InventorySerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="inventory.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for obj in serialized_data:
+            row = {
+                'Product Name': obj.get('productName', {}).get('name', '') if obj.get('productName') else obj.get('product_name', ''),
+                'Batch Number': obj.get('batch_number', ''),
+                'Production Date': obj.get('production_date', ''),
+                'Closing Stock': obj.get('quantity', ''),
+                'Unit': obj.get('unit', ''),
+            }
+            excel_data.append(row)
+        return excel_data
+
+class ExportTradePendingExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_type = request.GET.get('trade_type', None)
+        from trademgt.models import TradePending
+        from trademgt.serializers import TradePendingSerializer
+        
+        objs = TradePending.objects.all()
+        if trade_type:
+            objs = objs.filter(trade_type=trade_type)
+            
+        serializer = TradePendingSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        filename = f"{trade_type.lower()}_pending.xlsx" if trade_type else "trade_pending.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for obj in serialized_data:
+            row = {
+                'TRN': obj.get('trade', {}).get('trn', '') if obj.get('trade') else '',
+                'TRD': obj.get('trd', ''),
+                'Company': obj.get('trade', {}).get('companyName', {}).get('name', '') if obj.get('trade') and obj.get('trade').get('companyName') else '',
+                'Payment Term': obj.get('trade', {}).get('paymentTerm', {}).get('name', '') if obj.get('trade') and obj.get('trade').get('paymentTerm') else '',
+                'Product Code': obj.get('product_code', ''),
+                'Product Name': obj.get('productName', {}).get('name', '') if obj.get('productName') else obj.get('product_name', ''),
+                'HS Code': obj.get('hs_code', ''),
+                'Trade Qty': obj.get('contract_qty', ''),
+                'Trade Unit': obj.get('contract_qty_unit', ''),
+                'Balance Qty': obj.get('balance_qty', ''),
+                'Balance Unit': obj.get('balance_qty_unit', ''),
+                'Tolerance': obj.get('tolerance', ''),
+                'Selected Currency Rate': obj.get('selected_currency_rate', ''),
+                'Rate in USD': obj.get('rate_in_usd', ''),
+                'Logistic': obj.get('logistic', ''),
+            }
+            excel_data.append(row)
+        return excel_data
+
+class ExportTradeProductTraceExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        trade_type = request.GET.get('trade_type', None)
+        from trademgt.models import TradeProductTrace
+        from trademgt.serializers import TradeProductTraceSerializer
+        
+        objs = TradeProductTrace.objects.all()
+        if trade_type:
+            objs = objs.filter(trade_type=trade_type)
+            
+        serializer = TradeProductTraceSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        filename = f"{trade_type.lower()}_product_trace.xlsx" if trade_type else "trade_product_trace.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for obj in serialized_data:
+            row = {
+                'Product Code': obj.get('product_code', ''),
+                'Total Contract Qty': obj.get('total_contract_qty', ''),
+                'Contract Balance Qty': obj.get('contract_balance_qty', ''),
+            }
+            excel_data.append(row)
+        return excel_data
+
+class ExportTradeProductRefExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from trademgt.models import TradeProductRef
+        from trademgt.serializers import TradeProductRefSerializer
+        objs = TradeProductRef.objects.all()
+        serializer = TradeProductRefSerializer(objs, many=True)
+        data = self.prepare_excel_data(serializer.data)
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="product_reference.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+    def prepare_excel_data(self, serialized_data):
+        excel_data = []
+        for obj in serialized_data:
+            row = {
+                'Trade Type': obj.get('trade_type', ''),
+                'Product Code': obj.get('product_code', ''),
+                'Total Contract Qty': obj.get('total_contract_qty', ''),
+                'Reference Balance Qty': obj.get('ref_balance_qty', ''),
+            }
+            excel_data.append(row)
+        return excel_data
+

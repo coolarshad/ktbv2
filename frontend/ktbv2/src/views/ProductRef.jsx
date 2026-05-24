@@ -78,7 +78,7 @@ const ProductRef = () => {
         <p className="text-xl">Product Ref</p>
        
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/product-ref'} fieldOptions={fieldOptions} />
+        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/product-ref'} downloadUrl="/excel/export/product-ref/" fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
         <ProductRefTable data={currentItems} onDelete={handleDelete} />

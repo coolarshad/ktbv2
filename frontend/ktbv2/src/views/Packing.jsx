@@ -125,7 +125,7 @@ const Packing = () => {
         </button>
 )}
         <div>
-        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/packings'} fieldOptions={fieldOptions} />
+        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/packings'} fieldOptions={fieldOptions} downloadUrl="/excel/export/packing/" />
         </div>
         <div className=" rounded p-2">
         <PackingTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="packing_price" />

@@ -86,8 +86,9 @@ const TradePacking = ({ mode = 'add', id = null }) => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
-        <div className="grid grid-cols-1 gap-4 p-4">
+      {hasPermission(user, currentMode === 'add' ? 'create_packing' : 'update_packing') && (
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
+          <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
             name="name"
@@ -96,16 +97,15 @@ const TradePacking = ({ mode = 'add', id = null }) => {
             placeholder="Packing Name"
             className="border border-gray-300 p-2 rounded w-full"
           />
-          {hasPermission(user, currentMode === 'add' ? 'create_packing' : 'update_packing') && (
             <button
               type="submit"
               className="bg-blue-500 text-white p-2 rounded"
             >
               {currentMode === 'add' ? 'Add Packing' : 'Update Packing'}
             </button>
-          )}
-        </div>
-      </form>
+          </div>
+        </form>
+      )}
 
       <hr className="my-6" />
 

@@ -116,6 +116,26 @@ function AdditiveConsumption() {
         setCurrentPage(1);
     };
 
+    // 📥 Download Excel
+    const handleDownloadExcel = async () => {
+        try {
+            const response = await axios.get('/excel/export/report/additive-cons/', {
+                responseType: 'blob', // Important
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'additive_consumption_report.xlsx');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading the excel file', error);
+            alert("Failed to download excel file.");
+        }
+    };
+
+
   const indexOfLastItem = currentPage * 50;
   const indexOfFirstItem = indexOfLastItem - 50;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
@@ -183,6 +203,13 @@ function AdditiveConsumption() {
                         className="bg-gray-400 text-white px-4 py-2 rounded"
                     >
                         Reset
+                    </button>
+
+                    <button
+                        onClick={handleDownloadExcel}
+                        className="bg-green-500 text-white px-4 py-2 rounded"
+                    >
+                        Export to Excel
                     </button>
                 </div>
             </div>

@@ -15,14 +15,15 @@ import { dateFormatter } from "../dateUtils.jsx";
 function PL() {
   const navigate = useNavigate();
   const componentRef = useRef();
+  const { user } = useAuth();
 
   const [plData, setPLData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPL, setSelectedPL] = useState(null);
-  
+
 
   useEffect(() => {
     const fetchPLData = async () => {
@@ -72,7 +73,7 @@ function PL() {
 
   const handleFilter = (filters) => {
     setPLData(filters)
-        setCurrentPage(1);
+    setCurrentPage(1);
   };
 
   const closeModal = () => {
@@ -80,7 +81,7 @@ function PL() {
     setSelectedPL(null);
   };
 
-  
+
   const sumPackingCost = (sp) => {
     return sp.trn.trade_products.reduce((acc, item) => acc + item.total_packing_cost, 0);
   };
@@ -93,7 +94,7 @@ function PL() {
   const sumBLQty = (sp) => {
     return sp.sp_product.reduce((acc, item) => acc + item.bl_qty, 0);
   };
-  
+
   // const sumTotal=(packing_cost,invoice_amount,commission_value,bl_value,bl_fees,bl_collection_cost,other_charges,logistic_cost,pf_charges)=>{
   //   return 0;
   // }
@@ -112,7 +113,7 @@ function PL() {
     { field: 'Packaging Supplier', value: 'Supplier X' },
     // { field: 'BL Quantity', value: '950' },
   ];
-  
+
   const purchaseData = [
     { field: 'Product Code', value: 'P67890' },
     { field: 'Product Name', value: 'Widget B' },
@@ -124,26 +125,26 @@ function PL() {
     // { field: 'BL Quantity', value: '480' },
   ];
 
-  const findTrade=(sp,row)=>{
-   return sp.trn.trade_products.find((trade)=>trade.product_code==row.product_code && trade.product_name==row.product_name && trade.hs_code==row.hs_code)
+  const findTrade = (sp, row) => {
+    return sp.trn.trade_products.find((trade) => trade.product_code == row.product_code && trade.product_name == row.product_name && trade.hs_code == row.hs_code)
   }
-  
+
   const MiniTable = ({ data }) => (
-   <>
+    <>
       {data.sp.sp_product.map((row, index) => (
         <div className="flex flex-col p-2">
-        <div key={index}  className="border border-gray-300 rounded-md p-4 shadow-sm grid grid-cols-3 gap-4">
-          {/* <span className="text-sm border-gray-200">Product Code: {row.product_code}</span> */}
-          <span className="text-sm border-gray-200">Product Name: {row.productName.name}</span>
-          <span className="text-sm border-gray-200">BL Qty: {row.bl_qty}</span>
-          <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
-          <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
-          <span className="text-sm border-gray-200">Commission Rate: {findTrade(data.sp,row).commission_rate}</span>
-          {/* <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span> */}
-          <span className="text-sm border-gray-200">Packaging Sum: {sumPackingCost(data.sp)}</span>
-          <span className="text-sm border-gray-200">Logistic: {row.logistic}</span>
-          {/* <span>Product Code: {row.product_code}</span> */}
-        </div>
+          <div key={index} className="border border-gray-300 rounded-md p-4 shadow-sm grid grid-cols-3 gap-4">
+            {/* <span className="text-sm border-gray-200">Product Code: {row.product_code}</span> */}
+            <span className="text-sm border-gray-200">Product Name: {row.productName.name}</span>
+            <span className="text-sm border-gray-200">BL Qty: {row.bl_qty}</span>
+            <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
+            <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
+            <span className="text-sm border-gray-200">Commission Rate: {findTrade(data.sp, row).commission_rate}</span>
+            {/* <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span> */}
+            <span className="text-sm border-gray-200">Packaging Sum: {sumPackingCost(data.sp)}</span>
+            <span className="text-sm border-gray-200">Logistic: {row.logistic}</span>
+            {/* <span>Product Code: {row.product_code}</span> */}
+          </div>
         </div>
       ))}
     </>
@@ -153,7 +154,7 @@ function PL() {
     const { user } = useAuth();
     // Helper function to calculate totals
     const calculateSalesTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
-    const calculateExpenseTotal = (commission_rate, bl_qty, logistic, packing) => (commission_rate * bl_qty)+logistic+packing;
+    const calculateExpenseTotal = (commission_rate, bl_qty, logistic, packing) => (commission_rate * bl_qty) + logistic + packing;
     const calculatePurchaseTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
     const calculateGross = (salesTotal, purchaseTotal, expenseTotal) => salesTotal - purchaseTotal - expenseTotal;
     const calculatePerUnit = (gross, sales_bl_qty) => gross / sales_bl_qty;
@@ -163,47 +164,47 @@ function PL() {
     const currentItems = plData?.slice(indexOfFirstItem, indexOfLastItem) || [];
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    
-  
+
+
     return (
       <>
         {/* Mapping over sales and purchase data with index to pair them */}
         {sales_data?.sp?.sp_product.map((salesRow, index) => {
           // Find corresponding purchase row by index
           const purchaseRow = purchase_data?.sp?.sp_product[index];
-  
+
           // If there's no corresponding purchase row, we skip this pair
           if (!purchaseRow) return null;
-  
+
           // Calculating salesTotal, expenseTotal, purchaseTotal, gross, perUnit for this pair
           const salesTotal = calculateSalesTotal(salesRow.bl_qty, salesRow.rate_in_usd);
-          const expenseTotal = calculateExpenseTotal(findTrade(sales_data.sp, salesRow).commission_rate, salesRow.bl_qty, salesRow.logistic, sumPackingCost(sales_data.sp))+calculateExpenseTotal(findTrade(purchase_data.sp, purchaseRow).commission_rate, purchaseRow.bl_qty,purchaseRow.logistic, sumPackingCost(purchase_data.sp));
+          const expenseTotal = calculateExpenseTotal(findTrade(sales_data.sp, salesRow).commission_rate, salesRow.bl_qty, salesRow.logistic, sumPackingCost(sales_data.sp)) + calculateExpenseTotal(findTrade(purchase_data.sp, purchaseRow).commission_rate, purchaseRow.bl_qty, purchaseRow.logistic, sumPackingCost(purchase_data.sp));
           const purchaseTotal = calculatePurchaseTotal(purchaseRow.bl_qty, purchaseRow.rate_in_usd);
           const gross = calculateGross(salesTotal, purchaseTotal, expenseTotal);
           const perUnit = calculatePerUnit(gross, salesRow.bl_qty);
-  
+
           return (
             <div className="flex flex-col my-16 p-2" key={index}>
-            <div className="border border-gray-300 rounded-md p-4 shadow-sm flex flex-wrap gap-4">
-              {/* Calculated Profit Information */}
-              <div className="text-sm border-gray-200 flex-1 min-w-[200px]">
-                {/* <span>Sales Total: {salesTotal.toFixed(2)}</span><br />
+              <div className="border border-gray-300 rounded-md p-4 shadow-sm flex flex-wrap gap-4">
+                {/* Calculated Profit Information */}
+                <div className="text-sm border-gray-200 flex-1 min-w-[200px]">
+                  {/* <span>Sales Total: {salesTotal.toFixed(2)}</span><br />
                 <span>Expense Total: {expenseTotal.toFixed(2)}</span><br />
                 <span>Purchase Total: {purchaseTotal.toFixed(2)}</span><br /> */}
-                <span>Profit per product: {gross.toFixed(2)}</span><br />
-                <span>Profit per Unit: {perUnit.toFixed(2)}</span>
+                  <span>Profit per product: {gross.toFixed(2)}</span><br />
+                  <span>Profit per Unit: {perUnit.toFixed(2)}</span>
+                </div>
               </div>
             </div>
-          </div>
 
           );
         })}
       </>
     );
   };
-  
-  
-  
+
+
+
 
 
   const fieldOptions = [
@@ -214,7 +215,7 @@ function PL() {
 
   const calculateTotalCommission = (items, sp, findTrade) => {
     if (!items || !Array.isArray(items)) return 0;
-    
+
     return items.reduce((total, item) => {
       const qty = parseFloat(item.bl_qty) || 0;
       const trade = findTrade(sp, item);
@@ -236,61 +237,61 @@ function PL() {
       sumPFCharges(pf)
     );
   };
-  
+
   // Calculate gross profit
   const calculateGrossProfit = (salesPF, purchasePF) => {
     if (!salesPF || !purchasePF) return 0; // Handle undefined salesPF or purchasePF
     const salesTotal = parseFloat(salesPF.sp.invoice_amount);
-    const purchaseTotal =  parseFloat(purchasePF.sp.invoice_amount);
+    const purchaseTotal = parseFloat(purchasePF.sp.invoice_amount);
     const totalExpense = calculateSPTotal(purchasePF) + calculateSPTotal(salesPF);
     return salesTotal - purchaseTotal - totalExpense;
   };
-  
+
   const calculateProfitPerMT = (salesPF, purchasePF) => {
     const grossProfit = calculateGrossProfit(salesPF, purchasePF) || 0; // Default to 0 if undefined or NaN
     const totalBLQty = sumBLQty(salesPF?.sp) || 1; // Default to 1 to avoid division by zero
     const profitPerMT = parseFloat(grossProfit) / parseFloat(totalBLQty); // Ensure valid division
     return isNaN(profitPerMT) ? "0.00" : profitPerMT.toFixed(2); // Handle NaN gracefully
   };
-  
 
-  
+
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
-    const indexOfLastItem = currentPage * 50;
-    const indexOfFirstItem = indexOfLastItem - 50;
-    const currentItems = plData?.slice(indexOfFirstItem, indexOfLastItem) || [];
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const indexOfLastItem = currentPage * 50;
+  const indexOfFirstItem = indexOfLastItem - 50;
+  const currentItems = plData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    
+
 
 
   return (
 
-      <>
-    
-    <div className="w-full h-full rounded bg-slate-200  p-3	">
-      <p className="text-xl">P&L Account Details</p>
-      {hasPermission(user, 'create_pl') && (
-<button
-        onClick={handleAddPLClick}
-        className="bg-blue-500 text-white px-3 py-1 rounded"
-      >
-        +
-      </button>
-)}
-      <div>
-      <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/profitloss'} 
-      fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/" 
-      />
-      </div>
-      <div className=" rounded p-2">
+    <>
 
-        <PLTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pl" />
-        <Pagination itemsPerPage={50} totalItems={plData?.length || 0} paginate={paginate} currentPage={currentPage} />
+      <div className="w-full h-full rounded bg-slate-200  p-3	">
+        <p className="text-xl">P&L Account Details</p>
+        {hasPermission(user, 'create_pl') && (
+          <button
+            onClick={handleAddPLClick}
+            className="bg-blue-500 text-white px-3 py-1 rounded"
+          >
+            +
+          </button>
+        )}
+        <div>
+          <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/profitloss'}
+            fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/"
+          />
+        </div>
+        <div className=" rounded p-2">
+
+          <PLTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pl" />
+          <Pagination itemsPerPage={50} totalItems={plData?.length || 0} paginate={paginate} currentPage={currentPage} />
+        </div>
       </div>
-    </div>
 
 
       <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -454,13 +455,13 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_amount}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Expense</td>
                         {/* <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td> */}
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(selectedPL.purchasePF.sp.invoice_amount, calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade), calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade), 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.salesPF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), sumOtherCharges(selectedPL.salesPF.sp), sumPFCharges(selectedPL.purchasePF), sumPFCharges(selectedPL.salesPF))}</td>
 
                       </tr>
                     </tbody>
-                    
+
                   </table>
-                  
+
                   <div className="flex justify-around p-4">
                     <div>
                       <h3 className="text-lg font-bold text-gray-800">Sales Products</h3>
@@ -476,9 +477,9 @@ function PL() {
                       <h3 className="text-lg font-bold text-gray-800">Profit/Loss</h3>
                       <MiniGross sales_data={selectedPL.salesPF} purchase_data={selectedPL.purchasePF} />
                     </div>
-                   
+
                   </div>
-                  
+
                   <div className="p-4 text-center mb-4">
                     <p>PROFIT: {calculateGrossProfit(selectedPL.salesPF, selectedPL.purchasePF).toFixed(2)}</p>
                     {/* <p>PROFIT PMT: {calculateProfitPerMT(selectedPL.salesPF, selectedPL.purchasePF)}</p> */}

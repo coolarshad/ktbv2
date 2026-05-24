@@ -137,6 +137,7 @@ const AdditivesCategory = () => {
             onFilter={handleFilter}
             apiEndpoint={'/costmgt/additive-categories'}
             fieldOptions={fieldOptions}
+            downloadUrl="/excel/export/additive-category/"
           />
         </div>
         <div className="rounded p-2">

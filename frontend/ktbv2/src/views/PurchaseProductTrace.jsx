@@ -77,7 +77,7 @@ const PurchaseProductTrace = () => {
         <p className="text-xl">Purchase Product Tracing</p>
        
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/purchase-product-trace'} fieldOptions={fieldOptions} />
+        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/product-trace'} extraParams={{ trade_type: 'Purchase' }} downloadUrl="/excel/export/product-trace/?trade_type=Purchase" fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
         <PurchaseTraceTable data={currentItems} onDelete={handleDelete} />

@@ -138,6 +138,7 @@ const RawCategory = () => {
             onFilter={handleFilter}
             apiEndpoint={'/costmgt/raw-categories'}
             fieldOptions={fieldOptions}
+            downloadUrl="/excel/export/raw-category/"
           />
         </div>
         <div className="rounded p-2">

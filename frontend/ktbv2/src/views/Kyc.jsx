@@ -6,6 +6,7 @@ import FilterComponent from '../components/FilterComponent';
 import KycTable from '../components/KycTable';
 import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
+import { hasPermission } from '../utils';
 
 const Kyc = () => {
   const { user } = useAuth();
@@ -127,12 +128,14 @@ const Kyc = () => {
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">KYC</p>
-        <button
-          onClick={handleAddKycClick}
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-        >
-          +
-        </button>
+        {hasPermission(user, 'create_kyc') && (
+          <button
+            onClick={handleAddKycClick}
+            className="bg-blue-500 text-white px-3 py-1 rounded"
+          >
+            +
+          </button>
+        )}
         <div>
         <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/kyc'} fieldOptions={fieldOptions} downloadUrl="/excel/export/kyc/"/>
         </div>
@@ -285,12 +288,12 @@ const Kyc = () => {
                     </div>
                   )}
 
-                  {selectedKyc.approve1 ? '' :
+                  {selectedKyc.approve1 || !hasPermission(user, 'approve_kyc') ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                       <button onClick={approveKycOne} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>
                     </div>
                   }
-                  {selectedKyc.approve2 ? '' :
+                  {selectedKyc.approve2 || !hasPermission(user, 'approve_kyc') ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                       <button onClick={approveKycTwo} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 2</button>
                     </div>

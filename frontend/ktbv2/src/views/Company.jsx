@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import { hasPermission } from '../utils';
 
 const Company = ({ mode = 'add', companyId = null }) => {
   const { user } = useAuth();
@@ -151,7 +152,8 @@ const Company = ({ mode = 'add', companyId = null }) => {
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      {hasPermission(user, currentMode === 'add' ? 'create_company' : 'update_company') && (
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
             type="text"
@@ -210,6 +212,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           </button>
         </div>
       </form>
+      )}
 
       <hr className="my-6" />
 
@@ -270,20 +273,24 @@ const Company = ({ mode = 'add', companyId = null }) => {
 
         {/* Action Buttons */}
         <div className="flex space-x-2">
-          <button
-            onClick={() => handleUpdate(company.id)}
-            className="bg-green-500 text-white p-2 rounded"
-            disabled={loading}
-          >
-            Update
-          </button>
-          <button
-            onClick={() => handleDelete(company.id)}
-            className="bg-red-500 text-white p-2 rounded"
-            disabled={loading}
-          >
-            Delete
-          </button>
+          {hasPermission(user, 'update_company') && (
+            <button
+              onClick={() => handleUpdate(company.id)}
+              className="bg-green-500 text-white p-2 rounded"
+              disabled={loading}
+            >
+              Update
+            </button>
+          )}
+          {hasPermission(user, 'delete_company') && (
+            <button
+              onClick={() => handleDelete(company.id)}
+              className="bg-red-500 text-white p-2 rounded"
+              disabled={loading}
+            >
+              Delete
+            </button>
+          )}
         </div>
       </li>
     ))}

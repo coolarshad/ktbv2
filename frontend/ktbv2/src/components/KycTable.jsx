@@ -1,8 +1,11 @@
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
 
 const KycTable = ({ data , onDelete, onView }) => { // Default value for data
   const navigate = useNavigate();  
+  const { user } = useAuth();
   
   const handleEdit = (id) => {
     navigate(`/kyc-form/${id}`);  // Navigate to TradeForm with tradeId
@@ -84,8 +87,12 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
                   >
                     View
                   </button>
-                  <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  {hasPermission(user, 'update_kyc') && (
+                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                  )}
+                  {hasPermission(user, 'delete_kyc') && (
+                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  )}
                 </div>
               </td>
             </tr>

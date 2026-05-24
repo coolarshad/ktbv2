@@ -121,7 +121,7 @@ const RawMaterial = () => {
         </button>
 )}
         <div>
-        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/raw-materials'} fieldOptions={fieldOptions} />
+        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/raw-materials'} fieldOptions={fieldOptions} downloadUrl="/excel/export/raw-material/" />
         </div>
         <div className=" rounded p-2">
         <RawMaterialTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="raw_material_pricing" />

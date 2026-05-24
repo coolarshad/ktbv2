@@ -81,7 +81,7 @@ const SalesPending = () => {
         <p className="text-xl">Sales Pending</p>
        
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/sales-pending'} fieldOptions={fieldOptions} />
+        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/trade-pending'} extraParams={{ trade_type: 'Sales' }} downloadUrl="/excel/export/trade-pending/?trade_type=Sales" fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
         <SalesPendingTable data={currentItems} onDelete={handleDelete} />

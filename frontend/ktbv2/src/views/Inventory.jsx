@@ -104,7 +104,7 @@ const Inventory = () => {
         <p className="text-xl">Inventory</p>
        
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/inventory'} fieldOptions={fieldOptions} downloadUrl="/excel/export/sp/"/>
+        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/inventory'} fieldOptions={fieldOptions} downloadUrl="/excel/export/inventory/"/>
         </div>
         <div className=" rounded p-2">
         <InventoryTable data={currentItems} onDelete={handleDelete} onView={handleView}/>
