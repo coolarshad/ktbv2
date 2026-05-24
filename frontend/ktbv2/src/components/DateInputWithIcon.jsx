@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from '../context/AuthContext';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from 'react-icons/fa';
 
 const DateInputWithIcon = ({ formData, handleChange, validationErrors, fieldName, label, block = false, inner='', index='' }) => {
+  const { user } = useAuth();
   const [isCalendarVisible, setCalendarVisible] = useState(false); // State to track visibility of the calendar
   const calendarRef = useRef(null); // Ref to detect outside click
 

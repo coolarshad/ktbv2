@@ -1,5 +1,8 @@
 import NavBar from "../components/NavBar"
 import React, { useEffect, useState, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import PLTable from "../components/PLTable.jsx"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
@@ -14,6 +17,7 @@ function PL() {
   const componentRef = useRef();
 
   const [plData, setPLData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,6 +72,7 @@ function PL() {
 
   const handleFilter = (filters) => {
     setPLData(filters)
+        setCurrentPage(1);
   };
 
   const closeModal = () => {
@@ -145,12 +150,20 @@ function PL() {
   );
 
   const MiniGross = ({ sales_data, purchase_data }) => {
+    const { user } = useAuth();
     // Helper function to calculate totals
     const calculateSalesTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
     const calculateExpenseTotal = (commission_rate, bl_qty, logistic, packing) => (commission_rate * bl_qty)+logistic+packing;
     const calculatePurchaseTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
     const calculateGross = (salesTotal, purchaseTotal, expenseTotal) => salesTotal - purchaseTotal - expenseTotal;
     const calculatePerUnit = (gross, sales_bl_qty) => gross / sales_bl_qty;
+
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = plData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
   
     return (
       <>
@@ -245,6 +258,13 @@ function PL() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = plData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
 
   return (
 
@@ -252,12 +272,14 @@ function PL() {
     
     <div className="w-full h-full rounded bg-slate-200  p-3	">
       <p className="text-xl">P&L Account Details</p>
-      <button
+      {hasPermission(user, 'create_pl') && (
+<button
         onClick={handleAddPLClick}
         className="bg-blue-500 text-white px-3 py-1 rounded"
       >
         +
       </button>
+)}
       <div>
       <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/profitloss'} 
       fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/" 
@@ -265,7 +287,8 @@ function PL() {
       </div>
       <div className=" rounded p-2">
 
-      <PLTable data={plData} onDelete={handleDelete}  onView={handleViewClick}/>
+        <PLTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pl" />
+        <Pagination itemsPerPage={50} totalItems={plData?.length || 0} paginate={paginate} currentPage={currentPage} />
       </div>
     </div>
 
@@ -275,8 +298,10 @@ function PL() {
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
               <button onClick={closeModal} className="float-right text-red-500">Close</button>
-              <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
-              <div className="p-2 max-w-8xl mx-auto" ref={componentRef}>
+              {hasPermission(user, 'print_pl') && (
+                <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              )}
+              <div className="p-4 max-w-7xl mx-auto" ref={componentRef}>
 
                 <h2 className="text-2xl mb-2 text-center">P&L Details</h2>
                 <hr className='mb-2' />

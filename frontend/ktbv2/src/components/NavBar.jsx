@@ -1,4 +1,5 @@
 function NavBar() {
+  const { user } = useAuth();
     return null;
 }
 

@@ -1,6 +1,8 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const Modal = ({ isOpen, onClose, children, maxWidth = "max-w-lg" }) => {
+  const { user } = useAuth();
   if (!isOpen) return null;
 
   return (

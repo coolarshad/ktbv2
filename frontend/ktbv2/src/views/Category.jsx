@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -7,6 +8,7 @@ import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
 
 const Category = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);

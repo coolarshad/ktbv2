@@ -11,9 +11,12 @@ import axios from '../axiosConfig';
 import { toWords } from 'number-to-words';
 import { today, addDaysToDate,dateFormatter } from '../dateUtils';
 import { BASE_URL } from '../utils';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
 
-const PreSPTable = ({ data, onDelete }) => {
-  const navigate = useNavigate();  
+const PreSPTable = ({ data, onDelete, basePerm }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const componentRef = useRef();
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -142,13 +145,17 @@ const PreSPTable = ({ data, onDelete }) => {
               </td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
               <div className="space-x-2">
-                {presp.approved && (
+                {presp.approved && hasPermission(user, `print_${basePerm}`) && (
                     <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(presp)}>Print</button>
                 )}
                  
                   <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp)}>View</button>
-                  <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
+                  {hasPermission(user, `update_${basePerm}`) && (
+                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
+                  )}
+                  {hasPermission(user, `delete_${basePerm}`) && (
+                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
+                  )}
                 </div>
                 
               </td>
@@ -166,7 +173,9 @@ const PreSPTable = ({ data, onDelete }) => {
               <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
                 <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
                   <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
-                  <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+                  {hasPermission(user, `print_${basePerm}`) && (
+                    <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+                  )}
 
                   <div className="p-4 max-w-6xl mx-auto" ref={componentRef}>
 
@@ -371,7 +380,9 @@ const PreSPTable = ({ data, onDelete }) => {
               <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
                 <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
                   <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
-                  <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+                  {hasPermission(user, `print_${basePerm}`) && (
+                    <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+                  )}
 
                     <div className="py-3 px-4 max-w-6xl mx-auto" ref={componentRef}>
 
@@ -781,10 +792,11 @@ const PreSPTable = ({ data, onDelete }) => {
               )}
 
               {selectedPresp.approved ? '' : 
+             hasPermission(user, `approve_${basePerm}`) && (
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
              </div>
-             }
+             )}
            </div>
          </div>
         )}

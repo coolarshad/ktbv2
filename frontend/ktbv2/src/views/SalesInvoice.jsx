@@ -1,6 +1,8 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const SalesInvoice = () => {
+  const { user } = useAuth();
   return (
     <div className="p-4 max-w-6xl mx-auto">
       

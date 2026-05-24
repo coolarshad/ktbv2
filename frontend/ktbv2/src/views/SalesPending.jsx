@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -6,10 +9,12 @@ import SalesPendingTable from '../components/SalesPendingTable';
 import Modal from '../components/Modal';
 
 const SalesPending = () => {
+    const { user } = useAuth();
 
 
     const navigate = useNavigate();
     const [pendingData, setPendingData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
    
@@ -49,6 +54,7 @@ const SalesPending = () => {
 
     const handleFilter = (filters) => {
       setPendingData(filters)
+        setCurrentPage(1);
     };
     
     const fieldOptions = [
@@ -62,6 +68,13 @@ const SalesPending = () => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = pendingData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
@@ -71,7 +84,8 @@ const SalesPending = () => {
         <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/sales-pending'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
-        <SalesPendingTable data={pendingData} onDelete={handleDelete} />
+        <SalesPendingTable data={currentItems} onDelete={handleDelete} />
+        <Pagination itemsPerPage={50} totalItems={pendingData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
      

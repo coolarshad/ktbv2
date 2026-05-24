@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -8,8 +11,10 @@ import FinalProductTable from '../components/FinalProductTable';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 
 const FinalProduct = () => {
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [productData, setProductData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,6 +85,7 @@ const FinalProduct = () => {
 
     const handleFilter = (filters) => {
         setProductData(filters)
+        setCurrentPage(1);
     };
 
     const fieldOptions = [
@@ -90,23 +96,33 @@ const FinalProduct = () => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = productData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
     return (
         <>
             <div className="w-full h-full rounded bg-slate-200  p-3	">
                 <p className="text-xl">Final Product Cost</p>
-                <button
+                {hasPermission(user, 'create_final_product_cost') && (
+<button
                     onClick={handleAddProductClick}
                     className="bg-blue-500 text-white px-3 py-1 rounded"
                 >
                     +
                 </button>
+)}
                 <div>
                     {/* <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} /> */}
                     <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} />
 
                 </div>
                 <div className=" rounded p-2">
-                    <FinalProductTable data={productData} onDelete={handleDelete} onView={handleViewClick} />
+                    <FinalProductTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="final_product_cost" />
+        <Pagination itemsPerPage={50} totalItems={productData?.length || 0} paginate={paginate} currentPage={currentPage} />
                 </div>
             </div>
             <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -258,7 +274,9 @@ const FinalProduct = () => {
 
                                 {selectedProduct.approved ? '' :
                                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                                        <button onClick={approveFinalProduct} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                                        {hasPermission(user, 'approve_final_product_cost') && (
+<button onClick={approveFinalProduct} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+)}
                                     </div>
                                 }
                             </div>

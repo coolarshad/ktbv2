@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import { hasPermission } from '../utils';
 
 const PackingSize = ({ mode = 'add', id = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     bottles_per_pack: '',
@@ -185,13 +188,15 @@ const PackingSize = ({ mode = 'add', id = null }) => {
             className="border border-gray-300 p-2 rounded w-full"
             required
           />
-          <button
-            type="submit"
-            className="bg-blue-500 text-white p-2 rounded"
-            disabled={loading}
-          >
-            {currentMode === 'add' ? 'Add Packing Size' : 'Update Packing Size'}
-          </button>
+          {hasPermission(user, currentMode === 'add' ? 'create_packing_size' : 'update_packing_size') && (
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-2 rounded"
+              disabled={loading}
+            >
+              {currentMode === 'add' ? 'Add Packing Size' : 'Update Packing Size'}
+            </button>
+          )}
         </div>
       </form>
 
@@ -232,20 +237,24 @@ const PackingSize = ({ mode = 'add', id = null }) => {
 
               {/* Action Buttons */}
               <div className="flex space-x-2">
-                <button
-                  onClick={() => handleUpdate(packing.id)}
-                  className="bg-green-500 text-white p-2 rounded"
-                  disabled={loading}
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => handleDelete(packing.id)}
-                  className="bg-red-500 text-white p-2 rounded"
-                  disabled={loading}
-                >
-                  Delete
-                </button>
+                {hasPermission(user, 'update_packing_size') && (
+                  <button
+                    onClick={() => handleUpdate(packing.id)}
+                    className="bg-green-500 text-white p-2 rounded"
+                    disabled={loading}
+                  >
+                    Update
+                  </button>
+                )}
+                {hasPermission(user, 'delete_packing_size') && (
+                  <button
+                    onClick={() => handleDelete(packing.id)}
+                    className="bg-red-500 text-white p-2 rounded"
+                    disabled={loading}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </li>
           ))}

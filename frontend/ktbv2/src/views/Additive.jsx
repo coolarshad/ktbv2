@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -9,8 +12,10 @@ import MultiUserSelector from "../components/MultiUserSelector";
 import AdditiveTable from '../components/AdditiveTable';
 
 const Additive = () => {
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [additiveData, setAdditiveData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,6 +96,7 @@ const Additive = () => {
 
     const handleFilter = (filters) => {
         setAdditiveData(filters)
+        setCurrentPage(1);
     };
     
     const fieldOptions = [
@@ -101,21 +107,31 @@ const Additive = () => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = additiveData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Additive Pricing</p>
-        <button
+        {hasPermission(user, 'create_additive_pricing') && (
+<button
           onClick={handleAddAdditiveClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
         >
           +
         </button>
+)}
         <div>
         <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/additives'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
-        <AdditiveTable data={additiveData} onDelete={handleDelete} onView={handleViewClick} />
+        <AdditiveTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="additive_pricing" />
+        <Pagination itemsPerPage={50} totalItems={additiveData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -192,7 +208,9 @@ const Additive = () => {
 
                 {selectedAdditive.approved ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                      <button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                      {hasPermission(user, 'approve_additive_pricing') && (
+<button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+)}
                     </div>
                   }
              </div>

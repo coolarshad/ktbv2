@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import {
   FaChartLine,
@@ -15,6 +16,7 @@ import {
 } from 'react-icons/fa';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 

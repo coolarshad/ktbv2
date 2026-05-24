@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from '../context/AuthContext';
 import axios from "../axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import MultiUserSelector from "../components/MultiUserSelector";
 
 const ProductFormulaForm = ({ mode = "add" }) => {
+  const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const [validationErrors, setValidationErrors] = useState({});

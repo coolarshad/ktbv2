@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -8,8 +11,10 @@ import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
 
 const RawCategory = () => {
+    const { user } = useAuth();
   const navigate = useNavigate();
   const [categoryData, setCategoryData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,6 +71,7 @@ const RawCategory = () => {
 
   const handleFilter = (filters) => {
     setCategoryData(filters);
+    setCurrentPage(1);
   };
 
   const handleEdit = (id) => {
@@ -106,16 +112,25 @@ const RawCategory = () => {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
+  const indexOfLastItem = currentPage * 50;
+  const indexOfFirstItem = indexOfLastItem - 50;
+  const currentItems = categoryData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+
+
   return (
     <>
       <div className="w-full h-full rounded bg-slate-200 p-3">
         <p className="text-xl">Raw Categories</p>
-        <button
+        {hasPermission(user, 'create_raw_material_category') && (
+<button
           onClick={handleAddCategoryClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
         >
           +
         </button>
+)}
         <div>
           <CostMgtFilterComponent
             checkBtn={false}
@@ -136,7 +151,7 @@ const RawCategory = () => {
               </tr>
             </thead>
             <tbody>
-              {categoryData?.map((category) => (
+              {currentItems?.map((category) => (
                 <tr key={category.id} className="border-b border-gray-200">
                   <td className="py-2 px-4 text-gray-800">{category.name}</td>
                   <td className="py-2 px-4 text-gray-800">
@@ -158,24 +173,29 @@ const RawCategory = () => {
                     >
                       View
                     </button>
-                    <button
-                      onClick={() => handleEdit(category.id)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category.id)}
-                      className="bg-red-500 text-white px-2 py-1 rounded"
-                    >
-                      Delete
-                    </button>
+                    {hasPermission(user, 'update_raw_material_category') && (
+                      <button
+                        onClick={() => handleEdit(category.id)}
+                        className="bg-yellow-500 text-white px-2 py-1 rounded mr-2"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {hasPermission(user, 'delete_raw_material_category') && (
+                      <button
+                        onClick={() => handleDelete(category.id)}
+                        className="bg-red-500 text-white px-2 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
 
             </tbody>
           </table>
+          <Pagination itemsPerPage={50} totalItems={categoryData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
 
@@ -222,7 +242,9 @@ const RawCategory = () => {
 
               {selectedCategory.approved ? '' :
                 <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                  <button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                  {hasPermission(user, 'approve_raw_material_category') && (
+<button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+)}
                 </div>
               }
             </div>

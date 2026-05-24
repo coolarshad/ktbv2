@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
@@ -8,6 +9,7 @@ import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const TradeForm = ({ mode = 'add' }) => {
+  const { user } = useAuth();
 
     const { id } = useParams();
     const navigate = useNavigate();

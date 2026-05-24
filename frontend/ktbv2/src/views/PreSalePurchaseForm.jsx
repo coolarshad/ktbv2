@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { capitalizeKey } from '../utils';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const PreSalePurchaseForm = ({ mode = 'add' }) => {
+  const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
 

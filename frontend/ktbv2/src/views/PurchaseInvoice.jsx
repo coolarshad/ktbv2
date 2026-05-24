@@ -1,6 +1,8 @@
 import React,{forwardRef} from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const PurchaseInvoice = () => {
+  const { user } = useAuth();
   return (
     <div className="p-4 max-w-6xl mx-auto" >
 

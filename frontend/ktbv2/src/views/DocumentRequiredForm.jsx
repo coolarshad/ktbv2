@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 
 const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({ name: '' });
   const [documents, setDocuments] = useState([]);
   const [currentMode, setCurrentMode] = useState(mode);

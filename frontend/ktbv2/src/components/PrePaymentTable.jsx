@@ -2,9 +2,12 @@
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dateFormatter } from '../dateUtils';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
 
-const PrePaymentTable = ({ data, onDelete, onView }) => {
+const PrePaymentTable = ({ data, onDelete, onView, basePerm }) => {
   const navigate = useNavigate();  
+  const { user } = useAuth();
   
   const handleEdit = (id) => {
     navigate(`/pre-payment-form/${id}`);  // Navigate to TradeForm with tradeId
@@ -56,14 +59,18 @@ const PrePaymentTable = ({ data, onDelete, onView }) => {
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
                  
-                <button
+                  <button
                     className="bg-green-500 text-white px-2 py-1 rounded"
                     onClick={(e) => { e.stopPropagation(); onView(item.id); }}
                   >
                     View
                   </button>
-                  <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  {hasPermission(user, `update_${basePerm}`) && (
+                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                  )}
+                  {hasPermission(user, `delete_${basePerm}`) && (
+                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  )}
                 </div>
               </td>
             </tr>

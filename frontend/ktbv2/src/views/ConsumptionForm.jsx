@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
@@ -7,6 +8,7 @@ import Select from 'react-select';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const ConsumptionForm = ({ mode = 'add' }) => {
+  const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const debounceTimerRef = useRef(null);

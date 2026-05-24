@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 
 const Units = ({ mode = 'add', unitId = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({ name: '' });
   const [units, setUnits] = useState([]);
   const [currentMode, setCurrentMode] = useState(mode);

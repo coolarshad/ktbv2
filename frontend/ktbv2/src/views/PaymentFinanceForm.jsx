@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { paymentDueDate, calculatePFCommissionValue } from '../dateUtils';
@@ -8,6 +9,7 @@ import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
+  const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });

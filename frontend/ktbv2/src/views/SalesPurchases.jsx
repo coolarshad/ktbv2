@@ -3,6 +3,9 @@ import SPTable from "../components/SPTable"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import React, { useEffect, useState, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
@@ -11,9 +14,11 @@ import { BASE_URL } from '../utils';
 import { dateFormatter, calculatePFCommissionValue } from "../dateUtils";
 
 function SalesPurchases() {
+  const { user } = useAuth();
   const componentRef = useRef();
   const navigate = useNavigate();
   const [spData, setSPData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,6 +62,7 @@ function SalesPurchases() {
 
   const handleFilter = (filters) => {
     setSPData(filters)
+        setCurrentPage(1);
   };
 
   const handleViewClick = async (tradeId) => {
@@ -119,6 +125,13 @@ function SalesPurchases() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = spData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
 
 
 
@@ -128,19 +141,22 @@ function SalesPurchases() {
     <>
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Sales and Purchase Details</p>
-        <button
+        {hasPermission(user, 'create_sales_purchases') && (
+<button
           onClick={handleAddSPClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
         >
           +
         </button>
+)}
         <div>
           <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/sales-purchases'}
             fieldOptions={fieldOptions} downloadUrl="/excel/export/sp/" 
           />
         </div>
         <div className=" rounded p-2">
-          <SPTable data={spData} onDelete={handleDelete} onView={handleViewClick} />
+          <SPTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="sales_purchases" />
+        <Pagination itemsPerPage={50} totalItems={spData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -148,7 +164,9 @@ function SalesPurchases() {
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
             <button onClick={closeModal} className="float-right text-red-500">Close</button>
-              <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              {hasPermission(user, 'print_sales_purchases') && (
+                <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              )}
               <div className="p-3 max-w-8xl mx-auto" ref={componentRef}>
 
               <h2 className="text-2xl mb-2 text-center">Sales/Purchase Details</h2>
@@ -377,7 +395,9 @@ function SalesPurchases() {
 
               {selectedSP.reviewed ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                      <button onClick={approveSP} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                      {hasPermission(user, 'approve_sales_purchases') && (
+<button onClick={approveSP} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+)}
                     </div>
                   }
             </div>

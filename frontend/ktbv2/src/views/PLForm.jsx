@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { capitalizeKey } from '../utils';
 
 const PLForm = ({ mode = 'add' }) => {
+  const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
 

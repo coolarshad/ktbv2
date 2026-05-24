@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { FaHistory, FaFilter } from 'react-icons/fa';
 import axios from '../axiosConfig';
 
@@ -48,6 +49,7 @@ const PAGE_OPTIONS = [
 ];
 
 export default function AuditLog() {
+  const { user } = useAuth();
   const [selectedPage, setSelectedPage] = useState('');
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);

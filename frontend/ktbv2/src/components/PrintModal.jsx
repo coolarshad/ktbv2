@@ -1,6 +1,8 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const PrintModal = ({ isOpen, onClose, children }) => {
+  const { user } = useAuth();
   if (!isOpen) return null;
 
   return (

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import { BASE_URL } from '../utils';
 
 const TradeReport = () => {
+  const { user } = useAuth();
     const [formData, setFormData] = useState({ trn: '' });
     const [trnOptions, setTrnOptions] = useState([]);
     const [reportData, setReportData] = useState(null);

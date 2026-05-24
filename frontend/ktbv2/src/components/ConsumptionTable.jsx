@@ -1,8 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
 
-const ConsumptionTable = ({ data , onDelete, onView }) => { // Default value for data
+const ConsumptionTable = ({ data , onDelete, onView, basePerm }) => { // Default value for data
   const navigate = useNavigate();  
+  const { user } = useAuth();
   
   const handleEdit = (id) => {
     navigate(`/consumption-form/${id}`);  
@@ -59,8 +62,12 @@ const ConsumptionTable = ({ data , onDelete, onView }) => { // Default value for
                   >
                     View
                   </button>
-                  <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  {hasPermission(user, `update_${basePerm}`) && (
+                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                  )}
+                  {hasPermission(user, `delete_${basePerm}`) && (
+                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  )}
                 </div>
               </td>
             </tr>

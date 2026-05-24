@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -7,6 +8,7 @@ import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const Kyc = () => {
+  const { user } = useAuth();
 
 
     const navigate = useNavigate();

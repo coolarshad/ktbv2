@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import Pagination from '../components/Pagination';
 
 function PackingConsumption() {
+  const { user } = useAuth();
+  const [currentPage, setCurrentPage] = useState(1);
     const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
 
@@ -80,6 +84,7 @@ function PackingConsumption() {
         }
 
         setFilteredData(filtered);
+        setCurrentPage(1);
     };
 
     // 🔄 Reset
@@ -88,7 +93,15 @@ function PackingConsumption() {
         setSearchTerm("");
         setFromDate("");
         setToDate("");
+        setCurrentPage(1);
     };
+
+  const indexOfLastItem = currentPage * 50;
+  const indexOfFirstItem = indexOfLastItem - 50;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+
 
     return (
         <>
@@ -163,8 +176,8 @@ function PackingConsumption() {
                     </thead>
 
                     <tbody>
-                        {filteredData.length > 0 ? (
-                            filteredData.map((item) => (
+                        {currentItems.length > 0 ? (
+                            currentItems.map((item) => (
                                 <tr key={item.id} className="text-center">
                                     <td className="border p-2">{item.final_product_name}</td>
                                     <td className="border p-2">{item.packing_name}</td>
@@ -183,6 +196,7 @@ function PackingConsumption() {
                         )}
                     </tbody>
                 </table>
+          <Pagination itemsPerPage={50} totalItems={filteredData.length} paginate={paginate} currentPage={currentPage} />
             </div>
         </>
     );

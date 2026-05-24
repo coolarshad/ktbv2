@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import Modal from '../components/Modal';
 import { toast } from 'react-toastify';
 
 const Users = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(true);

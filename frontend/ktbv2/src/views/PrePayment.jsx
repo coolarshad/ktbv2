@@ -2,6 +2,9 @@ import NavBar from "../components/NavBar"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import React, { useEffect, useState, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
@@ -11,10 +14,12 @@ import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
 
 function PrePayment() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const componentRef = useRef();
 
   const [prePaymentData, setPrePaymentData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,6 +99,7 @@ function PrePayment() {
 
   const handleFilter = (filters) => {
     setPrePaymentData(filters)
+        setCurrentPage(1);
   };
 
   const fieldOptions = [
@@ -113,23 +119,33 @@ function PrePayment() {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
+
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = prePaymentData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
   return (
     <>
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Pre-Payments/ LC's Details</p>
-        <button
+        {hasPermission(user, 'create_pre_payment') && (
+<button
           onClick={handleAddPreSPClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
         >
           +
         </button>
+)}
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-payments'} 
         fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" 
         />
         </div>
         <div className=" rounded p-2">
-        <PrePaymentTable data={prePaymentData} onDelete={handleDelete} onView={handleViewClick} />
+        <PrePaymentTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pre_payment" />
+        <Pagination itemsPerPage={50} totalItems={prePaymentData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -137,7 +153,9 @@ function PrePayment() {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+             {hasPermission(user, 'print_pre_payment') && (
+                <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              )}
              <div className="p-4 max-w-7xl mx-auto" ref={componentRef}>
 
              <h2 className="text-2xl mb-2 text-center">Pre-Payments/ LC's Details</h2>
@@ -290,10 +308,11 @@ function PrePayment() {
            )}
 
            {selectedPrePayment.reviewed ? '' : 
+             hasPermission(user, 'review_pre_payment') && (
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
              </div>
-             }
+             )}
             
            </div>
          </div>

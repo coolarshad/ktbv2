@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 
 const ShipmentSize = ({ mode = 'add', id = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({ name: '' });
   const [sizes, setSizes] = useState([]);
   const [currentMode, setCurrentMode] = useState(mode);

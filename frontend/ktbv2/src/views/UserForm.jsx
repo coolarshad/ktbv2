@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from "react-router-dom";
 import axios from '../axiosConfig';
 import { toast } from "react-toastify";
 
 const UserForm = ({ mode }) => {
+  const { user } = useAuth();
   const { id: userId } = useParams();
   const navigate = useNavigate();
 
@@ -14,6 +16,7 @@ const UserForm = ({ mode }) => {
     designation: '',
     role: '',
     reports_to: '',
+    password: '',
   });
 
   const [allPermissions, setAllPermissions] = useState([]);
@@ -49,6 +52,7 @@ const UserForm = ({ mode }) => {
           designation: data.designation || '',
           role: data.role || '',
           reports_to: data.reports_to || '',
+          password: '',
         });
 
         // Extract permission IDs from data.permissions
@@ -103,6 +107,10 @@ const UserForm = ({ mode }) => {
       ...formData,
       permission_ids: selectedPermissions
     };
+
+    if (!payload.password) {
+      delete payload.password;
+    }
 
     const request = userId
       ? axios.put(`/accounts/users/${userId}/`, payload)
@@ -166,6 +174,21 @@ const UserForm = ({ mode }) => {
           </div>
         ))}
         
+        {!userId && (
+          <div>
+            <label className="block mb-1 font-medium">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+              minLength={8}
+            />
+          </div>
+        )}
+
         <div>
           <label className="block mb-1 font-medium">Role</label>
           <select

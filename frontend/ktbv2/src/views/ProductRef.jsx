@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -6,10 +9,12 @@ import PurchaseTraceTable from '../components/PurchaseTraceTable';
 import ProductRefTable from '../components/ProductRefTable';
 
 const ProductRef = () => {
+    const { user } = useAuth();
 
 
     const navigate = useNavigate();
     const [refData, setRefData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
    
@@ -49,6 +54,7 @@ const ProductRef = () => {
 
     const handleFilter = (filters) => {
       setRefData(filters)
+        setCurrentPage(1);
     };
     
     const fieldOptions = [
@@ -59,6 +65,13 @@ const ProductRef = () => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = refData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
@@ -68,7 +81,8 @@ const ProductRef = () => {
         <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/product-ref'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
-        <ProductRefTable data={refData} onDelete={handleDelete} />
+        <ProductRefTable data={currentItems} onDelete={handleDelete} />
+        <Pagination itemsPerPage={50} totalItems={refData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
      

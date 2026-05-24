@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../axiosConfig";
 import { capitalizeKey } from "../utils";
 
 const AdditivesCategoryForm = ({ mode = "add" }) => {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);

@@ -1,5 +1,8 @@
 import NavBar from "../components/NavBar"
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import TradeTable from "../components/TradeTable"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
@@ -10,8 +13,10 @@ import { BASE_URL } from "../utils";
 import {dateFormatter} from '../dateUtils';
 
 function TradeApproval() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [tradeData, setTradeData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -125,20 +130,30 @@ function TradeApproval() {
 
   const handleFilter = (filters) => {
     setTradeData(filters)
+        setCurrentPage(1);
   };
   
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
+
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = tradeData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
   return (
     <>
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Trade Approvals</p>
-        <button
+        {hasPermission(user, 'create_trade_approval') && (
+<button
           onClick={handleAddTradeClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
         >
           +
         </button>
+)}
         <div>
         <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades/'} fieldOptions={[
         { value: 'trn', label: 'TRN' },
@@ -146,7 +161,8 @@ function TradeApproval() {
       ]} extraParams={{approved:false}} downloadUrl="/excel/export/trade/" />
         </div>
         <div className=" rounded py-2">
-        <TradeTable data={tradeData} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} />
+        <TradeTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} basePerm="trade_approval" />
+        <Pagination itemsPerPage={50} totalItems={tradeData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       {/* <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} trade={selectedTrade} /> */}
@@ -500,15 +516,17 @@ function TradeApproval() {
              )}
 
              {selectedTrade.approved ? '' : 
+             hasPermission(user, 'review_trade_approval') && (
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={approveTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
              </div>
-             }
+             )}
              {selectedTrade.reviewed ? '' : 
+             hasPermission(user, 'approve_trade_approval') && (
              <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
              <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
              </div>
-             }
+             )}
            </div>
          </div>
         )}

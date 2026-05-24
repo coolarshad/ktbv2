@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
@@ -9,8 +12,10 @@ import MultiUserSelector from "../components/MultiUserSelector";
 import PackingTable from '../components/PackingTable';
 
 const Packing = () => {
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [packingData, setPackingData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,6 +94,7 @@ const Packing = () => {
 
     const handleFilter = (filters) => {
         setPackingData(filters)
+        setCurrentPage(1);
     };
     
     const fieldOptions = [
@@ -99,21 +105,31 @@ const Packing = () => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = packingData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
     return (
         <>
         <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Packing Price</p>
-        <button
+        {hasPermission(user, 'create_packing_price') && (
+<button
           onClick={handleAddPackingClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
         >
           +
         </button>
+)}
         <div>
         <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/packings'} fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
-        <PackingTable data={packingData} onDelete={handleDelete} onView={handleViewClick} />
+        <PackingTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="packing_price" />
+        <Pagination itemsPerPage={50} totalItems={packingData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -177,7 +193,9 @@ const Packing = () => {
 
                 {selectedPacking.approved ? '' :
                     <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                      <button onClick={approvePacking} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                      {hasPermission(user, 'approve_packing_price') && (
+<button onClick={approvePacking} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+)}
                     </div>
                   }
              </div>

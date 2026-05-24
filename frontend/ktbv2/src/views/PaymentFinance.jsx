@@ -2,6 +2,9 @@ import NavBar from "../components/NavBar"
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import React, { useEffect, useState,useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
+import Pagination from '../components/Pagination';
 import PFTable from "../components/PFTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
@@ -11,9 +14,11 @@ import { paymentDueDate,calculateRemainingContractValue, calculatePFCommissionVa
 import ReactToPrint from 'react-to-print';
 
 function PaymentFinance() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const componentRef = useRef();
   const [pfData, setPFData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,6 +63,7 @@ function PaymentFinance() {
 
   const handleFilter = (filters) => {
     setPFData(filters)
+        setCurrentPage(1);
   };
 
   const reviewTrade = async () => {
@@ -114,6 +120,13 @@ function PaymentFinance() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
+    const indexOfLastItem = currentPage * 50;
+    const indexOfFirstItem = indexOfLastItem - 50;
+    const currentItems = pfData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    
+
 
 
 
@@ -121,19 +134,22 @@ function PaymentFinance() {
     <>
       <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">Payment and Finance Details</p>
-        <button
+        {hasPermission(user, 'create_payment_finance') && (
+<button
           onClick={handleAddPreSPClick}
           className="bg-blue-500 text-white px-3 py-1 rounded"
         >
           +
         </button>
+)}
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/payment-finances/'} 
         fieldOptions={fieldOptions} downloadUrl="/excel/export/pf/" 
         />
         </div>
         <div className=" rounded p-2">
-        <PFTable data={pfData} onDelete={handleDelete} onView={handleViewClick}/>
+        <PFTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="payment_finance" />
+        <Pagination itemsPerPage={50} totalItems={pfData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -141,7 +157,9 @@ function PaymentFinance() {
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
               <button onClick={closeModal} className="float-right text-red-500">Close</button>
-              <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              {hasPermission(user, 'print_payment_finance') && (
+                <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              )}
               <div className="p-3 max-w-8xl mx-auto" ref={componentRef}>
               <h2 className="text-2xl mb-2 text-center">P&F Details</h2>
               <hr className='mb-2' />

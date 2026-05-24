@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 
 const Company = ({ mode = 'add', companyId = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     initial: '',

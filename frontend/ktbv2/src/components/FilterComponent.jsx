@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { FaDownload } from 'react-icons/fa'; // Importing a download icon
 import axios from '../axiosConfig';
 
 const FilterComponent = ({flag, onFilter,apiEndpoint,fieldOptions,extraParams, checkBtn=true,downloadUrl = '/excel/export/trade/', }) => {
+  const { user } = useAuth();
   const [field, setField] = useState('');
   const [searchText, setSearchText] = useState('');
   const [dateFrom, setDateFrom] = useState('');

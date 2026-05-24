@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 
 const Bank = ({ mode = 'add', bankId = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     account_number: '',

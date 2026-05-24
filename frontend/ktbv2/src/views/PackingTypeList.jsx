@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import { hasPermission } from '../utils';
 
 const PackingTypeList = ({ mode = 'add', id = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({ name: '' });
   const [packing, setPacking] = useState([]);
   const [currentMode, setCurrentMode] = useState(mode);
@@ -93,12 +96,14 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
             placeholder="Packing Type Name"
             className="border border-gray-300 p-2 rounded w-full"
           />
-          <button
-            type="submit"
-            className="bg-blue-500 text-white p-2 rounded"
-          >
-            {currentMode === 'add' ? 'Add Packing Type' : 'Update Packing Type'}
-          </button>
+          {hasPermission(user, currentMode === 'add' ? 'create_packing_type' : 'update_packing_type') && (
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-2 rounded"
+            >
+              {currentMode === 'add' ? 'Add Packing Type' : 'Update Packing Type'}
+            </button>
+          )}
         </div>
       </form>
 
@@ -114,18 +119,22 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
                 <h3 className="text-lg font-medium">{curr.name}</h3>
               </div>
               <div className="flex space-x-2">
-                <button
-                  onClick={() => handleUpdate(curr.id)}
-                  className="bg-green-500 text-white p-2 rounded"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => handleDelete(curr.id)}
-                  className="bg-red-500 text-white p-2 rounded"
-                >
-                  Delete
-                </button>
+                {hasPermission(user, 'update_packing_type') && (
+                  <button
+                    onClick={() => handleUpdate(curr.id)}
+                    className="bg-green-500 text-white p-2 rounded"
+                  >
+                    Update
+                  </button>
+                )}
+                {hasPermission(user, 'delete_packing_type') && (
+                  <button
+                    onClick={() => handleDelete(curr.id)}
+                    className="bg-red-500 text-white p-2 rounded"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </li>
           ))}

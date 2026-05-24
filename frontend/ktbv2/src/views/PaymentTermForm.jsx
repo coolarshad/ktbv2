@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 
 const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     advance_in_percentage: '',

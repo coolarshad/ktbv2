@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import Select from 'react-select';
 
 const MultiUserSelector = ({ selectedUsers = [], onChange }) => {
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 

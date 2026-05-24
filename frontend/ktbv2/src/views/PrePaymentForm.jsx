@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { today, addDaysToDate, advanceToPay, advanceToReceive } from '../dateUtils';
@@ -8,6 +9,7 @@ import MultiUserSelector from '../components/MultiUserSelector';
 import debounce from 'lodash/debounce';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
+  const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate()
 

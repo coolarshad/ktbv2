@@ -1,13 +1,16 @@
 // src/components/TradeTable.js
-import React,{useState,useRef,useMemo} from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PrintModal from './PrintModal';
 import ReactToPrint from 'react-to-print';
 import axios from '../axiosConfig';
 import { dateFormatter } from '../dateUtils';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils';
 
-const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
-  const navigate = useNavigate();  
+const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const componentRef = useRef();
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -40,59 +43,63 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
 
   return (
     <>
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
-            
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th>
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th> */}
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
+
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th>
+              {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th> */}
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
             {sortedData.map((trade, index) => (
-                <tr key={index} onClick={() => onRowClick(trade.id)}>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
+              <tr key={index} onClick={() => onRowClick(trade.id)}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
 
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.trd)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.trd)}</td>
 
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.approval_date)}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
-                  {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => { }} />
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                    <div className="space-x-2">
-                      {trade.reviewed ? <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={() => handlePrintClick(trade.id)}>Print</button> : ''}
-                      <button
-                        className="bg-blue-500 text-white px-2 py-1 rounded"
-                        onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
-                      >
-                        View
-                      </button>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.approval_date)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => { }} />
+                </td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <div className="space-x-2">
+                    {trade.reviewed && hasPermission(user, `print_${basePerm}`) ? <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={() => handlePrintClick(trade.id)}>Print</button> : ''}
+                    <button
+                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                      onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
+                    >
+                      View
+                    </button>
+                    {hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(trade.id)}>Edit</button>
+                    )}
+                    {hasPermission(user, `delete_${basePerm}`) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(trade.id)}>Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-        </tbody>
-      </table>
-    </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <PrintModal isOpen={isPrintModalOpen} onClose={closePrintModal}>
         {selectedTrade && (
@@ -100,22 +107,24 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
               <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
-              <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              {hasPermission(user, `print_${basePerm}`) && (
+                <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+              )}
               <div className="p-4 max-w-6xl mx-auto" ref={componentRef}>
 
-               
-              
 
-                    <h2 className="text-2xl mb-2 text-center">Trade Details</h2>
-                    <hr className='mb-2' />
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
-                        <thead className="bg-gray-100 border-b border-gray-200">
-                          <tr>
-                            <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
-                            <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
-                          </tr>
-                        </thead>
+
+
+                <h2 className="text-2xl mb-2 text-center">Trade Details</h2>
+                <hr className='mb-2' />
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                    <thead className="bg-gray-100 border-b border-gray-200">
+                      <tr>
+                        <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                        <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                      </tr>
+                    </thead>
 
                     <tbody>
                       <tr className="border-b border-gray-200">
@@ -291,7 +300,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                 <div className="overflow-x-auto">
                   {selectedTrade.tradeProducts.map((product, index) => (
                     <div key={index} className="grid grid-cols-3 gap-2 mb-4 p-4 border border-gray-200 rounded-md shadow-sm bg-white">
-                      
+
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Code:</span>
                         <span>{product.product_code}</span>
@@ -396,7 +405,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                         <td className="font-medium">Container Shipment Size</td>
                         <span>{product.shipmentSize.name}</span>
                       </tr>
-                       <tr className="flex flex-col">
+                      <tr className="flex flex-col">
                         <td className="font-medium">Logistic Cost</td>
                         <span>{product.logistic}</span>
                       </tr>
@@ -409,25 +418,25 @@ const TradeTable = ({ data, onDelete, onView, onRowClick }) => {
                 </div>
 
 
-                    <h3 className="text-lg mt-4 text-center">Trade Extra Costs</h3>
-                    <table className="min-w-full bg-white">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Extra Cost</th>
-                          <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Extra Cost Remarks</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedTrade.trade_extra_costs.map(cost => (
-                          <tr key={cost.id}>
-                            <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.extra_cost}</td>
-                            <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.extra_cost_remarks}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                   
-                  
+                <h3 className="text-lg mt-4 text-center">Trade Extra Costs</h3>
+                <table className="min-w-full bg-white">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Extra Cost</th>
+                      <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Extra Cost Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedTrade.trade_extra_costs.map(cost => (
+                      <tr key={cost.id}>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.extra_cost}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.extra_cost_remarks}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+
 
 
               </div>

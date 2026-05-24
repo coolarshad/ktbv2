@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
@@ -8,6 +9,7 @@ import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
+  const { user } = useAuth();
     const { id } = useParams();
     const [trnOptions, setTrnOptions] = useState([]);
     const [validationErrors, setValidationErrors] = useState({});
