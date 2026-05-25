@@ -60,7 +60,12 @@ class NotificationViewSetMixin:
         return response
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().prefetch_related(
+        'children',
+        'children__children',
+        'children__children__children',
+        'children__children__children__children'
+    )
     serializer_class = CategorySerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = CategoryFilter
@@ -75,7 +80,12 @@ class PackingViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewse
     filterset_class = PackingFilter
 
 class RawCategoryViewSet(viewsets.ModelViewSet):
-    queryset = RawCategory.objects.all()
+    queryset = RawCategory.objects.all().prefetch_related(
+        'children',
+        'children__children',
+        'children__children__children',
+        'children__children__children__children'
+    )
     serializer_class = RawCategorySerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = RawCategoryFilter
@@ -103,7 +113,12 @@ class RawMaterialViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, vi
     filterset_class = RawMaterialFilter
 
 class AdditiveCategoryViewSet(viewsets.ModelViewSet):
-    queryset = AdditiveCategory.objects.all()
+    queryset = AdditiveCategory.objects.all().prefetch_related(
+        'children',
+        'children__children',
+        'children__children__children',
+        'children__children__children__children'
+    )
     serializer_class = AdditiveCategorySerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = AdditiveCategoryFilter

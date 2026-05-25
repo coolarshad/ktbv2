@@ -18,8 +18,9 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'parent', 'parent_name', 'children']
 
     def get_children(self, obj):
-        if obj.children.exists():
-            return CategorySerializer(obj.children.all(), many=True).data
+        children = obj.children.all()
+        if len(children) > 0:
+            return CategorySerializer(children, many=True).data
         return []
 
 
@@ -97,8 +98,9 @@ class RawCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'parent', 'approved' ,'parent_name', 'children']
 
     def get_children(self, obj):
-        if obj.children.exists():
-            return RawCategorySerializer(obj.children.all(), many=True).data
+        children = obj.children.all()
+        if len(children) > 0:
+            return RawCategorySerializer(children, many=True).data
         return []
 
 class RMExtraSerializer(serializers.ModelSerializer):
@@ -163,8 +165,9 @@ class AdditiveCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'parent','approved' ,'parent_name', 'children']
 
     def get_children(self, obj):
-        if obj.children.exists():
-            return AdditiveCategorySerializer(obj.children.all(), many=True).data
+        children = obj.children.all()
+        if len(children) > 0:
+            return AdditiveCategorySerializer(children, many=True).data
         return []
 
 class AdditiveExtraSerializer(serializers.ModelSerializer):
