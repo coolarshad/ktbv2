@@ -104,14 +104,7 @@ class RawCategory(models.Model):
         verbose_name_plural = _("RawCategories")
         ordering = ['-id'] 
 
-    def __str__(self):
-        full_path = [self.name]
-        k = self.parent
-        while k is not None:
-            full_path.append(k.name)
-            k = k.parent
-        return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
-    
+   
 class RawMaterial(models.Model):
     # name = models.CharField(max_length=50)
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
@@ -176,13 +169,7 @@ class AdditiveCategory(models.Model):
         verbose_name_plural = _("AdditiveCategories")
         ordering = ['-id'] 
 
-    def __str__(self):
-        full_path = [self.name]
-        k = self.parent
-        while k is not None:
-            full_path.append(k.name)
-            k = k.parent
-        return " -> ".join(full_path[::-1])  # Root → ... → SubCategory
+   
     
 class Additive(models.Model):
     # name=models.CharField(max_length=50)
