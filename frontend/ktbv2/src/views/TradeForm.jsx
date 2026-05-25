@@ -9,7 +9,7 @@ import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const TradeForm = ({ mode = 'add' }) => {
-  const { user } = useAuth();
+    const { user } = useAuth();
 
     const { id } = useParams();
     const navigate = useNavigate();
@@ -776,7 +776,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6  w-full mx-auto">
-
+            <h2 className="text-2xl mt-2 text-center">Trade Form</h2>
             <div className="grid grid-cols-3 gap-4 p-4 ">
                 <div>
                     <label htmlFor="trade_type" className="block text-sm font-medium text-gray-700">Select Trade Type</label>

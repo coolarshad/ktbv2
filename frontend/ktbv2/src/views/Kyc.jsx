@@ -12,121 +12,121 @@ const Kyc = () => {
   const { user } = useAuth();
 
 
-    const navigate = useNavigate();
-    const [kycData, setKycData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedKyc, setSelectedKyc] = useState(null);
-    const [notifiedUsers, setNotifiedUsers] = useState([]);
+  const navigate = useNavigate();
+  const [kycData, setKycData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedKyc, setSelectedKyc] = useState(null);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
 
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const response = await axios.get('/trademgt/kyc/'); 
-          setKycData(response.data);
-        } catch (error) {
-          setError('Failed to fetch trade data');
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-      fetchData();
-    }, []);
-
-    const handleAddKycClick = () => {
-      navigate('/kyc-form');
-    };
-
-    const handleDelete = async (id) => {
-      const confirmed = window.confirm('Are you sure you want to delete this kyc?');
-      if (confirmed) {
-        try {
-          await axios.delete(`/trademgt/kyc/${id}/`);
-          setKycData(kycData.filter(kyc => kyc.id !== id));
-          alert('KYC deleted successfully.');
-        } catch (error) {
-          console.error('Error deleting KYC:', error);
-          alert('Failed to delete KYC.');
-        }
-      }
-    };
-
-    const handleViewClick = async (id) => {
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`/trademgt/kyc/${id}/`);
-        setSelectedKyc(response.data);
-        setIsModalOpen(true);
+        const response = await axios.get('/trademgt/kyc/');
+        setKycData(response.data);
       } catch (error) {
-        console.error('Error fetching kyc details:', error);
+        setError('Failed to fetch trade data');
+      } finally {
+        setLoading(false);
       }
     };
 
-    const closeModal = () => {
+    fetchData();
+  }, []);
+
+  const handleAddKycClick = () => {
+    navigate('/kyc-form');
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm('Are you sure you want to delete this kyc?');
+    if (confirmed) {
+      try {
+        await axios.delete(`/trademgt/kyc/${id}/`);
+        setKycData(kycData.filter(kyc => kyc.id !== id));
+        alert('KYC deleted successfully.');
+      } catch (error) {
+        console.error('Error deleting KYC:', error);
+        alert('Failed to delete KYC.');
+      }
+    }
+  };
+
+  const handleViewClick = async (id) => {
+    try {
+      const response = await axios.get(`/trademgt/kyc/${id}/`);
+      setSelectedKyc(response.data);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching kyc details:', error);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedKyc(null);
+    setNotifiedUsers([]);
+  };
+
+
+  const handleFilter = (filters) => {
+    setKycData(filters)
+  };
+
+  const approveKycOne = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
+    try {
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/kyc-approve-one/${selectedKyc.id}/?${params.toString()}`);
       setIsModalOpen(false);
       setSelectedKyc(null);
       setNotifiedUsers([]);
-    };
-  
+      // Reload the page
+      window.location.reload();
+    } catch (error) {
+      console.error('Error approving Kyc:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
 
-    const handleFilter = (filters) => {
-      setKycData(filters)
-    };
+  const approveKycTwo = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
+    try {
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      await axios.get(`/trademgt/kyc-approve-two/${selectedKyc.id}/?${params.toString()}`);
+      setIsModalOpen(false);
+      setSelectedKyc(null);
+      setNotifiedUsers([]);
+      // Reload the page
+      window.location.reload();
+    } catch (error) {
+      console.error('Error approving Kyc:', error);
+      // Optionally, handle the error (e.g., show a user-friendly error message)
+    }
+  };
 
-    const approveKycOne = async () => {
-      if (!notifiedUsers || notifiedUsers.length === 0) {
-        alert("Please select at least one user to notify before approving.");
-        return;
-      }
-      try {
-        const params = new URLSearchParams();
-        notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
-        await axios.get(`/trademgt/kyc-approve-one/${selectedKyc.id}/?${params.toString()}`);
-        setIsModalOpen(false);
-        setSelectedKyc(null);
-        setNotifiedUsers([]);
-        // Reload the page
-        window.location.reload();
-      } catch (error) {
-        console.error('Error approving Kyc:', error);
-        // Optionally, handle the error (e.g., show a user-friendly error message)
-      }
-    };
-    
-    const approveKycTwo = async () => {
-      if (!notifiedUsers || notifiedUsers.length === 0) {
-        alert("Please select at least one user to notify before approving.");
-        return;
-      }
-      try {
-        const params = new URLSearchParams();
-        notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
-        await axios.get(`/trademgt/kyc-approve-two/${selectedKyc.id}/?${params.toString()}`);
-        setIsModalOpen(false);
-        setSelectedKyc(null);
-        setNotifiedUsers([]);
-        // Reload the page
-        window.location.reload();
-      } catch (error) {
-        console.error('Error approving Kyc:', error);
-        // Optionally, handle the error (e.g., show a user-friendly error message)
-      }
-    };
-    
-    const fieldOptions = [
-      { value: 'name', label: 'Name' },  // Trade TRN field in PreSalePurchase filter
-      { value: 'companyRegNo', label: 'Company Reg No' },
-      { value: 'person1', label: 'Person 1' },
-      { value: 'person2', label: 'Person 2' },
-    ];
+  const fieldOptions = [
+    { value: 'name', label: 'Name' },  // Trade TRN field in PreSalePurchase filter
+    { value: 'companyRegNo', label: 'Company Reg No' },
+    { value: 'person1', label: 'Person 1' },
+    { value: 'person2', label: 'Person 2' },
+  ];
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>{error}</p>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
 
-    return (
-        <>
-        <div className="w-full h-full rounded bg-slate-200  p-3	">
+  return (
+    <>
+      <div className="w-full h-full rounded bg-slate-200  p-3	">
         <p className="text-xl">KYC</p>
         {hasPermission(user, 'create_kyc') && (
           <button
@@ -137,91 +137,91 @@ const Kyc = () => {
           </button>
         )}
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/kyc'} fieldOptions={fieldOptions} downloadUrl="/excel/export/kyc/"/>
+          <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/kyc'} fieldOptions={fieldOptions} downloadUrl="/excel/export/kyc/" />
         </div>
         <div className=" rounded p-2">
-        <KycTable data={kycData} onDelete={handleDelete} onView={handleViewClick} />
+          <KycTable data={kycData} onDelete={handleDelete} onView={handleViewClick} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         {selectedKyc && (
-           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-           <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
-             <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <h2 className="text-2xl mb-2 text-center">Trade Details</h2>
-             <hr className='mb-2' />
-             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
-                <thead className="bg-gray-100 border-b border-gray-200">
-                  <tr>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
-                  </tr>
-                </thead>
-             
-                <tbody>
-                  
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.date}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.name}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Company Reg.No</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.companyRegNo}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Reg Address</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.regAddress}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Mailing Address</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.mailingAddress}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Telephone</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.telephone}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Fax</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.fax}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Person 1</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.person1}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Designation 1</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.designation1}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Mobile 1</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.mobile1}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Email 1</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.email1}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Person 2</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.person2}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Designation 2</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.designation2}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Mobile 2</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.mobile2}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Email 2</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.email2}</td>
-                  </tr>
-                  {/* <tr className="border-b border-gray-200">
+          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
+              <button onClick={closeModal} className="float-right text-red-500">Close</button>
+              <h2 className="text-2xl mb-2 text-center">KYC Details</h2>
+              <hr className='mb-2' />
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                  <thead className="bg-gray-100 border-b border-gray-200">
+                    <tr>
+                      <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                      <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.date}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.name}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Company Reg.No</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.companyRegNo}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Reg Address</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.regAddress}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Mailing Address</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.mailingAddress}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Telephone</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.telephone}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Fax</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.fax}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Person 1</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.person1}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Designation 1</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.designation1}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Mobile 1</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.mobile1}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Email 1</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.email1}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Person 2</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.person2}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Designation 2</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.designation2}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Mobile 2</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.mobile2}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Email 2</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.email2}</td>
+                    </tr>
+                    {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Banker</td>
                     <td className="py-2 px-4 text-gray-800">{selectedKyc.banker}</td>
                   </tr>
@@ -237,78 +237,78 @@ const Kyc = () => {
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>
                     <td className="py-2 px-4 text-gray-800">{selectedKyc.accountNumber}</td>
                   </tr> */}
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 1</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.approve1? "Yes":"No"}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 2</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedKyc.approve2? "Yes":"No"}</td>
-                  </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 1</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.approve1 ? "Yes" : "No"}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 2</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedKyc.approve2 ? "Yes" : "No"}</td>
+                    </tr>
 
-                   <tr className="bg-gray-200 font-semibold">
-                    <td className="py-2 px-4" colSpan={2}>Bank Details</td>
+                    <tr className="bg-gray-200 font-semibold">
+                      <td className="py-2 px-4" colSpan={2}>Bank Details</td>
+                    </tr>
+                    {selectedKyc.bank_details && selectedKyc.bank_details.length > 0 ? (
+                      selectedKyc.bank_details.map((bank, index) => (
+                        <React.Fragment key={index}>
+                          <tr className="border-b border-gray-200 bg-gray-50">
+                            <td className="py-2 px-4 font-medium capitalize">Banker #{index + 1}</td>
+                            <td className="py-2 px-4">{bank.banker}</td>
+                          </tr>
+                          <tr className="border-b border-gray-200 bg-gray-50">
+                            <td className="py-2 px-4 font-medium capitalize">Address #{index + 1}</td>
+                            <td className="py-2 px-4">{bank.address}</td>
+                          </tr>
+                          <tr className="border-b border-gray-200 bg-gray-50">
+                            <td className="py-2 px-4 font-medium capitalize">Swift Code #{index + 1}</td>
+                            <td className="py-2 px-4">{bank.swiftCode}</td>
+                          </tr>
+                          <tr className="border-b border-gray-200 bg-gray-50">
+                            <td className="py-2 px-4 font-medium capitalize">Account Number #{index + 1}</td>
+                            <td className="py-2 px-4">{bank.accountNumber}</td>
+                          </tr>
+                        </React.Fragment>
+                      ))
+                    ) : (
+                      <tr>
+                        <td className="py-2 px-4 text-gray-600" colSpan={2}>No bank details available</td>
                       </tr>
-                      {selectedKyc.bank_details && selectedKyc.bank_details.length > 0 ? (
-                        selectedKyc.bank_details.map((bank, index) => (
-                          <React.Fragment key={index}>
-                            <tr className="border-b border-gray-200 bg-gray-50">
-                              <td className="py-2 px-4 font-medium capitalize">Banker #{index + 1}</td>
-                              <td className="py-2 px-4">{bank.banker}</td>
-                            </tr>
-                            <tr className="border-b border-gray-200 bg-gray-50">
-                              <td className="py-2 px-4 font-medium capitalize">Address #{index + 1}</td>
-                              <td className="py-2 px-4">{bank.address}</td>
-                            </tr>
-                            <tr className="border-b border-gray-200 bg-gray-50">
-                              <td className="py-2 px-4 font-medium capitalize">Swift Code #{index + 1}</td>
-                              <td className="py-2 px-4">{bank.swiftCode}</td>
-                            </tr>
-                            <tr className="border-b border-gray-200 bg-gray-50">
-                              <td className="py-2 px-4 font-medium capitalize">Account Number #{index + 1}</td>
-                              <td className="py-2 px-4">{bank.accountNumber}</td>
-                            </tr>
-                          </React.Fragment>
-                        ))
-                      ) : (
-                        <tr>
-                          <td className="py-2 px-4 text-gray-600" colSpan={2}>No bank details available</td>
-                        </tr>
-                      )}
+                    )}
 
-                </tbody>
+                  </tbody>
                 </table>
-                
-                  {(!selectedKyc.approve1 || !selectedKyc.approve2) && (
-                    <div className="mt-6 border-t pt-4">
-                      <MultiUserSelector 
-                        selectedUsers={notifiedUsers} 
-                        onChange={setNotifiedUsers} 
-                      />
-                    </div>
-                  )}
 
-                  {selectedKyc.approve1 || !hasPermission(user, 'approve_kyc') ? '' :
-                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                      <button onClick={approveKycOne} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>
-                    </div>
-                  }
-                  {selectedKyc.approve2 || !hasPermission(user, 'approve_kyc') ? '' :
-                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                      <button onClick={approveKycTwo} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 2</button>
-                    </div>
-                  }
+                {(!selectedKyc.approve1 || !selectedKyc.approve2) && (
+                  <div className="mt-6 border-t pt-4">
+                    <MultiUserSelector
+                      selectedUsers={notifiedUsers}
+                      onChange={setNotifiedUsers}
+                    />
+                  </div>
+                )}
 
-                 
+                {selectedKyc.approve1 || !hasPermission(user, 'approve_kyc') ? '' :
+                  <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                    <button onClick={approveKycOne} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>
+                  </div>
+                }
+                {selectedKyc.approve2 || !hasPermission(user, 'approve_kyc') ? '' :
+                  <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                    <button onClick={approveKycTwo} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 2</button>
+                  </div>
+                }
 
-             </div>
-            
-           </div>
-         </div>
+
+
+              </div>
+
+            </div>
+          </div>
         )}
       </Modal>
-        </>
-    );
+    </>
+  );
 };
 
 export default Kyc;

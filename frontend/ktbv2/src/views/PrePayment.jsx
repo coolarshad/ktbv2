@@ -173,27 +173,27 @@ function PrePayment() {
                   
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRN </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trn}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn?.trn || '-'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date</td>
-                    <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedPrePayment.presp.date)}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp?.date ? dateFormatter(selectedPrePayment.presp.date) : '-'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Type </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trade_type}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn?.trade_type || '-'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.paymentTerm.name}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn?.paymentTerm?.name || '-'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Buyer/Seller Name </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.kyc.name}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.kyc?.name || '-'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Value of Contract </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.contract_value}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn?.contract_value || '-'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Receive </td>
@@ -205,7 +205,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Due Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp.trade.paymentTerm.advance_within=='NA'?'NA':dateFormatter(addDaysToDate(selectedPrePayment.presp.doc_issuance_date,selectedPrePayment.presp.trade.paymentTerm.advance_within))}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.presp?.trade?.paymentTerm?.advance_within ? (selectedPrePayment.presp.trade.paymentTerm.advance_within === 'NA' ? 'NA' : dateFormatter(addDaysToDate(selectedPrePayment.presp.doc_issuance_date, selectedPrePayment.presp.trade.paymentTerm.advance_within))) : '-'}</td>
                   </tr>
                   {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">As Per PI Cash/TT/Advance </td>
@@ -245,7 +245,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trader Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn.trader_name}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn?.trader_name || '-'}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Insurrance Policy Number</td>

@@ -9,7 +9,7 @@ import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
-  const { user } = useAuth();
+    const { user } = useAuth();
     const { id } = useParams();
     const [trnOptions, setTrnOptions] = useState([]);
     const [validationErrors, setValidationErrors] = useState({});
@@ -644,7 +644,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         : [];
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 w-full">
+        <form onSubmit={handleSubmit} className="space-y-4 p-4 w-full">
             <h2 className="text-2xl mb-2 text-center">Sales / Purchase Document</h2>
             {data && (
                 <>

@@ -68,8 +68,8 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName.name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName?.name || '-'}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer?.name || '-'}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.trd)}</td>
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.approval_date)}</td>

@@ -411,9 +411,11 @@ function PaymentFinance() {
               )}
 
               {selectedPF.reviewed ? '' : 
-             <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-             <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
-             </div>
+               hasPermission(user, 'review_payment_finance') && (
+                 <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                   <button onClick={reviewTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
+                 </div>
+               )
              }
             </div>
           </div>
