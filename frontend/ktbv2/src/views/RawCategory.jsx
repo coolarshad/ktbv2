@@ -80,8 +80,15 @@ const RawCategory = () => {
   };
 
   const approveAdditive = async () => {
+    if (!notifiedUsers || notifiedUsers.length === 0) {
+      alert("Please select at least one user to notify before approving.");
+      return;
+    }
     try {
-      await axios.get(`/costmgt/raw-category-approve/${selectedCategory.id}/`);
+      const params = new URLSearchParams();
+      notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+      await axios.get(`/costmgt/raw-category-approve/${selectedCategory.id}/?${params.toString()}`);
+      setNotifiedUsers([]);
       setIsModalOpen(false);
       setSelectedCategory(null);
       // Reload the page

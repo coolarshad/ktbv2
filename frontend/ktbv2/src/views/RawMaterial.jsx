@@ -71,7 +71,9 @@ const RawMaterial = () => {
       return;
     }
     try {
-        await axios.get(`/costmgt/raw-materials-approve/${selectedMaterial.id}/`);
+        const params = new URLSearchParams();
+        notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+        await axios.get(`/costmgt/raw-materials-approve/${selectedMaterial.id}/?${params.toString()}`);
         setIsModalOpen(false);
         setSelectedMaterial(null);
         // Reload the page

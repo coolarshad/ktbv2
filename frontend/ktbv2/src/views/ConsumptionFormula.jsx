@@ -71,7 +71,9 @@ const ConsumptionFormula = () => {
       return;
     }
     try {
-        await axios.get(`/costmgt/consumption-formula-approve/${selectedConsumption.id}/`);
+        const params = new URLSearchParams();
+        notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+        await axios.get(`/costmgt/consumption-formula-approve/${selectedConsumption.id}/?${params.toString()}`);
         setIsModalOpen(false);
         setConsumptionData(null);
         // Reload the page

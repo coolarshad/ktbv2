@@ -74,7 +74,7 @@ const Additive = () => {
     try {
         const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
-      await axios.get(`/costmgt/additives-approve/\$\{selectedAdditive\.id\}/?${params.toString()}`);
+      await axios.get(`/costmgt/additives-approve/${selectedAdditive.id}/?${params.toString()}`);
       setNotifiedUsers([]);
         setIsModalOpen(false);
         setSelectedAdditive(null);

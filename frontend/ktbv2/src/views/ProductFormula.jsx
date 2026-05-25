@@ -69,7 +69,9 @@ const ProductFormula = () => {
       return;
     }
     try {
-        await axios.get(`/costmgt/product-formula-approve/${selectedFormula.id}/`);
+        const params = new URLSearchParams();
+        notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+        await axios.get(`/costmgt/product-formula-approve/${selectedFormula.id}/?${params.toString()}`);
         setIsModalOpen(false);
         setSelectedFormula(null);
         // Reload the page

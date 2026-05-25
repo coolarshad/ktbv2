@@ -71,10 +71,14 @@ const Consumption = () => {
   };
 
   const approveConsumption = async (id) => {
+        if (!notifiedUsers || notifiedUsers.length === 0) {
+            alert("Please select at least one user to notify before approving.");
+            return;
+        }
         try {
             const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
-      await axios.get(`/costmgt/consumption-approve/\$\{selectedConsumption\.id\}/?${params.toString()}`);
+      await axios.get(`/costmgt/consumption-approve/${selectedConsumption.id}/?${params.toString()}`);
       setNotifiedUsers([]);
             setIsModalOpen(false);
             setConsumptionData(null);

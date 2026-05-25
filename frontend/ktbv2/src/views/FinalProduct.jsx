@@ -65,12 +65,14 @@ const FinalProduct = () => {
     };
 
     const approveFinalProduct = async (id) => {
+        if (!notifiedUsers || notifiedUsers.length === 0) {
+            alert("Please select at least one user to notify before approving.");
+            return;
+        }
         try {
-            await axios.get(`/costmgt/final-product-approve/${selectedProduct.id}/`, {
-                params: {
-                    notified_users: notifiedUsers.join(',')
-                }
-            });
+            const params = new URLSearchParams();
+            notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+            await axios.get(`/costmgt/final-product-approve/${selectedProduct.id}/?${params.toString()}`);
             setIsModalOpen(false);
             setProductData(null);
             // Reload the page

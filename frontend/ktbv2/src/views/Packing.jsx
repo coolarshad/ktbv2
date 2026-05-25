@@ -73,7 +73,7 @@ const Packing = () => {
     try {
         const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
-      await axios.get(`/costmgt/packings-approve/\$\{selectedPacking\.id\}/?${params.toString()}`);
+      await axios.get(`/costmgt/packings-approve/${selectedPacking.id}/?${params.toString()}`);
       setNotifiedUsers([]);
         setIsModalOpen(false);
         setSelectedPacking(null);
