@@ -127,13 +127,18 @@ class TradeView(APIView):
 
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
-            loi_file = request.FILES.get(f'tradeProducts[{i}].loi', None)
+            loi_file = request.FILES.get(f'tradeProducts[{i}].loi')
+            product_name_for_client = data.get(f'tradeProducts[{i}].product_name_for_client')
+            if product_name_for_client and product_name_for_client.lower() == 'na':
+                loi_file = ""
+            elif not loi_file:
+                loi_file = ""
 
             product_data = {
                 # 'product_code_ref': data.get(f'tradeProducts[{i}].product_code_ref'),
                 'product_code': data.get(f'tradeProducts[{i}].product_code'),
                 'product_name': data.get(f'tradeProducts[{i}].product_name'),
-                'product_name_for_client': data.get(f'tradeProducts[{i}].product_name_for_client'),
+                'product_name_for_client': product_name_for_client,
                 'loi': loi_file,  # Handle binary data as needed
                 'hs_code': data.get(f'tradeProducts[{i}].hs_code'),
                 'total_contract_qty': data.get(f'tradeProducts[{i}].total_contract_qty'),
@@ -167,9 +172,18 @@ class TradeView(APIView):
 
         j = 0
         while f'tradeExtraCosts[{j}].extra_cost' in data:
+            try:
+                ec_val = float(data.get(f'tradeExtraCosts[{j}].extra_cost'))
+            except (ValueError, TypeError):
+                ec_val = 0.0
+                
+            rem_val = data.get(f'tradeExtraCosts[{j}].extra_cost_remarks', '')
+            if rem_val:
+                rem_val = str(rem_val)[:100]
+
             cost_data = {
-                'extra_cost': data.get(f'tradeExtraCosts[{j}].extra_cost'),
-                'extra_cost_remarks': data.get(f'tradeExtraCosts[{j}].extra_cost_remarks'),
+                'extra_cost': ec_val,
+                'extra_cost_remarks': rem_val,
             }
             trade_extra_costs_data.append(cost_data)
             j += 1
@@ -199,10 +213,10 @@ class TradeView(APIView):
                     for product in created_products:
                         # product.create_trade_pending()
                         if product.ref_trn!='NA':
-                            trace=TradeProductRef.objects.get(
+                            trace=TradeProductRef.objects.filter(
                                 product_code=product.ref_product_code,
                                 trade_type=negate_trade_type(trade.trade_type)
-                            )
+                            ).first()
                             if trace and trace.ref_balance_qty:
                                 trace.ref_balance_qty-=float(product.trade_qty)
                                 trace.save()
@@ -316,22 +330,24 @@ class TradeView(APIView):
 
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
-            loi_file = request.FILES.get(f'tradeProducts[{i}].loi', None)
+            loi_file = request.FILES.get(f'tradeProducts[{i}].loi')
             product_name_for_client=data.get(f'tradeProducts[{i}].product_name_for_client')
             # If no new file is provided, use the existing file
             if not loi_file:
                 existing_trade_product = TradeProduct.objects.filter(trade=trade, product_code=data.get(f'tradeProducts[{i}].product_code')).first()
-                if existing_trade_product:
+                if existing_trade_product and existing_trade_product.loi:
                     loi_file = existing_trade_product.loi  # retain existing file
+                else:
+                    loi_file = ""
 
             if product_name_for_client and product_name_for_client.lower() == 'na':
-                loi_file = None
+                loi_file = ""
 
             product_data = {
                 # 'product_code_ref': data.get(f'tradeProducts[{i}].product_code_ref'),
                 'product_code': data.get(f'tradeProducts[{i}].product_code'),
                 'product_name': data.get(f'tradeProducts[{i}].product_name'),
-                'product_name_for_client': data.get(f'tradeProducts[{i}].product_name_for_client'),
+                'product_name_for_client': product_name_for_client,
                 'loi': loi_file,  # Handle binary data as needed
                 'hs_code': data.get(f'tradeProducts[{i}].hs_code'),
                 'total_contract_qty': data.get(f'tradeProducts[{i}].total_contract_qty'),
@@ -363,9 +379,18 @@ class TradeView(APIView):
 
         j = 0
         while f'tradeExtraCosts[{j}].extra_cost' in data:
+            try:
+                ec_val = float(data.get(f'tradeExtraCosts[{j}].extra_cost'))
+            except (ValueError, TypeError):
+                ec_val = 0.0
+                
+            rem_val = data.get(f'tradeExtraCosts[{j}].extra_cost_remarks', '')
+            if rem_val:
+                rem_val = str(rem_val)[:100]
+
             cost_data = {
-                'extra_cost': data.get(f'tradeExtraCosts[{j}].extra_cost'),
-                'extra_cost_remarks': data.get(f'tradeExtraCosts[{j}].extra_cost_remarks'),
+                'extra_cost': ec_val,
+                'extra_cost_remarks': rem_val,
             }
             trade_extra_costs_data.append(cost_data)
             j += 1
@@ -459,9 +484,9 @@ class TradeView(APIView):
                     # product.create_trade_pending(prev_adjusted_balance_qty)
                     print("old value found: ",prev_adjusted_balance_qty)
 
+            # Clear existing trade extra costs and add new ones
+            TradeExtraCost.objects.filter(trade=trade).delete()
             if trade_extra_costs_data:
-                # Clear existing trade extra costs and add new ones
-                TradeExtraCost.objects.filter(trade=trade).delete()
                 try:
                     trade_extra_costs = [TradeExtraCost(**item, trade=trade) for item in trade_extra_costs_data]
                     TradeExtraCost.objects.bulk_create(trade_extra_costs)

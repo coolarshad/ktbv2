@@ -598,6 +598,12 @@ const TradeForm = ({ mode = 'add' }) => {
                 }
             } catch (error) {
                 console.error('Error saving trade:', error);
+                if (error.response && error.response.data) {
+                    console.error('Validation errors:', error.response.data);
+                    alert('Validation errors: ' + JSON.stringify(error.response.data));
+                } else {
+                    alert('Error saving trade: ' + error.message);
+                }
             } finally {
                 submittingRef.current = false; // unlock
             }
