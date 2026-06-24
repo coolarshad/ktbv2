@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
@@ -14,6 +15,11 @@ const Users = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [allPermissions, setAllPermissions] = useState([]);
+
+  const componentRef = useRef();
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -145,9 +151,17 @@ const Users = () => {
           <div>
             <div className="flex justify-between items-center border-b pb-2 mb-4">
               <h2 className="text-2xl font-semibold">User Details</h2>
+              <button
+                onClick={handlePrint}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+              >
+                Print
+              </button>
             </div>
 
-            {/* Basic Fields */}
+            <div ref={componentRef} className="p-4 bg-white">
+              <h2 className="text-2xl font-semibold mb-4 print:block hidden">User Details</h2>
+              {/* Basic Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {['name', 'email', 'phone', 'designation', 'role'].map(field => (
                 <div key={field}>
@@ -192,6 +206,7 @@ const Users = () => {
                   </div>
                 );
               })}
+            </div>
             </div>
           </div>
         </Modal>
