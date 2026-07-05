@@ -9,17 +9,25 @@ import traceback
 def send_notification_email_task(subject, body, recipient_emails):
     if not recipient_emails:
         return
-    try:
-        email = EmailMessage(
-            subject=subject,
-            body=body,
-            from_email=settings.EMAIL_HOST_USER,
-            to=recipient_emails,
-        )
-        email.send()
-    except Exception as e:
-        print(f"Error sending email: {e}")
-        traceback.print_exc()
+    for recipient in recipient_emails:
+        if not recipient or '@' not in recipient:
+            continue
+        # Avoid sending to obvious dummy development domains to save resources/prevent SMTP blocks
+        if recipient.endswith('@xxxa.com') or recipient.endswith('@example.com'):
+            print(f"Skipping email to dummy address: {recipient}")
+            continue
+        try:
+            email = EmailMessage(
+                subject=subject,
+                body=body,
+                from_email=settings.EMAIL_HOST_USER,
+                to=[recipient],
+            )
+            email.send()
+            print(f"Successfully sent email to {recipient}")
+        except Exception as e:
+            print(f"Error sending email to {recipient}: {e}")
+            traceback.print_exc()
 
 @shared_task
 def spawn_general_notifications_task(actor_id, verb, message, target_url=None):
