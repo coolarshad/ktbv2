@@ -24,6 +24,7 @@ function PaymentFinance() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPF, setPF] = useState(null);
   const [notifiedUsers, setNotifiedUsers] = useState([]);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
@@ -74,11 +75,15 @@ function PaymentFinance() {
     try {
       const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      if (notificationMessage) {
+        params.append('notification_message', notificationMessage);
+      }
       await axios.get(`/trademgt/payment-finances-review/${selectedPF.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setPF(null);
       setNotifiedUsers([]);
+      setNotificationMessage("");
       window.location.reload();
     } catch (error) {
       console.error('Error reviewing trade:', error);
@@ -100,6 +105,7 @@ function PaymentFinance() {
     setIsModalOpen(false);
     setPF(null);
     setNotifiedUsers([]);
+    setNotificationMessage("");
   };
 
 
@@ -406,6 +412,8 @@ function PaymentFinance() {
                   <MultiUserSelector 
                     selectedUsers={notifiedUsers} 
                     onChange={setNotifiedUsers} 
+                    message={notificationMessage}
+                    onMessageChange={setNotificationMessage}
                   />
                 </div>
               )}
@@ -420,6 +428,21 @@ function PaymentFinance() {
             </div>
           </div>
         )}
+      
+        {/* Notified Users Section */}
+        <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+          <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+          {selectedPF?.notified_users_emails?.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {selectedPF.notified_users_emails.map((email, idx) => (
+                <li key={idx} className="text-sm text-gray-700">{email}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+          )}
+        </div>
+
       </Modal>
     </>
 

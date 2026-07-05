@@ -52,7 +52,8 @@ export default function FinalProductForm({ mode = 'add' }) {
     additional_costs: [
       { name: "", rate: "", value: "" }
     ],
-    notifiedUsers: []
+    notifiedUsers: [],
+    notification_message: ''
   });
 
   // Dropdown options
@@ -72,7 +73,7 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   useEffect(() => {
 
-    axios.get("/costmgt/consumption/")
+    axios.get("/costmgt/consumption/?approved=true")
       .then(res => {
         setConsumptionList(res.data);
       });
@@ -81,7 +82,7 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   useEffect(() => {
 
-    axios.get("/costmgt/product-formula/").then(res => {
+    axios.get("/costmgt/product-formula/?approved=true").then(res => {
       console.log(res.data)
       const mapped = res.data.map(item => ({
         value: item.id,
@@ -94,7 +95,7 @@ export default function FinalProductForm({ mode = 'add' }) {
     });
 
 
-    axios.get("/costmgt/packings/").then(res => {
+    axios.get("/costmgt/packings/?approved=true").then(res => {
       setAllPackings(res.data);
     });
 
@@ -435,7 +436,7 @@ export default function FinalProductForm({ mode = 'add' }) {
   const validateForm = () => {
     let newErrors = {};
 
-    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs'];
+    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs', 'notification_message'];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key)) {
         if (value === "" || value === "NaN" || value === null) {
@@ -938,6 +939,8 @@ return (
         <MultiUserSelector
             selectedUsers={formData.notifiedUsers}
             onChange={handleUsersChange}
+            message={formData.notification_message}
+            onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
         />
         {errors.notifiedUsers && (
                 <span className="error-text text-red-500">{errors.notifiedUsers}</span>

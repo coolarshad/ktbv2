@@ -1,121 +1,87 @@
-import re
 import os
+import re
+import glob
 
+components_dir = '/home/saiyad/ktbv2/ktbv2/frontend/ktbv2/src/components/'
 files_to_patch = [
-    {
-        "path": "Additive.jsx",
-        "selected_state": "selectedAdditive",
-        "approve_func": "approveAdditive",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/additives-approve/\$\{selectedAdditive\.id\}/`\);"
-    },
-    {
-        "path": "Consumption.jsx",
-        "selected_state": "selectedConsumption",
-        "approve_func": "approveConsumption",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/consumption-approve/\$\{selectedConsumption\.id\}/`\);"
-    },
-    {
-        "path": "FinalProduct.jsx",
-        "selected_state": "selectedFinalProduct",
-        "approve_func": "approveFinalProduct",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/final-product-approve/\$\{selectedFinalProduct\.id\}/`\);"
-    },
-    {
-        "path": "AdditivesCategory.jsx",
-        "selected_state": "selectedAdditiveCategory",
-        "approve_func": "approveAdditiveCategory",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/additive-category-approve/\$\{selectedAdditiveCategory\.id\}/`\);"
-    },
-    {
-        "path": "Packing.jsx",
-        "selected_state": "selectedPacking",
-        "approve_func": "approvePacking",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/packings-approve/\$\{selectedPacking\.id\}/`\);"
-    },
-    {
-        "path": "RawCategory.jsx",
-        "selected_state": "selectedRawCategory",
-        "approve_func": "approveRawCategory",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/raw-category-approve/\$\{selectedRawCategory\.id\}/`\);"
-    },
-    {
-        "path": "ProductFormula.jsx",
-        "selected_state": "selectedProductFormula",
-        "approve_func": "approveProductFormula",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/product-formula-approve/\$\{selectedProductFormula\.id\}/`\);"
-    },
-    {
-        "path": "ConsumptionFormula.jsx",
-        "selected_state": "selectedConsumptionFormula",
-        "approve_func": "approveConsumptionFormula",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/consumption-formula-approve/\$\{selectedConsumptionFormula\.id\}/`\);"
-    },
-    {
-        "path": "RawMaterial.jsx",
-        "selected_state": "selectedRawMaterial",
-        "approve_func": "approveRawMaterial",
-        "approve_url_pattern": r"await axios\.get\(`/costmgt/raw-materials-approve/\$\{selectedRawMaterial\.id\}/`\);"
-    }
+    'TradeTable.jsx',
+    'PreSPTable.jsx',
+    'PrePaymentTable.jsx',
+    'SalesPurchaseTable.jsx',
+    'PFTable.jsx',
+    'RawMaterialTable.jsx',
+    'AdditiveTable.jsx',
+    'PackingTable.jsx',
+    'ConsumptionTable.jsx',
+    'ConsumptionFormulaTable.jsx',
+    'ProductFormulaTable.jsx',
+    'FinalProductTable.jsx'
 ]
 
-base_dir = "/home/saiyad/ktbv2/ktbv2/frontend/ktbv2/src/views"
-
-for item in files_to_patch:
-    file_path = os.path.join(base_dir, item['path'])
-    if not os.path.exists(file_path):
-        print(f"Skipping {file_path}, does not exist.")
+for filename in files_to_patch:
+    filepath = os.path.join(components_dir, filename)
+    if not os.path.exists(filepath):
+        print(f"File not found: {filename}")
         continue
-    
-    with open(file_path, 'r') as f:
+        
+    with open(filepath, 'r') as f:
         content = f.read()
+
+    # Find the selected variable name
+    # e.g., const [selectedTrade, setSelectedTrade] = useState(null);
+    match = re.search(r'const\s+\[(selected[A-Za-z0-9_]+),\s*set[A-Za-z0-9_]+\]\s*=\s*useState', content)
+    if not match:
+        print(f"Could not find selected variable in {filename}")
+        continue
+        
+    var_name = match.group(1)
     
-    # 1. Import MultiUserSelector
-    if "import MultiUserSelector" not in content:
-        content = re.sub(r'(import Modal from [^\n]+)', r'\1\nimport MultiUserSelector from "../components/MultiUserSelector";', content)
+    # Check if already patched
+    if 'Notified Users' in content and 'notified_users_emails' in content:
+        print(f"Already patched {filename}")
+        continue
 
-    # 2. Add notifiedUsers state
-    if "const [notifiedUsers" not in content:
-        content = re.sub(
-            fr'(const \[{item["selected_state"]}, set[a-zA-Z]+\] = useState\(null\);)',
-            r'\1\n    const [notifiedUsers, setNotifiedUsers] = useState([]);',
-            content
-        )
-
-    # 3. Modify closeModal
-    content = re.sub(
-        r'(const closeModal = \(\) => \{[\s\S]*?)(set[a-zA-Z]+\(null\);)',
-        r'\1\2\n      setNotifiedUsers([]);',
-        content
-    )
-
-    # 4. Modify approve func
-    # Find the function definition
-    func_pattern = fr'(const {item["approve_func"]} = async \(\) => {{\n\s+)try'
-    replacement = fr'\1if (!notifiedUsers || notifiedUsers.length === 0) {{\n      alert("Please select at least one user to notify before approving.");\n      return;\n    }}\n    try'
-    content = re.sub(func_pattern, replacement, content)
-
-    # Replace URL pattern to add URL search params
-    new_url_replacement = r'const params = new URLSearchParams();\n      notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));\n      await axios.get(`/costmgt/' + item["approve_url_pattern"].split("`/costmgt/")[1].split("`")[0] + r'?${params.toString()}`);\n      setNotifiedUsers([]);'
-    content = re.sub(item["approve_url_pattern"], new_url_replacement, content)
-
-    # 5. Inject JSX before the Approve button block
-    jsx_to_inject = f"""              {{!{item["selected_state"]}.approved && (
-                <div className="mt-6 border-t pt-4">
-                  <MultiUserSelector 
-                    selectedUsers={{notifiedUsers}} 
-                    onChange={{setNotifiedUsers}} 
-                  />
-                </div>
-              )}}
-
+    injection = f"""
+        {{/* Notified Users Section */}}
+        <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+          <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+          {{{var_name}?.notified_users_emails?.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {{{var_name}.notified_users_emails.map((email, idx) => (
+                <li key={{idx}} className="text-sm text-gray-700">{{email}}</li>
+              ))}}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+          )}}
+        </div>
 """
-    # Replace the exact block
-    # Looks like: {selectedAdditive.approved ? '' : \n <div className='grid grid-cols-3...
-    block_pattern = fr'(\s+){{{item["selected_state"]}\.approved \? \'\' :'
-    content = re.sub(block_pattern, jsx_to_inject + r'\g<1>{' + item["selected_state"] + r'.approved ? \'\' :', content)
 
-    with open(file_path, 'w') as f:
-        f.write(content)
-
-    print(f"Patched {file_path}")
+    # We need to insert this right before the closing tag of the view modal.
+    # The view modal is usually <PrintModal ...> or <Modal ...>
+    # Since there might be multiple modals (e.g. approve modal, print modal), we should be careful.
+    # In TradeTable and PreSPTable, it's <PrintModal ...> ... </PrintModal>
+    # In others, it might be <Modal isOpen={isModalOpen} ...> ... </Modal> or <Modal isOpen={isViewModalOpen} ...>
+    
+    # We will look for `</PrintModal>` and if not found, look for `</Modal>` that belongs to the view modal.
+    # Actually, if both exist, we need to know which one is the VIEW modal. 
+    # Usually PrintModal is the one used for view.
+    # Let's write a simple heuristic:
+    if '</PrintModal>' in content:
+        # insert before the LAST </PrintModal>
+        parts = content.rsplit('</PrintModal>', 1)
+        new_content = parts[0] + injection + '\n      </PrintModal>' + parts[1]
+    elif '</Modal>' in content:
+        # If there are multiple </Modal>, we want the one related to the view.
+        # But for now, let's just insert before the LAST </Modal> as it's often the main one.
+        parts = content.rsplit('</Modal>', 1)
+        new_content = parts[0] + injection + '\n      </Modal>' + parts[1]
+    else:
+        print(f"Could not find Modal closing tag in {filename}")
+        continue
+        
+    with open(filepath, 'w') as f:
+        f.write(new_content)
+        
+    print(f"Patched {filename} with variable {var_name}")
 

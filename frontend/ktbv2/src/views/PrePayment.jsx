@@ -25,6 +25,7 @@ function PrePayment() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrePayment, setSelectedPrePayment] = useState(null);
   const [notifiedUsers, setNotifiedUsers] = useState([]);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
@@ -57,6 +58,7 @@ function PrePayment() {
     setIsModalOpen(false);
     setSelectedPrePayment(null);
     setNotifiedUsers([]);
+    setNotificationMessage("");
   };
 
   const reviewTrade = async () => {
@@ -67,11 +69,15 @@ function PrePayment() {
     try {
       const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      if (notificationMessage) {
+        params.append('notification_message', notificationMessage);
+      }
       await axios.get(`/trademgt/pre-payments-review/${selectedPrePayment.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedPrePayment(null);
       setNotifiedUsers([]);
+      setNotificationMessage("");
       window.location.reload();
     } catch (error) {
       console.error('Error reviewing trade:', error);
@@ -301,9 +307,11 @@ function PrePayment() {
            {!selectedPrePayment.reviewed && (
              <div className="mt-6 border-t pt-4">
                <MultiUserSelector 
-                 selectedUsers={notifiedUsers} 
-                 onChange={setNotifiedUsers} 
-               />
+                  selectedUsers={notifiedUsers} 
+                  onChange={setNotifiedUsers} 
+                  message={notificationMessage}
+                  onMessageChange={setNotificationMessage}
+                />
              </div>
            )}
 
@@ -317,6 +325,21 @@ function PrePayment() {
            </div>
          </div>
         )}
+      
+        {/* Notified Users Section */}
+        <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+          <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+          {selectedPrePayment?.notified_users_emails?.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {selectedPrePayment.notified_users_emails.map((email, idx) => (
+                <li key={idx} className="text-sm text-gray-700">{email}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+          )}
+        </div>
+
       </Modal>
     </>
 

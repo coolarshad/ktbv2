@@ -19,7 +19,8 @@ const Consumption = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedConsumption, setSelectedConsumption] = useState(null);
-    const [notifiedUsers, setNotifiedUsers] = useState([]);
+  const [notifiedUsers, setNotifiedUsers] = useState([]);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,7 +68,8 @@ const Consumption = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedConsumption(null);
-      setNotifiedUsers([]);
+    setNotifiedUsers([]);
+    setNotificationMessage('');
   };
 
   const approveConsumption = async (id) => {
@@ -78,8 +80,12 @@ const Consumption = () => {
         try {
             const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append("notifiedUsers[]", id));
+      if (notificationMessage) {
+        params.append("notification_message", notificationMessage);
+      }
       await axios.get(`/costmgt/consumption-approve/${selectedConsumption.id}/?${params.toString()}`);
       setNotifiedUsers([]);
+      setNotificationMessage('');
             setIsModalOpen(false);
             setConsumptionData(null);
             // Reload the page
@@ -267,6 +273,8 @@ const Consumption = () => {
                   <MultiUserSelector 
                     selectedUsers={notifiedUsers} 
                     onChange={setNotifiedUsers} 
+                    message={notificationMessage}
+                    onMessageChange={setNotificationMessage}
                   />
                 </div>
               )}
@@ -284,6 +292,21 @@ const Consumption = () => {
             </div>
           </div>
         )}
+      
+        {/* Notified Users Section */}
+        <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+          <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+          {selectedConsumption?.notified_users_emails?.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {selectedConsumption.notified_users_emails.map((email, idx) => (
+                <li key={idx} className="text-sm text-gray-700">{email}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+          )}
+        </div>
+
       </Modal>
     </>
   );

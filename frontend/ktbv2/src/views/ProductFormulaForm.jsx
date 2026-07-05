@@ -6,7 +6,7 @@ import Select from "react-select";
 import MultiUserSelector from "../components/MultiUserSelector";
 
 const ProductFormulaForm = ({ mode = "add" }) => {
-  const { user } = useAuth();
+    const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const [validationErrors, setValidationErrors] = useState({});
@@ -23,6 +23,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         remarks: "",
         attributes: [{ packing_type: "", packing_label: "", qty: "" }],
         notifiedUsers: [],
+        notification_message: "",
     });
 
     const [consumptions, setConsumptions] = useState([]);
@@ -33,9 +34,9 @@ const ProductFormulaForm = ({ mode = "add" }) => {
     /* ---------------- FETCH MASTER DATA ---------------- */
 
     useEffect(() => {
-        axios.get("/costmgt/consumption").then(res => setConsumptions(res.data));
+        axios.get("/costmgt/consumption/?approved=true").then(res => setConsumptions(res.data));
         axios.get("/costmgt/packing-type/").then(res => setPackingTypes(res.data));
-        axios.get("/costmgt/packings/").then(res => setPackings(res.data));
+        axios.get("/costmgt/packings/?approved=true").then(res => setPackings(res.data));
         axios.get("/costmgt/packing-size/").then(res => setPackingSize(res.data));
     }, []);
 
@@ -160,7 +161,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         e.preventDefault();
         let errors = {};
 
-        const skipValidation = ['remarks', 'notifiedUsers', 'attributes'];
+        const skipValidation = ['remarks', 'notifiedUsers', 'attributes', 'notification_message'];
         for (const [key, value] of Object.entries(formData)) {
             if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
                 errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
@@ -177,7 +178,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
             errors.notifiedUsers = 'At least one notification recipient must be selected!';
         }
-        
+
         setValidationErrors(errors);
         if (Object.keys(errors).length > 0) {
             return;
@@ -201,7 +202,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
     /* ---------------- UI ---------------- */
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 w-full">
+        <form onSubmit={handleSubmit} className="space-y-6 p-4 w-full">
             <h2 className="text-xl text-center">Packing Formulation Form</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -354,6 +355,8 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                 <MultiUserSelector
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
+                    message={formData.notification_message}
+                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
                 />
                 {validationErrors.notifiedUsers && (
                     <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

@@ -34,7 +34,8 @@ const PrePaymentForm = ({ mode = 'add' }) => {
         lcCopies: [{ name: '', lc_copy: null }],
         lcAmmendments: [{ name: '', lc_ammendment: null }],
         advanceTTCopies: [{ name: '', advance_tt_copy: null }],
-        notifiedUsers: []
+        notifiedUsers: [],
+        notification_message: ''
     });
 
     useEffect(() => {
@@ -716,6 +717,8 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                 <MultiUserSelector
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
+                    message={formData.notification_message}
+                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
                 />
                 {validationErrors.notifiedUsers && (
                     <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

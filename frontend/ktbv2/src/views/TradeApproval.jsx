@@ -22,6 +22,7 @@ function TradeApproval() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [notifiedUsers, setNotifiedUsers] = useState([]);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
@@ -87,6 +88,7 @@ function TradeApproval() {
     setIsModalOpen(false);
     setSelectedTrade(null);
     setNotifiedUsers([]);
+    setNotificationMessage('');
   };
 
   const approveTrade = async () => {
@@ -97,11 +99,15 @@ function TradeApproval() {
     try {
       const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      if (notificationMessage) {
+        params.append('notification_message', notificationMessage);
+      }
       await axios.get(`/trademgt/tradeapprove/${selectedTrade.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedTrade(null);
       setNotifiedUsers([]);
+      setNotificationMessage('');
       window.location.reload();
     } catch (error) {
       console.error('Error reviewing trade:', error);
@@ -116,11 +122,15 @@ function TradeApproval() {
     try {
       const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      if (notificationMessage) {
+        params.append('notification_message', notificationMessage);
+      }
       await axios.get(`/trademgt/tradereview/${selectedTrade.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedTrade(null);
       setNotifiedUsers([]);
+      setNotificationMessage('');
       window.location.reload();
     } catch (error) {
       console.error('Error approving trade:', error);
@@ -352,6 +362,20 @@ function TradeApproval() {
                   </tr>
                 </tbody>
                 </table>
+
+              {/* Notified Users Section */}
+              <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+                <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+                {selectedTrade?.notified_users_emails?.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {selectedTrade.notified_users_emails.map((email, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{email}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+                )}
+              </div>
              </div>
              
      
@@ -509,9 +533,11 @@ function TradeApproval() {
              {(!selectedTrade.approved || !selectedTrade.reviewed) && (
                <div className="mt-6 border-t pt-4">
                  <MultiUserSelector 
-                   selectedUsers={notifiedUsers} 
-                   onChange={setNotifiedUsers} 
-                 />
+                    selectedUsers={notifiedUsers} 
+                    onChange={setNotifiedUsers} 
+                    message={notificationMessage}
+                    onMessageChange={setNotificationMessage}
+                  />
                </div>
              )}
 

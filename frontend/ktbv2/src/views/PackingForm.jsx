@@ -28,6 +28,7 @@ const PackingForm = ({ mode = "add" }) => {
     remarks: "",
     extras: [],
     notifiedUsers: [],
+    notification_message: "",
   });
 
   // Fetch categories for dropdown
@@ -129,7 +130,7 @@ const PackingForm = ({ mode = "add" }) => {
     let errors = {};
     console.log(formData)
     // Validate main fields
-    const skipValidation = ["remarks", "notifiedUsers"];
+    const skipValidation = ["remarks", "notifiedUsers", "notification_message"];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== "extras") {
         errors[key] = `${capitalizeKey(key)} cannot be empty!`;
@@ -342,6 +343,8 @@ const PackingForm = ({ mode = "add" }) => {
         <MultiUserSelector
           selectedUsers={formData.notifiedUsers}
           onChange={handleUsersChange}
+          message={formData.notification_message}
+          onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
         />
         {validationErrors.notifiedUsers && (
           <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

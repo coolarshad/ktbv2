@@ -8,7 +8,7 @@ import Select from 'react-select';
 import MultiUserSelector from '../components/MultiUserSelector';
 
 const ConsumptionForm = ({ mode = 'add' }) => {
-  const { user } = useAuth();
+    const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const debounceTimerRef = useRef(null);
@@ -30,6 +30,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         consumptionAdditive: [{ name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
         consumptionBaseOil: [{ name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
         notifiedUsers: [],
+        notification_message: '',
     });
 
     const [nameOptions, setNameOptions] = useState([]);
@@ -50,9 +51,9 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     };
 
     useEffect(() => {
-        fetchData('/costmgt/consumption-formula', {}, setNameOptions);
-        fetchData('/costmgt/additives', {}, setAdditiveOptions);
-        fetchData('/costmgt/raw-materials', {}, setBaseOilOptions);
+        fetchData('/costmgt/consumption-formula', { approved: 'true' }, setNameOptions);
+        fetchData('/costmgt/additives', { approved: 'true' }, setAdditiveOptions);
+        fetchData('/costmgt/raw-materials', { approved: 'true' }, setBaseOilOptions);
     }, []);
 
     useEffect(() => {
@@ -543,7 +544,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         e.preventDefault();
         let errors = {};
 
-        const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil'];
+        const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil', 'notification_message'];
         for (const [key, value] of Object.entries(formData)) {
             if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
                 errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
@@ -576,7 +577,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
             errors.notifiedUsers = 'At least one notification recipient must be selected!';
         }
-        
+
         setValidationErrors(errors);
         if (Object.keys(errors).length > 0) {
             return;
@@ -894,6 +895,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
+                                readOnly={true}
                             />
                             {validationErrors[`consumptionAdditiveQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQty_${index}`]}</p>}
                         </div>
@@ -909,6 +911,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
+                                readOnly={true}
                             />
                             {validationErrors[`consumptionAdditiveQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQtyLitre_${index}`]}</p>}
                         </div>
@@ -924,6 +927,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.01}
+                                readOnly={true}
                             />
                             {validationErrors[`consumptionAdditiveValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveValue_${index}`]}</p>}
                         </div>
@@ -1047,6 +1051,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
+                                readOnly={true}
                             />
                             {validationErrors[`consumptionBaseOilQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQty_${index}`]}</p>}
                         </div>
@@ -1062,6 +1067,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.0001}
+                                readOnly={true}
                             />
                             {validationErrors[`consumptionBaseOilQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQtyLitre_${index}`]}</p>}
                         </div>
@@ -1077,6 +1083,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                 className="border border-gray-300 p-2 rounded w-full"
                                 step={0.01}
+                                readOnly={true}
                             />
                             {validationErrors[`consumptionBaseOilValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilValue_${index}`]}</p>}
                         </div>
@@ -1158,6 +1165,8 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 <MultiUserSelector
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
+                    message={formData.notification_message}
+                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
                 />
                 {validationErrors.notifiedUsers && (
                     <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

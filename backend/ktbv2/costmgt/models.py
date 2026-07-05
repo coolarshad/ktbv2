@@ -65,6 +65,7 @@ class Packing(models.Model):
     )
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     per_litre_cost = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -98,6 +99,7 @@ class RawCategory(models.Model):
         related_name='children'
     )
     approved = models.BooleanField(default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     class Meta:
         verbose_name = _("RawCategory")
@@ -131,6 +133,7 @@ class RawMaterial(models.Model):
     )
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     
     class Meta:
         verbose_name = _("RawMaterial")
@@ -163,6 +166,7 @@ class AdditiveCategory(models.Model):
         related_name='children'
     )
     approved = models.BooleanField(default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     class Meta:
         verbose_name = _("AdditiveCategory")
@@ -181,6 +185,7 @@ class Additive(models.Model):
     totalCost=models.FloatField()
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
 
@@ -230,6 +235,7 @@ class ConsumptionFormula(models.Model):
     ref=models.CharField(max_length=50,unique=True, editable=False)
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
 
@@ -307,6 +313,7 @@ class Consumption(models.Model):
     per_litre_cost=models.FloatField()
     remarks=models.CharField(max_length=255,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     batch=models.CharField(max_length=50,null=True,blank=True)
     supplier_address = models.CharField(max_length=200, null=True, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
@@ -374,6 +381,7 @@ class ProductFormula(models.Model):
     # litre_per_pack=models.FloatField()
     remarks=models.CharField(max_length=100,null=True,blank=True)
     approved=models.BooleanField(null=True,default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
@@ -455,8 +463,8 @@ class FinalProduct(models.Model):
     total_cfr_pricing = models.FloatField(null=True, blank=True)
 
     remarks = models.TextField(null=True, blank=True)
-
     approved = models.BooleanField(default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

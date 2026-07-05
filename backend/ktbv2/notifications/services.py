@@ -8,7 +8,7 @@ class NotificationService:
         if not notified_user_ids:
             return
             
-        users = CustomUser.objects.filter(id__in=notified_user_ids, is_active=True).exclude(id=actor.id if actor else None)
+        users = CustomUser.objects.filter(id__in=notified_user_ids, is_active=True)
         
         notifications = []
         emails = []

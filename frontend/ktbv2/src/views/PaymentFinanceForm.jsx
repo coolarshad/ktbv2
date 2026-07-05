@@ -40,6 +40,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         ttCopies: [{ name: '', tt_copy: null }],
         pfCharges: [{ name: '', charge: '' }],
         notifiedUsers: [],
+        notification_message: '',
     });
 
     useEffect(() => {
@@ -796,6 +797,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 <MultiUserSelector
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
+                    message={formData.notification_message}
+                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
                 />
                 {validationErrors.notifiedUsers && (
                     <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

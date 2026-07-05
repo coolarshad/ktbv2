@@ -241,12 +241,17 @@ class TradeView(APIView):
                 
                 
                 # Notify explicitly assigned users
+                if notified_user_ids:
+
+                    trade.notified_users.add(*notified_user_ids)
+
+                custom_msg = request.data.get('notification_message')
                 NotificationService.notify_users_explicit(
                     # actor=request.user, 
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="Trade Created", 
-                    message=f"You have been assigned to Trade {trade.trn} by {request.user.name if hasattr(request.user, 'name') else 'User'}",
+                    message=custom_msg if custom_msg else f"You have been assigned to Trade {trade.trn} by {request.user.name if hasattr(request.user, 'name') else 'User'}",
                     target_url=f"/trade-form/{trade.id}"
                 )
                 
@@ -494,12 +499,17 @@ class TradeView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
             # Notify explicitly assigned users
+            if notified_user_ids:
+
+                trade.notified_users.add(*notified_user_ids)
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Trade Updated", 
-                message=f"You have been assigned or updated on Trade {trade.trn} by {request.user.name if hasattr(request.user, 'name') else 'User'}",
+                message=custom_msg if custom_msg else f"You have been assigned or updated on Trade {trade.trn} by {request.user.name if hasattr(request.user, 'name') else 'User'}",
                 target_url=f"/trade-form/{trade.id}"
             )
             
@@ -578,11 +588,18 @@ class TradeApproveView(APIView):
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                if notified_user_ids:
+
+                
+                    trade.notified_users.add(*notified_user_ids)
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="Trade Approved",
-                    message=f"You have been notified that Trade {trade.trn} has been approved.",
+                    message=custom_msg if custom_msg else f"You have been notified that Trade {trade.trn} has been approved.",
                     target_url=f"/trade-approved"
                 )
 
@@ -626,11 +643,18 @@ class TradeReviewView(APIView):
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                if notified_user_ids:
+
+                
+                    trade.notified_users.add(*notified_user_ids)
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="Trade Reviewed",
-                    message=f"You have been notified that Trade {trade.trn} has been reviewed.",
+                    message=custom_msg if custom_msg else f"You have been notified that Trade {trade.trn} has been reviewed.",
                     target_url=f"/trade-approval"
                 )
 
@@ -800,12 +824,19 @@ class PreSalePurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids:
+
+
+                pre_sp.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="PreSalePurchase Created", 
-                message=f"You have been assigned to PreSalePurchase {pre_sp.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to PreSalePurchase {pre_sp.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/pre-sale-purchase"
             )
             
@@ -915,12 +946,19 @@ class PreSalePurchaseView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids:
+
+
+                pre_sp.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="PreSalePurchase Updated", 
-                message=f"You have been assigned to updated PreSalePurchase {pre_sp.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to updated PreSalePurchase {pre_sp.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/pre-sale-purchase"
             )
             
@@ -1120,12 +1158,19 @@ class PrePaymentView(APIView):
                 prepayment.advance_amount= prepayment.advance_received
             prepayment.save()
 
+            if notified_user_ids:
+
+
+                prepayment.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="PrePayment Created", 
-                message=f"You have been assigned to PrePayment {prepayment.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to PrePayment {prepayment.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/pre-payment"
             )
             
@@ -1262,12 +1307,19 @@ class PrePaymentView(APIView):
                 prepayment.advance_amount+= prepayment.advance_received
             prepayment.save()
 
+            if notified_user_ids:
+
+
+                prepayment.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="PrePayment Updated", 
-                message=f"You have been assigned to updated PrePayment {prepayment.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to updated PrePayment {prepayment.trn} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/pre-payment"
             )
             
@@ -1327,11 +1379,18 @@ class PrePaymentReview(APIView):
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                if notified_user_ids and hasattr(prepayment, 'notified_users'):
+
+                
+                    prepayment.notified_users.add(*notified_user_ids)
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="PrePayment Reviewed",
-                    message=f"You have been notified that PrePayment has been reviewed.",
+                    message=custom_msg if custom_msg else f"You have been notified that PrePayment has been reviewed.",
                     target_url=f"/pre-payment"
                 )
 
@@ -1512,12 +1571,19 @@ class SalesPurchaseView(APIView):
                     pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
                     pending_product.save()
 
+            if notified_user_ids:
+
+
+                sp.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="SalesPurchase Created", 
-                message=f"You have been assigned to SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/sales-purchases"
             )
             
@@ -1779,12 +1845,19 @@ class SalesPurchaseView(APIView):
                         print(f"Error updating or creating Inventory: {e}")
                         raise
 
+            if notified_user_ids:
+
+
+                sp.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="SalesPurchase Updated", 
-                message=f"You have been assigned to updated SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to updated SalesPurchase {sp.invoice_number if sp.invoice_number else sp.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/sales-purchases"
             )
             
@@ -1885,11 +1958,18 @@ class SalesPurchaseApprove(APIView):
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                if notified_user_ids:
+
+                
+                    sp.notified_users.add(*notified_user_ids)
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="SalesPurchase Approved",
-                    message=f"You have been notified that Sales/Purchase {sp.sp_number if hasattr(sp, 'sp_number') else sp_id} has been approved.",
+                    message=custom_msg if custom_msg else f"You have been notified that Sales/Purchase {sp.sp_number if hasattr(sp, 'sp_number') else sp_id} has been approved.",
                     target_url=f"/sales-purchases"
                 )
 
@@ -2073,12 +2153,19 @@ class PaymentFinanceView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids:
+
+
+                pf.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="PaymentFinance Created", 
-                message=f"You have been assigned to PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/payment-finances"
             )
             
@@ -2188,12 +2275,19 @@ class PaymentFinanceView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids:
+
+
+                pf.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="PaymentFinance Updated", 
-                message=f"You have been assigned to updated PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to updated PaymentFinance {pf.sp.invoice_number if pf.sp and pf.sp.invoice_number else pf.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/payment-finances"
             )
             
@@ -2253,11 +2347,18 @@ class PFReview(APIView):
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                if notified_user_ids and hasattr(pf, 'notified_users'):
+
+                
+                    pf.notified_users.add(*notified_user_ids)
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="Payment/Finance Reviewed",
-                    message=f"You have been notified that Payment/Finance record has been reviewed.",
+                    message=custom_msg if custom_msg else f"You have been notified that Payment/Finance record has been reviewed.",
                     target_url=f"/payment-finance"
                 )
 
@@ -2298,13 +2399,17 @@ class KycApproveOneView(APIView):
                 kyc.approve1 = True
                 kyc.save()
                 
+                if notified_user_ids:
+                    kyc.notified_users.add(*notified_user_ids)
+
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="KYC Level 1 Approved",
-                    message=f"You have been notified that KYC Level 1 has been approved.",
+                    message=custom_msg if custom_msg else f"You have been notified that KYC Level 1 has been approved.",
                     target_url=f"/kyc"
                 )
 
@@ -2339,13 +2444,17 @@ class KycApproveTwoView(APIView):
                 kyc.approve2 = True
                 kyc.save()
                 
+                if notified_user_ids:
+                    kyc.notified_users.add(*notified_user_ids)
+
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
                     actor=actor,
                     notified_user_ids=notified_user_ids,
                     verb="KYC Level 2 Approved",
-                    message=f"You have been notified that KYC Level 2 has been approved.",
+                    message=custom_msg if custom_msg else f"You have been notified that KYC Level 2 has been approved.",
                     target_url=f"/kyc"
                 )
 

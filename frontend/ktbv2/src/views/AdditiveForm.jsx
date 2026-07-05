@@ -32,6 +32,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
     category: '', // category id
     extras: [],
     notifiedUsers: [],
+    notification_message: '',
   });
 
   // Fetch categories
@@ -256,7 +257,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
     e.preventDefault();
     let errors = {};
 
-    const skipValidation = ['remarks', 'notifiedUsers', 'extras'];
+    const skipValidation = ['remarks', 'notifiedUsers', 'extras', 'notification_message'];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
         errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
@@ -564,6 +565,8 @@ const AdditiveForm = ({ mode = 'add' }) => {
         <MultiUserSelector
           selectedUsers={formData.notifiedUsers}
           onChange={handleUsersChange}
+          message={formData.notification_message}
+          onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
         />
         {validationErrors.notifiedUsers && (
                 <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

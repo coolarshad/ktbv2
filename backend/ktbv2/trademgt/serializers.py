@@ -31,10 +31,16 @@ class KycBankDetailSerializer(serializers.ModelSerializer):
 
 class KycSerializer(serializers.ModelSerializer):
     bank_details = KycBankDetailSerializer(many=True)
+    notified_users_emails = serializers.SerializerMethodField()
 
     class Meta:
         model = Kyc
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
     def create(self, validated_data):
         bank_details_data = validated_data.pop('bank_details', [])
@@ -119,10 +125,17 @@ class TradeExtraCostSerializer(serializers.ModelSerializer):
 class TradeSerializer(serializers.ModelSerializer):
     trade_products = TradeProductSerializer(many=True, read_only=True)
     trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
+
     
     class Meta:
         model = Trade
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
     ## additional related info
     def get_company_details(self, obj):
@@ -303,9 +316,16 @@ class PreDocumentSerializer(serializers.ModelSerializer):
     
 class PreSalePurchaseSerializer(serializers.ModelSerializer):
     documentRequired = PreDocumentSerializer(many=True, read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = PreSalePurchase
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
     def get_trade_details(self, obj):
         try:
@@ -359,9 +379,16 @@ class DocumentsRequiredSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PrePaymentSerializer(serializers.ModelSerializer):
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = PrePayment
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
     
     def get_trade_details(self, obj):
         # Fetch company details manually
@@ -561,9 +588,16 @@ class COASerializer(serializers.ModelSerializer):
 class SalesPurchaseSerializer(serializers.ModelSerializer):
     sp_product = SalesPurchaseProductSerializer(many=True, read_only=True)
     sp_extra_charges = SalesPurchaseExtraChargeSerializer(many=True, read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = SalesPurchase
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
     
     def get_trade_details(self, obj):
         # Fetch company details manually
@@ -641,9 +675,16 @@ class TTCopySerializer(serializers.ModelSerializer):
 class PaymentFinanceSerializer(serializers.ModelSerializer):
     pf_charges = PFChargesSerializer(many=True, read_only=True)
     pf_ttcopy = TTCopySerializer(many=True, read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = PaymentFinance
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
     
     def get_sp_details(self, obj):
         # Fetch company details manually

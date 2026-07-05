@@ -64,6 +64,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         extraCharges: [{ name: '', charge: '' }],
         packingLists: [{ name: '', packing_list: null }],
         notifiedUsers: [],
+        notification_message: '',
     });
 
     // Move the debounced submit logic to component level
@@ -1404,6 +1405,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 <MultiUserSelector
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
+                    message={formData.notification_message}
+                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
                 />
                 {validationErrors.notifiedUsers && (
                     <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

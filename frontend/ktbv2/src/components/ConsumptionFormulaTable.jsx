@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
-const ConsumptionFormulaTable = ({ data , onDelete, onView, basePerm }) => { // Default value for data
-  const navigate = useNavigate();  
+const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // Default value for data
+  const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const handleEdit = (id) => {
-    navigate(`/consumption-formula-form/${id}`);  
+    navigate(`/consumption-formula-form/${id}`);
   };
 
   return (
@@ -22,8 +22,8 @@ const ConsumptionFormulaTable = ({ data , onDelete, onView, basePerm }) => { // 
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Grade</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">SAE</th>
-            
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
+
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -37,17 +37,17 @@ const ConsumptionFormulaTable = ({ data , onDelete, onView, basePerm }) => { // 
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.grade}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sae}</td>
-             
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
-            
+
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
+
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
               </td>
-             
-             
+
+
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
-                 
+
                   <button
                     className="bg-green-500 text-white px-2 py-1 rounded"
                     onClick={(e) => { e.stopPropagation(); onView(item.id); }}

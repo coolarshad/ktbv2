@@ -61,6 +61,7 @@ class Trade(models.Model):
     approval_date = models.DateField(_("approval date"), auto_now=False, auto_now_add=False, null=True, blank=True) #actual trade ref date
     approved_by=models.CharField(_("approved_by"), max_length=50, null=True, blank=True)
     reviewed_by=models.CharField(_("reviewed_by"), max_length=50, null=True, blank=True)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     # Self-referential many-to-many relationship (symmetrical)
     # related_trades = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='related_trades')
@@ -68,6 +69,7 @@ class Trade(models.Model):
     class Meta:
         verbose_name = _("Trade")
         verbose_name_plural = _("Trades")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.trn
@@ -279,6 +281,7 @@ class PaymentTerm(models.Model):
     class Meta:
         verbose_name = _("PaymentTerm")
         verbose_name_plural = _("PaymentTerms")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -298,10 +301,12 @@ class PreSalePurchase(models.Model):
     # lc_due_date=models.DateField(_("lc_due_date"), auto_now=False, auto_now_add=False)
     remarks=models.CharField(_("payment_term"), max_length=100)
     approved=models.BooleanField(_("approved"),default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     class Meta:
         verbose_name = _("PreSalePurchase")
         verbose_name_plural = _("PreSalePurchases")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.trn.trn
@@ -316,6 +321,7 @@ class PreDocument(models.Model):
     class Meta:
         verbose_name = _("PreDocument")
         verbose_name_plural = _("PreDocuments")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -362,6 +368,7 @@ class DocumentsRequired(models.Model):
     class Meta:
         verbose_name = _("DocumentsRequired")
         verbose_name_plural = _("DocumentsRequireds")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -386,10 +393,12 @@ class PrePayment(models.Model):
     remarks=models.CharField(_("lc_expiry_date"), max_length=100)
     reviewed=models.BooleanField(_("reviewed"),default=False)
     advance_amount=models.FloatField(_("advance_amount"),null=True,default=0)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     class Meta:
         verbose_name = _("PrePayment")
         verbose_name_plural = _("PrePayments")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.trn
@@ -475,11 +484,13 @@ class SalesPurchase(models.Model):
     shipment_status=models.CharField(_("shipment_status"), max_length=50)
     remarks=models.CharField(_("remarks"), max_length=50)
     reviewed=models.BooleanField(_("reviewed"),default=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     
 
     class Meta:
         verbose_name = _("SalesPurchase")
         verbose_name_plural = _("SalesPurchases")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.invoice_number
@@ -540,6 +551,7 @@ class PackingList(models.Model):
     class Meta:
         verbose_name = _("PackingList")
         verbose_name_plural = _("PackingLists")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -615,10 +627,12 @@ class PaymentFinance(models.Model):
     remarks=models.CharField(_("remarks"), max_length=100)
     reviewed=models.BooleanField(_("reviewed"),default=False)
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     class Meta:
         verbose_name = _("PaymentFinance")
         verbose_name_plural = _("PaymentFinances")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -681,11 +695,12 @@ class Kyc(models.Model):
     accountNumber=models.CharField(max_length=255, null=True,blank=True)
     approve1=models.BooleanField(default=False)
     approve2=models.BooleanField(default=False)
-    
+    notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     class Meta:
         verbose_name = _("Kyc")
         verbose_name_plural = _("Kycs")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -716,6 +731,7 @@ class TradeProductTrace(models.Model):
 
     class Meta:
         unique_together = ("product_code", "trade_type")
+        ordering = ['-id'] 
 
     def __str__(self):
         return f"{self.trade_type} - {self.product_code}"
@@ -731,6 +747,7 @@ class TradeProductRef(models.Model):
 
     class Meta:
         unique_together = ("product_code", "trade_type")
+        ordering = ['-id'] 
 
     def __str__(self):
         return f"{self.trade_type} - {self.product_code}"
@@ -798,6 +815,7 @@ class TradePending(models.Model):
     class Meta:
         verbose_name = _("TradePending")
         verbose_name_plural = _("TradePendings")
+        ordering = ['-id'] 
 
     def __str__(self):
         return f"{self.trade_type} - {self.product_code}"
@@ -949,6 +967,7 @@ class Bank(models.Model):
     class Meta:
         verbose_name = _("Bank")
         verbose_name_plural = _("Banks")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -963,6 +982,7 @@ class Unit(models.Model):
     class Meta:
         verbose_name = _("Unit")
         verbose_name_plural = _("Units")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -981,6 +1001,7 @@ class Inventory(models.Model):
     class Meta:
         verbose_name = _("Inventory")
         verbose_name_plural = _("Inventorys")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -994,6 +1015,7 @@ class ProductName(models.Model):
     class Meta:
         verbose_name = _("ProductName")
         verbose_name_plural = _("ProductNames")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -1007,6 +1029,7 @@ class ShipmentSize(models.Model):
     class Meta:
         verbose_name = _("ShipmentSize")
         verbose_name_plural = _("ShipmentSizes")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -1020,6 +1043,7 @@ class Currency(models.Model):
     class Meta:
         verbose_name = _("Currency")
         verbose_name_plural = _("Currencys")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -1034,6 +1058,7 @@ class Packing(models.Model):
     class Meta:
         verbose_name = _("Packing")
         verbose_name_plural = _("Packings")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.name
@@ -1052,6 +1077,7 @@ class PL(models.Model):
     class Meta:
         verbose_name = _("PL")
         verbose_name_plural = _("PLs")
+        ordering = ['-id'] 
 
     def __str__(self):
         return self.sales_trn.id

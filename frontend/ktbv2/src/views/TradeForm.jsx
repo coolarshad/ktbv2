@@ -102,6 +102,7 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         ],
         notifiedUsers: [],
+        notification_message: '',
     };
     const [formData, setFormData] = useState(initialFormData);
 
@@ -1895,6 +1896,8 @@ const TradeForm = ({ mode = 'add' }) => {
             <MultiUserSelector
                 selectedUsers={formData.notifiedUsers}
                 onChange={handleUserSelect}
+                message={formData.notification_message}
+                onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
             />
             {validationErrors.notifiedUsers && (
                 <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

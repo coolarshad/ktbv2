@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
-const AdditiveTable = ({ data , onDelete, onView, basePerm }) => { // Default value for data
-  const navigate = useNavigate();  
+const AdditiveTable = ({ data, onDelete, onView, basePerm }) => { // Default value for data
+  const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const handleEdit = (id) => {
     navigate(`/additive-form/${id}`);  // Navigate to TradeForm with tradeId
   };
@@ -17,15 +17,16 @@ const AdditiveTable = ({ data , onDelete, onView, basePerm }) => { // Default va
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sub Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">CFR Price/KG in USD</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">CFR Price/KG in USD</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add Cost</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total cost EX DK in Kgs</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Density @ 15 Degree Celsius</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Density @ 15 Degree Celsius</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Cost Price in Liters</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -37,20 +38,21 @@ const AdditiveTable = ({ data , onDelete, onView, basePerm }) => { // Default va
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.category_name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.subname_name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.crfPrice}</td>
+              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.crfPrice}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.addCost}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.totalCost.toFixed(4)}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.density}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.costPriceInLiter.toFixed(4)}</td>
-          
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.costPriceInLiter.toFixed(4)}</td> */}
+
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
               </td>
-             
-             
+
+
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
-                 
+
                   <button
                     className="bg-green-500 text-white px-2 py-1 rounded"
                     onClick={(e) => { e.stopPropagation(); onView(item.id); }}

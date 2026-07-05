@@ -4,9 +4,15 @@ from django.db import transaction
 from trademgt.models import Packing as P
 from trademgt.serializers import PackingSerializer as PS
 # class PackingSerializer(serializers.ModelSerializer):
+#     notified_users_emails = serializers.SerializerMethodField()
 #     class Meta:
 #         model = Packing
 #         fields = '__all__'
+#
+#     def get_notified_users_emails(self, obj):
+#         if hasattr(obj, 'notified_users'):
+#             return list(obj.notified_users.values_list('email', flat=True))
+#         return []
 
 class CategorySerializer(serializers.ModelSerializer):
     # recursive serializer for children
@@ -46,6 +52,8 @@ class PackingSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = Packing
         fields = [
@@ -59,8 +67,14 @@ class PackingSerializer(serializers.ModelSerializer):
             'packing_type_detail',
             'remarks',
             'approved',
-            'extras'
+            'extras',
+            'notified_users_emails',
         ]
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
     def create(self, validated_data):
         extras_data = validated_data.pop('extras', [])
@@ -92,15 +106,21 @@ from .models import RawCategory, RawMaterial, AdditiveCategory, Additive
 class RawCategorySerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
     parent_name = serializers.CharField(source="parent.name", read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
 
     class Meta:
         model = RawCategory
-        fields = ['id', 'name', 'parent', 'approved' ,'parent_name', 'children']
+        fields = ['id', 'name', 'parent', 'approved' ,'parent_name', 'children', 'notified_users_emails']
 
     def get_children(self, obj):
         children = obj.children.all()
         if len(children) > 0:
             return RawCategorySerializer(children, many=True).data
+        return []
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
         return []
 
 class RMExtraSerializer(serializers.ModelSerializer):
@@ -112,6 +132,8 @@ class RawMaterialSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
     subname_name = serializers.CharField(source="name.name", read_only=True)
     extras = RMExtraSerializer(many=True, required=False)  # nested extras
+    notified_users_emails = serializers.SerializerMethodField()
+
 
     class Meta:
         model = RawMaterial
@@ -130,8 +152,14 @@ class RawMaterialSerializer(serializers.ModelSerializer):
             'approved',
             'category',
             'category_name',
-            'extras'
+            'extras',
+            'notified_users_emails',
         ]
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
     def create(self, validated_data):
         extras_data = validated_data.pop('extras', [])
@@ -159,15 +187,21 @@ class RawMaterialSerializer(serializers.ModelSerializer):
 class AdditiveCategorySerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
     parent_name = serializers.CharField(source="parent.name", read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
 
     class Meta:
         model = AdditiveCategory
-        fields = ['id', 'name', 'parent','approved' ,'parent_name', 'children']
+        fields = ['id', 'name', 'parent','approved' ,'parent_name', 'children', 'notified_users_emails']
 
     def get_children(self, obj):
         children = obj.children.all()
         if len(children) > 0:
             return AdditiveCategorySerializer(children, many=True).data
+        return []
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
         return []
 
 class AdditiveExtraSerializer(serializers.ModelSerializer):
@@ -179,6 +213,8 @@ class AdditiveSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
     subname_name = serializers.CharField(source="name.name", read_only=True)
     extras = AdditiveExtraSerializer(many=True, required=False)  # nested extras
+    notified_users_emails = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Additive
@@ -196,8 +232,14 @@ class AdditiveSerializer(serializers.ModelSerializer):
             'approved',
             'category',
             'category_name',
-            'extras'
+            'extras',
+            'notified_users_emails',
         ]
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
     
     def create(self, validated_data):
         extras_data = validated_data.pop('extras', [])
@@ -258,9 +300,16 @@ class ConsumptionFormulaBaseOilSerializer(serializers.ModelSerializer):
 class ConsumptionFormulaSerializer(serializers.ModelSerializer):
     consumption_additives = ConsumptionFormulaAdditiveSerializer(many=True, read_only=True)
     consumption_base_oils = ConsumptionFormulaBaseOilSerializer(many=True, read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = ConsumptionFormula
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
 class ConsumptionAdditiveSerializer(serializers.ModelSerializer):
     class Meta:
@@ -314,9 +363,16 @@ class ConsumptionBaseOilSerializer(serializers.ModelSerializer):
 class ConsumptionSerializer(serializers.ModelSerializer):
     consumption_additives = ConsumptionAdditiveSerializer(many=True, read_only=True)
     consumption_base_oils = ConsumptionBaseOilSerializer(many=True, read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = Consumption
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
     def get_formula(self, obj):
         try:
@@ -378,9 +434,16 @@ class ProductFormulaItemSerializer(serializers.ModelSerializer):
 
 class ProductFormulaSerializer(serializers.ModelSerializer):
     product_formula_items = ProductFormulaItemSerializer(many=True, read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductFormula
         fields = '__all__'
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
 
     def get_consumption_details(self, obj):
         try:
@@ -461,14 +524,19 @@ class FinalProductAdditionalCostSerializer(serializers.ModelSerializer):
 # ================================
 
 # class FinalProductSerializer(serializers.ModelSerializer):
-
+#
 #     packing_items = FinalProductPackingItemSerializer(many=True)
 #     additional_costs = FinalProductAdditionalCostSerializer(many=True)
-    
-
+#
+#     notified_users_emails = serializers.SerializerMethodField()
 #     class Meta:
 #         model = FinalProduct
 #         fields = [
+#
+#     def get_notified_users_emails(self, obj):
+#         if hasattr(obj, 'notified_users'):
+#             return list(obj.notified_users.values_list('email', flat=True))
+#         return []
 #             "id",
 #             "date",
 #             "consumption",
@@ -586,6 +654,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
     packing_size_detail = serializers.SerializerMethodField(read_only=True)
     batch_detail = serializers.SerializerMethodField(read_only=True)
     consumption_detail = serializers.SerializerMethodField(read_only=True)
+    notified_users_emails = serializers.SerializerMethodField()
     # unit_detail = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -614,6 +683,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
             "batch_detail",
             "consumption_detail",
             "batch",
+            "notified_users_emails",
             # "unit_detail",
         ]
 
@@ -696,6 +766,11 @@ class FinalProductSerializer(serializers.ModelSerializer):
             return ConsumptionSerializer(instance).data
         except Consumption.DoesNotExist:
             return None
+
+    def get_notified_users_emails(self, obj):
+        if hasattr(obj, 'notified_users'):
+            return list(obj.notified_users.values_list('email', flat=True))
+        return []
     
     # def get_unit_detail(self, obj):
     #     try:

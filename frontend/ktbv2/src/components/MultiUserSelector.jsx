@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import Select from 'react-select';
 
-const MultiUserSelector = ({ selectedUsers = [], onChange }) => {
+const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessageChange }) => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,17 +51,33 @@ const MultiUserSelector = ({ selectedUsers = [], onChange }) => {
       {loading ? (
         <p className="text-gray-500">Loading users...</p>
       ) : (
-        <Select
-          isMulti
-          options={options}
-          value={selectedOptions}
-          onChange={handleChange}
-          placeholder="Select users..."
-          className="w-full"
-          classNamePrefix="react-select"
-          isClearable
-          isSearchable
-        />
+        <>
+          <Select
+            isMulti
+            options={options}
+            value={selectedOptions}
+            onChange={handleChange}
+            placeholder="Select users..."
+            className="w-full"
+            classNamePrefix="react-select"
+            isClearable
+            isSearchable
+          />
+          {selectedUsers.length > 0 && onMessageChange && (
+            <div className="mt-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Custom Email/Notification Message (Optional)
+              </label>
+              <textarea
+                value={message}
+                onChange={(e) => onMessageChange(e.target.value)}
+                placeholder="Write an optional custom message that will go in the notification and email..."
+                className="w-full border border-gray-300 p-2 rounded focus:ring-blue-500 focus:border-blue-500 text-sm"
+                rows={3}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

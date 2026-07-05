@@ -22,7 +22,7 @@ class NotificationViewSetMixin:
     notification_verb = "Record"
     notification_target_url = "/"
 
-    def _dispatch_notifications(self, request, is_update=False):
+    def _dispatch_notifications(self, request, instance=None, is_update=False):
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
         if not notified_users:
             notified_users = request.data.get('notifiedUsers', [])
@@ -31,12 +31,16 @@ class NotificationViewSetMixin:
         action = "Updated" if is_update else "Created"
         
         if notified_user_ids:
+            if instance is not None and hasattr(instance, 'notified_users'):
+                instance.notified_users.add(*notified_user_ids)
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb=f"{self.notification_verb} {action}",
-                message=f"You have been assigned to {self.notification_verb} by {request.user.name if hasattr(request, 'user') and hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to {self.notification_verb} by {request.user.name if hasattr(request, 'user') and hasattr(request.user, 'name') else 'System'}",
                 target_url=self.notification_target_url
             )
             
@@ -51,12 +55,15 @@ class NotificationViewSetMixin:
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
-        self._dispatch_notifications(request, is_update=False)
+        # Get the instance that was just created
+        instance = self.get_queryset().model.objects.filter(id=response.data.get('id')).first()
+        self._dispatch_notifications(request, instance=instance, is_update=False)
         return response
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
-        self._dispatch_notifications(request, is_update=True)
+        instance = self.get_object()
+        self._dispatch_notifications(request, instance=instance, is_update=True)
         return response
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -266,12 +273,13 @@ class ConsumptionFormulaView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Formula Created", 
-                message=f"You have been assigned to Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/consumption-formulas"
             )
             
@@ -357,12 +365,19 @@ class ConsumptionFormulaView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids and hasattr(consumption, 'notified_users'):
+
+
+                consumption.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Formula Updated", 
-                message=f"You have been assigned to updated Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to updated Consumption Formula {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/consumption-formulas"
             )
             
@@ -498,12 +513,19 @@ class ConsumptionView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
+            if notified_user_ids:
+
+                
+                consumption.notified_users.add(*notified_user_ids)
+
+                
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Created", 
-                message=f"You have been assigned to Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/consumptions"
             )
             
@@ -601,12 +623,19 @@ class ConsumptionView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids:
+
+
+                consumption.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Consumption Updated", 
-                message=f"You have been assigned to updated Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to updated Consumption {consumption.name if consumption.name else consumption.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/consumptions"
             )
             
@@ -704,24 +733,21 @@ class PackingApprovalView(APIView):
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
                 
+                if notified_user_ids:
+
+
+                
+                    obj.notified_users.add(*notified_user_ids)
+
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-                
                     actor=actor,
-
-                
                     notified_user_ids=notified_user_ids,
-
-                
                     verb="Packing Approved",
-
-                
-                    message=f"You have been notified that " + f"Packing entry has been approved.",
-
-                
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Packing entry has been approved.",
                     target_url=f"/packings"
-
-                
                 )
 
 
@@ -770,24 +796,21 @@ class RawMaterialApprovalView(APIView):
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
                 
+                if notified_user_ids and hasattr(obj, 'notified_users'):
+
+
+                
+                    obj.notified_users.add(*notified_user_ids)
+
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-                
                     actor=actor,
-
-                
                     notified_user_ids=notified_user_ids,
-
-                
                     verb="Raw Material Approved",
-
-                
-                    message=f"You have been notified that " + f"Raw Material {obj.name if hasattr(obj, 'name') else pk} has been approved.",
-
-                
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Raw Material {obj.name if hasattr(obj, 'name') else pk} has been approved.",
                     target_url=f"/raw-materials"
-
-                
                 )
 
 
@@ -836,24 +859,21 @@ class AdditiveApprovalView(APIView):
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
                 
+                if notified_user_ids:
+
+
+                
+                    obj.notified_users.add(*notified_user_ids)
+
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-                
                     actor=actor,
-
-                
                     notified_user_ids=notified_user_ids,
-
-                
                     verb="Additive Approved",
-
-                
-                    message=f"You have been notified that " + f"Additive {obj.name if hasattr(obj, 'name') else pk} has been approved.",
-
-                
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Additive {obj.name if hasattr(obj, 'name') else pk} has been approved.",
                     target_url=f"/additives"
-
-                
                 )
 
 
@@ -903,24 +923,21 @@ class ConsumptionFormulaApprovalView(APIView):
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
                 
+                if notified_user_ids and hasattr(obj, 'notified_users'):
+
+
+                
+                    obj.notified_users.add(*notified_user_ids)
+
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-                
                     actor=actor,
-
-                
                     notified_user_ids=notified_user_ids,
-
-                
                     verb="Consumption Formula Approved",
-
-                
-                    message=f"You have been notified that " + f"Consumption Formula {obj.name if hasattr(obj, 'name') else pk} has been approved.",
-
-                
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Consumption Formula {obj.name if hasattr(obj, 'name') else pk} has been approved.",
                     target_url=f"/consumption-formula"
-
-                
                 )
 
 
@@ -1035,12 +1052,19 @@ class ProductFormulaView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids and hasattr(p_formula, 'notified_users'):
+
+
+                p_formula.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Product Formula Created", 
-                message=f"You have been assigned to Product Formula {p_formula.formula_name if p_formula.formula_name else p_formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to Product Formula {p_formula.formula_name if p_formula.formula_name else p_formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/product-formulas"
             )
             
@@ -1107,12 +1131,19 @@ class ProductFormulaView(APIView):
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            if notified_user_ids and hasattr(formula, 'notified_users'):
+
+
+                formula.notified_users.add(*notified_user_ids)
+
+
+            custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
                 # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb="Product Formula Updated", 
-                message=f"You have been assigned to updated Product Formula {formula.formula_name if formula.formula_name else formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to updated Product Formula {formula.formula_name if formula.formula_name else formula.id} by {request.user.name if hasattr(request.user, 'name') else 'System'}",
                 target_url=f"/product-formulas"
             )
             
@@ -1169,24 +1200,21 @@ class FinalProductApprovalView(APIView):
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
 
+                if notified_user_ids and hasattr(obj, 'notified_users'):
+
+
+
+                    obj.notified_users.add(*notified_user_ids)
+
+
+
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-
                     actor=actor,
-
-
                     notified_user_ids=notified_user_ids,
-
-
                     verb="Final Product Approved",
-
-
-                    message=f"You have been notified that " + f"Final Product Cost entry has been approved.",
-
-
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Final Product Cost entry has been approved.",
                     target_url=f"/final-products"
-
-
                 )
 
 
@@ -1235,24 +1263,21 @@ class ProductFormulaApprovalView(APIView):
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
 
+                if notified_user_ids and hasattr(obj, 'notified_users'):
+
+
+
+                    obj.notified_users.add(*notified_user_ids)
+
+
+
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-
                     actor=actor,
-
-
                     notified_user_ids=notified_user_ids,
-
-
                     verb="Product Formula Approved",
-
-
-                    message=f"You have been notified that " + f"Product Formula {obj.formula_name if hasattr(obj, 'formula_name') else pk} has been approved.",
-
-
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Product Formula {obj.formula_name if hasattr(obj, 'formula_name') else pk} has been approved.",
                     target_url=f"/product-formula"
-
-
                 )
 
 
@@ -1300,24 +1325,21 @@ class ConsumptionApprovalView(APIView):
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
                 
+                if notified_user_ids:
+
+
+                
+                    obj.notified_users.add(*notified_user_ids)
+
+
+                
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-                
                     actor=actor,
-
-                
                     notified_user_ids=notified_user_ids,
-
-                
                     verb="Consumption Approved",
-
-                
-                    message=f"You have been notified that " + f"Consumption entry {obj.name if hasattr(obj, 'name') else pk} has been approved.",
-
-                
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Consumption entry {obj.name if hasattr(obj, 'name') else pk} has been approved.",
                     target_url=f"/consumptions"
-
-                
                 )
 
 
@@ -1363,27 +1385,19 @@ class AdditiveCategoryApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
+                if notified_user_ids:
+                    obj.notified_users.add(*notified_user_ids)
+
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
 
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-
                     actor=actor,
-
-
                     notified_user_ids=notified_user_ids,
-
-
                     verb="Additive Category Approved",
-
-
-                    message=f"You have been notified that " + f"Additive Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
-
-
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Additive Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
                     target_url=f"/additive-categories"
-
-
                 )
 
 
@@ -1429,27 +1443,19 @@ class RawCategoryApprovalView(APIView):
                 obj.approved = True
                 obj.save()
 
+                if notified_user_ids:
+                    obj.notified_users.add(*notified_user_ids)
+
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
 
 
+                custom_msg = request.GET.get('notification_message')
                 NotificationService.notify_users_explicit(
-
-
                     actor=actor,
-
-
                     notified_user_ids=notified_user_ids,
-
-
                     verb="Raw Category Approved",
-
-
-                    message=f"You have been notified that " + f"Raw Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
-
-
+                    message=custom_msg if custom_msg else f"You have been notified that " + f"Raw Category {obj.name if hasattr(obj, 'name') else pk} has been approved.",
                     target_url=f"/raw-categories"
-
-
                 )
 
 

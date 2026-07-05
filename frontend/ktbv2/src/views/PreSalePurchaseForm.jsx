@@ -38,7 +38,8 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
         documentRequired: [{ name: '' }], // Ensure all sections are initialized as arrays
         acknowledgedPI: [{ ackn_pi: null, ackn_pi_name: '' }],
         acknowledgedPO: [{ ackn_po: null, ackn_po_name: '' }],
-        notifiedUsers: []
+        notifiedUsers: [],
+        notification_message: ''
     });
     const [data, setData] = useState(null);
     const [trnOptions, setTrnOptions] = useState([]);
@@ -553,6 +554,8 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 <MultiUserSelector
                     selectedUsers={formData.notifiedUsers}
                     onChange={handleUsersChange}
+                    message={formData.notification_message}
+                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
                 />
                 {validationErrors.notifiedUsers && (
                 <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>

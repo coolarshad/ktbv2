@@ -6,6 +6,7 @@ class AdditiveFilter(django_filters.FilterSet):
         model = Additive
         fields = {
             'remarks': ['exact', 'icontains'],
+            'approved': ['exact'],
         }
 
 class RawMaterialFilter(django_filters.FilterSet):
@@ -13,6 +14,7 @@ class RawMaterialFilter(django_filters.FilterSet):
         model = RawMaterial
         fields = {
             'remarks': ['exact', 'icontains'],
+            'approved': ['exact'],
         }
 
 class PackingFilter(django_filters.FilterSet):
@@ -20,6 +22,7 @@ class PackingFilter(django_filters.FilterSet):
         model = Packing
         fields = {
             'name': ['exact', 'icontains'],
+            'approved': ['exact'],
         }
 
 class AdditiveCategoryFilter(django_filters.FilterSet):
@@ -71,7 +74,7 @@ class ConsumptionFormulaFilter(django_filters.FilterSet):
    
 
     class Meta:
-        model = Consumption
+        model = ConsumptionFormula
         fields = {
             'name': ['exact', 'icontains'],
             'grade': ['exact', 'icontains'],
@@ -89,7 +92,8 @@ class ProductFormulaFilter(django_filters.FilterSet):
         fields = {
             'formula_name': ['exact', 'icontains'],
             'consumption_name': ['exact', 'icontains'],
-            'packing_type': ['exact', 'icontains']
+            'packing_type': ['exact', 'icontains'],
+            'approved': ['exact'],
         }
 class FinalProductFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(

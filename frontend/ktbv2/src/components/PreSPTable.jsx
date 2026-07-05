@@ -25,6 +25,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
   const [totalTradeQuantity, setTotalTradeQuantity] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const [notifiedUsers, setNotifiedUsers] = useState([]);
+  const [notificationMessage, setNotificationMessage] = useState("");
   // const [textAmount, setTextAmount] = useState(0);
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
@@ -34,6 +35,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
     setIsModalOpen(false);
     setSelectedTrade(null);
     setNotifiedUsers([]);
+    setNotificationMessage("");
   };
 
   const closePrintModal = () => {
@@ -72,11 +74,15 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
     try {
       const params = new URLSearchParams();
       notifiedUsers.forEach(id => params.append('notifiedUsers[]', id));
+      if (notificationMessage) {
+        params.append('notification_message', notificationMessage);
+      }
       await axios.get(`/trademgt/pre-sales-purchases-approve/${selectedPresp.id}/?${params.toString()}`);
      
       setIsModalOpen(false);
       setSelectedPresp(null);
       setNotifiedUsers([]);
+      setNotificationMessage("");
       window.location.reload();
     } catch (error) {
       console.error('Error approving pre sales/purchase:', error);
@@ -585,6 +591,21 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
             )}
           </div>
         )}
+      
+        {/* Notified Users Section */}
+        <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+          <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+          {selectedTrade?.notified_users_emails?.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {selectedTrade.notified_users_emails.map((email, idx) => (
+                <li key={idx} className="text-sm text-gray-700">{email}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+          )}
+        </div>
+
       </PrintModal>
 
 
@@ -787,6 +808,8 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                   <MultiUserSelector 
                     selectedUsers={notifiedUsers} 
                     onChange={setNotifiedUsers} 
+                    message={notificationMessage}
+                    onMessageChange={setNotificationMessage}
                   />
                 </div>
               )}

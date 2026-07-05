@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
-const RawMaterialTable = ({ data , onDelete, onView, basePerm }) => { // Default value for data
-  const navigate = useNavigate();  
+const RawMaterialTable = ({ data, onDelete, onView, basePerm }) => { // Default value for data
+  const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const handleEdit = (id) => {
     navigate(`/raw-material-form/${id}`);  // Navigate to TradeForm with tradeId
   };
@@ -21,13 +21,13 @@ const RawMaterialTable = ({ data , onDelete, onView, basePerm }) => { // Default
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sub Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Cost Per Liter</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buy Price</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buy Price</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add. Cost</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">MT To KG</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Density</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Density</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
-           
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -40,21 +40,21 @@ const RawMaterialTable = ({ data , onDelete, onView, basePerm }) => { // Default
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.category_name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.subname_name}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.cost_per_liter}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.buy_price_pmt}</td>
+              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.buy_price_pmt}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.add_cost}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ml_to_kl}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.density}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.density}</td> */}
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
-          
+
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
               </td>
-             
-             
+
+
               <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                 <div className="space-x-2">
-                 
+
                   <button
                     className="bg-green-500 text-white px-2 py-1 rounded"
                     onClick={(e) => { e.stopPropagation(); onView(item.id); }}
