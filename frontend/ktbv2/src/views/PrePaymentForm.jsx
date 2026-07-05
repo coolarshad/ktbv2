@@ -310,20 +310,25 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             setValidationErrors({});
         }
 
-        // console.log(formData);
         const formDataToSend = new FormData();
 
         for (const [key, value] of Object.entries(formData)) {
             if (Array.isArray(value)) {
-                value.forEach((item, index) => {
-                    for (const [subKey, subValue] of Object.entries(item)) {
-                        if (subValue instanceof File) {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
-                        } else {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                if (key === 'notifiedUsers') {
+                    value.forEach(item => {
+                        formDataToSend.append(`${key}[]`, item);
+                    });
+                } else {
+                    value.forEach((item, index) => {
+                        for (const [subKey, subValue] of Object.entries(item)) {
+                            if (subValue instanceof File) {
+                                formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                            } else {
+                                formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             } else {
                 formDataToSend.append(key, value);
             }

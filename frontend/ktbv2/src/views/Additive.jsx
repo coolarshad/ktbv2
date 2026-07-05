@@ -221,26 +221,24 @@ const Additive = () => {
 )}
                     </div>
                   }
+              {/* Notified Users Section */}
+              <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+                <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+                {selectedAdditive?.notified_users_emails?.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {selectedAdditive.notified_users_emails.map((email, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{email}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+                )}
+              </div>
              </div>
             
            </div>
          </div>
         )}
-      
-        {/* Notified Users Section */}
-        <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
-          <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
-          {selectedAdditive?.notified_users_emails?.length > 0 ? (
-            <ul className="list-disc pl-5">
-              {selectedAdditive.notified_users_emails.map((email, idx) => (
-                <li key={idx} className="text-sm text-gray-700">{email}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-gray-500">No users have been notified for this record.</p>
-          )}
-        </div>
-
       </Modal>
         </>
     );

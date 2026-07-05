@@ -1379,10 +1379,10 @@ class PrePaymentReview(APIView):
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
-                if notified_user_ids and hasattr(prepayment, 'notified_users'):
+                if notified_user_ids and hasattr(prepay, 'notified_users'):
 
                 
-                    prepayment.notified_users.add(*notified_user_ids)
+                    prepay.notified_users.add(*notified_user_ids)
 
                 
                 custom_msg = request.GET.get('notification_message')

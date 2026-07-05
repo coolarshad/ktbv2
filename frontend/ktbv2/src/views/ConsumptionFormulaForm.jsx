@@ -153,11 +153,17 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
 
         for (const [key, value] of Object.entries(formData)) {
             if (Array.isArray(value)) {
-                value.forEach((item, index) => {
-                    for (const [subKey, subValue] of Object.entries(item)) {
-                        formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
-                    }
-                });
+                if (key === 'notifiedUsers') {
+                    value.forEach(item => {
+                        formDataToSend.append(`${key}[]`, item);
+                    });
+                } else {
+                    value.forEach((item, index) => {
+                        for (const [subKey, subValue] of Object.entries(item)) {
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue);
+                        }
+                    });
+                }
             } else {
                 formDataToSend.append(key, value);
             }

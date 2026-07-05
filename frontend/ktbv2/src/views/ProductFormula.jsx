@@ -231,6 +231,19 @@ const ProductFormula = () => {
                       {hasPermission(user, 'approve_packing_formulation') && (
 <button onClick={approveProductFormula} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
 )}
+              {/* Notified Users Section */}
+              <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+                <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+                {selectedFormula?.notified_users_emails?.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {selectedFormula.notified_users_emails.map((email, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{email}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+                )}
+              </div>
                     </div>
                   }
              </div>
@@ -238,21 +251,6 @@ const ProductFormula = () => {
            </div>
          </div>
         )}
-      
-        {/* Notified Users Section */}
-        <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
-          <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
-          {selectedFormula?.notified_users_emails?.length > 0 ? (
-            <ul className="list-disc pl-5">
-              {selectedFormula.notified_users_emails.map((email, idx) => (
-                <li key={idx} className="text-sm text-gray-700">{email}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-gray-500">No users have been notified for this record.</p>
-          )}
-        </div>
-
       </Modal>
         </>
     );

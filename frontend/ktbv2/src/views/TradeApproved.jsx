@@ -450,6 +450,20 @@ function TradeApproved() {
                   ))}
                 </tbody>
               </table>
+              {/* Notified Users Section */}
+              <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+                <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+                {selectedTrade?.notified_users_emails?.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {selectedTrade.notified_users_emails.map((email, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{email}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+                )}
+              </div>
+
               {selectedTrade.approved ? '' :
                 <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                   <button onClick={approveTrade} className="bg-blue-500 text-white p-2 rounded col-span-3">Review</button>
