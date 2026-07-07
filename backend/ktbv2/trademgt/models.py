@@ -157,35 +157,9 @@ class TradeProduct(models.Model):
             )
         
     def update_product_ref(self):
-        """Update or create TradeProductRef for this product"""
-        try:
-            trace = TradeProductRef.objects.get(
-                product_code=self.product_code,
-                trade_type=self.trade.trade_type
-            )
-            # if self.ref_trn!='NA':
-            #     if hasattr(self, 'previous_trade_qty'):
-            #         # For updates: add back the previous quantity and subtract the new quantity
-            #         trace.ref_balance_qty += float(self.previous_trade_qty)
-            #         trace.ref_balance_qty -= float(self.trade_qty)
-            #     else:
-            #         # For new records: just subtract the new quantity
-            #         trace.ref_balance_qty -= float(self.trade_qty)
-            if self.ref_trn!='NA':
-                if hasattr(self, 'previous_trade_qty'):
-                    trace.ref_balance_qty -= float(self.previous_trade_qty)
-                    trace.ref_balance_qty += float(self.trade_qty)
-            
-            trace.save()
-            
-        except TradeProductRef.DoesNotExist:
-            # Create new trace for first trade
-            TradeProductRef.objects.create(
-                product_code=self.product_code,
-                trade_type=self.trade.trade_type,
-                total_contract_qty=float(self.trade_qty),
-                ref_balance_qty=float(self.trade_qty)
-            )
+        """Update or create TradeProductRef for this product - handled by signals"""
+        pass
+
 
     def create_trade_pending(self, old_value=None):
         """Create or update TradePending entry for this product"""
@@ -1084,3 +1058,46 @@ class PL(models.Model):
 
     def get_absolute_url(self):
         return reverse("PL_detail", kwargs={"pk": self.pk})
+
+
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+def recalculate_trade_product_ref(product_code):
+    if not product_code or product_code == 'NA':
+        return
+        
+    total_purchase_qty = TradeProduct.objects.filter(
+        product_code=product_code, 
+        trade__trade_type='Purchase'
+    ).aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
+    
+    total_sales_qty = TradeProduct.objects.filter(
+        ref_product_code=product_code, 
+        trade__trade_type='Sales'
+    ).aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
+    
+    ref_balance = total_purchase_qty - total_sales_qty
+    
+    if total_purchase_qty > 0:
+        TradeProductRef.objects.update_or_create(
+            product_code=product_code,
+            trade_type='Purchase',
+            defaults={
+                'total_contract_qty': total_purchase_qty,
+                'ref_balance_qty': ref_balance
+            }
+        )
+    else:
+        TradeProductRef.objects.filter(product_code=product_code, trade_type='Purchase').delete()
+
+@receiver(post_save, sender=TradeProduct)
+def on_trade_product_save(sender, instance, **kwargs):
+    recalculate_trade_product_ref(instance.product_code)
+    recalculate_trade_product_ref(instance.ref_product_code)
+
+@receiver(post_delete, sender=TradeProduct)
+def on_trade_product_delete(sender, instance, **kwargs):
+    recalculate_trade_product_ref(instance.product_code)
+    recalculate_trade_product_ref(instance.ref_product_code)
+

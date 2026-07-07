@@ -18,7 +18,19 @@ def get_authorized_queryset(request, queryset):
                 get_subordinates(sub)
                 
     get_subordinates(user)
-    return queryset.filter(created_by_id__in=[user.id] + list(subordinate_ids))
+
+    manager_ids = set()
+    def get_managers(u):
+        if u.reports_to:
+            if u.reports_to.id not in manager_ids:
+                manager_ids.add(u.reports_to.id)
+                get_managers(u.reports_to)
+
+    get_managers(user)
+
+    authorized_ids = [user.id] + list(subordinate_ids) + list(manager_ids)
+    return queryset.filter(created_by_id__in=authorized_ids)
+
 
 class HierarchicalSecurityMixin:
     """

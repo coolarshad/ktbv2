@@ -59,10 +59,35 @@ class TradeView(APIView):
             return Response(response_data)
 
         else:  # If `pk` is not provided, list all trades
-            # trades = Trade.objects.all()
-            # serializer = TradeSerializer(trades, many=True)
-            # return Response(serializer.data)
             queryset = get_authorized_queryset(request, Trade.objects.all())
+            
+            exclude_presalepurchase = request.query_params.get('exclude_presalepurchase')
+            if exclude_presalepurchase == 'true':
+                exclude_qs = PreSalePurchase.objects.all()
+                current_presalepurchase_id = request.query_params.get('current_presalepurchase_id')
+                if current_presalepurchase_id and current_presalepurchase_id not in ['undefined', 'null', '']:
+                    exclude_qs = exclude_qs.exclude(id=current_presalepurchase_id)
+                excluded_trn_ids = exclude_qs.values_list('trn_id', flat=True)
+                queryset = queryset.exclude(id__in=excluded_trn_ids)
+
+            exclude_prepayment = request.query_params.get('exclude_prepayment')
+            if exclude_prepayment == 'true':
+                exclude_qs = PrePayment.objects.all()
+                current_prepayment_id = request.query_params.get('current_prepayment_id')
+                if current_prepayment_id and current_prepayment_id not in ['undefined', 'null', '']:
+                    exclude_qs = exclude_qs.exclude(id=current_prepayment_id)
+                excluded_trn_ids = exclude_qs.values_list('trn_id', flat=True)
+                queryset = queryset.exclude(id__in=excluded_trn_ids)
+
+            exclude_salespurchase = request.query_params.get('exclude_salespurchase')
+            if exclude_salespurchase == 'true':
+                exclude_qs = SalesPurchase.objects.all()
+                current_salespurchase_id = request.query_params.get('current_salespurchase_id')
+                if current_salespurchase_id and current_salespurchase_id not in ['undefined', 'null', '']:
+                    exclude_qs = exclude_qs.exclude(id=current_salespurchase_id)
+                excluded_trn_ids = exclude_qs.values_list('trn_id', flat=True)
+                queryset = queryset.exclude(id__in=excluded_trn_ids)
+
             filterset = TradeFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -212,14 +237,7 @@ class TradeView(APIView):
                     # Update TradeProductTrace and TradePending for each product
                     for product in created_products:
                         # product.create_trade_pending()
-                        if product.ref_trn!='NA':
-                            trace=TradeProductRef.objects.filter(
-                                product_code=product.ref_product_code,
-                                trade_type=negate_trade_type(trade.trade_type)
-                            ).first()
-                            if trace and trace.ref_balance_qty:
-                                trace.ref_balance_qty-=float(product.trade_qty)
-                                trace.save()
+                        pass
                         try:
                             pass
                         except Exception as e:
@@ -424,18 +442,7 @@ class TradeView(APIView):
                     for tp in TradeProduct.objects.filter(trade=trade)
                 }
 
-                for product in TradeProduct.objects.filter(trade=trade):
-                    
-                    if product.ref_trn != 'NA':
-                        trace = TradeProductRef.objects.filter(
-                        product_code=product.ref_product_code,
-                        trade_type=negate_trade_type(trade.trade_type)
-                        ).first()
-                        
-                        # if trace and trace.ref_balance_qty:
-                        if trace:
-                            trace.ref_balance_qty += float(product.trade_qty)
-                            trace.save()
+                pass
 
                 
                 # Delete existing trade products
@@ -453,15 +460,7 @@ class TradeView(APIView):
                 
                 # Update TradeProductTrace and TradePending for each product
                 for product in created_products:
-                    if product.ref_trn != 'NA':
-                        trace = TradeProductRef.objects.filter(
-                        product_code=product.ref_product_code,
-                        trade_type=negate_trade_type(trade.trade_type)
-                        ).first()
-        
-                        if trace and trace.ref_balance_qty:
-                            trace.ref_balance_qty -= float(product.trade_qty)
-                            trace.save()
+                    pass
                             
                     previous = existing_values.get(product.product_code, {})
                     fake_old_instance = TradeProduct(
@@ -547,16 +546,7 @@ class TradeView(APIView):
                     except Exception as e:
                         pass
 
-                    try:
-                        ref = TradeProductRef.objects.get(
-                        product_code=product.ref_product_code,
-                        trade_type=negate_trade_type(trade.trade_type)
-                        )
-
-                        ref.ref_balance_qty += float(product.trade_qty)
-                        ref.save()
-                    except Exception as e:
-                        pass
+                    pass
                 
                 # Delete the trade (will cascade delete products and extra costs)
                 trade.delete()
@@ -1448,6 +1438,16 @@ class SalesPurchaseView(APIView):
 
         else:
             queryset = get_authorized_queryset(request, SalesPurchase.objects.all())
+            
+            exclude_paymentfinance = request.query_params.get('exclude_paymentfinance')
+            if exclude_paymentfinance == 'true':
+                exclude_qs = PaymentFinance.objects.all()
+                current_paymentfinance_id = request.query_params.get('current_paymentfinance_id')
+                if current_paymentfinance_id and current_paymentfinance_id not in ['undefined', 'null', '']:
+                    exclude_qs = exclude_qs.exclude(id=current_paymentfinance_id)
+                excluded_sp_ids = exclude_qs.values_list('sp_id', flat=True)
+                queryset = queryset.exclude(id__in=excluded_sp_ids)
+
             filterset = SalesPurchaseFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
@@ -1565,11 +1565,12 @@ class SalesPurchaseView(APIView):
             
             
            
-            for product in sp_products:
-                pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,trade_type=sp.trn.trade_type).first()
-                if pending_product:
-                    pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
-                    pending_product.save()
+            if sp_products_data:
+                for product in sp_products:
+                    pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,trade_type=sp.trn.trade_type).first()
+                    if pending_product:
+                        pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                        pending_product.save()
 
             if notified_user_ids:
 
@@ -2636,28 +2637,32 @@ class RefBalanceView(APIView):
         ref_trn = request.query_params.get('trn')
         product_code = request.query_params.get('ref_product_code')
         trade_type = request.query_params.get('trade_type')
-        # ref_type = request.query_params.get('ref_type')
-        # print("=========: ",ref_trn,product_code,trade_type)
+        current_trade_id = request.query_params.get('current_trade_id')
         try:
-            # product = TradeProduct.objects.get(
-            #     trade__trn=ref_trn,
-            #     product_code=product_code,
-            #     trade__trade_type=trade_type
-            # )
+            balance = 'NA'
+            parent_product = TradeProduct.objects.filter(
+                trade__trn=ref_trn,
+                product_code=product_code,
+                trade__trade_type=negate_trade_type(trade_type)
+            ).first()
             
-            balance = 'NA'  # Default value
-            
-           
-            trace = TradeProductRef.objects.filter(product_code=product_code,trade_type=negate_trade_type(trade_type)).first()
-            # print("=========2: ",trace)
-            if trace and trace.ref_balance_qty is not None:
-                balance = trace.ref_balance_qty
-           
+            if parent_product:
+                consumed_query = TradeProduct.objects.filter(
+                    ref_trn=ref_trn,
+                    ref_product_code=product_code,
+                    trade__trade_type=trade_type
+                )
+                if current_trade_id and current_trade_id not in ['undefined', 'null', '']:
+                    consumed_query = consumed_query.exclude(trade_id=current_trade_id)
                     
-        except TradeProduct.DoesNotExist:
+                consumed_qty = consumed_query.aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
+                balance = parent_product.trade_qty - consumed_qty
+                    
+        except Exception as e:
             return Response({'ref_balance': 'NA'})
 
         return Response({'ref_balance': balance})
+
 
 class RefProductCodeView(APIView):
     def get(self, request, *args, **kwargs):
