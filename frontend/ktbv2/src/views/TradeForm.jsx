@@ -193,11 +193,37 @@ const TradeForm = ({ mode = 'add' }) => {
         if (mode === 'update' && id) {
             // Fetch existing trade data for update
             axios.get(`/trademgt/trades/${id}`)
-                .then(response => {
+                .then(async response => {
                     const data = response.data;
+                    
+                    // Fetch reference balances for existing products in parallel
+                    const updatedProducts = await Promise.all((data.tradeProducts || []).map(async (product) => {
+                        if (product.ref_trn && product.ref_trn !== 'NA' && product.ref_product_code && product.ref_product_code !== 'NA') {
+                            try {
+                                const balanceResponse = await axios.get(`/trademgt/product-balance`, {
+                                    params: {
+                                        trn: product.ref_trn,
+                                        trade_type: data.trade_type,
+                                        ref_product_code: product.ref_product_code,
+                                        current_trade_id: id,
+                                    }
+                                });
+                                return {
+                                    ...product,
+                                    ref_balance: balanceResponse.data.ref_balance,
+                                };
+                            } catch (e) {
+                                console.error('Error fetching initial ref balance:', e);
+                                return { ...product, ref_balance: 'NA' };
+                            }
+                        }
+                        return { ...product, ref_balance: '' };
+                    }));
+
                     setFormData(prevData => ({
                         ...prevData,
                         ...data,
+                        tradeProducts: updatedProducts,
                     }));
                 })
                 .catch(error => {
@@ -205,6 +231,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 });
         }
     }, [mode, id]);
+
 
     useEffect(() => {
         // Calculate contract value and product value whenever exchange_rate changes
@@ -297,24 +324,22 @@ const TradeForm = ({ mode = 'add' }) => {
             const trade_type = formData.trade_type;
             const ref_product_code = product?.ref_product_code;
 
-            if (name === 'ref_trn' && value !== 'NA') {
-                // console.log('here:', prod_code, prod_name, value)
+            const current_ref_trn = name === 'ref_trn' ? value : product?.ref_trn;
+            const current_ref_product_code = name === 'ref_product_code' ? value : product?.ref_product_code;
+
+            if ((name === 'ref_trn' || name === 'ref_product_code') && current_ref_trn && current_ref_trn !== 'NA' && current_ref_product_code && current_ref_product_code !== 'NA') {
                 try {
-                    // Call the API with ref_trn, product_code, and product_name as query params
                     const response = await axios.get(`/trademgt/product-balance`, {
                         params: {
-                            trn: value,
-                            // product_code:prod_code,
+                            trn: current_ref_trn,
                             trade_type: trade_type,
-                            ref_product_code: ref_product_code,
+                            ref_product_code: current_ref_product_code,
+                            current_trade_id: mode === 'update' ? id : undefined,
                         }
                     });
 
-                    // Check if the response is successful
                     if (response.status === 200) {
-                        const { ref_balance } = response.data; // Assume API returns { ref_balance: value }
-                        console.log(ref_balance)
-                        // Update the ref_balance in the corresponding product
+                        const { ref_balance } = response.data;
                         setFormData((prevState) => {
                             const updatedProducts = [...prevState.tradeProducts];
                             updatedProducts[index].ref_balance = ref_balance;
@@ -323,10 +348,15 @@ const TradeForm = ({ mode = 'add' }) => {
                     } else {
                         console.error('Error fetching ref balance:', response.statusText);
                     }
-
                 } catch (error) {
                     console.error('API Error:', error.message);
                 }
+            } else if ((name === 'ref_trn' || name === 'ref_product_code') && (current_ref_trn === 'NA' || current_ref_product_code === 'NA')) {
+                setFormData((prevState) => {
+                    const updatedProducts = [...prevState.tradeProducts];
+                    updatedProducts[index].ref_balance = '';
+                    return { ...prevState, tradeProducts: updatedProducts };
+                });
             }
 
             if (name === 'company') {
@@ -787,37 +817,29 @@ const TradeForm = ({ mode = 'add' }) => {
             <div className="grid grid-cols-3 gap-4 p-4 ">
                 <div>
                     <label htmlFor="trade_type" className="block text-sm font-medium text-gray-700">Select Trade Type</label>
-                    <select
-                        name="trade_type"
-                        value={formData.trade_type}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-2 ${getFieldErrorClass('trade_type')}`}
-                    >
-                        <option value="">Select Trade Type</option>
-                        {tradeTypeOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={tradeTypeOptions.map(option => ({ value: option, label: option }))}
+                        value={formData.trade_type ? { value: formData.trade_type, label: formData.trade_type } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'trade_type', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select Trade Type"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-2 ${getFieldErrorClass('trade_type')}`}
+                    />
                     {validationErrors.trade_type && <p className="text-red-500">{validationErrors.trade_type}</p>}
                 </div>
 
                 <div>
                     <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company</label>
-                    <select
-                        name="company"
-                        value={formData.company}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-3 ${getFieldErrorClass('company')}`}
-                    >
-                        <option value="">Select Company</option>
-                        {companyOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={companyOptions.map(option => ({ value: option.id, label: option.name }))}
+                        value={formData.company ? { value: formData.company, label: companyOptions.find(opt => opt.id == formData.company)?.name || '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'company', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select Company"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-3 ${getFieldErrorClass('company')}`}
+                    />
                     {validationErrors.company && <p className="text-red-500">{validationErrors.company}</p>}
                 </div>
 
@@ -852,19 +874,15 @@ const TradeForm = ({ mode = 'add' }) => {
 
                 <div>
                     <label htmlFor="trade_category" className="block text-sm font-medium text-gray-700">Select Trade Category</label>
-                    <select
-                        name="trade_category"
-                        value={formData.trade_category}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('trade_category')}`}
-                    >
-                        <option value="">Select Trade Category</option>
-                        {tradeCategoryOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={tradeCategoryOptions.map(option => ({ value: option, label: option }))}
+                        value={formData.trade_category ? { value: formData.trade_category, label: formData.trade_category } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'trade_category', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select Trade Category"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-1 ${getFieldErrorClass('trade_category')}`}
+                    />
                     {validationErrors.trade_category && <p className="text-red-500">{validationErrors.trade_category}</p>}
                 </div>
                 <div>
@@ -881,19 +899,15 @@ const TradeForm = ({ mode = 'add' }) => {
                 </div>
                 <div>
                     <label htmlFor="customer_company_name" className="block text-sm font-medium text-gray-700">Select Customer Company</label>
-                    <select
-                        name="customer_company_name"
-                        value={formData.customer_company_name}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('customer_company_name')}`}
-                    >
-                        <option value="">Select Customer Company</option>
-                        {customerOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={customerOptions.map(option => ({ value: option.id, label: option.name }))}
+                        value={formData.customer_company_name ? { value: formData.customer_company_name, label: customerOptions.find(opt => opt.id == formData.customer_company_name)?.name || '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'customer_company_name', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select Customer Company"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-1 ${getFieldErrorClass('customer_company_name')}`}
+                    />
                     {validationErrors.customer_company_name && <p className="text-red-500">{validationErrors.customer_company_name}</p>}
                 </div>
                 <div>
@@ -913,19 +927,15 @@ const TradeForm = ({ mode = 'add' }) => {
 
                 <div>
                     <label htmlFor="currency_selection" className="block text-sm font-medium text-gray-700">Currency Selection</label>
-                    <select
-                        name="currency_selection"
-                        value={formData.currency_selection}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('currency_selection')}`}
-                    >
-                        <option value="">Select Currency</option>
-                        {currencyOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={currencyOptions.map(option => ({ value: option.id, label: option.name }))}
+                        value={formData.currency_selection ? { value: formData.currency_selection, label: currencyOptions.find(opt => opt.id == formData.currency_selection)?.name || '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'currency_selection', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select Currency"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-1 ${getFieldErrorClass('currency_selection')}`}
+                    />
                     {validationErrors.currency_selection && <p className="text-red-500">{validationErrors.currency_selection}</p>}
                 </div>
                 <div>
@@ -943,19 +953,15 @@ const TradeForm = ({ mode = 'add' }) => {
 
                 <div>
                     <label htmlFor="bank_name_address" className="block text-sm font-medium text-gray-700">Select Bank Name & Address</label>
-                    <select
-                        name="bank_name_address"
-                        value={formData.bank_name_address}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('bank_name_address')}`}
-                    >
-                        <option value="">Select Bank Name & Address</option>
-                        {bankNameOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={bankNameOptions.map(option => ({ value: option.id, label: option.name }))}
+                        value={formData.bank_name_address ? { value: formData.bank_name_address, label: bankNameOptions.find(opt => opt.id == formData.bank_name_address)?.name || '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'bank_name_address', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select Bank Name & Address"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-1 ${getFieldErrorClass('bank_name_address')}`}
+                    />
                     {validationErrors.bank_name_address && <p className="text-red-500">{validationErrors.bank_name_address}</p>}
                 </div>
                 <div>
@@ -1134,19 +1140,15 @@ const TradeForm = ({ mode = 'add' }) => {
                             </div>
                             <div>
                                 <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                                <select
-                                    name="product_name"
-                                    value={product.product_name}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].product_name`)}`}
-                                >
-                                    <option value="">Select Product Name</option>
-                                    {productNameOptions.map((option) => (
-                                        <option key={option.id} value={option.id}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={productNameOptions.map(option => ({ value: option.id, label: option.name }))}
+                                    value={product.product_name ? { value: product.product_name, label: productNameOptions.find(opt => opt.id == product.product_name)?.name || '' } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'product_name', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="Select Product Name"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].product_name`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].product_name`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].product_name`]}
@@ -1188,22 +1190,15 @@ const TradeForm = ({ mode = 'add' }) => {
                             </div>
                             <div>
                                 <label htmlFor="ref_product_code" className="block text-sm font-medium text-gray-700">Reference Product Code</label>
-                                <select
-                                    name="ref_product_code"
-                                    value={product.ref_product_code}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_product_code`)}`}
-                                >
-                                    {/* <option value="">Select Type</option> */}
-                                    <option value="">---</option>
-                                    <option value="NA">NA</option>
-                                    {refProductOptions?.map((option) => (
-                                        <option key={option.id} value={option.product_code}>
-                                            {option.product_code}
-                                        </option>
-                                    ))}
-
-                                </select>
+                                <Select
+                                    options={[{ value: 'NA', label: 'NA' }, ...(refProductOptions?.map(option => ({ value: option.product_code, label: option.product_code })) || [])]}
+                                    value={product.ref_product_code ? { value: product.ref_product_code, label: product.ref_product_code } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'ref_product_code', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="---"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_product_code`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].ref_product_code`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].ref_product_code`]}
@@ -1215,21 +1210,15 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="ref_trn" className="block text-sm font-medium text-gray-700">
                                     Reference TRN
                                 </label>
-                                <select
-                                    name="ref_trn"
-                                    value={product.ref_trn}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_trn`)}`}
-                                >
-                                    {/* <option value="">Select TRN</option> */}
-                                    <option value="">---</option>
-                                    <option value="NA">NA</option>
-                                    {tradeOptions.map((option) => (
-                                        <option key={option.value} value={option.label}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={[{ value: 'NA', label: 'NA' }, ...tradeOptions]}
+                                    value={product.ref_trn ? { value: product.ref_trn, label: product.ref_trn } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'ref_trn', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="---"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].ref_trn`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].ref_trn`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].ref_trn`]}
@@ -1280,19 +1269,15 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="total_contract_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Total Contract Qty Unit
                                 </label>
-                                <select
-                                    name="total_contract_qty_unit"
-                                    value={product.total_contract_qty_unit}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].total_contract_qty_unit`)}`}
-                                >
-                                    <option value="">Select Unit</option>
-                                    {unitOptions.map((option) => (
-                                        <option key={option.id} value={option.name}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={unitOptions.map(option => ({ value: option.name, label: option.name }))}
+                                    value={product.total_contract_qty_unit ? { value: product.total_contract_qty_unit, label: product.total_contract_qty_unit } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'total_contract_qty_unit', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="Select Unit"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].total_contract_qty_unit`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].total_contract_qty_unit`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].total_contract_qty_unit`]}
@@ -1337,19 +1322,15 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="contract_balance_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Contract Balance Qty Unit
                                 </label>
-                                <select
-                                    name="contract_balance_qty_unit"
-                                    value={product.contract_balance_qty_unit}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].contract_balance_qty_unit`)}`}
-                                >
-                                    <option value="">Select Unit</option>
-                                    {unitOptions.map((option) => (
-                                        <option key={option.id} value={option.name}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={unitOptions.map(option => ({ value: option.name, label: option.name }))}
+                                    value={product.contract_balance_qty_unit ? { value: product.contract_balance_qty_unit, label: product.contract_balance_qty_unit } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'contract_balance_qty_unit', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="Select Unit"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].contract_balance_qty_unit`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].contract_balance_qty_unit`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].contract_balance_qty_unit`]}
@@ -1377,19 +1358,15 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">
                                     Trade Qty Unit
                                 </label>
-                                <select
-                                    name="trade_qty_unit"
-                                    value={product.trade_qty_unit}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].trade_qty_unit`)}`}
-                                >
-                                    <option value="">Select Unit</option>
-                                    {unitOptions.map((option) => (
-                                        <option key={option.id} value={option.name}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={unitOptions.map(option => ({ value: option.name, label: option.name }))}
+                                    value={product.trade_qty_unit ? { value: product.trade_qty_unit, label: product.trade_qty_unit } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'trade_qty_unit', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="Select Unit"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].trade_qty_unit`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].trade_qty_unit`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].trade_qty_unit`]}
@@ -1446,19 +1423,15 @@ const TradeForm = ({ mode = 'add' }) => {
                             </div>
                             <div>
                                 <label htmlFor="mode_of_packing" className="block text-sm font-medium text-gray-700">Mode of Packing</label>
-                                <select
-                                    name="mode_of_packing"
-                                    value={product.mode_of_packing}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].mode_of_packing`)}`}
-                                >
-                                    <option value="">Select Packing</option>
-                                    {packingOptions.map((option) => (
-                                        <option key={option.id} value={option.id}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={packingOptions.map(option => ({ value: option.id, label: option.name }))}
+                                    value={product.mode_of_packing ? { value: product.mode_of_packing, label: packingOptions.find(opt => opt.id == product.mode_of_packing)?.name || '' } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'mode_of_packing', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="Select Packing"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].mode_of_packing`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].mode_of_packing`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].mode_of_packing`]}
@@ -1515,19 +1488,15 @@ const TradeForm = ({ mode = 'add' }) => {
                             </div>
                             <div>
                                 <label htmlFor="packaging_supplier" className="block text-sm font-medium text-gray-700">Packaging Supplier</label>
-                                <select
-                                    name="packaging_supplier"
-                                    value={product.packaging_supplier}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].packaging_supplier`)}`}
-                                >
-                                    <option value="">Select Supplier</option>
-                                    {customerOptions.map((option) => (
-                                        <option key={option.id} value={option.id}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={customerOptions.map(option => ({ value: option.id, label: option.name }))}
+                                    value={product.packaging_supplier ? { value: product.packaging_supplier, label: customerOptions.find(opt => opt.id == product.packaging_supplier)?.name || '' } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'packaging_supplier', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="Select Supplier"
+                                    isSearchable
+                                    isClearable
+                                    className={`w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].packaging_supplier`)}`}
+                                />
                                 {validationErrors[`tradeProducts[${index}].packaging_supplier`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].packaging_supplier`]}
@@ -1584,19 +1553,15 @@ const TradeForm = ({ mode = 'add' }) => {
                             </div>
                             <div>
                                 <label htmlFor="container_shipment_size" className="block text-sm font-medium text-gray-700">Container Shipment Size</label>
-                                <select
-                                    name="container_shipment_size"
-                                    value={product.container_shipment_size}
-                                    onChange={(e) => handleChange(e, index, 'products')}
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 `}
-                                >
-                                    <option value="">Select Size</option>
-                                    {shipmentSizeOptions.map((option) => (
-                                        <option key={option.id} value={option.id}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={shipmentSizeOptions.map(option => ({ value: option.id, label: option.name }))}
+                                    value={product.container_shipment_size ? { value: product.container_shipment_size, label: shipmentSizeOptions.find(opt => opt.id == product.container_shipment_size)?.name || '' } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'container_shipment_size', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
+                                    placeholder="Select Size"
+                                    isSearchable
+                                    isClearable
+                                    className="w-full col-span-1"
+                                />
                                 {validationErrors[`tradeProducts[${index}].container_shipment_size`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].container_shipment_size`]}
@@ -1706,19 +1671,15 @@ const TradeForm = ({ mode = 'add' }) => {
                 </div>
                 <div>
                     <label htmlFor="payment_term" className="block text-sm font-medium text-gray-700">Select Payment Term</label>
-                    <select
-                        name="payment_term"
-                        value={formData.payment_term}
-                        onChange={handleChange}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('payment_term')}`}
-                    >
-                        <option value="">Select Payment Term</option>
-                        {paymentTermOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={paymentTermOptions.map(option => ({ value: option.id, label: option.name }))}
+                        value={formData.payment_term ? { value: formData.payment_term, label: paymentTermOptions.find(opt => opt.id == formData.payment_term)?.name || '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'payment_term', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select Payment Term"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-1 ${getFieldErrorClass('payment_term')}`}
+                    />
                     {validationErrors.payment_term && <p className="text-red-500">{validationErrors.payment_term}</p>}
                 </div>
                 <div>

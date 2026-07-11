@@ -9,7 +9,7 @@ function RawConsumption() {
     const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
 
-    const [searchField, setSearchField] = useState("final_product_name");
+    const [searchField, setSearchField] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
 
     const [fromDate, setFromDate] = useState("");
@@ -76,21 +76,36 @@ function RawConsumption() {
         fetchData();
     }, []);
 
-    // 🔍 Apply Filters
-    const handleSearch = () => {
+    // 🔍 Apply Filters dynamically
+    useEffect(() => {
         let filtered = [...data];
 
-        // Search filter
         if (searchTerm) {
-            filtered = filtered.filter((item) =>
-                item[searchField]
-                    ?.toString()
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-            );
+            const lowerSearch = searchTerm.toLowerCase();
+            if (searchField === "all") {
+                filtered = filtered.filter((item) => {
+                    return (
+                        (item.final_product_name || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.raw_material_name || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.date || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.serial_number || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.density || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.quantity_ltr || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.quantity_kgs || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.rate_per_ltr || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.value || "").toString().toLowerCase().includes(lowerSearch)
+                    );
+                });
+            } else {
+                filtered = filtered.filter((item) =>
+                    (item[searchField] || "")
+                        .toString()
+                        .toLowerCase()
+                        .includes(lowerSearch)
+                );
+            }
         }
 
-        // Date filter
         if (fromDate) {
             filtered = filtered.filter((item) => item.date >= fromDate);
         }
@@ -101,12 +116,16 @@ function RawConsumption() {
 
         setFilteredData(filtered);
         setCurrentPage(1);
+    }, [searchTerm, searchField, fromDate, toDate, data]);
+
+    const handleSearch = () => {
+        // Handled dynamically by useEffect, but keep for button compatibility
     };
 
     // 🔄 Reset
     const handleReset = () => {
-        setFilteredData(data);
         setSearchTerm("");
+        setSearchField("all");
         setFromDate("");
         setToDate("");
         setCurrentPage(1);
@@ -155,6 +174,7 @@ function RawConsumption() {
                         value={searchField}
                         onChange={(e) => setSearchField(e.target.value)}
                     >
+                        <option value="all">All Fields</option>
                         <option value="final_product_name">Final Product</option>
                         <option value="raw_material_name">Raw Material</option>
                         <option value="serial_number">Serial Number</option>
@@ -243,7 +263,7 @@ function RawConsumption() {
                         ) : (
                             <tr>
                                 <td colSpan="8" className="p-4 text-center">
-                                    No Data Found
+                                    Match Not Found.
                                 </td>
                             </tr>
                         )}

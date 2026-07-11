@@ -7,6 +7,7 @@ import { capitalizeKey } from '../utils';
 import debounce from 'lodash.debounce';
 import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
+import Select from 'react-select';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { user } = useAuth();
@@ -225,7 +226,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
             const response = await axios.get(url, { params });  // Pass params to axios.get
-            setStateFunction(response.data);
+            let data = response.data;
+            if (url.includes('/trademgt/trades')) {
+                data = [...data].sort((a, b) => b.id - a.id);
+            }
+            setStateFunction(data);
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
         }
@@ -233,11 +238,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
     // Combined useEffect for all API calls
     useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true, reviewed: true }, setTrnOptions);  // Example with params
+        fetchData('/trademgt/trades', { 
+            approved: true, 
+            reviewed: true,
+            exclude_salespurchase: true,
+            current_salespurchase_id: mode === 'update' ? id : undefined
+        }, setTrnOptions);  // Example with params
         fetchData('/trademgt/unit', {}, setUnitOptions);
         fetchData('/trademgt/product-names', {}, setProductOptions);
         fetchData('/trademgt/sp-purchase-bl', {}, setPurchaseBLOptions);
-    }, []);
+    }, [mode, id]);
 
     function calculateTotalWithTolerance(qty, tolerance) {
         const toleranceValue = (tolerance / 100) * qty;
@@ -710,20 +720,15 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 ">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
-                    <select
-                        id="trn"
-                        name="trn"
-                        value={formData.trn}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select TRN</option>
-                        {trnOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.trn}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={trnOptions.map(option => ({ value: option.id, label: option.trn }))}
+                        value={formData.trn ? { value: formData.trn, label: trnOptions.find(opt => opt.id == formData.trn)?.trn || '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'trn', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select TRN"
+                        isSearchable
+                        isClearable
+                        className="w-full col-span-1"
+                    />
                     {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
                 <div>
@@ -790,21 +795,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 </div>
                 <div>
                     <label htmlFor="purchase_bl_number" className="block text-sm font-medium text-gray-700">Purchase BL Number</label>
-                    <select
-                        id="purchase_bl_number"
-                        name="purchase_bl_number"
-                        value={formData.purchase_bl_number}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        disabled={data?.trade_type == 'Purchase' ? true : false}
-                    >
-                        <option value="">Select BL Number</option>
-                        {purchaseBLOptions.map(option => (
-                            <option key={option.id} value={option.bl_number}>
-                                {option.bl_number}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={purchaseBLOptions.map(option => ({ value: option.bl_number, label: option.bl_number }))}
+                        value={formData.purchase_bl_number ? { value: formData.purchase_bl_number, label: formData.purchase_bl_number } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'purchase_bl_number', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select BL Number"
+                        isSearchable
+                        isClearable
+                        isDisabled={data?.trade_type == 'Purchase' ? true : false}
+                        className="w-full col-span-1"
+                    />
 
                 </div>
                 {/* <div>
@@ -1041,20 +1041,15 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
                             <div className="col-span-1 sm:col-span-1">
                                 <label htmlFor="product_name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                                <select
-                                    id="product_name"
-                                    name="product_name"
-                                    value={product.product_name}
-                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                    className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                >
-                                    <option value="">Select Product</option>
-                                    {productOptions.map(option => (
-                                        <option key={option.id} value={option.id}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={productOptions.map(option => ({ value: option.id, label: option.name }))}
+                                    value={product.product_name ? { value: product.product_name, label: productOptions.find(opt => opt.id == product.product_name)?.name || '' } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'product_name', value: selectedOption ? selectedOption.value : '' } }, 'salesPurchaseProducts', index)}
+                                    placeholder="Select Product"
+                                    isSearchable
+                                    isClearable
+                                    className="w-full col-span-1"
+                                />
                                 {validationErrors[`salesPurchaseProducts[${index}].product_name`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`salesPurchaseProducts[${index}].product_name`]}
@@ -1183,20 +1178,16 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
                             <div>
                                 <label htmlFor="trade_qty_unit" className="block text-sm font-medium text-gray-700">Trade Qty Unit</label>
-                                <select
-                                    name="trade_qty_unit"
-                                    value={product.trade_qty_unit}
-                                    onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
-                                    className="border border-gray-300 p-2 rounded w-full"
-                                    readOnly={true}
-                                >
-                                    <option value="">Select Trade Unit</option>
-                                    {unitOptions?.map((option) => (
-                                        <option key={option.id} value={option.name}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={unitOptions?.map(option => ({ value: option.name, label: option.name })) || []}
+                                    value={product.trade_qty_unit ? { value: product.trade_qty_unit, label: product.trade_qty_unit } : null}
+                                    onChange={(selectedOption) => handleChange({ target: { name: 'trade_qty_unit', value: selectedOption ? selectedOption.value : '' } }, 'salesPurchaseProducts', index)}
+                                    placeholder="Select Trade Unit"
+                                    isSearchable
+                                    isClearable
+                                    isDisabled={true}
+                                    className="w-full col-span-1"
+                                />
                                 {validationErrors[`salesPurchaseProducts[${index}].trade_qty_unit`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`salesPurchaseProducts[${index}].trade_qty_unit`]}

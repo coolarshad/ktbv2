@@ -78,7 +78,7 @@ const FinalProduct = () => {
             }
             await axios.get(`/costmgt/final-product-approve/${selectedProduct.id}/?${params.toString()}`);
             setIsModalOpen(false);
-            setProductData(null);
+            setSelectedProduct(null);
             setNotifiedUsers([]);
             setNotificationMessage('');
             // Reload the page
@@ -91,7 +91,7 @@ const FinalProduct = () => {
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setProductData(null);
+        setSelectedProduct(null);
         setNotifiedUsers([]);
         setNotificationMessage('');
     };
@@ -208,6 +208,12 @@ const FinalProduct = () => {
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total CFR Pricing</td>
                                             <td className="py-2 px-4 text-gray-800">{selectedProduct.total_cfr_pricing}</td>
+                                        </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="py-2 px-4 text-gray-600 font-medium capitalize text-blue-700">Total Cost Per Pail/Crtn</td>
+                                            <td className="py-2 px-4 text-gray-800 font-semibold text-blue-600">
+                                                {selectedProduct.total_cost_per_pail_crtn || (selectedProduct.total_qty ? (Number(selectedProduct.total_cfr_pricing) / Number(selectedProduct.total_qty)).toFixed(2) : "0.00")}
+                                            </td>
                                         </tr>
                                         <tr className="border-b border-gray-200">
                                             <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>

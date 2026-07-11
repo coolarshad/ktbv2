@@ -30,6 +30,7 @@ const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Defaul
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Oil Consumed</th>
           
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total CFR Pricing</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Cost Per Pail/Crtn</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
@@ -37,49 +38,58 @@ const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Defaul
           </tr>
         </thead>
         <tbody>
-          {data?.map((item, index) => (
-            <tr key={index}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.formula_name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.consumption?.formula?.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.batch_detail?.batch}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_size_detail?.label}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottles_per_pack}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.litres_per_pack}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.qty_in_litres}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_litre_cost}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_oil_consumed}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.dk_cost}</td> */}
+          {data && data.length > 0 ? (
+            data.map((item, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.formula_name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.formula_detail?.consumption?.formula?.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.batch_detail?.batch}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_size_detail?.label}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottles_per_pack}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.litres_per_pack}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_qty}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.qty_in_litres}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_litre_cost}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_oil_consumed}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.dk_cost}</td> */}
+              
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cfr_pricing}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cost_per_pail_crtn || (item.total_qty ? (Number(item.total_cfr_pricing) / Number(item.total_qty)).toFixed(2) : "0.00")}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
             
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cfr_pricing}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
-          
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
-              </td>
-             
-             
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                 
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                    onClick={(e) => { e.stopPropagation(); onView(item.id); }}
-                  >
-                    View
-                  </button>
-                  {hasPermission(user, `update_${basePerm}`) && (
-                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
-                  )}
-                  {hasPermission(user, `delete_${basePerm}`) && (
-                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
-                  )}
-                </div>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
+                </td>
+               
+               
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <div className="space-x-2">
+                   
+                    <button
+                      className="bg-green-500 text-white px-2 py-1 rounded"
+                      onClick={(e) => { e.stopPropagation(); onView(item.id); }}
+                    >
+                      View
+                    </button>
+                    {hasPermission(user, `update_${basePerm}`) && (
+                      <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                    )}
+                    {hasPermission(user, `delete_${basePerm}`) && (
+                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="16" className="py-4 text-center text-gray-500 font-medium">
+                Match Not Found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

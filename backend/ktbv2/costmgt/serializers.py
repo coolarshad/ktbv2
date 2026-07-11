@@ -272,7 +272,7 @@ class ConsumptionFormulaAdditiveSerializer(serializers.ModelSerializer):
         try:
             instance = AdditiveCategory.objects.get(id=obj.name)
             return AdditiveCategorySerializer(instance).data
-        except AdditiveCategory.DoesNotExist:
+        except (AdditiveCategory.DoesNotExist, ValueError, TypeError):
             return None
         
     def to_representation(self, instance):
@@ -289,7 +289,7 @@ class ConsumptionFormulaBaseOilSerializer(serializers.ModelSerializer):
         try:
             instance = RawCategory.objects.get(id=obj.name)
             return RawCategorySerializer(instance).data
-        except RawCategory.DoesNotExist:
+        except (RawCategory.DoesNotExist, ValueError, TypeError):
             return None
         
     def to_representation(self, instance):
@@ -320,13 +320,13 @@ class ConsumptionAdditiveSerializer(serializers.ModelSerializer):
         try:
             instance = AdditiveCategory.objects.get(id=obj.name)
             return AdditiveCategorySerializer(instance).data
-        except AdditiveCategory.DoesNotExist:
+        except (AdditiveCategory.DoesNotExist, ValueError, TypeError):
             return None
     def get_additive_subname_details(self, obj):
         try:
             instance = Additive.objects.get(id=obj.sub_name)
             return AdditiveSerializer(instance).data
-        except Additive.DoesNotExist:
+        except (Additive.DoesNotExist, ValueError, TypeError):
             return None
         
     def to_representation(self, instance):
@@ -344,13 +344,13 @@ class ConsumptionBaseOilSerializer(serializers.ModelSerializer):
         try:
             instance = RawCategory.objects.get(id=obj.name)
             return RawCategorySerializer(instance).data
-        except RawCategory.DoesNotExist:
+        except (RawCategory.DoesNotExist, ValueError, TypeError):
             return None
     def get_raw_name_details(self, obj):
         try:
             instance = RawMaterial.objects.get(id=obj.sub_name)
             return RawMaterialSerializer(instance).data
-        except RawMaterial.DoesNotExist:
+        except (RawMaterial.DoesNotExist, ValueError, TypeError):
             return None
         
     def to_representation(self, instance):
@@ -364,6 +364,9 @@ class ConsumptionSerializer(serializers.ModelSerializer):
     consumption_additives = ConsumptionAdditiveSerializer(many=True, read_only=True)
     consumption_base_oils = ConsumptionBaseOilSerializer(many=True, read_only=True)
     notified_users_emails = serializers.SerializerMethodField()
+    formula = serializers.SerializerMethodField()
+    additives = serializers.SerializerMethodField()
+    base_oils = serializers.SerializerMethodField()
 
     class Meta:
         model = Consumption
@@ -378,7 +381,7 @@ class ConsumptionSerializer(serializers.ModelSerializer):
         try:
             instance = ConsumptionFormula.objects.get(id=int(obj.name))
             return ConsumptionFormulaSerializer(instance).data
-        except ConsumptionFormula.DoesNotExist:
+        except (ConsumptionFormula.DoesNotExist, ValueError, TypeError):
             return None
     def get_additives(self, obj):
         try:
@@ -415,13 +418,13 @@ class ProductFormulaItemSerializer(serializers.ModelSerializer):
         try:
             instance = PackingType.objects.get(id=obj.packing_type)
             return PackingTypeSerializer(instance).data
-        except PackingType.DoesNotExist:
+        except (PackingType.DoesNotExist, ValueError, TypeError):
             return None
     def get_packings_details(self, obj):
         try:
             instance = Packing.objects.get(id=obj.packing_label)
             return PackingSerializer(instance).data
-        except Packing.DoesNotExist:
+        except (Packing.DoesNotExist, ValueError, TypeError):
             return None
         
     def to_representation(self, instance):
@@ -449,14 +452,14 @@ class ProductFormulaSerializer(serializers.ModelSerializer):
         try:
             instance = Consumption.objects.get(id=obj.consumption_name)
             return ConsumptionSerializer(instance).data
-        except Consumption.DoesNotExist:
+        except (Consumption.DoesNotExist, ValueError, TypeError):
             return None
     
     def get_packing_details(self, obj):
         try:
             instance = PackingSize.objects.get(id=obj.packing_type)
             return PackingSizeSerializer(instance).data
-        except PackingSize.DoesNotExist:
+        except (PackingSize.DoesNotExist, ValueError, TypeError):
             return None
         
     def to_representation(self, instance):
@@ -655,6 +658,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
     batch_detail = serializers.SerializerMethodField(read_only=True)
     consumption_detail = serializers.SerializerMethodField(read_only=True)
     notified_users_emails = serializers.SerializerMethodField()
+    total_cost_per_pail_crtn = serializers.SerializerMethodField(read_only=True)
     # unit_detail = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -674,6 +678,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
             "total_oil_consumed",
             "per_litre_cost",
             "total_cfr_pricing",
+            "total_cost_per_pail_crtn",
             "remarks",
             "approved",
             "packing_items",
@@ -750,27 +755,40 @@ class FinalProductSerializer(serializers.ModelSerializer):
             if obj.batch:
                 instance = Consumption.objects.get(id=obj.batch.id)
                 return ConsumptionSerializer(instance).data
-        except Consumption.DoesNotExist:
-            return None
+        except (Consumption.DoesNotExist, ValueError, TypeError, AttributeError):
+            pass
+        return None
 
     def get_formula_detail(self, obj):
         try:
-            instance = ProductFormula.objects.get(id=obj.formula.id)
-            return ProductFormulaSerializer(instance).data
-        except ProductFormula.DoesNotExist:
-            return None
+            if obj.formula:
+                instance = ProductFormula.objects.get(id=obj.formula.id)
+                return ProductFormulaSerializer(instance).data
+        except (ProductFormula.DoesNotExist, ValueError, TypeError, AttributeError):
+            pass
+        return None
         
     def get_consumption_detail(self, obj):
         try:
-            instance = Consumption.objects.get(id=obj.consumption)
-            return ConsumptionSerializer(instance).data
-        except Consumption.DoesNotExist:
-            return None
+            if obj.consumption:
+                instance = Consumption.objects.get(id=obj.consumption)
+                return ConsumptionSerializer(instance).data
+        except (Consumption.DoesNotExist, ValueError, TypeError):
+            pass
+        return None
 
     def get_notified_users_emails(self, obj):
         if hasattr(obj, 'notified_users'):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
+
+    def get_total_cost_per_pail_crtn(self, obj):
+        if obj.total_qty and obj.total_cfr_pricing:
+            try:
+                return round(obj.total_cfr_pricing / obj.total_qty, 2)
+            except ZeroDivisionError:
+                return 0.0
+        return 0.0
     
     # def get_unit_detail(self, obj):
     #     try:

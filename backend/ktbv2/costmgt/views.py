@@ -15,8 +15,91 @@ from accounts.models import CustomUser
 from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
 # Create your views here.
 
-
 actor = None
+
+def get_instance_details(instance):
+    if not instance:
+        return ""
+    
+    details = []
+    
+    # 1. Formula / Formulation names
+    if hasattr(instance, 'formula_name') and instance.formula_name:
+        details.append(f"Formula: {instance.formula_name}")
+    elif hasattr(instance, 'formula') and instance.formula:
+        if hasattr(instance.formula, 'formula_name') and instance.formula.formula_name:
+            details.append(f"Formula: {instance.formula.formula_name}")
+
+    # 2. Consumption / Blend name
+    if hasattr(instance, 'consumption_name') and instance.consumption_name:
+        details.append(f"Blending Formula: {instance.consumption_name}")
+    elif hasattr(instance, 'consumption') and instance.consumption:
+        details.append(f"Consumption ID: {instance.consumption}")
+        
+    # 3. Main Name or Category Name
+    name_val = None
+    if hasattr(instance, 'name') and instance.name:
+        if isinstance(instance.name, str):
+            name_val = instance.name
+        elif hasattr(instance.name, 'name'):
+            name_val = instance.name.name
+        else:
+            name_val = str(instance.name)
+            
+    if name_val:
+        details.append(f"Name: {name_val}")
+
+    # 4. Batch information
+    if hasattr(instance, 'batch') and instance.batch:
+        if isinstance(instance.batch, str):
+            details.append(f"Batch: {instance.batch}")
+        elif hasattr(instance.batch, 'name') and instance.batch.name:
+            details.append(f"Batch: {instance.batch.name}")
+        else:
+            details.append(f"Batch: {str(instance.batch)}")
+
+    # 5. Category details
+    if hasattr(instance, 'category') and instance.category:
+        if hasattr(instance.category, 'name'):
+            details.append(f"Category: {instance.category.name}")
+        else:
+            details.append(f"Category: {str(instance.category)}")
+
+    # 6. Packing Type/Label
+    if hasattr(instance, 'packing_type') and instance.packing_type:
+        if hasattr(instance.packing_type, 'name'):
+            details.append(f"Packing Type: {instance.packing_type.name}")
+        else:
+            details.append(f"Packing Type: {str(instance.packing_type)}")
+
+    # 7. Packing Size
+    if hasattr(instance, 'packing_size') and instance.packing_size:
+        if hasattr(instance.packing_size, 'name'):
+            details.append(f"Packing Size: {instance.packing_size.name}")
+        else:
+            details.append(f"Packing Size: {str(instance.packing_size)}")
+
+    # 8. Product / Item alias
+    if hasattr(instance, 'alias') and instance.alias:
+        details.append(f"Alias: {instance.alias}")
+
+    # 9. Grade / SAE
+    if hasattr(instance, 'grade') and instance.grade:
+        details.append(f"Grade: {instance.grade}")
+    if hasattr(instance, 'sae') and instance.sae:
+        details.append(f"SAE: {instance.sae}")
+
+    # 10. Ref code
+    if hasattr(instance, 'ref') and instance.ref:
+        details.append(f"Ref: {instance.ref}")
+
+    # 11. Date
+    if hasattr(instance, 'date') and instance.date:
+        details.append(f"Date: {instance.date}")
+
+    if details:
+        return f" ({', '.join(details)})"
+    return ""
 
 class NotificationViewSetMixin:
     notification_verb = "Record"
@@ -26,9 +109,12 @@ class NotificationViewSetMixin:
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
         if not notified_users:
             notified_users = request.data.get('notifiedUsers', [])
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         action = "Updated" if is_update else "Created"
+        user = request.user if request.user and request.user.is_authenticated else None
+        user_name = user.name if user and hasattr(user, 'name') else 'System'
+        details = get_instance_details(instance)
         
         if notified_user_ids:
             if instance is not None and hasattr(instance, 'notified_users'):
@@ -36,22 +122,21 @@ class NotificationViewSetMixin:
 
             custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
-                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
-                actor=actor,
+                actor=user,
                 notified_user_ids=notified_user_ids,
                 verb=f"{self.notification_verb} {action}",
-                message=custom_msg if custom_msg else f"You have been assigned to {self.notification_verb} by {request.user.name if hasattr(request, 'user') and hasattr(request.user, 'name') else 'System'}",
+                message=custom_msg if custom_msg else f"You have been assigned to {self.notification_verb}{details} by {user_name}.",
                 target_url=self.notification_target_url
             )
             
-        if not is_update:
-            NotificationService.notify_all_general(
-                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
-                actor=actor,
-                verb=f"New {self.notification_verb}",
-                message=f"A new {self.notification_verb} was created.",
-                target_url=self.notification_target_url
-            )
+        general_verb = f"{self.notification_verb} {action}"
+        general_msg = f"{self.notification_verb}{details} was {action.lower()} by {user_name}."
+        NotificationService.notify_all_general(
+            actor=user,
+            verb=general_verb,
+            message=general_msg,
+            target_url=self.notification_target_url
+        )
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -86,6 +171,23 @@ class PackingViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewse
     filter_backends = [DjangoFilterBackend]
     filterset_class = PackingFilter
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance_id_str = str(instance.id)
+        if ProductFormulaItem.objects.filter(packing_label=instance_id_str).exists():
+            return Response(
+                {"detail": "Cannot delete this packing price because it is in use by Product Formulation records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
+
+def get_all_descendant_ids(model, parent_id):
+    ids = [parent_id]
+    children_ids = list(model.objects.filter(parent_id=parent_id).values_list('id', flat=True))
+    for child_id in children_ids:
+        ids.extend(get_all_descendant_ids(model, child_id))
+    return ids
+
 class RawCategoryViewSet(viewsets.ModelViewSet):
     queryset = RawCategory.objects.all().prefetch_related(
         'children',
@@ -99,15 +201,32 @@ class RawCategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        leaf = self.request.query_params.get('leaf')
+        if self.action == 'list':
+            leaf = self.request.query_params.get('leaf')
 
-        if leaf in ['1', 'true', 'True']:
-            qs = qs.filter(children__isnull=True)
-        elif leaf in ['0', 'false', 'False']:
-            qs = qs.filter(children__isnull=False).distinct()
-        # else → no filtering (return all)
-
+            if leaf in ['1', 'true', 'True']:
+                qs = qs.filter(children__isnull=True)
+            elif leaf in ['0', 'false', 'False']:
+                qs = qs.filter(children__isnull=False).distinct()
         return qs
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        descendant_ids = get_all_descendant_ids(RawCategory, instance.id)
+        descendant_ids_str = [str(x) for x in descendant_ids]
+        
+        # Check references in RawMaterial, ConsumptionFormulaBaseOil, and ConsumptionBaseOil
+        if (
+            RawMaterial.objects.filter(category_id__in=descendant_ids).exists() or
+            RawMaterial.objects.filter(name_id__in=descendant_ids).exists() or
+            ConsumptionFormulaBaseOil.objects.filter(name__in=descendant_ids_str).exists() or
+            ConsumptionBaseOil.objects.filter(name__in=descendant_ids_str).exists()
+        ):
+            return Response(
+                {"detail": "Cannot delete this category because it or its subcategories are in use by Raw Material records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
 
 
 class RawMaterialViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewsets.ModelViewSet):
@@ -118,6 +237,16 @@ class RawMaterialViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, vi
     serializer_class = RawMaterialSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = RawMaterialFilter
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance_id_str = str(instance.id)
+        if ConsumptionBaseOil.objects.filter(sub_name=instance_id_str).exists():
+            return Response(
+                {"detail": "Cannot delete this raw material pricing because it is in use by Consumption records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
 
 class AdditiveCategoryViewSet(viewsets.ModelViewSet):
     queryset = AdditiveCategory.objects.all().prefetch_related(
@@ -132,13 +261,32 @@ class AdditiveCategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        leaf = self.request.query_params.get('leaf')
-        if leaf in ['1', 'true', 'True']:
-            qs = qs.filter(children__isnull=True)
-        elif leaf in ['0', 'false', 'False']:
-            qs = qs.filter(children__isnull=False).distinct()
+        if self.action == 'list':
+            leaf = self.request.query_params.get('leaf')
+            if leaf in ['1', 'true', 'True']:
+                qs = qs.filter(children__isnull=True)
+            elif leaf in ['0', 'false', 'False']:
+                qs = qs.filter(children__isnull=False).distinct()
 
         return qs
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        descendant_ids = get_all_descendant_ids(AdditiveCategory, instance.id)
+        descendant_ids_str = [str(x) for x in descendant_ids]
+        
+        # Check references in Additive, ConsumptionFormulaAdditive, and ConsumptionAdditive
+        if (
+            Additive.objects.filter(category_id__in=descendant_ids).exists() or
+            Additive.objects.filter(name_id__in=descendant_ids).exists() or
+            ConsumptionFormulaAdditive.objects.filter(name__in=descendant_ids_str).exists() or
+            ConsumptionAdditive.objects.filter(name__in=descendant_ids_str).exists()
+        ):
+            return Response(
+                {"detail": "Cannot delete this category because it or its subcategories are in use by Additive records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
 
 class AdditiveViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewsets.ModelViewSet):
     notification_verb = "Additive Pricing"
@@ -148,6 +296,16 @@ class AdditiveViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, views
     serializer_class = AdditiveSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = AdditiveFilter
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance_id_str = str(instance.id)
+        if ConsumptionAdditive.objects.filter(sub_name=instance_id_str).exists():
+            return Response(
+                {"detail": "Cannot delete this additive pricing because it is in use by Consumption records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
 
 class ConsumptionAdditiveViewSet(viewsets.ModelViewSet):
     queryset = ConsumptionAdditive.objects.all()
@@ -167,8 +325,11 @@ def get_next_consumption_ref():
     )
 
     if last_ref:
-        last_number = int(last_ref.split('-')[1])
-        next_number = last_number + 1
+        try:
+            last_number = int(last_ref.split('-')[1])
+            next_number = last_number + 1
+        except (IndexError, ValueError, TypeError):
+            next_number = 1
     else:
         next_number = 1
 
@@ -219,7 +380,7 @@ class ConsumptionFormulaView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         # Prepare trade data separately
         c_data = {
@@ -298,7 +459,7 @@ class ConsumptionFormulaView(APIView):
         data = request.data
         
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             consumption = ConsumptionFormula.objects.get(pk=pk)
@@ -399,6 +560,12 @@ class ConsumptionFormulaView(APIView):
         except ConsumptionFormula.DoesNotExist:
             return Response({'error': 'Consumption Formula not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if Consumption.objects.filter(name=str(consumption.id)).exists():
+            return Response(
+                {"error": "Cannot delete this blending formulation because it is in use by Consumption records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             # Delete related trade products and extra costs
             ConsumptionFormulaAdditive.objects.filter(consumption=consumption).delete()
@@ -446,7 +613,7 @@ class ConsumptionView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         # Prepare trade data separately
         c_data = {
@@ -544,7 +711,7 @@ class ConsumptionView(APIView):
         data = request.data
         
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             consumption = Consumption.objects.get(pk=pk)
@@ -657,6 +824,17 @@ class ConsumptionView(APIView):
         except Consumption.DoesNotExist:
             return Response({'error': 'Consumption not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        consumption_id_str = str(consumption.id)
+        if (
+            FinalProduct.objects.filter(batch=consumption).exists() or
+            FinalProduct.objects.filter(consumption=consumption_id_str).exists() or
+            ProductFormula.objects.filter(consumption_name=consumption_id_str).exists()
+        ):
+            return Response(
+                {"error": "Cannot delete this consumption because it is in use by Packing Formulation or Final Product Cost records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             # Delete related trade products and extra costs
             ConsumptionAdditive.objects.filter(consumption=consumption).delete()
@@ -680,6 +858,8 @@ class FinalProductViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, v
         "packing_items",
         "additional_costs"
     ).order_by("-id")
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = FinalProductFilter
 
     # ----------------------------------
     # Prevent editing if approved=True
@@ -721,7 +901,7 @@ class PackingApprovalView(APIView):
             return Response({'detail': 'Packing ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -784,7 +964,7 @@ class RawMaterialApprovalView(APIView):
             return Response({'detail': 'Raw Material ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -847,7 +1027,7 @@ class AdditiveApprovalView(APIView):
             return Response({'detail': 'Additive ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -911,7 +1091,7 @@ class ConsumptionFormulaApprovalView(APIView):
             return Response({'detail': 'Consumption Formula ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -971,6 +1151,19 @@ class PackingTypeViewSet(viewsets.ModelViewSet):
     queryset = PackingType.objects.all()
     serializer_class = PackingTypeSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance_id_str = str(instance.id)
+        if (
+            Packing.objects.filter(packing_type=instance).exists() or
+            ProductFormulaItem.objects.filter(packing_type=instance_id_str).exists()
+        ):
+            return Response(
+                {"detail": "Cannot delete this packing type because it is in use by Packing Price or Product Formulation records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
+
 
 class ProductFormulaView(APIView):
     
@@ -1011,7 +1204,7 @@ class ProductFormulaView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
         
         # Prepare trade data separately
         c_data = {
@@ -1083,7 +1276,7 @@ class ProductFormulaView(APIView):
         data = request.data
         
         notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             formula = ProductFormula.objects.get(pk=pk)
@@ -1165,6 +1358,12 @@ class ProductFormulaView(APIView):
         except ProductFormula.DoesNotExist:
             return Response({'error': 'Product Formula not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if FinalProduct.objects.filter(formula=formula).exists():
+            return Response(
+                {"error": "Cannot delete this packing formulation because it is in use by Final Product Cost records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             # Delete related trade products and extra costs
             ProductFormulaItem.objects.filter(product_formula=formula).delete()
@@ -1180,6 +1379,19 @@ class PackingSizeViewSet(viewsets.ModelViewSet):
     queryset = PackingSize.objects.all()
     serializer_class = PackingSizeSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance_id_str = str(instance.id)
+        if (
+            FinalProduct.objects.filter(packing_size=instance).exists() or
+            ProductFormula.objects.filter(packing_type=instance_id_str).exists()
+        ):
+            return Response(
+                {"detail": "Cannot delete this packing size because it is in use by Product Formulation or Final Product Cost records."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
+
 class FinalProductApprovalView(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -1188,7 +1400,7 @@ class FinalProductApprovalView(APIView):
             return Response({'detail': 'Final Product id not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -1251,7 +1463,7 @@ class ProductFormulaApprovalView(APIView):
             return Response({'detail': 'Product formulation id not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -1313,7 +1525,7 @@ class ConsumptionApprovalView(APIView):
             return Response({'detail': 'Consumption ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -1376,7 +1588,7 @@ class AdditiveCategoryApprovalView(APIView):
             return Response({'detail': 'Additive Category ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():
@@ -1434,7 +1646,7 @@ class RawCategoryApprovalView(APIView):
             return Response({'detail': 'Raw Category ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         notified_users = request.GET.getlist('notifiedUsers[]')
-        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        notified_user_ids = [int(x) for x in notified_users if str(x).strip().isdigit()] if notified_users else []
 
         try:
             with transaction.atomic():

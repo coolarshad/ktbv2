@@ -62,41 +62,49 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
             </tr>
           </thead>
           <tbody>
-            {sortedData.map((trade, index) => (
-              <tr key={index} onClick={() => onRowClick(trade.id)}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
-
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName?.name || '-'}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer?.name || '-'}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.trd)}</td>
-
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.approval_date)}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
-                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => { }} />
-                </td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <div className="space-x-2">
-                    {trade.reviewed && hasPermission(user, `print_${basePerm}`) ? <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={() => handlePrintClick(trade.id)}>Print</button> : ''}
-                    <button
-                      className="bg-blue-500 text-white px-2 py-1 rounded"
-                      onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
-                    >
-                      View
-                    </button>
-                    {hasPermission(user, `update_${basePerm}`) && (
-                      <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(trade.id)}>Edit</button>
-                    )}
-                    {hasPermission(user, `delete_${basePerm}`) && (
-                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(trade.id)}>Delete</button>
-                    )}
-                  </div>
+            {sortedData && sortedData.length > 0 ? (
+              sortedData.map((trade, index) => (
+                <tr key={index} onClick={() => onRowClick(trade.id)}>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
+  
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.trd)}</td>
+  
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.approval_date)}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
+                  {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => { }} />
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                    <div className="space-x-2">
+                      {trade.reviewed && hasPermission(user, `print_${basePerm}`) ? <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={() => handlePrintClick(trade.id)}>Print</button> : ''}
+                      <button
+                        className="bg-blue-500 text-white px-2 py-1 rounded"
+                        onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
+                      >
+                        View
+                      </button>
+                      {hasPermission(user, `update_${basePerm}`) && (
+                        <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(trade.id)}>Edit</button>
+                      )}
+                      {hasPermission(user, `delete_${basePerm}`) && (
+                        <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(trade.id)}>Delete</button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="11" className="py-4 text-center text-gray-500 font-medium">
+                  Match Not Found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

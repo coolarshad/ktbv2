@@ -258,8 +258,11 @@ class ConsumptionFormula(models.Model):
             )
 
             if last_ref:
-                last_number = int(last_ref.split('-')[1])
-                new_number = last_number + 1
+                try:
+                    last_number = int(last_ref.split('-')[1])
+                    new_number = last_number + 1
+                except (IndexError, ValueError, TypeError):
+                    new_number = 1
             else:
                 new_number = 1
 

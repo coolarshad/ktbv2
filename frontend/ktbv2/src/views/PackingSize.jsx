@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import { hasPermission } from '../utils';
@@ -73,6 +73,10 @@ const PackingSize = ({ mode = 'add', id = null }) => {
       setFilteredPackingSize(packingSize);
     }
   }, [searchTerm, packingSize]);
+
+  const sortedFilteredPackingSize = useMemo(() => {
+    return [...filteredPackingSize].sort((a, b) => b.id - a.id);
+  }, [filteredPackingSize]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -220,7 +224,7 @@ const PackingSize = ({ mode = 'add', id = null }) => {
           </button>
         </div>
         <ul className="space-y-4">
-          {filteredPackingSize.map((packing) => (
+          {sortedFilteredPackingSize.map((packing) => (
             <li
               key={packing.id}
               className="border border-gray-300 p-4 rounded flex justify-between items-center"

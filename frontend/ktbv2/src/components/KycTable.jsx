@@ -48,55 +48,63 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((item, index) => (
-            <tr key={index}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.companyRegNo}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.regAddress}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mailingAddress}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.telephone}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.fax}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.person1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.designation1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mobile1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.email1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.person2}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.designation2}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mobile2}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.email2}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.banker}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.address}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.swiftCode}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.accountNumber}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve1} onChange={() => {}} />
-              </td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve2} onChange={() => {}} />
-              </td>
-             
-             
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                 
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                    onClick={(e) => { e.stopPropagation(); onView(item.id); }}
-                  >
-                    View
-                  </button>
-                  {hasPermission(user, 'update_kyc') && (
-                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
-                  )}
-                  {hasPermission(user, 'delete_kyc') && (
-                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
-                  )}
-                </div>
+          {sortedData && sortedData.length > 0 ? (
+            sortedData.map((item, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.companyRegNo}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.regAddress}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mailingAddress}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.telephone}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.fax}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.person1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.designation1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mobile1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.email1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.person2}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.designation2}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mobile2}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.email2}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.banker}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.address}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.swiftCode}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.accountNumber}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve1} onChange={() => {}} />
+                </td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve2} onChange={() => {}} />
+                </td>
+               
+               
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <div className="space-x-2">
+                   
+                    <button
+                      className="bg-green-500 text-white px-2 py-1 rounded"
+                      onClick={(e) => { e.stopPropagation(); onView(item.id); }}
+                    >
+                      View
+                    </button>
+                    {hasPermission(user, 'update_kyc') && (
+                      <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                    )}
+                    {hasPermission(user, 'delete_kyc') && (
+                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="19" className="py-4 text-center text-gray-500 font-medium">
+                Match Not Found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

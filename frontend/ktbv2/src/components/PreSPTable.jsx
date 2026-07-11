@@ -133,40 +133,48 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((presp, index) => (
-            <tr key={index}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.date)}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.doc_issuance_date)}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trade_type}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.customer.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.paymentTerm.name}</td>
-             
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.lc_due_date}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.remarks}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={presp.approved} onChange={() => {}} />
-              </td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-              <div className="space-x-2">
-                {presp.approved && hasPermission(user, `print_${basePerm}`) && (
-                    <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(presp)}>Print</button>
-                )}
-                 
-                  <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp)}>View</button>
-                  {hasPermission(user, `update_${basePerm}`) && (
-                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
+          {sortedData && sortedData.length > 0 ? (
+            sortedData.map((presp, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.date)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.doc_issuance_date)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trn}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trade_type}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.customer.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.paymentTerm.name}</td>
+               
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.lc_due_date}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.remarks}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={presp.approved} onChange={() => {}} />
+                </td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                <div className="space-x-2">
+                  {presp.approved && hasPermission(user, `print_${basePerm}`) && (
+                      <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={()=>handlePrintClick(presp)}>Print</button>
                   )}
-                  {hasPermission(user, `delete_${basePerm}`) && (
-                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
-                  )}
-                </div>
-                
+                   
+                    <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={()=>handleViewClick(presp)}>View</button>
+                    {hasPermission(user, `update_${basePerm}`) && (
+                      <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(presp.id)}>Edit</button>
+                    )}
+                    {hasPermission(user, `delete_${basePerm}`) && (
+                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(presp.id)}>Delete</button>
+                    )}
+                  </div>
+                  
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="11" className="py-4 text-center text-gray-500 font-medium">
+                Match Not Found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
       

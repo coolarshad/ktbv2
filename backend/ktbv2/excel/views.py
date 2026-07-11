@@ -730,6 +730,7 @@ class ExportFinalProductExcelView(APIView):
                 'Total Oil Consumed': obj.get('total_oil_consumed', ''),
                 'Per Litre Cost': obj.get('per_litre_cost', ''),
                 'Total CFR Pricing': obj.get('total_cfr_pricing', ''),
+                'Total Cost Per Pail/Crtn': obj.get('total_cost_per_pail_crtn') or (round(float(obj.get('total_cfr_pricing') or 0) / float(obj.get('total_qty') or 1), 2) if obj.get('total_qty') and obj.get('total_cfr_pricing') else 0.0),
                 'Remarks': obj.get('remarks', ''),
                 'Approved': 'Yes' if obj.get('approved') else 'No',
             }

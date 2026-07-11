@@ -9,7 +9,7 @@ function PackingConsumption() {
     const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
 
-    const [searchField, setSearchField] = useState("final_product_name");
+    const [searchField, setSearchField] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
 
     const [fromDate, setFromDate] = useState("");
@@ -62,17 +62,31 @@ function PackingConsumption() {
         fetchData();
     }, []);
 
-    // 🔍 Apply Filters
-    const handleSearch = () => {
+    // 🔍 Apply Filters dynamically
+    useEffect(() => {
         let filtered = [...data];
 
         if (searchTerm) {
-            filtered = filtered.filter((item) =>
-                item[searchField]
-                    ?.toString()
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-            );
+            const lowerSearch = searchTerm.toLowerCase();
+            if (searchField === "all") {
+                filtered = filtered.filter((item) => {
+                    return (
+                        (item.final_product_name || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.packing_name || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.date || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.quantity || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.rate || "").toString().toLowerCase().includes(lowerSearch) ||
+                        (item.value || "").toString().toLowerCase().includes(lowerSearch)
+                    );
+                });
+            } else {
+                filtered = filtered.filter((item) =>
+                    (item[searchField] || "")
+                        .toString()
+                        .toLowerCase()
+                        .includes(lowerSearch)
+                );
+            }
         }
 
         if (fromDate) {
@@ -85,12 +99,16 @@ function PackingConsumption() {
 
         setFilteredData(filtered);
         setCurrentPage(1);
+    }, [searchTerm, searchField, fromDate, toDate, data]);
+
+    const handleSearch = () => {
+        // Handled dynamically by useEffect, but keep for button compatibility
     };
 
     // 🔄 Reset
     const handleReset = () => {
-        setFilteredData(data);
         setSearchTerm("");
+        setSearchField("all");
         setFromDate("");
         setToDate("");
         setCurrentPage(1);
@@ -137,6 +155,7 @@ function PackingConsumption() {
                         value={searchField}
                         onChange={(e) => setSearchField(e.target.value)}
                     >
+                        <option value="all">All Fields</option>
                         <option value="final_product_name">Final Product</option>
                         <option value="packing_name">Packing</option>
                     </select>
@@ -217,7 +236,7 @@ function PackingConsumption() {
                         ) : (
                             <tr>
                                 <td colSpan="6" className="p-4 text-center">
-                                    No Data Found
+                                    Match Not Found.
                                 </td>
                             </tr>
                         )}

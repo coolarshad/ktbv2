@@ -39,42 +39,50 @@ const PrePaymentTable = ({ data, onDelete, onView, basePerm }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((item, index) => (
-            <tr key={index}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_number}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_received}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_receipt)}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_paid}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_payment)}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.lc_expiry_date)}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.latest_shipment_date_in_lc)}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />
-              </td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                 
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                    onClick={(e) => { e.stopPropagation(); onView(item.id); }}
-                  >
-                    View
-                  </button>
-                  {hasPermission(user, `update_${basePerm}`) && (
-                    <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
-                  )}
-                  {hasPermission(user, `delete_${basePerm}`) && (
-                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
-                  )}
-                </div>
+          {sortedData && sortedData.length > 0 ? (
+            sortedData.map((item, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_number}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_received}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_receipt)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_paid}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_payment)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.lc_expiry_date)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.latest_shipment_date_in_lc)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />
+                </td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <div className="space-x-2">
+                   
+                    <button
+                      className="bg-green-500 text-white px-2 py-1 rounded"
+                      onClick={(e) => { e.stopPropagation(); onView(item.id); }}
+                    >
+                      View
+                    </button>
+                    {hasPermission(user, `update_${basePerm}`) && (
+                      <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                    )}
+                    {hasPermission(user, `delete_${basePerm}`) && (
+                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="14" className="py-4 text-center text-gray-500 font-medium">
+                Match Not Found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

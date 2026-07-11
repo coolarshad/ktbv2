@@ -7,6 +7,7 @@ import { capitalizeKey } from '../utils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 import debounce from 'lodash/debounce';
+import Select from 'react-select';
 
 const PrePaymentForm = ({ mode = 'add' }) => {
   const { user } = useAuth();
@@ -112,7 +113,11 @@ const PrePaymentForm = ({ mode = 'add' }) => {
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
             const response = await axios.get(url, { params });  // Pass params to axios.get
-            setStateFunction(response.data);
+            let data = response.data;
+            if (url.includes('/trademgt/trades')) {
+                data = [...data].sort((a, b) => b.id - a.id);
+            }
+            setStateFunction(data);
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
         }
@@ -120,8 +125,13 @@ const PrePaymentForm = ({ mode = 'add' }) => {
 
     // Combined useEffect for all API calls
     useEffect(() => {
-        fetchData('/trademgt/trades', { approved: true, reviewed: true }, setTrnOptions);  // Example with params
-    }, []);
+        fetchData('/trademgt/trades', { 
+            approved: true, 
+            reviewed: true,
+            exclude_prepayment: true,
+            current_prepayment_id: mode === 'update' ? id : undefined
+        }, setTrnOptions);  // Example with params
+    }, [mode, id]);
 
     const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
@@ -377,20 +387,15 @@ const PrePaymentForm = ({ mode = 'add' }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">TRN</label>
-                    <select
-                        id="trn"
-                        name="trn"
-                        value={formData.trn}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select TRN</option>
-                        {trnOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.trn}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={trnOptions.map(option => ({ value: option.id, label: option.trn }))}
+                        value={formData.trn ? { value: formData.trn, label: trnOptions.find(opt => opt.id == formData.trn)?.trn || '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'trn', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select TRN"
+                        isSearchable
+                        isClearable
+                        className="w-full col-span-1"
+                    />
                     {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
 

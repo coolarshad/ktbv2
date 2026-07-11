@@ -21,23 +21,31 @@ const SalesTraceTable = ({ data , onDelete, onView }) => { // Default value for 
           </tr>
         </thead>
         <tbody>
-          {data?.map((item, index) => (
-            <tr key={index}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_qty}</td> */}
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_balance_qty}</td>
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ref_balance_qty}</td> */}
-              {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.first_trn}</td> */}
-             
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
-                </div>
+          {data && data.length > 0 ? (
+            data.map((item, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_qty}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_balance_qty}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ref_balance_qty}</td> */}
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.first_trn}</td> */}
+               
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <div className="space-x-2">
+                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="5" className="py-4 text-center text-gray-500 font-medium">
+                Match Not Found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

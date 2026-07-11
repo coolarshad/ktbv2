@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import { hasPermission } from '../utils';
@@ -84,6 +84,10 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
     setFormData(packing.find(curr => curr.id === id) || { name: '' });
   };
 
+  const sortedPacking = useMemo(() => {
+    return [...packing].sort((a, b) => b.id - a.id);
+  }, [packing]);
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="space-y-4 w-full">
@@ -113,7 +117,7 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
       <div className="space-y-4 w-full">
         <h2 className="text-xl font-semibold mb-4">Existing Packing Type</h2>
         <ul className="space-y-4">
-          {packing.map(curr => (
+          {sortedPacking.map(curr => (
             <li key={curr.id} className="border border-gray-300 p-4 rounded flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-medium">{curr.name}</h3>

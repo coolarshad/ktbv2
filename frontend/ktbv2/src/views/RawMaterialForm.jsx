@@ -40,7 +40,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
   // Fetch categories for dropdown
   useEffect(() => {
     axios
-      .get('/costmgt/raw-categories/')
+      .get('/costmgt/raw-categories/?approved=true')
       .then((response) => {
         setCategories(response.data);
       })
@@ -49,7 +49,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
 
   useEffect(() => {
     axios
-      .get('/costmgt/raw-categories?leaf=1')
+      .get('/costmgt/raw-categories?leaf=1&approved=true')
       .then((response) => {
         setSubNames(response.data);
       })

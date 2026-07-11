@@ -31,34 +31,42 @@ const PurchasePendingTable = ({ data , onDelete, onView }) => { // Default value
           </tr>
         </thead>
         <tbody>
-          {data?.map((item, index) => (
-            <tr key={index}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.trn}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trd}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.companyName.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.paymentTerm.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.hs_code}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_qty_unit}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_qty}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_qty_unit}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.tolerance}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.selected_currency_rate}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.rate_in_usd}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.logistic}</td>
-             
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                 
-                 
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
-                </div>
+          {data && data.length > 0 ? (
+            data.map((item, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.trn}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trd}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.companyName.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade.paymentTerm.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.hs_code}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_qty}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_qty_unit}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_qty}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_qty_unit}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.tolerance}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.selected_currency_rate}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.rate_in_usd}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.logistic}</td>
+               
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <div className="space-x-2">
+                   
+                   
+                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="17" className="py-4 text-center text-gray-500 font-medium">
+                Match Not Found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

@@ -38,14 +38,14 @@ const AdditiveForm = ({ mode = 'add' }) => {
   // Fetch categories
   useEffect(() => {
     axios
-      .get('/costmgt/additive-categories/')
+      .get('/costmgt/additive-categories/?approved=true')
       .then((res) => setCategories(res.data))
       .catch((err) => console.error('Error fetching categories:', err));
   }, []);
 
   useEffect(() => {
     axios
-      .get('/costmgt/additive-categories?leaf=1')
+      .get('/costmgt/additive-categories?leaf=1&approved=true')
       .then((response) => {
         setSubNames(response.data);
       })

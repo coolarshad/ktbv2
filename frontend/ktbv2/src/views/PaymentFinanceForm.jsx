@@ -7,6 +7,7 @@ import { capitalizeKey } from '../utils';
 import debounce from 'lodash/debounce';
 import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
+import Select from 'react-select';
 
 const PaymentFinanceForm = ({ mode = 'add' }) => {
     const { user } = useAuth();
@@ -90,7 +91,11 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
             const response = await axios.get(url, { params });  // Pass params to axios.get
-            setStateFunction(response.data);
+            let data = response.data;
+            if (url.includes('/trademgt/sales-purchases/')) {
+                data = [...data].sort((a, b) => b.id - a.id);
+            }
+            setStateFunction(data);
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
         }
@@ -101,8 +106,12 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     //     fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
     // }, []);
     useEffect(() => {
-        fetchData('/trademgt/sales-purchases/', { reviewed: true }, setTrnOptions);  // Example with params
-    }, []);
+        fetchData('/trademgt/sales-purchases/', { 
+            reviewed: true,
+            exclude_paymentfinance: true,
+            current_paymentfinance_id: mode === 'update' ? id : undefined
+        }, setTrnOptions);  // Example with params
+    }, [mode, id]);
 
     useEffect(() => {
         if (data) {
@@ -500,20 +509,15 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div>
                     <label htmlFor="sp" className="block text-sm font-medium text-gray-700">TRN (S&P)</label>
-                    <select
-                        id="sp"
-                        name="sp"
-                        value={formData.sp}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select S&P</option>
-                        {trnOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.trn.trn} ({option.id})
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                        options={trnOptions.map(option => ({ value: option.id, label: `${option.trn.trn} (${option.id})` }))}
+                        value={formData.sp ? { value: formData.sp, label: trnOptions.find(opt => opt.id == formData.sp) ? `${trnOptions.find(opt => opt.id == formData.sp).trn.trn} (${formData.sp})` : '' } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'sp', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select S&P"
+                        isSearchable
+                        isClearable
+                        className="w-full col-span-1"
+                    />
                     {validationErrors.trn && <p className="text-red-500">{validationErrors.trn}</p>}
                 </div>
 
@@ -629,20 +633,20 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
                         readOnly={data?.trn.trade_type === "Purchase"}
                     /> */}
-                    <select
-                        id="release_docs"
-                        name="release_docs"
-                        value={formData.release_docs}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        disabled={data?.trn.trade_type === "Purchase"}
-                    >
-                        <option value="">Select ---</option>
-
-                        <option value="Release Document">Release Document</option>
-                        <option value="Do Not Release Document">Do Not Release Document</option>
-                        <option value="NA">NA</option>
-                    </select>
+                    <Select
+                        options={[
+                            { value: 'Release Document', label: 'Release Document' },
+                            { value: 'Do Not Release Document', label: 'Do Not Release Document' },
+                            { value: 'NA', label: 'NA' }
+                        ]}
+                        value={formData.release_docs ? { value: formData.release_docs, label: formData.release_docs } : null}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'release_docs', value: selectedOption ? selectedOption.value : '' } })}
+                        placeholder="Select ---"
+                        isSearchable
+                        isClearable
+                        isDisabled={data?.trn.trade_type === "Purchase"}
+                        className="w-full col-span-1"
+                    />
                     {validationErrors.release_docs && <p className="text-red-500">{validationErrors.release_docs}</p>}
                 </div>
 

@@ -11,7 +11,7 @@ import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
 
 const RawCategory = () => {
-    const { user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [categoryData, setCategoryData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -136,15 +136,15 @@ const RawCategory = () => {
   return (
     <>
       <div className="w-full h-full rounded bg-slate-200 p-3">
-        <p className="text-xl">Raw Categories</p>
+        <p className="text-xl">Raw Material Category</p>
         {hasPermission(user, 'create_raw_material_category') && (
-<button
-          onClick={handleAddCategoryClick}
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-        >
-          +
-        </button>
-)}
+          <button
+            onClick={handleAddCategoryClick}
+            className="bg-blue-500 text-white px-3 py-1 rounded"
+          >
+            +
+          </button>
+        )}
         <div>
           <CostMgtFilterComponent
             checkBtn={false}
@@ -159,19 +159,22 @@ const RawCategory = () => {
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
             <thead className="bg-gray-100 border-b border-gray-200">
               <tr>
-                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Name</th>
+
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Parent</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Name</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Children</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Approved</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
               {currentItems?.map((category) => (
                 <tr key={category.id} className="border-b border-gray-200">
-                  <td className="py-2 px-4 text-gray-800">{category.name}</td>
+
                   <td className="py-2 px-4 text-gray-800">
                     {category.parent_name ? category.parent_name : "Root"}
                   </td>
+                  <td className="py-2 px-4 text-gray-800">{category.name}</td>
                   <td className="py-2 px-4 text-gray-800">
                     {getAllSubcategoryNames(category).length > 0
                       ? getAllSubcategoryNames(category).join(", ")
@@ -263,9 +266,9 @@ const RawCategory = () => {
 
               {!selectedCategory.approved && (
                 <div className="mt-6 border-t pt-4">
-                  <MultiUserSelector 
-                    selectedUsers={notifiedUsers} 
-                    onChange={setNotifiedUsers} 
+                  <MultiUserSelector
+                    selectedUsers={notifiedUsers}
+                    onChange={setNotifiedUsers}
                     message={notificationMessage}
                     onMessageChange={setNotificationMessage}
                   />
@@ -276,8 +279,8 @@ const RawCategory = () => {
               {selectedCategory.approved ? '' :
                 <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                   {hasPermission(user, 'approve_raw_material_category') && (
-<button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
-)}
+                    <button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                  )}
                 </div>
               }
             </div>

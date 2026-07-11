@@ -20,23 +20,31 @@ const InventoryTable = ({ data , onDelete, onView }) => { // Default value for d
           </tr>
         </thead>
         <tbody>
-          {data?.map((item, index) => (
-            <tr key={index}  className="hover:bg-gray-100 cursor-pointer" onClick={() => onView(item.id)}>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.batch_number}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.production_date}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.quantity}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.unit}</td>
-           
+          {data && data.length > 0 ? (
+            data.map((item, index) => (
+              <tr key={index}  className="hover:bg-gray-100 cursor-pointer" onClick={() => onView(item.id)}>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.batch_number}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.production_date}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.quantity}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.unit}</td>
              
-              <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                <div className="space-x-2">
-                  <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
-                </div>
+               
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <div className="space-x-2">
+                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="py-4 text-center text-gray-500 font-medium">
+                Match Not Found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
