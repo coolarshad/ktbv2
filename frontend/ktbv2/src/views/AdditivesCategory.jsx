@@ -154,13 +154,13 @@ const AdditivesCategory = () => {
             downloadUrl="/excel/export/additive-category/"
           />
         </div>
-        <div className="rounded p-2">
+        <div className="rounded p-2 overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
             <thead className="bg-gray-100 border-b border-gray-200">
               <tr>
 
-                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Parent</th>
-                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Name</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-0 z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px]">Parent</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-[150px] z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px] border-r border-gray-300">Name</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Children</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Approved</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Actions</th>
@@ -170,10 +170,10 @@ const AdditivesCategory = () => {
               {currentItems?.map((category) => (
                 <tr key={category.id} className="border-b border-gray-200">
 
-                  <td className="py-2 px-4 text-gray-800">
+                  <td className="py-2 px-4 text-gray-800 sticky left-0 z-10 bg-white min-w-[150px] max-w-[150px] w-[150px]">
                     {category.parent_name ? category.parent_name : "Root"}
                   </td>
-                  <td className="py-2 px-4 text-gray-800">{category.name}</td>
+                  <td className="py-2 px-4 text-gray-800 sticky left-[150px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px] border-r border-gray-300">{category.name}</td>
                   <td className="py-2 px-4 text-gray-800">
                     {getAllSubcategoryNames(category).length > 0
                       ? getAllSubcategoryNames(category).join(", ")

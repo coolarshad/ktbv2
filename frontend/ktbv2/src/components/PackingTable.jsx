@@ -16,9 +16,9 @@ const PackingTable = ({ data , onDelete, onView, basePerm }) => { // Default val
       <table className="min-w-full bg-white">
         <thead className='sticky top-0 z-10 bg-white'>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px] border-r border-gray-300">Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Per Each</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
@@ -31,9 +31,9 @@ const PackingTable = ({ data , onDelete, onView, basePerm }) => { // Default val
           {data && data.length > 0 ? (
             data.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px] border-r border-gray-300">{item.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_each}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.packing_type_detail?.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
