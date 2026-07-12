@@ -10,6 +10,9 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
   const [currentMode, setCurrentMode] = useState(mode);
   const [currentId, setCurrentId] = useState(id);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredPacking, setFilteredPacking] = useState([]);
+
   useEffect(() => {
     if (currentMode === 'update' && currentId) {
       axios.get(`/costmgt/packing-type/${currentId}`)
@@ -25,7 +28,8 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
       .then(response => {
         const names = response.data;
         if (Array.isArray(names)) {
-            setPacking(names);
+          setPacking(names);
+          setFilteredPacking(names);
         } else {
           console.error('Expected an array but got:', names);
         }
@@ -43,12 +47,29 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
     }));
   };
 
+  const handleSearch = () => {
+    const filtered = packing.filter((item) =>
+      (item.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredPacking(filtered);
+  };
+
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredPacking(packing);
+    }
+  }, [searchTerm, packing]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (currentMode === 'add') {
       axios.post('/costmgt/packing-type/', formData)
         .then(response => {
-          setPacking(prevData => [...prevData, response.data]);
+          setPacking(prevData => {
+            const newData = [...prevData, response.data];
+            setFilteredPacking(newData);
+            return newData;
+          });
           setFormData({ name: '' }); // Reset form after add
         })
         .catch(error => {
@@ -57,7 +78,11 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
     } else if (currentMode === 'update' && currentId) {
       axios.put(`/costmgt/packing-type/${currentId}/`, formData)
         .then(response => {
-          setPacking(prevData => prevData.map(data => data.id === response.data.id ? response.data : data));
+          setPacking(prevData => {
+            const newData = prevData.map(data => data.id === response.data.id ? response.data : data);
+            setFilteredPacking(newData);
+            return newData;
+          });
           setCurrentMode('add');  // Reset to 'add' mode after update
           setCurrentId(null);  // Reset currentDocumentId
           setFormData({ name: '' }); // Reset form after update
@@ -71,7 +96,11 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
   const handleDelete = (id) => {
     axios.delete(`/costmgt/packing-type/${id}`)
       .then(() => {
-        setPacking(prevData => prevData.filter(data => data.id !== id));
+        setPacking(prevData => {
+          const newData = prevData.filter(data => data.id !== id);
+          setFilteredPacking(newData);
+          return newData;
+        });
       })
       .catch(error => {
         console.error('There was an error deleting the packing type list!', error);
@@ -85,8 +114,8 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
   };
 
   const sortedPacking = useMemo(() => {
-    return [...packing].sort((a, b) => b.id - a.id);
-  }, [packing]);
+    return [...filteredPacking].sort((a, b) => b.id - a.id);
+  }, [filteredPacking]);
 
   return (
     <div>
@@ -116,6 +145,21 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
       {/* List of Existing Documents */}
       <div className="space-y-4 w-full">
         <h2 className="text-xl font-semibold mb-4">Existing Packing Type</h2>
+        <div className="flex space-x-2 mb-4 w-full">
+          <input
+            type="text"
+            placeholder="Search Packing Type..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border border-gray-300 p-2 rounded w-full"
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-500 text-white px-4 rounded"
+          >
+            Search
+          </button>
+        </div>
         <ul className="space-y-4">
           {sortedPacking.map(curr => (
             <li key={curr.id} className="border border-gray-300 p-4 rounded flex justify-between items-center">

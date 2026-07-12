@@ -62,8 +62,11 @@ const PackingSize = ({ mode = 'add', id = null }) => {
 
 
   const handleSearch = () => {
+    const term = searchTerm.toLowerCase();
     const filtered = packingSize.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      (item.name || '').toLowerCase().includes(term) ||
+      (item.bottles_per_pack || '').toLowerCase().includes(term) ||
+      (item.litres_per_pack || '').toLowerCase().includes(term)
     );
     setFilteredPackingSize(filtered);
   };

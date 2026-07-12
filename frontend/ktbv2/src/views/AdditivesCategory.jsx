@@ -149,7 +149,7 @@ const AdditivesCategory = () => {
             checkBtn={false}
             flag={2}
             onFilter={handleFilter}
-            apiEndpoint={'/costmgt/additive-categories'}
+            apiEndpoint={'/costmgt/additive-categories/'}
             fieldOptions={fieldOptions}
             downloadUrl="/excel/export/additive-category/"
           />

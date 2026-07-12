@@ -108,6 +108,29 @@ class SearchableFilterSet(django_filters.FilterSet):
             else:
                 q_objects |= Q(**{f"{lookup}__icontains": value})
             
+        # Also search in S.N (id), numeric fields, and Date fields generically
+        val_float = None
+        try:
+            val_float = float(value.strip())
+        except ValueError:
+            pass
+
+        for field in model._meta.get_fields():
+            if field.one_to_many or field.many_to_many:
+                continue
+            if field.is_relation:
+                continue
+            
+            # S.N / id, numeric fields, and Date fields
+            if field.primary_key or isinstance(field, (
+                models.AutoField, models.IntegerField, models.BigIntegerField, models.SmallIntegerField,
+                models.FloatField, models.DecimalField,
+                models.DateField, models.DateTimeField
+            )):
+                q_objects |= Q(**{f"{field.name}__icontains": value.strip()})
+                if val_float is not None and isinstance(field, (models.FloatField, models.DecimalField)):
+                    q_objects |= Q(**{f"{field.name}": val_float})
+
         return queryset.filter(q_objects)
 
 class TradeFilter(SearchableFilterSet):

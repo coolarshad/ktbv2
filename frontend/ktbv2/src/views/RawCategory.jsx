@@ -150,7 +150,7 @@ const RawCategory = () => {
             checkBtn={false}
             flag={2}
             onFilter={handleFilter}
-            apiEndpoint={'/costmgt/raw-categories'}
+            apiEndpoint={'/costmgt/raw-categories/'}
             fieldOptions={fieldOptions}
             downloadUrl="/excel/export/raw-category/"
           />

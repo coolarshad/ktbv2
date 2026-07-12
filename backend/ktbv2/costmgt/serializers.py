@@ -386,13 +386,96 @@ class ConsumptionSerializer(serializers.ModelSerializer):
     def get_additives(self, obj):
         try:
             instances = ConsumptionAdditive.objects.filter(consumption=obj)
-            return ConsumptionAdditiveSerializer(instances, many=True).data
+            request = self.context.get('request') if self.context else None
+            q = None
+            if request:
+                if hasattr(request, 'query_params'):
+                    q = request.query_params.get('q')
+                elif hasattr(request, 'GET'):
+                    q = request.GET.get('q')
+            if q:
+                q_clean = q.strip().lower()
+                val_float = None
+                try:
+                    val_float = float(q_clean)
+                except ValueError:
+                    pass
+                
+                from costmgt.models import AdditiveCategory, Additive
+                add_cats = {str(ac.id): ac.name.lower() for ac in AdditiveCategory.objects.all()}
+                additives = {str(a.id): (a.name.name.lower() if a.name else "", a.density) for a in Additive.objects.all()}
+                
+                filtered_instances = []
+                for inst in instances:
+                    match = False
+                    cat_name = add_cats.get(str(inst.name), "")
+                    sub_name, density = additives.get(str(inst.sub_name), ("", 0.0))
+                    
+                    if q_clean in cat_name or q_clean in sub_name:
+                        match = True
+                    elif val_float is not None and (inst.qty_in_litre == val_float or inst.rate == val_float or inst.value == val_float):
+                        match = True
+                    elif q_clean in f"{inst.qty_in_litre}" or q_clean in f"{inst.rate}" or q_clean in f"{inst.value}":
+                        match = True
+                    else:
+                        qty_kgs = inst.qty_in_litre * density
+                        if q_clean in f"{qty_kgs:.2f}" or q_clean in f"{qty_kgs}":
+                            match = True
+                            
+                    if match:
+                        filtered_instances.append(inst)
+                
+                if filtered_instances:
+                    return ConsumptionAdditiveSerializer(filtered_instances, many=True, context=self.context).data
+            return ConsumptionAdditiveSerializer(instances, many=True, context=self.context).data
         except Exception:
             return []
+
     def get_base_oils(self, obj):
         try:
             instances = ConsumptionBaseOil.objects.filter(consumption=obj)
-            return ConsumptionBaseOilSerializer(instances, many=True).data
+            request = self.context.get('request') if self.context else None
+            q = None
+            if request:
+                if hasattr(request, 'query_params'):
+                    q = request.query_params.get('q')
+                elif hasattr(request, 'GET'):
+                    q = request.GET.get('q')
+            if q:
+                q_clean = q.strip().lower()
+                val_float = None
+                try:
+                    val_float = float(q_clean)
+                except ValueError:
+                    pass
+                
+                from costmgt.models import RawCategory, RawMaterial
+                raw_cats = {str(rc.id): rc.name.lower() for rc in RawCategory.objects.all()}
+                raw_materials = {str(rm.id): (rm.name.name.lower() if rm.name else "", rm.density) for rm in RawMaterial.objects.all()}
+                
+                filtered_instances = []
+                for inst in instances:
+                    match = False
+                    cat_name = raw_cats.get(str(inst.name), "")
+                    sub_name, density = raw_materials.get(str(inst.sub_name), ("", 0.0))
+                    
+                    if q_clean in cat_name or q_clean in sub_name:
+                        match = True
+                    elif val_float is not None and (inst.qty_in_litre == val_float or inst.rate == val_float or inst.value == val_float):
+                        match = True
+                    elif q_clean in f"{inst.qty_in_litre}" or q_clean in f"{inst.rate}" or q_clean in f"{inst.value}":
+                        match = True
+                    else:
+                        qty_kgs = inst.qty_in_litre * density
+                        if q_clean in f"{qty_kgs:.2f}" or q_clean in f"{qty_kgs}":
+                            match = True
+                            
+                    if match:
+                        filtered_instances.append(inst)
+                
+                if filtered_instances:
+                    return ConsumptionBaseOilSerializer(filtered_instances, many=True, context=self.context).data
+            return ConsumptionBaseOilSerializer(instances, many=True, context=self.context).data
         except Exception:
             return []
     
@@ -451,7 +534,7 @@ class ProductFormulaSerializer(serializers.ModelSerializer):
     def get_consumption_details(self, obj):
         try:
             instance = Consumption.objects.get(id=obj.consumption_name)
-            return ConsumptionSerializer(instance).data
+            return ConsumptionSerializer(instance, context=self.context).data
         except (Consumption.DoesNotExist, ValueError, TypeError):
             return None
     
@@ -754,7 +837,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
         try:
             if obj.batch:
                 instance = Consumption.objects.get(id=obj.batch.id)
-                return ConsumptionSerializer(instance).data
+                return ConsumptionSerializer(instance, context=self.context).data
         except (Consumption.DoesNotExist, ValueError, TypeError, AttributeError):
             pass
         return None
@@ -763,7 +846,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
         try:
             if obj.formula:
                 instance = ProductFormula.objects.get(id=obj.formula.id)
-                return ProductFormulaSerializer(instance).data
+                return ProductFormulaSerializer(instance, context=self.context).data
         except (ProductFormula.DoesNotExist, ValueError, TypeError, AttributeError):
             pass
         return None
@@ -772,7 +855,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
         try:
             if obj.consumption:
                 instance = Consumption.objects.get(id=obj.consumption)
-                return ConsumptionSerializer(instance).data
+                return ConsumptionSerializer(instance, context=self.context).data
         except (Consumption.DoesNotExist, ValueError, TypeError):
             pass
         return None
@@ -789,6 +872,46 @@ class FinalProductSerializer(serializers.ModelSerializer):
             except ZeroDivisionError:
                 return 0.0
         return 0.0
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        request = self.context.get('request')
+        q = None
+        if request:
+            if hasattr(request, 'query_params'):
+                q = request.query_params.get('q')
+            elif hasattr(request, 'GET'):
+                q = request.GET.get('q')
+        
+        if q:
+            q_clean = q.strip().lower()
+            val_float = None
+            try:
+                val_float = float(q_clean)
+            except ValueError:
+                pass
+                
+            filtered_items = []
+            for item in instance.packing_items.all():
+                match = False
+                if q_clean in item.packing.lower() or q_clean in item.packing_type.lower():
+                    match = True
+                elif val_float is not None and (item.qty == val_float or item.total_qty == val_float):
+                    match = True
+                elif val_float is not None and item.rate == val_float:
+                    match = True
+                elif val_float is not None and (item.value == val_float or item.total_value == val_float):
+                    match = True
+                elif q_clean in f"{item.qty}" or q_clean in f"{item.total_qty}" or q_clean in f"{item.rate}" or q_clean in f"{item.value}" or q_clean in f"{item.total_value}":
+                    match = True
+                
+                if match:
+                    filtered_items.append(item)
+            
+            if filtered_items:
+                ret['packing_items'] = FinalProductPackingItemSerializer(filtered_items, many=True, context=self.context).data
+                
+        return ret
     
     # def get_unit_detail(self, obj):
     #     try:

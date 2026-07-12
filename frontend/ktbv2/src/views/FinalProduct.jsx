@@ -133,7 +133,7 @@ const FinalProduct = () => {
 )}
                 <div>
                     {/* <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} /> */}
-                    <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product'} fieldOptions={fieldOptions} downloadUrl="/excel/export/final-product/" />
+                    <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/final-product/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/final-product/" />
 
                 </div>
                 <div className=" rounded p-2">
