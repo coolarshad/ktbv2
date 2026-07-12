@@ -10,10 +10,21 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     # permission_classes = [IsAuthenticated]
     serializer_class = NotificationSerializer
 
-    # def get_queryset(self):
-    #     return Notification.objects.filter(recipient=self.request.user)
     def get_queryset(self):
-        return Notification.objects.all()
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return Notification.objects.none()
+        
+        if user.is_superuser or user.role == 'Manager2':
+            return Notification.objects.all()
+
+        from django.db.models import Q
+        return Notification.objects.filter(
+            Q(notification_type='PERSONAL', recipient=user) |
+            Q(actor=user) |
+            Q(actor__reports_to=user) |
+            Q(actor=user.reports_to)
+        )
 
     @action(detail=False, methods=['get'])
     def unread(self, request):

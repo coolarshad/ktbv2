@@ -45,16 +45,16 @@ def spawn_general_notifications_task(actor_id, verb, message, target_url=None):
                 message=message,
                 target_url=target_url,
                 notification_type='GENERAL',
-                email_sent=bool(user.email)
+                email_sent=False
             )
         )
     
     if notifications:
         Notification.objects.bulk_create(notifications)
-        # Also email everyone for general notification
-        emails = list(all_users.values_list('email', flat=True))
-        send_notification_email_task.delay(
-            subject=f"New Notification: {verb}", 
-            body=message, 
-            recipient_emails=emails
-        )
+        # General broadcast emails are disabled as requested
+        # emails = list(all_users.values_list('email', flat=True))
+        # send_notification_email_task.delay(
+        #     subject=f"New Notification: {verb}", 
+        #     body=message, 
+        #     recipient_emails=emails
+        # )
