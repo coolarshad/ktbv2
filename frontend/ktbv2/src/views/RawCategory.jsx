@@ -160,8 +160,8 @@ const RawCategory = () => {
             <thead className="bg-gray-100 border-b border-gray-200">
               <tr>
 
-                <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-0 z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px]">Parent</th>
-                <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-[150px] z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px] border-r border-gray-300">Name</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-0 z-30 bg-gray-100 min-w-[200px] max-w-[200px] w-[200px]">Parent</th>
+                <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-[200px] z-30 bg-gray-100 min-w-[200px] max-w-[200px] w-[200px] border-r border-gray-300">Name</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Children</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Approved</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Actions</th>
@@ -171,10 +171,10 @@ const RawCategory = () => {
               {currentItems?.map((category) => (
                 <tr key={category.id} className="border-b border-gray-200">
 
-                  <td className="py-2 px-4 text-gray-800 sticky left-0 z-10 bg-white min-w-[150px] max-w-[150px] w-[150px]">
+                  <td className="py-2 px-4 text-gray-800 sticky left-0 z-10 bg-white min-w-[200px] max-w-[200px] w-[200px]">
                     {category.parent_name ? category.parent_name : "Root"}
                   </td>
-                  <td className="py-2 px-4 text-gray-800 sticky left-[150px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px] border-r border-gray-300">{category.name}</td>
+                  <td className="py-2 px-4 text-gray-800 sticky left-[200px] z-10 bg-white min-w-[200px] max-w-[200px] w-[200px] border-r border-gray-300">{category.name}</td>
                   <td className="py-2 px-4 text-gray-800">
                     {getAllSubcategoryNames(category).length > 0
                       ? getAllSubcategoryNames(category).join(", ")

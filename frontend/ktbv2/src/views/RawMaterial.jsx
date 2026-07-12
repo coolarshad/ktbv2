@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import ReactToPrint from 'react-to-print';
 
@@ -176,31 +175,31 @@ const RawMaterial = () => {
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.subname_name}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">cost_per_liter</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost Per Liter</td>
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.cost_per_liter}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">buy_price_pmt</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Buy Price PMT</td>
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.buy_price_pmt}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">add_cost</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Add Cost</td>
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.add_cost}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">total</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total</td>
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.total}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">ml_to_kl</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">MT to KG</td>
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.ml_to_kl}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">density</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Density</td>
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.density}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">remarks</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
                       <td className="py-2 px-4 text-gray-800">{selectedMaterial.remarks}</td>
                     </tr>
                    

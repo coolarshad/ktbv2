@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
@@ -74,7 +73,7 @@ const Consumption = () => {
     setNotificationMessage('');
   };
 
-  const approveConsumption = async (id) => {
+  const approveConsumption = async () => {
         if (!notifiedUsers || notifiedUsers.length === 0) {
             alert("Please select at least one user to notify before approving.");
             return;
@@ -178,35 +177,35 @@ const Consumption = () => {
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.date}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">grade</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Grade</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.grade}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">sae</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">SAE</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.sae}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">net_blending_qty</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Net Blending Qty</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.net_blending_qty}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">gross_vol_crosscheck</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Gross Vol. Crosscheck</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.gross_vol_crosscheck}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">cross_check</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cross Check %</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.cross_check}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">total_value</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Value</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.total_value}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">per_litre_cost</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Per Litre Cost</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.per_litre_cost}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
-                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">remarks</td>
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
                       <td className="py-2 px-4 text-gray-800">{selectedConsumption.remarks}</td>
                     </tr>
 

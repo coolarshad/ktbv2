@@ -18,9 +18,9 @@ const AdditiveTable = ({ data, onDelete, onView, basePerm }) => { // Default val
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
 
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px]">Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[200px] z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px]">Sub Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[350px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">Date</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[200px] max-w-[200px] w-[200px]">Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[250px] z-30 bg-gray-100 min-w-[200px] max-w-[200px] w-[200px]">Sub Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[450px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">Date</th>
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">CFR Price/KG in USD</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add Cost</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total cost EX DK in Kgs</th>
@@ -36,9 +36,9 @@ const AdditiveTable = ({ data, onDelete, onView, basePerm }) => { // Default val
             data.map((item, index) => (
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px]">{item.category_name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[200px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px]">{item.subname_name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[350px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">{item.date}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[200px] max-w-[200px] w-[200px]">{item.category_name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[250px] z-10 bg-white min-w-[200px] max-w-[200px] w-[200px]">{item.subname_name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[450px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">{item.date}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.crfPrice}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.addCost}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.totalCost.toFixed(4)}</td>

@@ -217,11 +217,61 @@ class ProductFormulaFilter(SearchableFilterSet):
 class FinalProductFilter(SearchableFilterSet):
     date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')
     date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')
-    name = django_filters.CharFilter(
-        field_name="name__alias",
-        lookup_expr="icontains"
-    )
 
     class Meta:
         model = FinalProduct
-        fields = ["name"]
+        fields = []
+
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+        
+        q_objects = Q()
+        model = self.Meta.model
+        lookups = get_searchable_lookups(model)
+
+        for lookup in lookups:
+            q_objects |= Q(**{f"{lookup}__icontains": value})
+
+        # Add nested/reverse fields
+        # 1. Packing Items (FinalProductPackingItem)
+        q_objects |= Q(packing_items__packing__icontains=value)
+        q_objects |= Q(packing_items__packing_type__icontains=value)
+
+        # 2. Additives in ConsumptionAdditive (FinalProduct -> Consumption -> ConsumptionAdditive)
+        try:
+            from costmgt.models import AdditiveCategory, Additive
+            add_cat_ids = list(AdditiveCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
+            add_cat_str_ids = [str(x) for x in add_cat_ids]
+            
+            additive_ids = list(Additive.objects.filter(
+                Q(category__name__icontains=value) | Q(name__name__icontains=value)
+            ).values_list('id', flat=True))
+            additive_str_ids = [str(x) for x in additive_ids]
+
+            if add_cat_str_ids:
+                q_objects |= Q(batch__consumptionadditive__name__in=add_cat_str_ids)
+            if additive_str_ids:
+                q_objects |= Q(batch__consumptionadditive__sub_name__in=additive_str_ids)
+        except Exception:
+            pass
+
+        # 3. Base Oils in ConsumptionBaseOil (FinalProduct -> Consumption -> ConsumptionBaseOil)
+        try:
+            from costmgt.models import RawCategory, RawMaterial
+            raw_cat_ids = list(RawCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
+            raw_cat_str_ids = [str(x) for x in raw_cat_ids]
+            
+            raw_material_ids = list(RawMaterial.objects.filter(
+                Q(category__name__icontains=value) | Q(name__name__icontains=value)
+            ).values_list('id', flat=True))
+            raw_material_str_ids = [str(x) for x in raw_material_ids]
+
+            if raw_cat_str_ids:
+                q_objects |= Q(batch__consumptionbaseoil__name__in=raw_cat_str_ids)
+            if raw_material_str_ids:
+                q_objects |= Q(batch__consumptionbaseoil__sub_name__in=raw_material_str_ids)
+        except Exception:
+            pass
+
+        return queryset.filter(q_objects).distinct()

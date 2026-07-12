@@ -1,22 +1,14 @@
-import { useEffect, useState } from "react";
-import { useAuth } from '../context/AuthContext';
+import { useEffect, useState, useCallback } from "react";
 import axios from '../axiosConfig';
 import Pagination from '../components/Pagination';
+import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 
 function RawConsumption() {
-  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-    const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
 
-    const [searchField, setSearchField] = useState("all");
-    const [searchTerm, setSearchTerm] = useState("");
-
-    const [fromDate, setFromDate] = useState("");
-    const [toDate, setToDate] = useState("");
-
     // 🔥 Transform API response
-    const transformData = (apiData) => {
+    const transformData = useCallback((apiData) => {
         return apiData.map((item) => {
             const baseOils = item.formula_detail?.consumption?.baseoil || [];
 
@@ -58,105 +50,33 @@ function RawConsumption() {
                 value: values.join(", "),
             };
         });
-    };
+    }, []);
+
     // 🔥 Fetch Data
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const res = await axios.get("/costmgt/final-product/");
             const transformed = transformData(res.data);
-
-            setData(transformed);
             setFilteredData(transformed);
         } catch (error) {
             console.error("Error fetching data", error);
         }
-    };
+    }, [transformData]);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
-    // 🔍 Apply Filters dynamically
-    useEffect(() => {
-        let filtered = [...data];
-
-        if (searchTerm) {
-            const lowerSearch = searchTerm.toLowerCase();
-            if (searchField === "all") {
-                filtered = filtered.filter((item) => {
-                    return (
-                        (item.final_product_name || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.raw_material_name || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.date || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.serial_number || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.density || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.quantity_ltr || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.quantity_kgs || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.rate_per_ltr || "").toString().toLowerCase().includes(lowerSearch) ||
-                        (item.value || "").toString().toLowerCase().includes(lowerSearch)
-                    );
-                });
-            } else {
-                filtered = filtered.filter((item) =>
-                    (item[searchField] || "")
-                        .toString()
-                        .toLowerCase()
-                        .includes(lowerSearch)
-                );
-            }
-        }
-
-        if (fromDate) {
-            filtered = filtered.filter((item) => item.date >= fromDate);
-        }
-
-        if (toDate) {
-            filtered = filtered.filter((item) => item.date <= toDate);
-        }
-
-        setFilteredData(filtered);
-        setCurrentPage(1);
-    }, [searchTerm, searchField, fromDate, toDate, data]);
-
-    const handleSearch = () => {
-        // Handled dynamically by useEffect, but keep for button compatibility
-    };
-
-    // 🔄 Reset
-    const handleReset = () => {
-        setSearchTerm("");
-        setSearchField("all");
-        setFromDate("");
-        setToDate("");
+    const handleFilter = (filters) => {
+        const transformed = transformData(filters);
+        setFilteredData(transformed);
         setCurrentPage(1);
     };
-
-    // 📥 Download Excel
-    const handleDownloadExcel = async () => {
-        try {
-            const response = await axios.get('/excel/export/report/raw-cons/', {
-                responseType: 'blob', // Important
-            });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'raw_material_consumption_report.xlsx');
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode.removeChild(link);
-        } catch (error) {
-            console.error('Error downloading the excel file', error);
-            alert("Failed to download excel file.");
-        }
-    };
-
 
   const indexOfLastItem = currentPage * 50;
   const indexOfFirstItem = indexOfLastItem - 50;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-
 
     return (
         <>
@@ -165,70 +85,13 @@ function RawConsumption() {
             </h4>
 
             {/* 🔍 Filters */}
-            <div className="bg-white shadow p-4 rounded mb-4">
-                <div className="grid grid-cols-5 gap-4">
-
-                    {/* Search Field */}
-                    <select
-                        className="border p-2 rounded"
-                        value={searchField}
-                        onChange={(e) => setSearchField(e.target.value)}
-                    >
-                        <option value="all">All Fields</option>
-                        <option value="final_product_name">Final Product</option>
-                        <option value="raw_material_name">Raw Material</option>
-                        <option value="serial_number">Serial Number</option>
-                    </select>
-
-                    {/* Search Input */}
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="border p-2 rounded col-span-2"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-
-                    {/* From Date */}
-                    <input
-                        type="date"
-                        className="border p-2 rounded"
-                        value={fromDate}
-                        onChange={(e) => setFromDate(e.target.value)}
-                    />
-
-                    {/* To Date */}
-                    <input
-                        type="date"
-                        className="border p-2 rounded"
-                        value={toDate}
-                        onChange={(e) => setToDate(e.target.value)}
-                    />
-                </div>
-
-                <div className="flex justify-end mt-4 gap-2">
-                    <button
-                        onClick={handleSearch}
-                        className="bg-blue-500 text-white px-4 py-2 rounded"
-                    >
-                        Search
-                    </button>
-
-                    <button
-                        onClick={handleReset}
-                        className="bg-gray-400 text-white px-4 py-2 rounded"
-                    >
-                        Reset
-                    </button>
-
-                    <button
-                        onClick={handleDownloadExcel}
-                        className="bg-green-500 text-white px-4 py-2 rounded"
-                    >
-                        Export to Excel
-                    </button>
-                </div>
-            </div>
+            <CostMgtFilterComponent
+                checkBtn={false}
+                onFilter={handleFilter}
+                apiEndpoint="/costmgt/final-product/"
+                downloadUrl="/excel/export/report/raw-cons/"
+                fieldOptions={[]}
+            />
 
             {/* 📊 Table */}
             <div className="overflow-x-auto bg-white shadow rounded">
