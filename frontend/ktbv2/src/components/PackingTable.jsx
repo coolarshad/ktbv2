@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
-const PackingTable = ({ data , onDelete, onView, basePerm }) => { // Default value for data
-  const navigate = useNavigate();  
+const PackingTable = ({ data, onDelete, onView, basePerm }) => { // Default value for data
+  const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const handleEdit = (id) => {
     navigate(`/packing-form/${id}`);  // Navigate to TradeForm with tradeId
   };
@@ -22,7 +22,7 @@ const PackingTable = ({ data , onDelete, onView, basePerm }) => { // Default val
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Per Each</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
-           
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -31,21 +31,21 @@ const PackingTable = ({ data , onDelete, onView, basePerm }) => { // Default val
           {data && data.length > 0 ? (
             data.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px] border-r border-gray-300">{item.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_each}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.packing_type_detail?.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
-            
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
                 </td>
-               
-               
+
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <div className="space-x-2">
-                   
+
                     <button
                       className="bg-green-500 text-white px-2 py-1 rounded"
                       onClick={(e) => { e.stopPropagation(); onView(item.id); }}

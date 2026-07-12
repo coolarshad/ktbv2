@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
+import ReactToPrint from 'react-to-print';
 
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
@@ -14,6 +15,7 @@ import AdditiveTable from '../components/AdditiveTable';
 const Additive = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const componentRef = useRef();
     const [additiveData, setAdditiveData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
@@ -145,101 +147,108 @@ const Additive = () => {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <h2 className="text-2xl mb-2 text-center">Additives Details</h2>
-             <hr className='mb-2' />
-             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
-                <thead className="bg-gray-100 border-b border-gray-200">
-                  <tr>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
-                  </tr>
-                </thead>
-             
-                <tbody>
-                  
-                 
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.category_name}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Sub Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.subname_name}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.date}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">CFR Price/KG in USD</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.crfPrice}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Add Cost</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.addCost}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total cost EX DK in Kgs</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.totalCost}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Density @ 15 Degree Celsius</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.density}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost Price in Liters</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.costPriceInLiter}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.remarks}</td>
-                  </tr>
-                 
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedAdditive.approved? "Yes":"No"}</td>
-                  </tr>
-                 
-                </tbody>
-                </table>              {!selectedAdditive.approved && (
-                <div className="mt-6 border-t pt-4">
-                  <MultiUserSelector 
-                    selectedUsers={notifiedUsers} 
-                    onChange={setNotifiedUsers} 
-                    message={notificationMessage}
-                    onMessageChange={setNotificationMessage}
-                  />
+             <ReactToPrint
+               trigger={() => <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded float-left">Print</button>}
+               content={() => componentRef.current}
+             />
+             <div className="clear-both mt-4" ref={componentRef}>
+               <h2 className="text-2xl mb-2 text-center">Additives Details</h2>
+               <hr className='mb-2' />
+               <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                  <thead className="bg-gray-100 border-b border-gray-200">
+                    <tr>
+                    <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                    <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                    </tr>
+                  </thead>
+               
+                  <tbody>
+                    
+                   
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.category_name}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Sub Name</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.subname_name}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.date}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">CFR Price/KG in USD</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.crfPrice}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Add Cost</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.addCost}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total cost EX DK in Kgs</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.totalCost}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Density @ 15 Degree Celsius</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.density}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Cost Price in Liters</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.costPriceInLiter}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.remarks}</td>
+                    </tr>
+                   
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedAdditive.approved? "Yes":"No"}</td>
+                    </tr>
+                   
+                  </tbody>
+                  </table>
                 </div>
-              )}
+             </div>
+             {!selectedAdditive.approved && (
+              <div className="mt-6 border-t pt-4">
+                <MultiUserSelector 
+                  selectedUsers={notifiedUsers} 
+                  onChange={setNotifiedUsers} 
+                  message={notificationMessage}
+                  onMessageChange={setNotificationMessage}
+                />
+              </div>
+            )}
 
 
-                {selectedAdditive.approved ? '' :
-                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                      {hasPermission(user, 'approve_additive_pricing') && (
+              {selectedAdditive.approved ? '' :
+                  <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                    {hasPermission(user, 'approve_additive_pricing') && (
 <button onClick={approveAdditive} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
 )}
-                    </div>
-                  }
-              {/* Notified Users Section */}
-              <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
-                <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
-                {selectedAdditive?.notified_users_emails?.length > 0 ? (
-                  <ul className="list-disc pl-5">
-                    {selectedAdditive.notified_users_emails.map((email, idx) => (
-                      <li key={idx} className="text-sm text-gray-700">{email}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-500">No users have been notified for this record.</p>
-                )}
-              </div>
-             </div>
-            
-           </div>
+                  </div>
+                }
+            {/* Notified Users Section */}
+            <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+              <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+              {selectedAdditive?.notified_users_emails?.length > 0 ? (
+                <ul className="list-disc pl-5">
+                  {selectedAdditive.notified_users_emails.map((email, idx) => (
+                    <li key={idx} className="text-sm text-gray-700">{email}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+              )}
+            </div>
+          
          </div>
-        )}
-      </Modal>
+       </div>
+      )}
+    </Modal>
         </>
     );
 };

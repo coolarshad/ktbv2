@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
@@ -8,10 +8,12 @@ import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
 import ProductFormulaTable from '../components/ProductFormulaTable';
+import ReactToPrint from 'react-to-print';
  
 const ProductFormula = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const componentRef = useRef();
     const [formulaData, setFormulaData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
@@ -141,6 +143,11 @@ const ProductFormula = () => {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
+             <ReactToPrint
+               trigger={() => <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded float-left">Print</button>}
+               content={() => componentRef.current}
+             />
+             <div className="clear-both mt-4" ref={componentRef}>
              <h2 className="text-2xl mb-2 text-center">Product Formula Details</h2>
              <hr className='mb-2' />
              <div className="overflow-x-auto">
@@ -212,7 +219,10 @@ const ProductFormula = () => {
                     ) 
                   )}
                 </tbody>
-              </table>              {!selectedFormula.approved && (
+              </table>
+              </div>
+             </div>
+              {!selectedFormula.approved && (
                 <div className="mt-6 border-t pt-4">
                   <MultiUserSelector 
                     selectedUsers={notifiedUsers} 
@@ -246,7 +256,6 @@ const ProductFormula = () => {
               </div>
                     </div>
                   }
-             </div>
             
            </div>
          </div>

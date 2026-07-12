@@ -420,8 +420,7 @@ export default function FinalProductForm({ mode = 'add' }) {
       const qtyInLitres =
         (total_qty * litres_per_pack);
 
-      const totalOilConsumed =
-        (total_qty * consumption_qty); // per litre cost from batch
+      const totalOilConsumed = qtyInLitres;
 
       setFormData(prev => ({
         ...prev,
@@ -429,7 +428,7 @@ export default function FinalProductForm({ mode = 'add' }) {
         total_oil_consumed: totalOilConsumed
       }));
     }
-  }, [formData.total_qty, formData.litres_per_pack, formData.bottles_per_pack, formData.per_litre_cost]);
+  }, [formData.total_qty, formData.litres_per_pack, formData.bottles_per_pack]);
 
   const handleUsersChange = (users) => {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));

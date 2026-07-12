@@ -22,7 +22,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // D
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[300px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Grade</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">SAE</th>
- 
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
@@ -32,7 +32,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // D
           {data && data.length > 0 ? (
             data.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[100px] max-w-[100px] w-[100px]">{item.ref}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[150px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px]">{item.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[300px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">{item.date}</td>

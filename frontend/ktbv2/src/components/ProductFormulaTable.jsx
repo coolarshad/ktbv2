@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ProductFormulaTable = ({ data , onDelete, onView }) => { // Default value for data
-  const navigate = useNavigate();  
-  
+const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value for data
+  const navigate = useNavigate();
+
   const handleEdit = (id) => {
-    navigate(`/product-formula-form/${id}`);  
+    navigate(`/product-formula-form/${id}`);
   };
 
   return (
@@ -14,12 +14,12 @@ const ProductFormulaTable = ({ data , onDelete, onView }) => { // Default value 
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
-            
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[150px] max-w-[150px] w-[150px]">Formula Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[200px] z-30 bg-gray-100 min-w-[180px] max-w-[180px] w-[180px] border-r border-gray-300">Consumption Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
-            
+
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
@@ -29,23 +29,23 @@ const ProductFormulaTable = ({ data , onDelete, onView }) => { // Default value 
           {data && data.length > 0 ? (
             data.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{index + 1}</td>
-                
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[150px] max-w-[150px] w-[150px]">{item.formula_name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[200px] z-10 bg-white min-w-[180px] max-w-[180px] w-[180px] border-r border-gray-300">{item?.consumption?.formula?.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.packing?.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
-               
+
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
-              
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
                 </td>
-               
-               
+
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <div className="space-x-2">
-                   
+
                     <button
                       className="bg-green-500 text-white px-2 py-1 rounded"
                       onClick={(e) => { e.stopPropagation(); onView(item.id); }}

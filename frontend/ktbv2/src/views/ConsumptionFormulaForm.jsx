@@ -8,7 +8,7 @@ import MultiUserSelector from '../components/MultiUserSelector';
 
 
 const ConsumptionFormulaForm = ({ mode = 'add' }) => {
-  const { user } = useAuth();
+    const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -195,7 +195,17 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
         label: opt.name
     }));
 
+    const totalAdditivePercent = formData.consumptionAdditive.reduce((sum, item) => {
+        const val = parseFloat(item.qty_in_percent);
+        return sum + (isNaN(val) ? 0 : val);
+    }, 0);
 
+    const totalBaseOilPercent = formData.consumptionBaseOil.reduce((sum, item) => {
+        const val = parseFloat(item.qty_in_percent);
+        return sum + (isNaN(val) ? 0 : val);
+    }, 0);
+
+    const grandTotalPercent = totalAdditivePercent + totalBaseOilPercent;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
@@ -457,6 +467,19 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                     >
                         Add Base Oil
                     </button>
+                </div>
+            </div>
+
+            {/* % Cross Check Section */}
+            <hr className="my-6" />
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">% Cross Check</h3>
+                <div className={`p-3 border rounded shadow-sm ${Math.abs(grandTotalPercent - 100) < 0.0001 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                    <span className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Grand Total</span>
+                    <span className={`text-lg font-extrabold ${Math.abs(grandTotalPercent - 100) < 0.0001 ? 'text-green-700' : 'text-red-700'}`}>
+                        {grandTotalPercent.toFixed(4)}%
+                    </span>
+
                 </div>
             </div>
 

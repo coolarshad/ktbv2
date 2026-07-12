@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
+import ReactToPrint from 'react-to-print';
 
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
@@ -14,6 +15,7 @@ import RawMaterialTable from '../components/RawMaterialTable';
 const RawMaterial = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const componentRef = useRef();
     const [materialData, setMaterialData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
@@ -143,99 +145,106 @@ const RawMaterial = () => {
            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
              <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <h2 className="text-2xl mb-2 text-center">Raw Material Details</h2>
-             <hr className='mb-2' />
-             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
-                <thead className="bg-gray-100 border-b border-gray-200">
-                  <tr>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
-                  </tr>
-                </thead>
-             
-                <tbody>
+             <ReactToPrint
+               trigger={() => <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded float-left">Print</button>}
+               content={() => componentRef.current}
+             />
+             <div className="clear-both mt-4" ref={componentRef}>
+               <h2 className="text-2xl mb-2 text-center">Raw Material Details</h2>
+               <hr className='mb-2' />
+               <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                  <thead className="bg-gray-100 border-b border-gray-200">
+                    <tr>
+                    <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                    <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                    </tr>
+                  </thead>
+               
+                  <tbody>
 
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.date}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.category_name}</td>
-                  </tr>
-                   <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Sub Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.subname_name}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">cost_per_liter</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.cost_per_liter}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">buy_price_pmt</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.buy_price_pmt}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">add_cost</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.add_cost}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">total</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.total}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">ml_to_kl</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.ml_to_kl}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">density</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.density}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">remarks</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.remarks}</td>
-                  </tr>
-                 
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedMaterial.approved? "Yes":"No"}</td>
-                  </tr>
-                 
-                </tbody>
-                </table>              {!selectedMaterial.approved && (
-                <div className="mt-6 border-t pt-4">
-                  <MultiUserSelector 
-                    selectedUsers={notifiedUsers} 
-                    onChange={setNotifiedUsers} 
-                    message={notificationMessage}
-                    onMessageChange={setNotificationMessage}
-                  />
-                </div>
-              )}
-
-
-                {selectedMaterial.approved ? '' :
-                    <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                      {hasPermission(user, 'approve_raw_material_pricing') && (
-                        <button onClick={approveRawMaterial} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
-                      )}
-                    </div>
-                }
-                {/* Notified Users Section */}
-                <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
-                  <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
-                  {selectedMaterial?.notified_users_emails?.length > 0 ? (
-                    <ul className="list-disc pl-5">
-                      {selectedMaterial.notified_users_emails.map((email, idx) => (
-                        <li key={idx} className="text-sm text-gray-700">{email}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500">No users have been notified for this record.</p>
-                  )}
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.date}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.category_name}</td>
+                    </tr>
+                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Sub Name</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.subname_name}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">cost_per_liter</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.cost_per_liter}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">buy_price_pmt</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.buy_price_pmt}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">add_cost</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.add_cost}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">total</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.total}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">ml_to_kl</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.ml_to_kl}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">density</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.density}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">remarks</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.remarks}</td>
+                    </tr>
+                   
+                    <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedMaterial.approved? "Yes":"No"}</td>
+                    </tr>
+                   
+                  </tbody>
+                  </table>
                 </div>
              </div>
+             {!selectedMaterial.approved && (
+              <div className="mt-6 border-t pt-4">
+                <MultiUserSelector 
+                  selectedUsers={notifiedUsers} 
+                  onChange={setNotifiedUsers} 
+                  message={notificationMessage}
+                  onMessageChange={setNotificationMessage}
+                />
+              </div>
+            )}
+
+
+              {selectedMaterial.approved ? '' :
+                  <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
+                    {hasPermission(user, 'approve_raw_material_pricing') && (
+                      <button onClick={approveRawMaterial} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve</button>
+                    )}
+                  </div>
+              }
+              {/* Notified Users Section */}
+              <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+                <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
+                {selectedMaterial?.notified_users_emails?.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {selectedMaterial.notified_users_emails.map((email, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{email}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">No users have been notified for this record.</p>
+                )}
+              </div>
             
            </div>
          </div>

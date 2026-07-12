@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
+import ReactToPrint from 'react-to-print';
 
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
@@ -14,6 +15,7 @@ import PackingTable from '../components/PackingTable';
 const Packing = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const componentRef = useRef();
     const [packingData, setPackingData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
@@ -138,56 +140,64 @@ const Packing = () => {
         <Pagination itemsPerPage={50} totalItems={packingData?.length || 0} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        {selectedPacking && (
-           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-           <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
-             <button onClick={closeModal} className="float-right text-red-500">Close</button>
-             <h2 className="text-2xl mb-2 text-center">Packing Details</h2>
-             <hr className='mb-2' />
-             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
-                <thead className="bg-gray-100 border-b border-gray-200">
-                  <tr>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
-                  <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
-                  </tr>
-                </thead>
-             
-                <tbody>
-                  
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking.date}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking.name}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Per Each</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking.per_each}</td>
-                  </tr>
-                  {/* <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Category</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking.category}</td>
-                  </tr> */}
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing Type</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking?.packing_type_detail?.name}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking.remarks}</td>
-                  </tr>
-                 
-                  <tr className="border-b border-gray-200">
-                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPacking.approved? "Yes":"No"}</td>
-                  </tr>
-                 
-                </tbody>
-                </table>              {!selectedPacking.approved && (
+       <Modal isOpen={isModalOpen} onClose={closeModal}>
+         {selectedPacking && (
+            <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+            <div className="bg-white w-3/4 h-3/4 p-4 overflow-auto">
+              <button onClick={closeModal} className="float-right text-red-500">Close</button>
+              <ReactToPrint
+                trigger={() => <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded float-left">Print</button>}
+                content={() => componentRef.current}
+              />
+              <div className="clear-both mt-4" ref={componentRef}>
+                <h2 className="text-2xl mb-2 text-center">Packing Details</h2>
+                <hr className='mb-2' />
+                <div className="overflow-x-auto">
+                 <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm ">
+                   <thead className="bg-gray-100 border-b border-gray-200">
+                     <tr>
+                     <th className="py-2 px-4 text-left text-gray-700 font-semibold">Field</th>
+                     <th className="py-2 px-4 text-left text-gray-700 font-semibold">Value</th>
+                     </tr>
+                   </thead>
+                
+                   <tbody>
+                     
+                     <tr className="border-b border-gray-200">
+                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
+                       <td className="py-2 px-4 text-gray-800">{selectedPacking.date}</td>
+                     </tr>
+                     <tr className="border-b border-gray-200">
+                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
+                       <td className="py-2 px-4 text-gray-800">{selectedPacking.name}</td>
+                     </tr>
+                     <tr className="border-b border-gray-200">
+                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Per Each</td>
+                       <td className="py-2 px-4 text-gray-800">{selectedPacking.per_each}</td>
+                     </tr>
+                     {/* <tr className="border-b border-gray-200">
+                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Category</td>
+                       <td className="py-2 px-4 text-gray-800">{selectedPacking.category}</td>
+                     </tr> */}
+                     <tr className="border-b border-gray-200">
+                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packing Type</td>
+                       <td className="py-2 px-4 text-gray-800">{selectedPacking?.packing_type_detail?.name}</td>
+                     </tr>
+                     <tr className="border-b border-gray-200">
+                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Remarks</td>
+                       <td className="py-2 px-4 text-gray-800">{selectedPacking.remarks}</td>
+                     </tr>
+                    
+                     <tr className="border-b border-gray-200">
+                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
+                       <td className="py-2 px-4 text-gray-800">{selectedPacking.approved? "Yes":"No"}</td>
+                     </tr>
+                    
+                   </tbody>
+                   </table>
+                 </div>
+              </div>
+              {!selectedPacking.approved && (
                 <div className="mt-6 border-t pt-4">
                   <MultiUserSelector 
                     selectedUsers={notifiedUsers} 
@@ -219,7 +229,6 @@ const Packing = () => {
                   <p className="text-sm text-gray-500">No users have been notified for this record.</p>
                 )}
               </div>
-             </div>
             
            </div>
          </div>
