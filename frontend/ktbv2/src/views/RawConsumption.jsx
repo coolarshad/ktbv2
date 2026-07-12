@@ -98,8 +98,8 @@ function RawConsumption() {
                 <table className="min-w-full border">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="border p-2">Final Product Name</th>
-                            <th className="border p-2">Raw Material Name</th>
+                            <th className="border p-2 min-w-[200px] whitespace-normal break-words">Final Product Name</th>
+                            <th className="border p-2 min-w-[200px] whitespace-normal break-words">Raw Material Name</th>
                             <th className="border p-2">Date</th>
                             <th className="border p-2">Batch Number</th>
                             <th className="border p-2">Qty (Kgs)</th>
@@ -113,8 +113,8 @@ function RawConsumption() {
                         {currentItems.length > 0 ? (
                             currentItems.map((item) => (
                                 <tr key={item.id} className="text-center">
-                                    <td className="border p-2">{item.final_product_name}</td>
-                                    <td className="border p-2">{item.raw_material_name}</td>
+                                    <td className="border p-2 min-w-[200px] whitespace-normal break-words">{item.final_product_name}</td>
+                                    <td className="border p-2 min-w-[200px] whitespace-normal break-words">{item.raw_material_name}</td>
                                     <td className="border p-2">{item.date}</td>
                                     <td className="border p-2">{item.serial_number}</td>
                                     <td className="border p-2">{item.quantity_kgs}</td>

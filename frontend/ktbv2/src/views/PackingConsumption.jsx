@@ -84,8 +84,8 @@ function PackingConsumption() {
                 <table className="min-w-full border">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="border p-2">Final Product Name</th>
-                            <th className="border p-2">Packing Name</th>
+                            <th className="border p-2 min-w-[200px] whitespace-normal break-words">Final Product Name</th>
+                            <th className="border p-2 min-w-[200px] whitespace-normal break-words">Packing Name</th>
                             <th className="border p-2">Date</th>
                             <th className="border p-2">Qty</th>
                             <th className="border p-2">Rate</th>
@@ -97,8 +97,8 @@ function PackingConsumption() {
                         {currentItems.length > 0 ? (
                             currentItems.map((item) => (
                                 <tr key={item.id} className="text-center">
-                                    <td className="border p-2">{item.final_product_name}</td>
-                                    <td className="border p-2">{item.packing_name}</td>
+                                    <td className="border p-2 min-w-[200px] whitespace-normal break-words">{item.final_product_name}</td>
+                                    <td className="border p-2 min-w-[200px] whitespace-normal break-words">{item.packing_name}</td>
                                     <td className="border p-2">{item.date}</td>
                                     <td className="border p-2">{item.quantity}</td>
                                     <td className="border p-2">{item.rate}</td>

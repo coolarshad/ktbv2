@@ -17,9 +17,9 @@ const ConsumptionTable = ({ data, onDelete, onView, basePerm }) => { // Default 
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
 
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[200px] max-w-[200px] w-[200px]">Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[250px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">Date</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Grade</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">SAE</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Net Blending Qty</th>
@@ -37,9 +37,9 @@ const ConsumptionTable = ({ data, onDelete, onView, basePerm }) => { // Default 
             data.map((item, index) => (
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
 
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[200px] max-w-[200px] w-[200px]">{item?.formula?.name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[250px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px] border-r border-gray-300">{item.date}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[250px] border-r border-gray-300">{item?.formula?.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.grade}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sae}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.net_blending_qty}</td>

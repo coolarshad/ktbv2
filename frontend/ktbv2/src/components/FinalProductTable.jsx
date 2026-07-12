@@ -18,8 +18,8 @@ const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Defaul
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[200px] max-w-[200px] w-[200px]">Formula Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[360px] z-30 bg-gray-100 min-w-[220px] max-w-[220px] w-[220px] border-r border-gray-300">Consumption Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[250px] max-w-[250px] w-[250px]">Formula Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Consumption Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Size</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Bottles Per Pack</th>
@@ -43,8 +43,8 @@ const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Defaul
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[200px] max-w-[200px] w-[200px]">{item?.formula_detail?.formula_name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[360px] z-10 bg-white min-w-[220px] max-w-[220px] w-[220px] border-r border-gray-300">{item?.formula_detail?.consumption?.formula?.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[250px] max-w-[250px] w-[250px]">{item?.formula_detail?.formula_name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-10 bg-white min-w-[250px] border-r border-gray-300">{item?.formula_detail?.consumption?.formula?.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.batch_detail?.batch}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_size_detail?.label}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottles_per_pack}</td>

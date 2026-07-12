@@ -101,8 +101,8 @@ function AdditiveConsumption() {
                 <table className="min-w-full border">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="border p-2">Final Product</th>
-                            <th className="border p-2">Additive</th>
+                            <th className="border p-2 min-w-[200px] whitespace-normal break-words">Final Product</th>
+                            <th className="border p-2 min-w-[200px] whitespace-normal break-words">Additive</th>
                             <th className="border p-2">Date</th>
                             <th className="border p-2">Serial No</th>
                             <th className="border p-2">Qty (Kgs)</th>
@@ -116,8 +116,8 @@ function AdditiveConsumption() {
                         {currentItems.length > 0 ? (
                             currentItems.map((item) => (
                                 <tr key={item.id} className="text-center">
-                                    <td className="border p-2">{item.final_product_name}</td>
-                                    <td className="border p-2">{item.additive_name}</td>
+                                    <td className="border p-2 min-w-[200px] whitespace-normal break-words">{item.final_product_name}</td>
+                                    <td className="border p-2 min-w-[200px] whitespace-normal break-words">{item.additive_name}</td>
                                     <td className="border p-2">{item.date}</td>
                                     <td className="border p-2">{item.serial_number}</td>
                                     <td className="border p-2">{item.quantity_kgs}</td>
