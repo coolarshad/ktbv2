@@ -162,7 +162,7 @@ const RawCategory = () => {
 
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-0 z-30 bg-gray-100 min-w-[250px] max-w-[250px] w-[250px]">Parent</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold sticky left-[250px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Name</th>
-                <th className="py-2 px-4 text-left text-gray-700 font-semibold">Children</th>
+                {/* <th className="py-2 px-4 text-left text-gray-700 font-semibold">Children</th> */}
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Approved</th>
                 <th className="py-2 px-4 text-left text-gray-700 font-semibold">Actions</th>
               </tr>
@@ -172,14 +172,14 @@ const RawCategory = () => {
                 <tr key={category.id} className="border-b border-gray-200">
 
                   <td className="py-2 px-4 text-gray-800 sticky left-0 z-10 bg-white min-w-[250px] max-w-[250px] w-[250px]">
-                    {category.parent_name ? category.parent_name : "Root"}
+                    {category.parent_name ? category.parent_name : ""}
                   </td>
                   <td className="py-2 px-4 text-gray-800 sticky left-[250px] z-10 bg-white min-w-[250px] border-r border-gray-300">{category.name}</td>
-                  <td className="py-2 px-4 text-gray-800">
+                  {/* <td className="py-2 px-4 text-gray-800">
                     {getAllSubcategoryNames(category).length > 0
                       ? getAllSubcategoryNames(category).join(", ")
                       : "—"}
-                  </td>
+                  </td> */}
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                     <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={category.approved} onChange={() => { }} />
                   </td>

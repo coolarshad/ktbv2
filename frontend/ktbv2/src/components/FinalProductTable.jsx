@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
-const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Default value for data
-  const navigate = useNavigate();  
+const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default value for data
+  const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const handleEdit = (id) => {
     navigate(`/final-product-form/${id}`);  // Navigate to TradeForm with tradeId
   };
@@ -28,11 +28,11 @@ const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Defaul
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty in Litres</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Per Litre Cost</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Oil Consumed</th>
-          
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total CFR Pricing</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Cost Per Pail/Crtn</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
-            
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -54,19 +54,19 @@ const FinalProductTable = ({ data , onDelete, onView, basePerm }) => { // Defaul
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_litre_cost}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_oil_consumed}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.dk_cost}</td> */}
-              
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cfr_pricing}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cost_per_pail_crtn || (item.total_qty ? (Number(item.total_cfr_pricing) / Number(item.total_qty)).toFixed(2) : "0.00")}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
-            
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => {}} />
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
                 </td>
-               
-               
+
+
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <div className="space-x-2">
-                   
+
                     <button
                       className="bg-green-500 text-white px-2 py-1 rounded"
                       onClick={(e) => { e.stopPropagation(); onView(item.id); }}

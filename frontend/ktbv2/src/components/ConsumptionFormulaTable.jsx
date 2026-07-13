@@ -23,7 +23,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // D
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Grade</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">SAE</th>
 
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -39,7 +39,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // D
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.grade}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sae}</td>
 
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />

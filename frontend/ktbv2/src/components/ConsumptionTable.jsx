@@ -27,7 +27,7 @@ const ConsumptionTable = ({ data, onDelete, onView, basePerm }) => { // Default 
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Cross Check %</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Value</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Per Litre Cost</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
           </tr>
@@ -47,7 +47,7 @@ const ConsumptionTable = ({ data, onDelete, onView, basePerm }) => { // Default 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.cross_check}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_value}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_litre_cost}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />

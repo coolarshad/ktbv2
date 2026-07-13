@@ -16,9 +16,9 @@ const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value f
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
 
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[250px] max-w-[250px] w-[250px]">Formula Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[300px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Consumption Name</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[300px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Consumption Name</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
 
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
@@ -32,9 +32,9 @@ const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value f
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[250px] max-w-[250px] w-[250px]">{item.formula_name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[300px] z-10 bg-white min-w-[250px] border-r border-gray-300">{item?.consumption?.formula?.name}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[300px] z-10 bg-white min-w-[250px] border-r border-gray-300">{item?.consumption?.formula?.name}</td> */}
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.packing?.name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
