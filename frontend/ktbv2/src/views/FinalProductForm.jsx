@@ -218,12 +218,12 @@ export default function FinalProductForm({ mode = 'add' }) {
   useEffect(() => {
 
     const oilCost =
-      Number(formData.total_oil_consumed || 0) *
+      Number(formData.qty_in_litres || 0) *
       Number(formData.per_litre_cost || 0);
 
     const packingCost =
       (formData.packing_items || []).reduce(
-        (sum, item) => sum + Number(item.value || 0),
+        (sum, item) => sum + Number(item.total_value || 0),
         0
       );
 

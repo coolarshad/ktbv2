@@ -248,9 +248,11 @@ const FinalProduct = () => {
                                             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
                                             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing</th>
                                             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Qty</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Qty</th>
                                             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Selection</th>
                                             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
                                             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Value</th>
+                                            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Value</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -261,9 +263,11 @@ const FinalProduct = () => {
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packing_type}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.packing}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.qty}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.total_qty}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.selected_packing_details?.name}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.rate}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.total_value}</td>
                                                 </tr>
                                             )
                                         )}
