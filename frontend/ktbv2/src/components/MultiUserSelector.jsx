@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import Select from 'react-select';
 
-const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessageChange }) => {
+const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessageChange, isDisabled = false }) => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,6 +62,7 @@ const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessa
             classNamePrefix="react-select"
             isClearable
             isSearchable
+            isDisabled={isDisabled}
           />
           {selectedUsers.length > 0 && onMessageChange && (
             <div className="mt-3">
@@ -74,6 +75,7 @@ const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessa
                 placeholder="Write an optional custom message that will go in the notification and email..."
                 className="w-full border border-gray-300 p-2 rounded focus:ring-blue-500 focus:border-blue-500 text-sm"
                 rows={3}
+                disabled={isDisabled}
               />
             </div>
           )}

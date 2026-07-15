@@ -158,12 +158,14 @@ const TradeForm = ({ mode = 'add' }) => {
     }, [mode]);
 
     const [tradeOptions, setTradeOptions] = useState([]);
+    const [tradesList, setTradesList] = useState([]);
     useEffect(() => {
         // Fetch all trades to populate the relatedTrades options
         axios.get('/trademgt/trades?approved=true&reviewed=true')
             .then(response => {
+                setTradesList(response.data);
                 const options = response.data.map(trade => ({
-                    value: trade.id,
+                    value: trade.trn,
                     label: trade.trn, // Use trade.trn or any other field you want to display
                 }));
                 setTradeOptions(options);
@@ -324,16 +326,13 @@ const TradeForm = ({ mode = 'add' }) => {
             const trade_type = formData.trade_type;
             const ref_product_code = product?.ref_product_code;
 
-            const current_ref_trn = name === 'ref_trn' ? value : product?.ref_trn;
-            const current_ref_product_code = name === 'ref_product_code' ? value : product?.ref_product_code;
-
-            if ((name === 'ref_trn' || name === 'ref_product_code') && current_ref_trn && current_ref_trn !== 'NA' && current_ref_product_code && current_ref_product_code !== 'NA') {
+            if (name === 'ref_trn' && value && value !== 'NA' && ref_product_code && ref_product_code !== 'NA') {
                 try {
                     const response = await axios.get(`/trademgt/product-balance`, {
                         params: {
-                            trn: current_ref_trn,
+                            trn: value,
                             trade_type: trade_type,
-                            ref_product_code: current_ref_product_code,
+                            ref_product_code: ref_product_code,
                             current_trade_id: mode === 'update' ? id : undefined,
                         }
                     });
@@ -351,7 +350,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 } catch (error) {
                     console.error('API Error:', error.message);
                 }
-            } else if ((name === 'ref_trn' || name === 'ref_product_code') && (current_ref_trn === 'NA' || current_ref_product_code === 'NA')) {
+            } else if (name === 'ref_trn' && value === 'NA') {
                 setFormData((prevState) => {
                     const updatedProducts = [...prevState.tradeProducts];
                     updatedProducts[index].ref_balance = '';
@@ -443,6 +442,11 @@ const TradeForm = ({ mode = 'add' }) => {
                         ...updatedProducts[index],
                         [name]: files ? files[0] : value // Store file if it's a file input
                     };
+
+                    if (name === 'ref_product_code') {
+                        updatedProducts[index].ref_trn = '';
+                        updatedProducts[index].ref_balance = '';
+                    }
 
 
                     if (name === 'product_code' && value) {
@@ -1211,7 +1215,20 @@ const TradeForm = ({ mode = 'add' }) => {
                                     Reference TRN
                                 </label>
                                 <Select
-                                    options={[{ value: 'NA', label: 'NA' }, ...tradeOptions]}
+                                    options={[
+                                        { value: 'NA', label: 'NA' },
+                                        ...((product.ref_product_code && product.ref_product_code !== 'NA')
+                                            ? tradesList
+                                                .filter(trade => 
+                                                    trade.trade_products && 
+                                                    trade.trade_products.some(p => p.product_code === product.ref_product_code)
+                                                )
+                                                .map(trade => ({
+                                                    value: trade.trn,
+                                                    label: trade.trn,
+                                                }))
+                                            : tradeOptions)
+                                    ]}
                                     value={product.ref_trn ? { value: product.ref_trn, label: product.ref_trn } : null}
                                     onChange={(selectedOption) => handleChange({ target: { name: 'ref_trn', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
                                     placeholder="---"

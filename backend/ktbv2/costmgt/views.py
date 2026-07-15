@@ -173,6 +173,11 @@ class PackingViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewse
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.approved:
+            return Response(
+                {"detail": "Approved Packing Price is locked and cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         instance_id_str = str(instance.id)
         if ProductFormulaItem.objects.filter(packing_label=instance_id_str).exists():
             return Response(
@@ -240,6 +245,11 @@ class RawMaterialViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, vi
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.approved:
+            return Response(
+                {"detail": "Approved Raw Material is locked and cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         instance_id_str = str(instance.id)
         if ConsumptionBaseOil.objects.filter(sub_name=instance_id_str).exists():
             return Response(
@@ -299,6 +309,11 @@ class AdditiveViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, views
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.approved:
+            return Response(
+                {"detail": "Approved Additive is locked and cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         instance_id_str = str(instance.id)
         if ConsumptionAdditive.objects.filter(sub_name=instance_id_str).exists():
             return Response(
@@ -559,6 +574,12 @@ class ConsumptionFormulaView(APIView):
             consumption = ConsumptionFormula.objects.get(pk=pk)
         except ConsumptionFormula.DoesNotExist:
             return Response({'error': 'Consumption Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if consumption.approved:
+            return Response(
+                {"error": "Approved Consumption Formula is locked and cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         if Consumption.objects.filter(name=str(consumption.id)).exists():
             return Response(
@@ -823,6 +844,12 @@ class ConsumptionView(APIView):
             consumption = Consumption.objects.get(pk=pk)
         except Consumption.DoesNotExist:
             return Response({'error': 'Consumption not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if consumption.approved:
+            return Response(
+                {"error": "Approved Consumption is locked and cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         consumption_id_str = str(consumption.id)
         if (
@@ -1357,6 +1384,12 @@ class ProductFormulaView(APIView):
             formula = ProductFormula.objects.get(pk=pk)
         except ProductFormula.DoesNotExist:
             return Response({'error': 'Product Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if formula.approved:
+            return Response(
+                {"error": "Approved Product Formula is locked and cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         if FinalProduct.objects.filter(formula=formula).exists():
             return Response(

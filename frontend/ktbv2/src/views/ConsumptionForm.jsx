@@ -31,6 +31,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         consumptionBaseOil: [{ name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
         notifiedUsers: [],
         notification_message: '',
+        approved: false,
     });
 
     const [nameOptions, setNameOptions] = useState([]);
@@ -99,7 +100,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 value: item.value || ''
                             }))
                             : [{ name: '', display_name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
-
+                        approved: data.approved || false,
                     }));
                 })
                 .catch((error) => {
@@ -540,13 +541,16 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         setFormData({ ...formData, [section]: finalSection });
     };
 
+    const isLocked = mode === 'update' && formData.approved;
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (isLocked) return;
         let errors = {};
 
         const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil', 'notification_message'];
         for (const [key, value] of Object.entries(formData)) {
-            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== 'approved') {
                 errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
             }
         }
@@ -659,531 +663,440 @@ const ConsumptionForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
-            <p className="text-xl text-center">Consumption & Blending Form</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                {/* Date Input */}
-                <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
-                    <input
-                        id="date"
-                        name="date"
-                        type="date"
-                        value={formData.date || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
+            {isLocked && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+                    <p className="font-bold">Approved & Locked</p>
+                    <p>This blending cost record has been approved and is locked. It cannot be modified.</p>
+                </div>
+            )}
+            <fieldset disabled={isLocked} className="space-y-4 w-full">
+                <p className="text-xl text-center">Consumption & Blending Form</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                    {/* Date Input */}
+                    <div>
+                        <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
+                        <input
+                            id="date"
+                            name="date"
+                            type="date"
+                            value={formData.date || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        />
+                        {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
+                    </div>
+
+                    {/* Name Input */}
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                        <Select
+                            name='alias'
+                            value={selectedAlias}
+                            onChange={handleAliasChange}
+                            options={namesOptions}
+                            placeholder="Select Name"
+                            isSearchable
+                            isClearable
+                            isDisabled={isLocked}
+                        />
+                        {validationErrors.alias && <p className="text-red-500 text-sm mt-1">{validationErrors.alias}</p>}
+                    </div>
+
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Formula Ref</label>
+                        <Select
+                            name="name"
+                            value={selectedFormula}
+                            onChange={(selectedOption) => {
+                                if (!selectedOption) {
+                                    handleNameChange({ target: { value: '' } });
+                                } else {
+                                    handleNameChange({ target: { value: selectedOption.value } });
+                                }
+                            }}
+                            options={formulaOptions}
+                            placeholder="Select Formula"
+                            isSearchable
+                            isClearable
+                            isDisabled={isLocked}
+                        />
+                        {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
+                    </div>
+
+                    <div>
+                        <label htmlFor="batch" className="block text-sm font-medium text-gray-700">Batch Number</label>
+                        <input
+                            id="batch"
+                            name="batch"
+                            type="text"
+                            value={formData.batch || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        />
+                        {validationErrors.batch && <p className="text-red-500 text-sm mt-1">{validationErrors.batch}</p>}
+                    </div>
+                    {/* Grade Input */}
+                    <div>
+                        <label htmlFor="grade" className="block text-sm font-medium text-gray-700">Grade</label>
+                        <input
+                            id="grade"
+                            name="grade"
+                            type="text"
+                            value={formData.grade || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            readOnly
+                        />
+                    </div>
+
+                    {/* SAE Input */}
+                    <div>
+                        <label htmlFor="sae" className="block text-sm font-medium text-gray-700">SAE</label>
+                        <input
+                            id="sae"
+                            name="sae"
+                            type="text"
+                            value={formData.sae || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            readOnly
+                        />
+                    </div>
+
+                    {/* Net Blending Quantity Input */}
+                    <div>
+                        <label htmlFor="net_blending_qty" className="block text-sm font-medium text-gray-700">Net Blending Quantity</label>
+                        <input
+                            id="net_blending_qty"
+                            name="net_blending_qty"
+                            type="number"
+                            value={formData.net_blending_qty || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            step={0.0001}
+                        />
+                        {validationErrors.net_blending_qty && <p className="text-red-500 text-sm mt-1">{validationErrors.net_blending_qty}</p>}
+                    </div>
+
+                    {/* Gross Vol Crosscheck Input */}
+                    <div>
+                        <label htmlFor="gross_vol_crosscheck" className="block text-sm font-medium text-gray-700">Gross Volume Crosscheck</label>
+                        <input
+                            id="gross_vol_crosscheck"
+                            name="gross_vol_crosscheck"
+                            type="number"
+                            value={formData.gross_vol_crosscheck || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            step={0.0001}
+                            readOnly
+                        />
+                        {validationErrors.gross_vol_crosscheck && <p className="text-red-500 text-sm mt-1">{validationErrors.gross_vol_crosscheck}</p>}
+                    </div>
+
+                    {/* Cross Check Input */}
+                    <div>
+                        <label htmlFor="cross_check" className="block text-sm font-medium text-gray-700">Cross Check</label>
+                        <input
+                            id="cross_check"
+                            name="cross_check"
+                            type="text"
+                            value={formData.cross_check || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            readOnly
+                        />
+                        {validationErrors.cross_check && <p className="text-red-500 text-sm mt-1">{validationErrors.cross_check}</p>}
+                    </div>
+
+
                 </div>
 
-                {/* Name Input */}
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-                    {/* <input
-                        id="alias"
-                        name="alias"
-                        type="text"
-                        value={formData.alias || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    /> */}
-                    <Select
-                        name='alias'
-                        value={selectedAlias}
-                        onChange={handleAliasChange}
-                        options={namesOptions}
-                        placeholder="Select Name"
-                        isSearchable
-                        isClearable
-                    />
-                    {validationErrors.alias && <p className="text-red-500 text-sm mt-1">{validationErrors.alias}</p>}
-                </div>
+                {/* Section for Consumption Additive */}
+                <div className="p-4 ">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Additive</h3>
+                    {formData.consumptionAdditive.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-8 gap-4 mb-4">
+                            <div className="col-span-1 md:col-span-2">
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
+                                <input
+                                    type="text"
+                                    readOnly
+                                    value={item.display_name || ''}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                                {validationErrors[`consumptionAdditiveName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveName_${index}`]}</p>}
+                            </div>
+                            <div className="col-span-1 md:col-span-2">
+                                <div className="col-span-1 md:col-span-2">
+                                    <label htmlFor="sub_name" className="block text-sm font-medium text-gray-700">Sub Name</label>
+                                    <Select
+                                        options={getAdditiveSubOptions(item.name)}
+                                        value={
+                                            getAdditiveSubOptions(item.name)
+                                                .find(opt => opt.value === Number(item.sub_name)) || null
+                                        }
+                                        onChange={(selectedOption) =>
+                                            handleChange(
+                                                { target: { name: 'sub_name', value: selectedOption.value } },
+                                                'consumptionAdditive',
+                                                index
+                                            )
+                                        }
+                                        placeholder="Select Additive Sub Name"
+                                        isSearchable
+                                        isDisabled={isLocked}
+                                    />
+                                    {validationErrors[`consumptionAdditiveSubName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveSubName_${index}`]}</p>}
+                                </div>
+                            </div>
+                            {/* Rate */}
+                            <div className="col-span-1 md:col-span-1">
+                                <label htmlFor="rate" className="block text-sm font-medium text-gray-700">Rate</label>
+                                <input
+                                    type="number"
+                                    name="rate"
+                                    placeholder="Rate"
+                                    value={item.rate || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
+                                    step={0.01}
+                                />
+                                {validationErrors[`consumptionAdditiveRate_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveRate_${index}`]}</p>}
+                            </div>
 
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Formula Ref</label>
-                    <Select
-                        name="name"
-                        value={selectedFormula}
-                        onChange={(selectedOption) => {
-                            if (!selectedOption) {
-                                handleNameChange({ target: { value: '' } });
-                            } else {
-                                handleNameChange({ target: { value: selectedOption.value } });
-                            }
-                        }}
-                        options={formulaOptions}
-                        placeholder="Select Formula"
-                        isSearchable
-                        isClearable
-                    />
-                    {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
-                </div>
+                            {/* Qty in Percent */}
+                            <div className="col-span-1 md:col-span-1">
+                                <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_percent"
+                                    placeholder="Quantity in Percent"
+                                    value={item.qty_in_percent || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                    readOnly={true}
+                                />
+                                {validationErrors[`consumptionAdditiveQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQty_${index}`]}</p>}
+                            </div>
 
-                <div>
-                    <label htmlFor="batch" className="block text-sm font-medium text-gray-700">Batch Number</label>
-                    <input
-                        id="batch"
-                        name="batch"
-                        type="text"
-                        value={formData.batch || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.batch && <p className="text-red-500 text-sm mt-1">{validationErrors.batch}</p>}
-                </div>
-                {/* Grade Input */}
-                <div>
-                    <label htmlFor="grade" className="block text-sm font-medium text-gray-700">Grade</label>
-                    <input
-                        id="grade"
-                        name="grade"
-                        type="text"
-                        value={formData.grade || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly
-                    />
-                </div>
+                            {/* Qty in Litre */}
+                            <div className="col-span-1 md:col-span-1">
+                                <label htmlFor="qty_in_litre" className="block text-sm font-medium text-gray-700">Qty in Litre</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_litre"
+                                    placeholder="Quantity in Litre"
+                                    value={item.qty_in_litre || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                    readOnly={true}
+                                />
+                                {validationErrors[`consumptionAdditiveQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQtyLitre_${index}`]}</p>}
+                            </div>
 
-                {/* SAE Input */}
-                <div>
-                    <label htmlFor="sae" className="block text-sm font-medium text-gray-700">SAE</label>
-                    <input
-                        id="sae"
-                        name="sae"
-                        type="text"
-                        value={formData.sae || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly
-                    />
-                </div>
-
-                {/* Net Blending Quantity Input */}
-                <div>
-                    <label htmlFor="net_blending_qty" className="block text-sm font-medium text-gray-700">Net Blending Quantity</label>
-                    <input
-                        id="net_blending_qty"
-                        name="net_blending_qty"
-                        type="number"
-                        value={formData.net_blending_qty || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        step={0.0001}
-                    />
-                    {validationErrors.net_blending_qty && <p className="text-red-500 text-sm mt-1">{validationErrors.net_blending_qty}</p>}
-                </div>
-
-                {/* Gross Vol Crosscheck Input */}
-                <div>
-                    <label htmlFor="gross_vol_crosscheck" className="block text-sm font-medium text-gray-700">Gross Volume Crosscheck</label>
-                    <input
-                        id="gross_vol_crosscheck"
-                        name="gross_vol_crosscheck"
-                        type="number"
-                        value={formData.gross_vol_crosscheck || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        step={0.0001}
-                        readOnly
-                    />
-                    {validationErrors.gross_vol_crosscheck && <p className="text-red-500 text-sm mt-1">{validationErrors.gross_vol_crosscheck}</p>}
-                </div>
-
-                {/* Cross Check Input */}
-                <div>
-                    <label htmlFor="cross_check" className="block text-sm font-medium text-gray-700">Cross Check</label>
-                    <input
-                        id="cross_check"
-                        name="cross_check"
-                        type="text"
-                        value={formData.cross_check || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly
-                    />
-                    {validationErrors.cross_check && <p className="text-red-500 text-sm mt-1">{validationErrors.cross_check}</p>}
-                </div>
-
-
-            </div>
-
-            {/* Section for Consumption Additive */}
-            <div className="p-4 ">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Additive</h3>
-                {formData.consumptionAdditive.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-8 gap-4 mb-4">
-                        {/* Additive Name - Spanning 2 Columns */}
-                        {/* <div className="col-span-1 md:col-span-2">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
-                            <select
-                                name="name"
-                                value={item.name || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                            >
-                                <option value="">Select Option</option>
-                                {additiveOptions.map((option) => (
-                                    <option key={option.id} value={option.id}>
-                                        {option.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div> */}
-                        <div className="col-span-1 md:col-span-2">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
-                            <input
-                                type="text"
-                                readOnly
-                                value={item.display_name || ''}
-                                className="border border-gray-300 p-2 rounded w-full"
-                            />
-                            {validationErrors[`consumptionAdditiveName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveName_${index}`]}</p>}
+                            {/* Value */}
+                            <div className="col-span-1 md:col-span-1">
+                                <label htmlFor="value" className="block text-sm font-medium text-gray-700">Value</label>
+                                <input
+                                    type="number"
+                                    name="value"
+                                    placeholder="Value"
+                                    value={item.value || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.01}
+                                    readOnly={true}
+                                />
+                                {validationErrors[`consumptionAdditiveValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveValue_${index}`]}</p>}
+                            </div>
                         </div>
-                        <div className="col-span-1 md:col-span-2">
+                    ))}
+                </div>
+
+
+                {/* Section for Consumption Base Oil */}
+                <div className="p-4">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
+                    {formData.consumptionBaseOil.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-8 gap-4 mb-4">
+                            <div className="col-span-1 md:col-span-2">
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
+                                <input
+                                    type="text"
+                                    readOnly
+                                    value={item.display_name || ''}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                                {validationErrors[`consumptionBaseOilName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilName_${index}`]}</p>}
+                            </div>
                             <div className="col-span-1 md:col-span-2">
                                 <label htmlFor="sub_name" className="block text-sm font-medium text-gray-700">Sub Name</label>
-                                {/* <Select
-                                    options={additiveOptionsMapped}
-                                    value={additiveOptionsMapped.find(opt => opt.value === Number(item.sub_name)) || null} // select current value
-                                    onChange={(selectedOption) => handleChange({ target: { name: 'sub_name', value: selectedOption.value } }, 'consumptionAdditive', index)}
-                                    placeholder="Select Additive"
-                                    isSearchable={true}
-                                /> */}
                                 <Select
-                                    options={getAdditiveSubOptions(item.name)}
+                                    options={getBaseOilSubOptions(item.name)}
                                     value={
-                                        getAdditiveSubOptions(item.name)
+                                        getBaseOilSubOptions(item.name)
                                             .find(opt => opt.value === Number(item.sub_name)) || null
                                     }
                                     onChange={(selectedOption) =>
                                         handleChange(
                                             { target: { name: 'sub_name', value: selectedOption.value } },
-                                            'consumptionAdditive',
+                                            'consumptionBaseOil',
                                             index
                                         )
                                     }
-                                    placeholder="Select Additive Sub Name"
+                                    placeholder="Select Base Oil Sub Name"
                                     isSearchable
+                                    isDisabled={isLocked}
                                 />
-                                {validationErrors[`consumptionAdditiveSubName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveSubName_${index}`]}</p>}
+                                {validationErrors[`consumptionBaseOilSubName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilSubName_${index}`]}</p>}
+                            </div>
+
+                            {/* Rate */}
+                            <div className="col-span-1 md:col-span-1">
+                                <label htmlFor="rate" className="block text-sm font-medium text-gray-700">Rate</label>
+                                <input
+                                    type="number"
+                                    name="rate"
+                                    placeholder="Rate"
+                                    value={item.rate || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    readOnly={true}
+                                    step={0.01}
+                                />
+                                {validationErrors[`consumptionBaseOilRate_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilRate_${index}`]}</p>}
+                            </div>
+
+                            {/* Quantity in Percent */}
+                            <div className="col-span-1">
+                                <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_percent"
+                                    placeholder="Quantity in Percent"
+                                    value={item.qty_in_percent || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                    readOnly={true}
+                                />
+                                {validationErrors[`consumptionBaseOilQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQty_${index}`]}</p>}
+                            </div>
+
+                            {/* Quantity in Litre */}
+                            <div className="col-span-1">
+                                <label htmlFor="qty_in_litre" className="block text-sm font-medium text-gray-700">Qty in Litre</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_litre"
+                                    placeholder="Quantity in Litre"
+                                    value={item.qty_in_litre || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                    readOnly={true}
+                                />
+                                {validationErrors[`consumptionBaseOilQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQtyLitre_${index}`]}</p>}
+                            </div>
+
+                            {/* Value */}
+                            <div className="col-span-1">
+                                <label htmlFor="value" className="block text-sm font-medium text-gray-700">Value</label>
+                                <input
+                                    type="number"
+                                    name="value"
+                                    placeholder="Value"
+                                    value={item.value || ''} // Ensure never undefined
+                                    onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.01}
+                                    readOnly={true}
+                                />
+                                {validationErrors[`consumptionBaseOilValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilValue_${index}`]}</p>}
                             </div>
                         </div>
-                        {/* Rate */}
-                        <div className="col-span-1 md:col-span-1">
-                            <label htmlFor="rate" className="block text-sm font-medium text-gray-700">Rate</label>
-                            <input
-                                type="number"
-                                name="rate"
-                                placeholder="Rate"
-                                value={item.rate || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                readOnly={true}
-                                step={0.01}
-                            />
-                            {validationErrors[`consumptionAdditiveRate_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveRate_${index}`]}</p>}
-                        </div>
-
-                        {/* Qty in Percent */}
-                        <div className="col-span-1 md:col-span-1">
-                            <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
-                            <input
-                                type="number"
-                                name="qty_in_percent"
-                                placeholder="Quantity in Percent"
-                                value={item.qty_in_percent || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                                readOnly={true}
-                            />
-                            {validationErrors[`consumptionAdditiveQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQty_${index}`]}</p>}
-                        </div>
-
-                        {/* Qty in Litre */}
-                        <div className="col-span-1 md:col-span-1">
-                            <label htmlFor="qty_in_litre" className="block text-sm font-medium text-gray-700">Qty in Litre</label>
-                            <input
-                                type="number"
-                                name="qty_in_litre"
-                                placeholder="Quantity in Litre"
-                                value={item.qty_in_litre || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                                readOnly={true}
-                            />
-                            {validationErrors[`consumptionAdditiveQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQtyLitre_${index}`]}</p>}
-                        </div>
-
-                        {/* Value */}
-                        <div className="col-span-1 md:col-span-1">
-                            <label htmlFor="value" className="block text-sm font-medium text-gray-700">Value</label>
-                            <input
-                                type="number"
-                                name="value"
-                                placeholder="Value"
-                                value={item.value || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.01}
-                                readOnly={true}
-                            />
-                            {validationErrors[`consumptionAdditiveValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveValue_${index}`]}</p>}
-                        </div>
-
-                        {/* Remove Button - Centered */}
-                        {/* <div className="col-span-1 md:col-span-1 flex items-end justify-center">
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveRow('consumptionAdditive', index)}
-                                className="bg-red-500 text-white p-2 rounded"
-                            >
-                                <FaTrash />
-                            </button>
-                        </div> */}
+                    ))}
+                </div>
+                <hr className="my-6" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                    {/* Total Value Input */}
+                    <div>
+                        <label htmlFor="total_value" className="block text-sm font-medium text-gray-700">Total Value</label>
+                        <input
+                            id="total_value"
+                            name="total_value"
+                            type="number"
+                            value={formData.total_value || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            step={0.01}
+                            readOnly
+                        />
+                        {validationErrors.total_value && <p className="text-red-500 text-sm mt-1">{validationErrors.total_value}</p>}
                     </div>
-                ))}
 
-                {/* Add Button */}
-                {/* <div className="text-right">
-                    <button
-                        type="button"
-                        onClick={() => handleAddRow('consumptionAdditive')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                        Add Additive
-                    </button>
-                </div> */}
-            </div>
-
-
-            {/* Section for Consumption Base Oil */}
-            <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
-                {formData.consumptionBaseOil.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-8 gap-4 mb-4">
-                        {/* Base Oil Name */}
-                        {/* <div className="col-span-1 md:col-span-2">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
-                            <select
-                                name="name"
-                                value={item.name || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                            >
-                                <option value="">Select Option</option>
-                                {baseOilOptions.map((option) => (
-                                    <option key={option.id} value={option.id}>
-                                        {option.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div> */}
-                        <div className="col-span-1 md:col-span-2">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
-                            <input
-                                type="text"
-                                readOnly
-                                value={item.display_name || ''}
-                                className="border border-gray-300 p-2 rounded w-full"
-                            />
-                            {validationErrors[`consumptionBaseOilName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilName_${index}`]}</p>}
-                        </div>
-                        <div className="col-span-1 md:col-span-2">
-                            <label htmlFor="sub_name" className="block text-sm font-medium text-gray-700">Sub Name</label>
-                            {/* <Select
-                                options={baseOilOptionsMapped}
-                                value={baseOilOptionsMapped.find(opt => opt.value === Number(item.sub_name)) || null} // current selection
-                                onChange={(selectedOption) =>
-                                    handleChange(
-                                        { target: { name: 'sub_name', value: selectedOption.value } }, // mimic event for your handleChange
-                                        'consumptionBaseOil',
-                                        index
-                                    )
-                                }
-                                placeholder="Select Base Oil"
-                                isSearchable={true}
-                            /> */}
-                            <Select
-                                options={getBaseOilSubOptions(item.name)}
-                                value={
-                                    getBaseOilSubOptions(item.name)
-                                        .find(opt => opt.value === Number(item.sub_name)) || null
-                                }
-                                onChange={(selectedOption) =>
-                                    handleChange(
-                                        { target: { name: 'sub_name', value: selectedOption.value } },
-                                        'consumptionBaseOil',
-                                        index
-                                    )
-                                }
-                                placeholder="Select Base Oil Sub Name"
-                                isSearchable
-                            />
-                            {validationErrors[`consumptionBaseOilSubName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilSubName_${index}`]}</p>}
-                        </div>
-
-                        {/* Rate */}
-                        <div className="col-span-1 md:col-span-1">
-                            <label htmlFor="rate" className="block text-sm font-medium text-gray-700">Rate</label>
-                            <input
-                                type="number"
-                                name="rate"
-                                placeholder="Rate"
-                                value={item.rate || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                readOnly={true}
-                                step={0.01}
-                            />
-                            {validationErrors[`consumptionBaseOilRate_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilRate_${index}`]}</p>}
-                        </div>
-
-                        {/* Quantity in Percent */}
-                        <div className="col-span-1">
-                            <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
-                            <input
-                                type="number"
-                                name="qty_in_percent"
-                                placeholder="Quantity in Percent"
-                                value={item.qty_in_percent || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                                readOnly={true}
-                            />
-                            {validationErrors[`consumptionBaseOilQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQty_${index}`]}</p>}
-                        </div>
-
-                        {/* Quantity in Litre */}
-                        <div className="col-span-1">
-                            <label htmlFor="qty_in_litre" className="block text-sm font-medium text-gray-700">Qty in Litre</label>
-                            <input
-                                type="number"
-                                name="qty_in_litre"
-                                placeholder="Quantity in Litre"
-                                value={item.qty_in_litre || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                                readOnly={true}
-                            />
-                            {validationErrors[`consumptionBaseOilQtyLitre_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQtyLitre_${index}`]}</p>}
-                        </div>
-
-                        {/* Value */}
-                        <div className="col-span-1">
-                            <label htmlFor="value" className="block text-sm font-medium text-gray-700">Value</label>
-                            <input
-                                type="number"
-                                name="value"
-                                placeholder="Value"
-                                value={item.value || ''} // Ensure never undefined
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.01}
-                                readOnly={true}
-                            />
-                            {validationErrors[`consumptionBaseOilValue_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilValue_${index}`]}</p>}
-                        </div>
-
-                        {/* Remove Button - Centered */}
-                        {/* <div className="col-span-1 flex items-end justify-center">
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveRow('consumptionBaseOil', index)}
-                                className="bg-red-500 text-white p-2 rounded"
-                            >
-                                <FaTrash />
-                            </button>
-                        </div> */}
+                    {/* Per Litre Cost Input */}
+                    <div>
+                        <label htmlFor="per_litre_cost" className="block text-sm font-medium text-gray-700">Per Litre Cost</label>
+                        <input
+                            id="per_litre_cost"
+                            name="per_litre_cost"
+                            type="number"
+                            value={formData.per_litre_cost || ''} // Ensure never undefined
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            step={0.01}
+                            readOnly
+                        />
+                        {validationErrors.per_litre_cost && <p className="text-red-500 text-sm mt-1">{validationErrors.per_litre_cost}</p>}
                     </div>
-                ))}
 
-                {/* Add Button */}
-                {/* <div className="text-right">
-                    <button
-                        type="button"
-                        onClick={() => handleAddRow('consumptionBaseOil')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                        Add Base Oil
-                    </button>
-                </div> */}
-            </div>
-            <hr className="my-6" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                {/* Total Value Input */}
-                <div>
-                    <label htmlFor="total_value" className="block text-sm font-medium text-gray-700">Total Value</label>
-                    <input
-                        id="total_value"
-                        name="total_value"
-                        type="number"
-                        value={formData.total_value || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        step={0.01}
-                        readOnly
+                    {/* Remarks Input */}
+                    <div className="col-span-3">
+                        <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
+                        <textarea
+                            id="remarks"
+                            name="remarks"
+                            value={formData.remarks || ''}
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full"
+                        ></textarea>
+                    </div>
+                </div>
+                <hr className='my-6' />
+
+                <div className="p-4">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+                    <MultiUserSelector
+                        selectedUsers={formData.notifiedUsers}
+                        onChange={handleUsersChange}
+                        message={formData.notification_message}
+                        onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+                        isDisabled={isLocked}
                     />
-                    {validationErrors.total_value && <p className="text-red-500 text-sm mt-1">{validationErrors.total_value}</p>}
-                </div>
+                    {validationErrors.notifiedUsers && (
+                        <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                    )}
 
-                {/* Per Litre Cost Input */}
-                <div>
-                    <label htmlFor="per_litre_cost" className="block text-sm font-medium text-gray-700">Per Litre Cost</label>
-                    <input
-                        id="per_litre_cost"
-                        name="per_litre_cost"
-                        type="number"
-                        value={formData.per_litre_cost || ''} // Ensure never undefined
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        step={0.01}
-                        readOnly
-                    />
-                    {validationErrors.per_litre_cost && <p className="text-red-500 text-sm mt-1">{validationErrors.per_litre_cost}</p>}
                 </div>
+                <hr className="my-6" />
 
-                {/* Remarks Input */}
-                <div className="col-span-3">
-                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                    <textarea
-                        id="remarks"
-                        name="remarks"
-                        value={formData.remarks || ''}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full"
-                    ></textarea>
-                </div>
-            </div>
-            <hr className='my-6' />
-
-            <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
-                <MultiUserSelector
-                    selectedUsers={formData.notifiedUsers}
-                    onChange={handleUsersChange}
-                    message={formData.notification_message}
-                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
-                />
-                {validationErrors.notifiedUsers && (
-                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                {/* Submit Button */}
+                {!isLocked && (
+                    <div className='grid grid-cols-3 gap-4 mb-4'>
+                        <button
+                            type="submit"
+                            className="bg-blue-500 text-white p-2 rounded col-span-3"
+                        >
+                            {mode === 'add' ? 'Add Consumption' : 'Update Consumption'}
+                        </button>
+                    </div>
                 )}
-
-            </div>
-            <hr className="my-6" />
-
-            {/* Submit Button */}
-            <div className='grid grid-cols-3 gap-4 mb-4'>
-                <button
-                    type="submit"
-                    className="bg-blue-500 text-white p-2 rounded col-span-3"
-                >
-                    {mode === 'add' ? 'Add Consumption' : 'Update Consumption'}
-                </button>
-            </div>
+            </fieldset>
         </form>
     );
 };

@@ -24,6 +24,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
         attributes: [{ packing_type: "", packing_label: "", qty: "" }],
         notifiedUsers: [],
         notification_message: "",
+        approved: false,
     });
 
     const [consumptions, setConsumptions] = useState([]);
@@ -69,6 +70,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                     // litre_per_pack: data.litre_per_pack || "",
                     remarks: data.remarks || "",
                     attributes,
+                    approved: data.approved || false,
                 });
             });
         }
@@ -157,13 +159,16 @@ const ProductFormulaForm = ({ mode = "add" }) => {
 
     /* ---------------- SUBMIT ---------------- */
 
+    const isLocked = mode === "update" && formData.approved;
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (isLocked) return;
         let errors = {};
 
         const skipValidation = ['remarks', 'notifiedUsers', 'attributes', 'notification_message'];
         for (const [key, value] of Object.entries(formData)) {
-            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== 'approved') {
                 errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
             }
         }
@@ -203,130 +208,128 @@ const ProductFormulaForm = ({ mode = "add" }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 p-4 w-full">
-            <h2 className="text-xl text-center">Packing Formulation Form</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                <div>
-                    <label className="block text-sm font-medium">Formula Name</label>
-                    <input
-                        name="formula_name"
-                        value={formData.formula_name}
-                        onChange={handleChange}
-                        className="border p-2 rounded w-full"
-                    />
-                    {validationErrors.formula_name && <p className="text-red-500 text-sm mt-1">{validationErrors.formula_name}</p>}
+            {isLocked && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+                    <p className="font-bold">Approved & Locked</p>
+                    <p>This packing formulation record has been approved and is locked. It cannot be modified.</p>
                 </div>
+            )}
+            <fieldset disabled={isLocked} className="space-y-6 w-full">
+                <h2 className="text-xl text-center">Packing Formulation Form</h2>
 
-                <div>
-                    <label className="block text-sm font-medium">Consumption</label>
-                    <Select
-                        options={consumptionOptions}
-                        value={consumptionOptions.find(o => o.value === formData.consumption_name)}
-                        onChange={opt =>
-                            handleChange({ target: { name: "consumption_name", value: opt?.value || "" } })
-                        }
-                    />
-                    {validationErrors.consumption_name && <p className="text-red-500 text-sm mt-1">{validationErrors.consumption_name}</p>}
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                <div>
-                    <label className="block text-sm font-medium">Consumption Qty</label>
-                    <input
-                        type="number"
-                        name="consumption_qty"
-                        value={formData.consumption_qty}
-                        onChange={handleChange}
-                        className="border p-2 rounded w-full"
-                    />
-                    {validationErrors.consumption_qty && <p className="text-red-500 text-sm mt-1">{validationErrors.consumption_qty}</p>}
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium">Packing Size</label>
-                    <Select
-                        options={packingSizeOptions}
-                        value={packingSizeOptions.find(o => o.value === formData.packing_type)}
-                        onChange={handlePackingChange}
-                    />
-                    {validationErrors.packing_type && <p className="text-red-500 text-sm mt-1">{validationErrors.packing_type}</p>}
-                </div>
-
-                {/* <div>
-                    <label className="block text-sm font-medium">Bottles / Pack</label>
-                    <input
-                        readOnly
-                        value={formData.bottle_per_pack}
-                        className="border p-2 rounded w-full bg-gray-100"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium">Litres / Pack</label>
-                    <input
-                        readOnly
-                        value={formData.litre_per_pack}
-                        className="border p-2 rounded w-full bg-gray-100"
-                    />
-                </div> */}
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium">Remarks</label>
-                <input
-                    name="remarks"
-                    value={formData.remarks}
-                    onChange={handleChange}
-                    className="border p-2 rounded w-full"
-                />
-            </div>
-
-            <h3 className="font-semibold">Attributes</h3>
-
-            {formData.attributes.map((item, index) => (
-                <>
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 border p-3">
-                        <Select
-                            options={packingTypeOptions}
-                            value={packingTypeOptions.find(o => o.value === item.packing_type)}
-                            onChange={opt =>
-                                handleAttributeChange(index, "packing_type", opt?.value || "")
-                            }
-                            placeholder="Packing Type"
+                    <div>
+                        <label className="block text-sm font-medium">Formula Name</label>
+                        <input
+                            name="formula_name"
+                            value={formData.formula_name}
+                            onChange={handleChange}
+                            className="border p-2 rounded w-full"
                         />
+                        {validationErrors.formula_name && <p className="text-red-500 text-sm mt-1">{validationErrors.formula_name}</p>}
+                    </div>
 
+                    <div>
+                        <label className="block text-sm font-medium">Consumption</label>
                         <Select
-                            options={getPackingLabelOptions(item.packing_type)}
-                            value={getPackingLabelOptions(item.packing_type).find(
-                                o => o.value === item.packing_label
-                            )}
+                            options={consumptionOptions}
+                            value={consumptionOptions.find(o => o.value === formData.consumption_name)}
                             onChange={opt =>
-                                handleAttributeChange(index, "packing_label", opt?.value || "")
+                                handleChange({ target: { name: "consumption_name", value: opt?.value || "" } })
                             }
-                            isDisabled={!item.packing_type}
-                            placeholder="Packing Label"
+                            isDisabled={isLocked}
                         />
+                        {validationErrors.consumption_name && <p className="text-red-500 text-sm mt-1">{validationErrors.consumption_name}</p>}
+                    </div>
 
+                    <div>
+                        <label className="block text-sm font-medium">Consumption Qty</label>
                         <input
                             type="number"
-                            value={item.qty}
-                            onChange={e =>
-                                handleAttributeChange(index, "qty", e.target.value)
-                            }
-                            className="border p-2 rounded"
-                            placeholder="Qty"
+                            name="consumption_qty"
+                            value={formData.consumption_qty}
+                            onChange={handleChange}
+                            className="border p-2 rounded w-full"
                         />
-
-                        <button
-                            type="button"
-                            onClick={() => removeAttribute(index)}
-                            className="text-red-600"
-                        >
-                            Delete
-                        </button>
+                        {validationErrors.consumption_qty && <p className="text-red-500 text-sm mt-1">{validationErrors.consumption_qty}</p>}
                     </div>
-                    {validationErrors[`attributes_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`attributes_${index}`]}</p>}
-                    {/* <div>
+
+                    <div>
+                        <label className="block text-sm font-medium">Packing Size</label>
+                        <Select
+                            options={packingSizeOptions}
+                            value={packingSizeOptions.find(o => o.value === formData.packing_type)}
+                            onChange={handlePackingChange}
+                            isDisabled={isLocked}
+                        />
+                        {validationErrors.packing_type && <p className="text-red-500 text-sm mt-1">{validationErrors.packing_type}</p>}
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium">Remarks</label>
+                    <input
+                        name="remarks"
+                        value={formData.remarks}
+                        onChange={handleChange}
+                        className="border p-2 rounded w-full"
+                    />
+                </div>
+
+                <h3 className="font-semibold">Attributes</h3>
+
+                {formData.attributes.map((item, index) => (
+                    <React.Fragment key={index}>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border p-3">
+                            <Select
+                                options={packingTypeOptions}
+                                value={packingTypeOptions.find(o => o.value === item.packing_type)}
+                                onChange={opt =>
+                                    handleAttributeChange(index, "packing_type", opt?.value || "")
+                                }
+                                placeholder="Packing Type"
+                                isDisabled={isLocked}
+                            />
+
+                            <Select
+                                options={getPackingLabelOptions(item.packing_type)}
+                                value={getPackingLabelOptions(item.packing_type).find(
+                                    o => o.value === item.packing_label
+                                )}
+                                onChange={opt =>
+                                    handleAttributeChange(index, "packing_label", opt?.value || "")
+                                }
+                                isDisabled={isLocked || !item.packing_type}
+                                placeholder="Packing Label"
+                            />
+
+                            <input
+                                type="number"
+                                value={item.qty}
+                                onChange={e =>
+                                    handleAttributeChange(index, "qty", e.target.value)
+                                }
+                                className="border p-2 rounded"
+                                placeholder="Qty"
+                            />
+
+                            {!isLocked && (
+                                <button
+                                    type="button"
+                                    onClick={() => removeAttribute(index)}
+                                    className="text-red-600"
+                                >
+                                    Delete
+                                </button>
+                            )}
+                        </div>
+                        {validationErrors[`attributes_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`attributes_${index}`]}</p>}
+                    </React.Fragment>
+                ))}
+
+                {!isLocked && (
+                    <div>
                         <button
                             type="button"
                             onClick={addAttribute}
@@ -334,40 +337,33 @@ const ProductFormulaForm = ({ mode = "add" }) => {
                         >
                             Add Attribute
                         </button>
-                    </div> */}
-                </>
-            ))}
-
-            <div>
-                <button
-                    type="button"
-                    onClick={addAttribute}
-                    className="bg-green-500 text-white px-4 py-2 rounded"
-                >
-                    Add Attribute
-                </button>
-            </div>
-
-            {/* Notify Users Section */}
-            <hr className="my-6" />
-            <div className="mt-0">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
-                <MultiUserSelector
-                    selectedUsers={formData.notifiedUsers}
-                    onChange={handleUsersChange}
-                    message={formData.notification_message}
-                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
-                />
-                {validationErrors.notifiedUsers && (
-                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                    </div>
                 )}
 
-            </div>
-            <hr className="my-6" />
+                {/* Notify Users Section */}
+                <hr className="my-6" />
+                <div className="mt-0">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+                    <MultiUserSelector
+                        selectedUsers={formData.notifiedUsers}
+                        onChange={handleUsersChange}
+                        message={formData.notification_message}
+                        onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+                        isDisabled={isLocked}
+                    />
+                    {validationErrors.notifiedUsers && (
+                        <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                    )}
 
-            <button className="bg-blue-600 text-white px-5 py-2 rounded">
-                Submit
-            </button>
+                </div>
+                <hr className="my-6" />
+
+                {!isLocked && (
+                    <button className="bg-blue-600 text-white px-5 py-2 rounded">
+                        Submit
+                    </button>
+                )}
+            </fieldset>
         </form>
     );
 };

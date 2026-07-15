@@ -266,8 +266,8 @@ const FinalProduct = () => {
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.total_qty}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.selected_packing_details?.name}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.rate}</td>
-                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
-                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.total_value}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value ? Number(item.value).toFixed(2) : ""}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.total_value ? Number(item.total_value).toFixed(2) : ""}</td>
                                                 </tr>
                                             )
                                         )}
@@ -291,7 +291,7 @@ const FinalProduct = () => {
 
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item?.name}</td>
                                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.rate}</td>
-                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value}</td>
+                                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.value ? Number(item.value).toFixed(2) : ""}</td>
                                                 </tr>
                                             )
                                         )}

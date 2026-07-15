@@ -50,7 +50,7 @@ const ConsumptionTable = ({ data, onDelete, onView, basePerm }) => { // Default 
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} disabled={item.approved} onChange={() => { }} />
                 </td>
 
 
@@ -63,10 +63,10 @@ const ConsumptionTable = ({ data, onDelete, onView, basePerm }) => { // Default 
                     >
                       View
                     </button>
-                    {hasPermission(user, `update_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {hasPermission(user, `delete_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `delete_${basePerm}`) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>

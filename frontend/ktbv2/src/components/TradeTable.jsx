@@ -58,6 +58,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th>
               {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th> */}
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approved</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
             </tr>
           </thead>
@@ -77,7 +78,10 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
                   {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} onChange={() => { }} />
+                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.reviewed} readOnly />
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} readOnly />
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                     <div className="space-x-2">
@@ -293,11 +297,11 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Reviewed</td>
-                        <td className="py-2 px-4 text-gray-800">{selectedTrade.approved ? 'Yes' : 'No'}</td>
+                        <td className="py-2 px-4 text-gray-800">{selectedTrade.reviewed ? 'Yes' : 'No'}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approved</td>
-                        <td className="py-2 px-4 text-gray-800">{selectedTrade.reviewed ? 'Yes' : 'No'}</td>
+                        <td className="py-2 px-4 text-gray-800">{selectedTrade.approved ? 'Yes' : 'No'}</td>
                       </tr>
                     </tbody>
                   </table>

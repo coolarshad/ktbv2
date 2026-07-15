@@ -53,7 +53,8 @@ export default function FinalProductForm({ mode = 'add' }) {
       { name: "", rate: "", value: "" }
     ],
     notifiedUsers: [],
-    notification_message: ''
+    notification_message: '',
+    approved: false
   });
 
   // Dropdown options
@@ -198,7 +199,8 @@ export default function FinalProductForm({ mode = 'add' }) {
             : null,
 
           packing_items: mappedPackingItems,
-          additional_costs: data.additional_costs || []
+          additional_costs: data.additional_costs || [],
+          approved: data.approved || false
 
         }));
 
@@ -434,10 +436,12 @@ export default function FinalProductForm({ mode = 'add' }) {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));
   };
 
+  const isLocked = mode === "update" && formData.approved;
+
   const validateForm = () => {
     let newErrors = {};
 
-    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs', 'notification_message'];
+    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs', 'notification_message', 'approved'];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key)) {
         if (value === "" || value === "NaN" || value === null) {
@@ -503,6 +507,7 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLocked) return;
     if (!validateForm()) return; // 🚀 STOP if invalid
 
     try {
@@ -568,6 +573,13 @@ export default function FinalProductForm({ mode = 'add' }) {
 
   return (
     <form onSubmit={handleSubmit} className="w-11/12 space-y-10">
+      {isLocked && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+          <p className="font-bold">Approved & Locked</p>
+          <p>This final product cost record has been approved and is locked. It cannot be modified.</p>
+        </div>
+      )}
+      <fieldset disabled={isLocked} className="space-y-10 w-full">
 
       <h2 className="text-2xl font-bold text-center">
         Final Production Form
@@ -603,6 +615,7 @@ export default function FinalProductForm({ mode = 'add' }) {
             options={formulaOptions}
             value={formData.formula}
             onChange={handleFormulaChange}
+            isDisabled={isLocked}
           />
           {errors.formula && <p className="text-red-500 text-sm mt-1">{errors.formula}</p>}
         </div>
@@ -639,6 +652,7 @@ export default function FinalProductForm({ mode = 'add' }) {
                 per_litre_cost: opt.per_litre_cost
               }))
             }
+            isDisabled={isLocked}
           />
           {errors.batch && <p className="text-red-500 text-sm mt-1">{errors.batch}</p>}
         </div>
@@ -825,6 +839,7 @@ export default function FinalProductForm({ mode = 'add' }) {
                   .map(p => ({ value: p.id, label: p.name, rate: p.per_each }))}
                 value={item.packing_selection}
                 onChange={(opt) => handlePackingChange(index, "packing_selection", opt)}
+                isDisabled={isLocked}
               />
               {errors[`packing_selection_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`packing_selection_${index}`]}</p>}
             </div>
@@ -915,22 +930,26 @@ export default function FinalProductForm({ mode = 'add' }) {
               {errors[`cost_value_${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`cost_value_${index}`]}</p>}
             </div>
 
-            <button type="button"
-              onClick={() => removeCostRow(index)}
-              className="bg-red-500 text-white p-2 rounded"
-            >
-              Remove
-            </button>
+            {!isLocked && (
+              <button type="button"
+                onClick={() => removeCostRow(index)}
+                className="bg-red-500 text-white p-2 rounded"
+              >
+                Remove
+              </button>
+            )}
 
           </div>
         ))}
 
-        <button type="button"
-          onClick={addCostRow}
-          className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          Add Cost Row
-        </button>
+        {!isLocked && (
+          <button type="button"
+            onClick={addCostRow}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            Add Cost Row
+          </button>
+        )}
       </div>
       <hr />
       <div className="grid md:grid-cols-4 gap-6 border p-4 rounded">
@@ -982,16 +1001,19 @@ export default function FinalProductForm({ mode = 'add' }) {
           onChange={handleUsersChange}
           message={formData.notification_message}
           onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+          isDisabled={isLocked}
         />
         {errors.notifiedUsers && (
           <span className="error-text text-red-500">{errors.notifiedUsers}</span>
         )}
       </div>
 
-      <button className="w-full bg-blue-600 text-white p-3 rounded text-lg">
-        Submit
-      </button>
-
+      {!isLocked && (
+        <button className="w-full bg-blue-600 text-white p-3 rounded text-lg">
+          Submit
+        </button>
+      )}
+      </fieldset>
     </form>
   );
 }

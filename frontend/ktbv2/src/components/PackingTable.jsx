@@ -18,8 +18,8 @@ const PackingTable = ({ data, onDelete, onView, basePerm }) => { // Default valu
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[250px] max-w-[250px] w-[250px]">Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-30 bg-gray-100 min-w-[100px] max-w-[100px] w-[100px] border-r border-gray-300">Per Each</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[450px] max-w-[450px] w-[450px]">Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[610px] z-30 bg-gray-100 min-w-[100px] max-w-[100px] w-[100px] border-r border-gray-300">Per Each</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Type</th>
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
 
@@ -33,13 +33,13 @@ const PackingTable = ({ data, onDelete, onView, basePerm }) => { // Default valu
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[250px] max-w-[250px] w-[250px]">{item.name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-10 bg-white min-w-[100px] max-w-[100px] w-[100px] border-r border-gray-300">{item.per_each}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[450px] max-w-[450px] w-[450px]">{item.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[610px] z-10 bg-white min-w-[100px] max-w-[100px] w-[100px] border-r border-gray-300">{item.per_each}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.packing_type_detail?.name}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} disabled={item.approved} onChange={() => { }} />
                 </td>
 
 
@@ -52,10 +52,10 @@ const PackingTable = ({ data, onDelete, onView, basePerm }) => { // Default valu
                     >
                       View
                     </button>
-                    {hasPermission(user, `update_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {hasPermission(user, `delete_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `delete_${basePerm}`) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>

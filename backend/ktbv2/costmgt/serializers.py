@@ -76,6 +76,11 @@ class PackingSerializer(serializers.ModelSerializer):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
 
+    def validate(self, attrs):
+        if self.instance and self.instance.approved:
+            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+        return super().validate(attrs)
+
     def create(self, validated_data):
         extras_data = validated_data.pop('extras', [])
         packing = Packing.objects.create(**validated_data)
@@ -161,6 +166,11 @@ class RawMaterialSerializer(serializers.ModelSerializer):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
 
+    def validate(self, attrs):
+        if self.instance and self.instance.approved:
+            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+        return super().validate(attrs)
+
     def create(self, validated_data):
         extras_data = validated_data.pop('extras', [])
         obj = RawMaterial.objects.create(**validated_data)
@@ -241,6 +251,11 @@ class AdditiveSerializer(serializers.ModelSerializer):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
     
+    def validate(self, attrs):
+        if self.instance and self.instance.approved:
+            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+        return super().validate(attrs)
+
     def create(self, validated_data):
         extras_data = validated_data.pop('extras', [])
         obj = Additive.objects.create(**validated_data)
@@ -311,6 +326,11 @@ class ConsumptionFormulaSerializer(serializers.ModelSerializer):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
 
+    def validate(self, attrs):
+        if self.instance and self.instance.approved:
+            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+        return super().validate(attrs)
+
 class ConsumptionAdditiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConsumptionAdditive
@@ -376,6 +396,11 @@ class ConsumptionSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'notified_users'):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
+
+    def validate(self, attrs):
+        if self.instance and self.instance.approved:
+            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+        return super().validate(attrs)
 
     def get_formula(self, obj):
         try:
@@ -530,6 +555,11 @@ class ProductFormulaSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'notified_users'):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
+
+    def validate(self, attrs):
+        if self.instance and self.instance.approved:
+            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+        return super().validate(attrs)
 
     def get_consumption_details(self, obj):
         try:
@@ -774,6 +804,11 @@ class FinalProductSerializer(serializers.ModelSerializer):
             "notified_users_emails",
             # "unit_detail",
         ]
+
+    def validate(self, attrs):
+        if self.instance and self.instance.approved:
+            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+        return super().validate(attrs)
 
     def create(self, validated_data):
         packing_items_data = validated_data.pop("packing_items", [])

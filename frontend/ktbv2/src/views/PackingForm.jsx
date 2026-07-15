@@ -29,6 +29,7 @@ const PackingForm = ({ mode = "add" }) => {
     extras: [],
     notifiedUsers: [],
     notification_message: "",
+    approved: false,
   });
 
   // Fetch categories for dropdown
@@ -66,6 +67,7 @@ const PackingForm = ({ mode = "add" }) => {
             packing_type: data.packing_type ? Number(data.packing_type) : "",
             remarks: data.remarks || "",
             extras: data.extras || [],  // <-- default to empty array
+            approved: data.approved || false,
           });
         })
         .catch((error) => console.error("Error fetching packing data:", error));
@@ -124,15 +126,19 @@ const PackingForm = ({ mode = "add" }) => {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));
   };
 
+  const isLocked = mode === "update" && formData.approved;
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isLocked) return;
+
     let errors = {};
     console.log(formData)
     // Validate main fields
     const skipValidation = ["remarks", "notifiedUsers", "notification_message"];
     for (const [key, value] of Object.entries(formData)) {
-      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== "extras") {
+      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== "extras" && key !== "approved") {
         errors[key] = `${capitalizeKey(key)} cannot be empty!`;
       }
     }
@@ -216,149 +222,117 @@ const PackingForm = ({ mode = "add" }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
-      <p className="text-xl text-center">Packing Price Form</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Date</label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.date && (
-            <p className="text-red-500">{validationErrors.date}</p>
-          )}
+      {isLocked && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+          <p className="font-bold">Approved & Locked</p>
+          <p>This packing record has been approved and is locked. It cannot be modified.</p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.name && (
-            <p className="text-red-500">{validationErrors.name}</p>
-          )}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Per Each
-          </label>
-          <input
-            type="text"
-            name="per_each"
-            value={formData.per_each}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.per_each && (
-            <p className="text-red-500">{validationErrors.per_each}</p>
-          )}
-        </div>
-
-        <div className="col-span-1 md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700"> Packing Type</label>
-
-          <Select
-            options={packingOptionsMapped}
-            value={selectedPackingType}
-            onChange={handlePackingTypeChange}
-            placeholder="Select Packing Type"
-            isSearchable
-            isClearable
-          />
-          {validationErrors.packing_type && (
-            <p className="text-red-500 text-sm mt-1">{validationErrors.packing_type}</p>
-          )}
-        </div>
-
-        <div className="col-span-1 md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Remarks
-          </label>
-          <input
-            type="text"
-            name="remarks"
-            value={formData.remarks}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.remarks && (
-            <p className="text-red-500">{validationErrors.remarks}</p>
-          )}
-        </div>
-      </div>
-
-      {/* <div className="p-4 border rounded bg-gray-50 relative">
-        <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
-
-        {formData.extras.map((row, index) => (
-          <div key={index} className="grid grid-cols-5 gap-3 items-center mb-2">
+      )}
+      <fieldset disabled={isLocked} className="space-y-4 w-full">
+        <p className="text-xl text-center">Packing Price Form</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Date</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            {validationErrors.date && (
+              <p className="text-red-500">{validationErrors.date}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
             <input
               type="text"
-              placeholder="Name"
-              value={row.name}
-              onChange={(e) =>
-                handleExtraChange(index, "name", e.target.value)
-              }
-              className="border p-2 rounded col-span-2"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
             />
+            {validationErrors.name && (
+              <p className="text-red-500">{validationErrors.name}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Per Each
+            </label>
             <input
               type="text"
-              placeholder="Rate"
-              value={row.rate}
-              onChange={(e) =>
-                handleExtraChange(index, "rate", e.target.value)
-              }
-              className="border p-2 rounded col-span-2"
+              name="per_each"
+              value={formData.per_each}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
             />
+            {validationErrors.per_each && (
+              <p className="text-red-500">{validationErrors.per_each}</p>
+            )}
+          </div>
+
+          <div className="col-span-1 md:col-span-1">
+            <label className="block text-sm font-medium text-gray-700"> Packing Type</label>
+
+            <Select
+              options={packingOptionsMapped}
+              value={selectedPackingType}
+              onChange={handlePackingTypeChange}
+              placeholder="Select Packing Type"
+              isSearchable
+              isClearable
+              isDisabled={isLocked}
+            />
+            {validationErrors.packing_type && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.packing_type}</p>
+            )}
+          </div>
+
+          <div className="col-span-1 md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Remarks
+            </label>
+            <input
+              type="text"
+              name="remarks"
+              value={formData.remarks}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            {validationErrors.remarks && (
+              <p className="text-red-500">{validationErrors.remarks}</p>
+            )}
+          </div>
+        </div>
+
+        <hr className="my-6" />
+        <div className="p-4">
+          <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+          <MultiUserSelector
+            selectedUsers={formData.notifiedUsers}
+            onChange={handleUsersChange}
+            message={formData.notification_message}
+            onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+            isDisabled={isLocked}
+          />
+          {validationErrors.notifiedUsers && (
+            <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+          )}
+        </div>
+
+        {!isLocked && (
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <button
-              type="button"
-              onClick={() => removeExtraRow(index)}
-              className="bg-red-500 text-white px-3 py-1 rounded"
+              type="submit"
+              className="bg-blue-500 text-white p-2 rounded col-span-3"
             >
-              ✖
+              Submit
             </button>
           </div>
-        ))}
-
-        <div className="flex justify-end mt-2">
-          <button
-            type="button"
-            onClick={addExtraRow}
-            className="bg-blue-500 text-white px-4 py-1 rounded"
-          >
-            + Add More
-          </button>
-        </div>
-      </div> */}
-
-      <hr className="my-6" />
-      <div className="p-4">
-        <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
-        <MultiUserSelector
-          selectedUsers={formData.notifiedUsers}
-          onChange={handleUsersChange}
-          message={formData.notification_message}
-          onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
-        />
-        {validationErrors.notifiedUsers && (
-          <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
         )}
-      </div>
-
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded col-span-3"
-        >
-          Submit
-        </button>
-      </div>
+      </fieldset>
     </form>
   );
 };

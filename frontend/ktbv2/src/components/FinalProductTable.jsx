@@ -18,8 +18,8 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[250px] max-w-[250px] w-[250px]">Formula Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Consumption Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[550px] max-w-[550px] w-[550px]">Formula Name</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[710px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Consumption Name</th> */}
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Batch</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Packing Size</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Bottles Per Pack</th>
@@ -43,8 +43,8 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[250px] max-w-[250px] w-[250px]">{item?.formula_detail?.formula_name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-10 bg-white min-w-[250px] border-r border-gray-300">{item?.formula_detail?.consumption?.formula?.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[550px] max-w-[550px] w-[550px]">{item?.formula_detail?.formula_name}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[710px] z-10 bg-white min-w-[250px] border-r border-gray-300">{item?.formula_detail?.consumption?.formula?.name}</td> */}
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.batch_detail?.batch}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_size_detail?.label}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bottles_per_pack}</td>
@@ -60,7 +60,7 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} disabled={item.approved} onChange={() => { }} />
                 </td>
 
 
@@ -73,10 +73,10 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
                     >
                       View
                     </button>
-                    {hasPermission(user, `update_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {hasPermission(user, `delete_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `delete_${basePerm}`) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>

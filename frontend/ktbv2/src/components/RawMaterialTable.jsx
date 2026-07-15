@@ -18,9 +18,9 @@ const RawMaterialTable = ({ data, onDelete, onView, basePerm }) => { // Default 
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[250px] max-w-[250px] w-[250px]">Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-30 bg-gray-100 min-w-[250px] max-w-[250px] w-[250px]">Sub Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[660px] z-30 bg-gray-100 min-w-[120px] max-w-[120px] w-[120px] border-r border-gray-300">Cost Per Liter</th>
+            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[350px] max-w-[350px] w-[350px]">Name</th> */}
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[350px] max-w-[350px] w-[350px]">Sub Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[510px] z-30 bg-gray-100 min-w-[120px] max-w-[120px] w-[120px] border-r border-gray-300">Cost Per Liter</th>
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buy Price</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Add. Cost</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total</th>
@@ -38,9 +38,9 @@ const RawMaterialTable = ({ data, onDelete, onView, basePerm }) => { // Default 
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[250px] max-w-[250px] w-[250px]">{item.category_name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[410px] z-10 bg-white min-w-[250px] max-w-[250px] w-[250px]">{item.subname_name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[660px] z-10 bg-white min-w-[120px] max-w-[120px] w-[120px] border-r border-gray-300">{item.cost_per_liter}</td>
+                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[350px] max-w-[350px] w-[350px]">{item.category_name}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[350px] max-w-[350px] w-[350px]">{item.subname_name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[510px] z-10 bg-white min-w-[120px] max-w-[120px] w-[120px] border-r border-gray-300">{item.cost_per_liter}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.buy_price_pmt}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.add_cost}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total}</td>
@@ -49,7 +49,7 @@ const RawMaterialTable = ({ data, onDelete, onView, basePerm }) => { // Default 
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} onChange={() => { }} />
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} disabled={item.approved} onChange={() => { }} />
                 </td>
 
 
@@ -62,10 +62,10 @@ const RawMaterialTable = ({ data, onDelete, onView, basePerm }) => { // Default 
                     >
                       View
                     </button>
-                    {hasPermission(user, `update_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {hasPermission(user, `delete_${basePerm}`) && (
+                    {!item.approved && hasPermission(user, `delete_${basePerm}`) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>

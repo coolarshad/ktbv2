@@ -32,6 +32,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
         consumptionBaseOil: [{ name: '', qty_in_percent: null }],
         notifiedUsers: [],
         notification_message: '',
+        approved: false,
     });
 
     useEffect(() => {
@@ -45,6 +46,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
                         ...data,
                         consumptionAdditive: data.consumptionFormulaAdditive || [{ name: '', qty_in_percent: null }],
                         consumptionBaseOil: data.consumptionFormulaBaseOil || [{ name: '', qty_in_percent: null }],
+                        approved: data.approved || false,
                     }));
                 })
                 .catch((error) => {
@@ -110,13 +112,16 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
         setFormData(prev => ({ ...prev, notifiedUsers: users }));
     };
 
+    const isLocked = mode === 'update' && formData.approved;
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (isLocked) return;
         let errors = {};
 
         const skipValidation = ['remarks', 'notifiedUsers', 'consumptionAdditive', 'consumptionBaseOil', 'notification_message'];
         for (const [key, value] of Object.entries(formData)) {
-            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+            if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== 'approved') {
                 errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
             }
         }
@@ -209,306 +214,288 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
-            <p className="text-xl text-center">Blending Formulation Form</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700">REF</label>
-                    <input
-                        id="ref"
-                        name="ref"
-                        type="text"
-                        value={formData.ref}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly={true}
-                    />
+            {isLocked && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+                    <p className="font-bold">Approved & Locked</p>
+                    <p>This blending formulation record has been approved and is locked. It cannot be modified.</p>
                 </div>
-                {/* Date Input */}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
-                    <input
-                        id="date"
-                        name="date"
-                        type="date"
-                        value={formData.date}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
+            )}
+            <fieldset disabled={isLocked} className="space-y-4 w-full">
+                <p className="text-xl text-center">Blending Formulation Form</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                    <div>
+                        <label htmlFor="date" className="block text-sm font-medium text-gray-700">REF</label>
+                        <input
+                            id="ref"
+                            name="ref"
+                            type="text"
+                            value={formData.ref}
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            readOnly={true}
+                        />
+                    </div>
+                    {/* Date Input */}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                    <div>
+                        <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
+                        <input
+                            id="date"
+                            name="date"
+                            type="date"
+                            value={formData.date}
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        />
+                        {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
+                    </div>
+
+                    {/* Name Input */}
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                        <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            value={formData.name}
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        />
+                        {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
+                    </div>
+
+                    {/* Grade Input */}
+                    <div>
+                        <label htmlFor="grade" className="block text-sm font-medium text-gray-700">Grade</label>
+                        <input
+                            id="grade"
+                            name="grade"
+                            type="text"
+                            value={formData.grade}
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        />
+                        {validationErrors.grade && <p className="text-red-500 text-sm mt-1">{validationErrors.grade}</p>}
+                    </div>
+
+                    {/* SAE Input */}
+                    <div>
+                        <label htmlFor="sae" className="block text-sm font-medium text-gray-700">SAE</label>
+                        <input
+                            id="sae"
+                            name="sae"
+                            type="text"
+                            value={formData.sae}
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        />
+                        {validationErrors.sae && <p className="text-red-500 text-sm mt-1">{validationErrors.sae}</p>}
+                    </div>
+
+                    {/* Remarks Input */}
+                    <div className="md:col-span-2">
+                        <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
+                        <input
+                            id="remarks"
+                            name="remarks"
+                            value={formData.remarks}
+                            onChange={handleChange}
+                            className="border border-gray-300 p-2 rounded w-full"
+                        />
+                    </div>
                 </div>
 
-                {/* Name Input */}
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-                    <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
-                </div>
+                {/* Section for Consumption Additive */}
+                <div className="p-4 ">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Additive</h3>
+                    {formData.consumptionAdditive.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Additive Name</label>
 
-                {/* Grade Input */}
-                <div>
-                    <label htmlFor="grade" className="block text-sm font-medium text-gray-700">Grade</label>
-                    <input
-                        id="grade"
-                        name="grade"
-                        type="text"
-                        value={formData.grade}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.grade && <p className="text-red-500 text-sm mt-1">{validationErrors.grade}</p>}
-                </div>
+                                <Select
+                                    options={additiveOptionsMapped}
+                                    value={
+                                        additiveOptionsMapped.find(opt => opt.value === Number(item.name)) || null
+                                    }
+                                    onChange={(selectedOption) =>
+                                        handleChange(
+                                            { target: { name: 'name', value: selectedOption ? selectedOption.value : '' } },
+                                            'consumptionAdditive',
+                                            index
+                                        )
+                                    }
+                                    placeholder="Select Additive"
+                                    isSearchable
+                                    isClearable
+                                    isDisabled={isLocked}
+                                />
+                                {validationErrors[`consumptionAdditiveName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveName_${index}`]}</p>}
+                            </div>
 
-                {/* SAE Input */}
-                <div>
-                    <label htmlFor="sae" className="block text-sm font-medium text-gray-700">SAE</label>
-                    <input
-                        id="sae"
-                        name="sae"
-                        type="text"
-                        value={formData.sae}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    />
-                    {validationErrors.sae && <p className="text-red-500 text-sm mt-1">{validationErrors.sae}</p>}
-                </div>
 
-                {/* Remarks Input */}
-                <div className="md:col-span-2">
-                    <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                    <input
-                        id="remarks"
-                        name="remarks"
-                        value={formData.remarks}
-                        onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full"
-                    />
-                </div>
-            </div>
+                            {/* Qty in Percent */}
+                            <div className="col-span-1 md:col-span-1">
+                                <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_percent"
+                                    placeholder="Quantity in Percent"
+                                    value={item.qty_in_percent}
+                                    onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                />
+                                {validationErrors[`consumptionAdditiveQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQty_${index}`]}</p>}
+                            </div>
 
-            {/* Section for Consumption Additive */}
-            <div className="p-4 ">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Additive</h3>
-                {formData.consumptionAdditive.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                        {/* Additive Name - Spanning 2 Columns */}
-                        {/* <div className="col-span-1 md:col-span-2">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Additive Name</label>
-                            <select
-                                name="name"
-                                value={item.name}
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                            >
-                                <option value="">Select Option</option>
-                                {additiveOptions.map((option) => (
-                                    <option key={option} value={option.id}>
-                                        {option.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div> */}
-                        <div className="col-span-1 md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Additive Name</label>
 
-                            <Select
-                                options={additiveOptionsMapped}
-                                value={
-                                    additiveOptionsMapped.find(opt => opt.value === Number(item.name)) || null
-                                }
-                                onChange={(selectedOption) =>
-                                    handleChange(
-                                        { target: { name: 'name', value: selectedOption ? selectedOption.value : '' } },
-                                        'consumptionAdditive',
-                                        index
-                                    )
-                                }
-                                placeholder="Select Additive"
-                                isSearchable
-                                isClearable
-                            />
-                            {validationErrors[`consumptionAdditiveName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveName_${index}`]}</p>}
+                            {/* Remove Button - Centered */}
+                            {!isLocked && (
+                                <div className="col-span-1 md:col-span-1 flex items-end justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveRow('consumptionAdditive', index)}
+                                        className="bg-red-500 text-white p-2 rounded"
+                                    >
+                                        <FaTrash />
+                                    </button>
+                                </div>
+                            )}
                         </div>
+                    ))}
 
-
-                        {/* Qty in Percent */}
-                        <div className="col-span-1 md:col-span-1">
-                            <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
-                            <input
-                                type="number"
-                                name="qty_in_percent"
-                                placeholder="Quantity in Percent"
-                                value={item.qty_in_percent}
-                                onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                            />
-                            {validationErrors[`consumptionAdditiveQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionAdditiveQty_${index}`]}</p>}
-                        </div>
-
-
-
-
-
-                        {/* Remove Button - Centered */}
-                        <div className="col-span-1 md:col-span-1 flex items-end justify-center">
+                    {/* Add Button */}
+                    {!isLocked && (
+                        <div className="text-right">
                             <button
                                 type="button"
-                                onClick={() => handleRemoveRow('consumptionAdditive', index)}
-                                className="bg-red-500 text-white p-2 rounded"
+                                onClick={() => handleAddRow('consumptionAdditive')}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
-                                <FaTrash />
+                                Add Additive
                             </button>
                         </div>
-                    </div>
-                ))}
-
-                {/* Add Button */}
-                <div className="text-right">
-                    <button
-                        type="button"
-                        onClick={() => handleAddRow('consumptionAdditive')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                        Add Additive
-                    </button>
+                    )}
                 </div>
-            </div>
 
-            {/* Section for Consumption Base Oil */}
-            <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
-                {formData.consumptionBaseOil.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                        {/* Base Oil Name */}
-                        {/* <div className="col-span-1 md:col-span-2">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Base Oil Name</label>
-                            <select
-                                name="name"
-                                value={item.name}
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                            >
-                                <option value="">Select Option</option>
-                                {baseOilOptions.map((option) => (
-                                    <option key={option} value={option.id}>
-                                        {option.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div> */}
-                        <div className="col-span-1 md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Base Oil Name</label>
+                {/* Section for Consumption Base Oil */}
+                <div className="p-4">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Consumption Base Oil</h3>
+                    {formData.consumptionBaseOil.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Base Oil Name</label>
 
-                            <Select
-                                options={baseOilOptionsMapped}
-                                value={
-                                    baseOilOptionsMapped.find(opt => opt.value === Number(item.name)) || null
-                                }
-                                onChange={(selectedOption) =>
-                                    handleChange(
-                                        { target: { name: 'name', value: selectedOption ? selectedOption.value : '' } },
-                                        'consumptionBaseOil',
-                                        index
-                                    )
-                                }
-                                placeholder="Select Base Oil"
-                                isSearchable
-                                isClearable
-                            />
-                            {validationErrors[`consumptionBaseOilName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilName_${index}`]}</p>}
+                                <Select
+                                    options={baseOilOptionsMapped}
+                                    value={
+                                        baseOilOptionsMapped.find(opt => opt.value === Number(item.name)) || null
+                                    }
+                                    onChange={(selectedOption) =>
+                                        handleChange(
+                                            { target: { name: 'name', value: selectedOption ? selectedOption.value : '' } },
+                                            'consumptionBaseOil',
+                                            index
+                                        )
+                                    }
+                                    placeholder="Select Base Oil"
+                                    isSearchable
+                                    isClearable
+                                    isDisabled={isLocked}
+                                />
+                                {validationErrors[`consumptionBaseOilName_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilName_${index}`]}</p>}
+                            </div>
+
+                            {/* Quantity in Percent */}
+                            <div className="col-span-1">
+                                <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
+                                <input
+                                    type="number"
+                                    name="qty_in_percent"
+                                    placeholder="Quantity in Percent"
+                                    value={item.qty_in_percent}
+                                    onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                    step={0.0001}
+                                />
+                                {validationErrors[`consumptionBaseOilQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQty_${index}`]}</p>}
+                            </div>
+
+
+                            {/* Remove Button - Centered */}
+                            {!isLocked && (
+                                <div className="col-span-1 flex items-end justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveRow('consumptionBaseOil', index)}
+                                        className="bg-red-500 text-white p-2 rounded"
+                                    >
+                                        <FaTrash />
+                                    </button>
+                                </div>
+                            )}
                         </div>
+                    ))}
 
-                        {/* Quantity in Percent */}
-                        <div className="col-span-1">
-                            <label htmlFor="qty_in_percent" className="block text-sm font-medium text-gray-700">Qty in Percent</label>
-                            <input
-                                type="number"
-                                name="qty_in_percent"
-                                placeholder="Quantity in Percent"
-                                value={item.qty_in_percent}
-                                onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
-                                className="border border-gray-300 p-2 rounded w-full"
-                                step={0.0001}
-                            />
-                            {validationErrors[`consumptionBaseOilQty_${index}`] && <p className="text-red-500 text-sm mt-1">{validationErrors[`consumptionBaseOilQty_${index}`]}</p>}
-                        </div>
-
-
-
-
-                        {/* Remove Button - Centered */}
-                        <div className="col-span-1 flex items-end justify-center">
+                    {/* Add Button */}
+                    {!isLocked && (
+                        <div className="text-right">
                             <button
                                 type="button"
-                                onClick={() => handleRemoveRow('consumptionBaseOil', index)}
-                                className="bg-red-500 text-white p-2 rounded"
+                                onClick={() => handleAddRow('consumptionBaseOil')}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
-                                <FaTrash />
+                                Add Base Oil
                             </button>
                         </div>
+                    )}
+                </div>
+
+                {/* % Cross Check Section */}
+                <hr className="my-6" />
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">% Cross Check</h3>
+                    <div className={`p-3 border rounded shadow-sm ${Math.abs(grandTotalPercent - 100) < 0.0001 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                        <span className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Grand Total</span>
+                        <span className={`text-lg font-extrabold ${Math.abs(grandTotalPercent - 100) < 0.0001 ? 'text-green-700' : 'text-red-700'}`}>
+                            {grandTotalPercent.toFixed(4)}%
+                        </span>
+
                     </div>
-                ))}
-
-                {/* Add Button */}
-                <div className="text-right">
-                    <button
-                        type="button"
-                        onClick={() => handleAddRow('consumptionBaseOil')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                        Add Base Oil
-                    </button>
                 </div>
-            </div>
 
-            {/* % Cross Check Section */}
-            <hr className="my-6" />
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">% Cross Check</h3>
-                <div className={`p-3 border rounded shadow-sm ${Math.abs(grandTotalPercent - 100) < 0.0001 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                    <span className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Grand Total</span>
-                    <span className={`text-lg font-extrabold ${Math.abs(grandTotalPercent - 100) < 0.0001 ? 'text-green-700' : 'text-red-700'}`}>
-                        {grandTotalPercent.toFixed(4)}%
-                    </span>
-
+                {/* Notify Users Section */}
+                <hr className="my-6" />
+                <div className="p-4">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+                    <MultiUserSelector
+                        selectedUsers={formData.notifiedUsers}
+                        onChange={handleUsersChange}
+                        message={formData.notification_message}
+                        onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+                        isDisabled={isLocked}
+                    />
+                    {validationErrors.notifiedUsers && (
+                        <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                    )}
                 </div>
-            </div>
 
-            {/* Notify Users Section */}
-            <hr className="my-6" />
-            <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
-                <MultiUserSelector
-                    selectedUsers={formData.notifiedUsers}
-                    onChange={handleUsersChange}
-                    message={formData.notification_message}
-                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
-                />
-                {validationErrors.notifiedUsers && (
-                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                <hr className="my-6" />
+
+                {/* Submit Button */}
+                {!isLocked && (
+                    <div className='grid grid-cols-3 gap-4 mb-4'>
+                        <button
+                            type="submit"
+                            className="bg-blue-500 text-white p-2 rounded col-span-3"
+                        >
+                            {mode === 'add' ? 'Add Consumption' : 'Update Consumption'}
+                        </button>
+                    </div>
                 )}
-            </div>
-
-            <hr className="my-6" />
-
-            {/* Submit Button */}
-            <div className='grid grid-cols-3 gap-4 mb-4'>
-                <button
-                    type="submit"
-                    className="bg-blue-500 text-white p-2 rounded col-span-3"
-                >
-                    {mode === 'add' ? 'Add Consumption' : 'Update Consumption'}
-                </button>
-            </div>
+            </fieldset>
         </form>
     );
 };

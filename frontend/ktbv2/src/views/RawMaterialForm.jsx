@@ -35,6 +35,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     extras: [],
     notifiedUsers: [],
     notification_message: '',
+    approved: false,
   });
 
   // Fetch categories for dropdown
@@ -75,6 +76,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
             remarks: data.remarks || '',
             category: data.category || '', // ✅ use category not parent
             extras: data.extras || [],
+            approved: data.approved || false,
           });
         })
         .catch((error) => {
@@ -196,13 +198,16 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));
   };
 
+  const isLocked = mode === 'update' && formData.approved;
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isLocked) return;
     let errors = {};
 
     const skipValidation = ['remarks', 'notifiedUsers', 'extras', 'notification_message'];
     for (const [key, value] of Object.entries(formData)) {
-      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null)) {
+      if (!skipValidation.includes(key) && (value === "" || value === "NaN" || value === null) && key !== 'approved') {
         errors[key] = `${key.replace(/_/g, ' ')} cannot be empty!`;
       }
     }
@@ -305,294 +310,249 @@ const RawMaterialForm = ({ mode = 'add' }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
-      <p className="text-xl text-center">Raw Material Pricing Form</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Date</label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
+      {isLocked && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+          <p className="font-bold">Approved & Locked</p>
+          <p>This raw material record has been approved and is locked. It cannot be modified.</p>
         </div>
+      )}
+      <fieldset disabled={isLocked} className="space-y-4 w-full">
+        <p className="text-xl text-center">Raw Material Pricing Form</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Date</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            {validationErrors.date && <p className="text-red-500 text-sm mt-1">{validationErrors.date}</p>}
+          </div>
 
 
-        {/* Category Dropdown */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
-          <div className="relative" ref={dropdownRef}>
-            <div className="flex items-center border border-gray-300 rounded overflow-hidden">
-              <input
-                type="text"
-                placeholder="Search category..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                onClick={() => setIsDropdownOpen(true)}
-                className="p-2 w-full outline-none"
-              />
-              {selectedCategory && (
+          {/* Category Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <div className="relative" ref={dropdownRef}>
+              <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+                <input
+                  type="text"
+                  placeholder="Search category..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  onClick={() => setIsDropdownOpen(true)}
+                  className="p-2 w-full outline-none"
+                />
+                {selectedCategory && (
+                  <button
+                    type="button"
+                    onClick={handleClearCategory}
+                    className="px-2 text-gray-500 hover:text-gray-700"
+                  >
+                    ✖
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleClearCategory}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="px-2 text-gray-500 hover:text-gray-700"
                 >
-                  ✖
+                  {isDropdownOpen ? '▲' : '▼'}
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="px-2 text-gray-500 hover:text-gray-700"
-              >
-                {isDropdownOpen ? '▲' : '▼'}
-              </button>
-            </div>
-
-            {isDropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
-                {filteredCategories.length > 0 ? (
-                  filteredCategories.map((category) => (
-                    <div
-                      key={category.id}
-                      className={`p-2 cursor-pointer ${selectedCategory?.id === category.id ? 'bg-blue-100' : 'hover:bg-gray-100'
-                        }`}
-                      onClick={() => handleSelectCategory(category)}
-                    >
-                      {category.name}
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-2 text-gray-500">No matches found</div>
-                )}
               </div>
-            )}
+
+              {isDropdownOpen && (
+                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
+                  {filteredCategories.length > 0 ? (
+                    filteredCategories.map((category) => (
+                      <div
+                        key={category.id}
+                        className={`p-2 cursor-pointer ${selectedCategory?.id === category.id ? 'bg-blue-100' : 'hover:bg-gray-100'
+                          }`}
+                        onClick={() => handleSelectCategory(category)}
+                      >
+                        {category.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500">No matches found</div>
+                  )}
+                </div>
+              )}
+            </div>
+            {validationErrors.category && <p className="text-red-500">{validationErrors.category}</p>}
           </div>
-          {validationErrors.category && <p className="text-red-500">{validationErrors.category}</p>}
-        </div>
 
-        {/* Name */}
-        {/* <div>
-          <label className="block text-sm font-medium text-gray-700">Sub-Name</label>
-          <input
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>}
-        </div> */}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Sub Name</label>
-          <div className="relative" ref={nameDropdownRef}>
-            <div className="flex items-center border border-gray-300 rounded overflow-hidden">
-              <input
-                type="text"
-                placeholder="Search Sub Name..."
-                value={searchNameTerm}
-                onChange={handleNameSearchChange}
-                onClick={() => setIsNameDropdownOpen(true)}
-                className="p-2 w-full outline-none"
-              />
-              {selectedSubName && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Sub Name</label>
+            <div className="relative" ref={nameDropdownRef}>
+              <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+                <input
+                  type="text"
+                  placeholder="Search Sub Name..."
+                  value={searchNameTerm}
+                  onChange={handleNameSearchChange}
+                  onClick={() => setIsNameDropdownOpen(true)}
+                  className="p-2 w-full outline-none"
+                />
+                {selectedSubName && (
+                  <button
+                    type="button"
+                    onClick={handleClearSubName}
+                    className="px-2 text-gray-500 hover:text-gray-700"
+                  >
+                    ✖
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleClearSubName}
+                  onClick={() => setIsNameDropdownOpen(!isNameDropdownOpen)}
                   className="px-2 text-gray-500 hover:text-gray-700"
                 >
-                  ✖
+                  {isNameDropdownOpen ? '▲' : '▼'}
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setIsNameDropdownOpen(!isNameDropdownOpen)}
-                className="px-2 text-gray-500 hover:text-gray-700"
-              >
-                {isNameDropdownOpen ? '▲' : '▼'}
-              </button>
-            </div>
-
-            {isNameDropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
-                {filteredNames.length > 0 ? (
-                  filteredNames.map((sub) => (
-                    <div
-                      key={sub.id}
-                      className={`p-2 cursor-pointer ${selectedSubName?.id === sub.id
-                        ? 'bg-blue-100'
-                        : 'hover:bg-gray-100'
-                        }`}
-                      onClick={() => handleNameSelectCategory(sub)}
-                    >
-                      {sub.name}
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-2 text-gray-500">No matches found</div>
-                )}
-
               </div>
-            )}
+
+              {isNameDropdownOpen && (
+                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-200">
+                  {filteredNames.length > 0 ? (
+                    filteredNames.map((sub) => (
+                      <div
+                        key={sub.id}
+                        className={`p-2 cursor-pointer ${selectedSubName?.id === sub.id
+                          ? 'bg-blue-100'
+                          : 'hover:bg-gray-100'
+                          }`}
+                        onClick={() => handleNameSelectCategory(sub)}
+                      >
+                        {sub.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500">No matches found</div>
+                  )}
+
+                </div>
+              )}
+            </div>
+            {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>}
           </div>
-          {validationErrors.name && <p className="text-red-500">{validationErrors.name}</p>}
-        </div>
 
 
-        {/* Other fields */}
+          {/* Other fields */}
 
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Buy Price</label>
-          <input
-            name="buy_price_pmt"
-            type="text"
-            value={formData.buy_price_pmt}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.buy_price_pmt && <p className="text-red-500 text-sm mt-1">{validationErrors.buy_price_pmt}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Add. Cost</label>
-          <input
-            name="add_cost"
-            type="text"
-            value={formData.add_cost}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.add_cost && <p className="text-red-500 text-sm mt-1">{validationErrors.add_cost}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Total</label>
-          <input
-            name="total"
-            type="text"
-            value={formData.total}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.total && <p className="text-red-500 text-sm mt-1">{validationErrors.total}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Density</label>
-          <input
-            name="density"
-            type="text"
-            value={formData.density}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.density && <p className="text-red-500 text-sm mt-1">{validationErrors.density}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">MT to KG</label>
-          <input
-            name="ml_to_kl"
-            type="text"
-            value={formData.ml_to_kl}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.ml_to_kl && <p className="text-red-500 text-sm mt-1">{validationErrors.ml_to_kl}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Cost Per Litre</label>
-          <input
-            name="cost_per_liter"
-            type="text"
-            value={formData.cost_per_liter}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-          {validationErrors.cost_per_liter && <p className="text-red-500 text-sm mt-1">{validationErrors.cost_per_liter}</p>}
-        </div>
-
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Remarks</label>
-          <input
-            name="remarks"
-            type="text"
-            value={formData.remarks}
-            onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-        </div>
-      </div>
-      {/* <div className="p-4 border rounded bg-gray-50 relative">
-        <p className="font-semibold text-gray-700 mb-2">Sub Names</p>
-
-        {formData.extras.map((row, index) => (
-          <div key={index} className="grid grid-cols-5 gap-3 items-center mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Buy Price</label>
             <input
+              name="buy_price_pmt"
               type="text"
-              placeholder="Name"
-              value={row.name}
-              onChange={(e) =>
-                handleExtraChange(index, "name", e.target.value)
-              }
-              className="border p-2 rounded col-span-2"
+              value={formData.buy_price_pmt}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
             />
+            {validationErrors.buy_price_pmt && <p className="text-red-500 text-sm mt-1">{validationErrors.buy_price_pmt}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Add. Cost</label>
             <input
+              name="add_cost"
               type="text"
-              placeholder="Rate"
-              value={row.rate}
-              onChange={(e) =>
-                handleExtraChange(index, "rate", e.target.value)
-              }
-              className="border p-2 rounded col-span-2"
+              value={formData.add_cost}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
             />
-            <button
-              type="button"
-              onClick={() => removeExtraRow(index)}
-              className="bg-red-500 text-white px-3 py-1 rounded"
-            >
-              ✖
+            {validationErrors.add_cost && <p className="text-red-500 text-sm mt-1">{validationErrors.add_cost}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Total</label>
+            <input
+              name="total"
+              type="text"
+              value={formData.total}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            {validationErrors.total && <p className="text-red-500 text-sm mt-1">{validationErrors.total}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Density</label>
+            <input
+              name="density"
+              type="text"
+              value={formData.density}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            {validationErrors.density && <p className="text-red-500 text-sm mt-1">{validationErrors.density}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">MT to KG</label>
+            <input
+              name="ml_to_kl"
+              type="text"
+              value={formData.ml_to_kl}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            {validationErrors.ml_to_kl && <p className="text-red-500 text-sm mt-1">{validationErrors.ml_to_kl}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Cost Per Litre</label>
+            <input
+              name="cost_per_liter"
+              type="text"
+              value={formData.cost_per_liter}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            {validationErrors.cost_per_liter && <p className="text-red-500 text-sm mt-1">{validationErrors.cost_per_liter}</p>}
+          </div>
+
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Remarks</label>
+            <input
+              name="remarks"
+              type="text"
+              value={formData.remarks}
+              onChange={handleChange}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+          </div>
+        </div>
+
+        <hr className="my-6" />
+        <div className="p-4">
+          <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
+          <MultiUserSelector
+            selectedUsers={formData.notifiedUsers}
+            onChange={handleUsersChange}
+            message={formData.notification_message}
+            onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+            isDisabled={isLocked}
+          />
+          {validationErrors.notifiedUsers && (
+            <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+          )}
+        </div>
+
+        {!isLocked && (
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
+              Submit
             </button>
           </div>
-        ))}
-
-        <div className="flex justify-end mt-2">
-          <button
-            type="button"
-            onClick={addExtraRow}
-            className="bg-blue-500 text-white px-4 py-1 rounded"
-          >
-            + Add More
-          </button>
-        </div>
-      </div> */}
-
-      <hr className="my-6" />
-      <div className="p-4">
-        <h3 className="text-lg font-medium text-gray-800 mb-4">Notify Users</h3>
-        <MultiUserSelector
-          selectedUsers={formData.notifiedUsers}
-          onChange={handleUsersChange}
-          message={formData.notification_message}
-          onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
-        />
-        {validationErrors.notifiedUsers && (
-          <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
         )}
-      </div>
-
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded col-span-3">
-          Submit
-        </button>
-      </div>
+      </fieldset>
     </form>
   );
 };

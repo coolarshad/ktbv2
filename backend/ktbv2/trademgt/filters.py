@@ -139,7 +139,14 @@ class TradeFilter(SearchableFilterSet):
     # sales = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
     # purchase = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
     # cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-   
+    pending = django_filters.BooleanFilter(method='filter_pending')
+
+    def filter_pending(self, queryset, name, value):
+        if value is True:
+            return queryset.filter(Q(approved=False) | Q(reviewed=False))
+        elif value is False:
+            return queryset.filter(approved=True, reviewed=True)
+        return queryset
 
     class Meta:
         model = Trade
