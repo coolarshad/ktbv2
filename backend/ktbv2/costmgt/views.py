@@ -243,20 +243,17 @@ class RawMaterialViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, vi
     filter_backends = [DjangoFilterBackend]
     filterset_class = RawMaterialFilter
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action in ['list']:
+            qs = qs.filter(is_deleted=False)
+        return qs
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.approved:
-            return Response(
-                {"detail": "Approved Raw Material is locked and cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        instance_id_str = str(instance.id)
-        if ConsumptionBaseOil.objects.filter(sub_name=instance_id_str).exists():
-            return Response(
-                {"detail": "Cannot delete this raw material pricing because it is in use by Consumption records."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        return super().destroy(request, *args, **kwargs)
+        instance.is_deleted = True
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class AdditiveCategoryViewSet(viewsets.ModelViewSet):
     queryset = AdditiveCategory.objects.all().prefetch_related(
@@ -302,25 +299,22 @@ class AdditiveViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, views
     notification_verb = "Additive Pricing"
     notification_target_url = "/additives"
 
-    queryset = Additive.objects.all()
+    queryset = Additive.objects.all().order_by('-id')
     serializer_class = AdditiveSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = AdditiveFilter
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action in ['list']:
+            qs = qs.filter(is_deleted=False)
+        return qs
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.approved:
-            return Response(
-                {"detail": "Approved Additive is locked and cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        instance_id_str = str(instance.id)
-        if ConsumptionAdditive.objects.filter(sub_name=instance_id_str).exists():
-            return Response(
-                {"detail": "Cannot delete this additive pricing because it is in use by Consumption records."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        return super().destroy(request, *args, **kwargs)
+        instance.is_deleted = True
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ConsumptionAdditiveViewSet(viewsets.ModelViewSet):
     queryset = ConsumptionAdditive.objects.all()

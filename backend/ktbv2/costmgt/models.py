@@ -134,6 +134,7 @@ class RawMaterial(models.Model):
     remarks = models.CharField(max_length=255, null=True, blank=True)
     approved = models.BooleanField(null=True, default=False)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
+    is_deleted = models.BooleanField(default=False)
     
     class Meta:
         verbose_name = _("RawMaterial")
@@ -187,6 +188,7 @@ class Additive(models.Model):
     approved=models.BooleanField(null=True,default=False)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
 
 
     category = models.ForeignKey(

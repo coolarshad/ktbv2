@@ -63,7 +63,7 @@ const AdditiveTable = ({ data, onDelete, onView, basePerm }) => { // Default val
                     {!item.approved && hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {!item.approved && hasPermission(user, `delete_${basePerm}`) && (
+                    {hasPermission(user, `delete_${basePerm}`) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>
