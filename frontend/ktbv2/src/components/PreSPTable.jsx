@@ -117,7 +117,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Doc Issuance Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
@@ -136,7 +136,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((presp, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.date)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.doc_issuance_date)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.trn}</td>

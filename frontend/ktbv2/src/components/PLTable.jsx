@@ -20,7 +20,7 @@ const PLTable = ({ data, onDelete, onView, basePerm }) => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sales TRN & ID</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Purchase TRN & ID</th>
       
@@ -33,7 +33,7 @@ const PLTable = ({ data, onDelete, onView, basePerm }) => {
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.salesPF?.sp?.trn?.trn} ({item?.salesPF?.sp?.id})</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.purchasePF?.sp?.trn?.trn} ({item?.purchasePF?.sp?.id})</td>
               

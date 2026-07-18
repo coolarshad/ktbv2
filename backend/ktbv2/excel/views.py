@@ -16,7 +16,18 @@ class ExportTradeCheckView(APIView):
     
 class ExportTradeExcelView(APIView):
     def get(self, request, *args, **kwargs):
-        tradeProducts = TradeProduct.objects.all()
+        from accounts.mixins import get_authorized_queryset
+        from trademgt.filters import TradeFilter
+
+        trades_qs = get_authorized_queryset(request, Trade.objects.all())
+        filterset = TradeFilter(request.GET, queryset=trades_qs)
+        
+        if filterset.is_valid():
+            trades = filterset.qs
+        else:
+            trades = filterset.queryset
+
+        tradeProducts = TradeProduct.objects.filter(trade__in=trades).order_by('-trade__id', 'id')
         serializer = ExcelTradeProductSerializer(tradeProducts, many=True)
         data = self.prepare_excel_data(serializer.data)
         

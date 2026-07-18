@@ -11,6 +11,7 @@ const FilterComponent = ({
   extraParams = {},
   checkBtn = true,
   downloadUrl = '/excel/export/trade/',
+  showPendingFilter = false,
 }) => {
   const { user } = useAuth();
   
@@ -20,6 +21,7 @@ const FilterComponent = ({
   const [salesChecked, setSalesChecked] = useState(false);
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
+  const [pendingSpChecked, setPendingSpChecked] = useState(false);
 
   const isFirstRender = useRef(true);
   const isResetting = useRef(false);
@@ -39,7 +41,7 @@ const FilterComponent = ({
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked]);
+  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked, pendingSpChecked]);
 
   const performSearch = async () => {
     try {
@@ -69,6 +71,10 @@ const FilterComponent = ({
         }
       }
 
+      if (showPendingFilter && pendingSpChecked) {
+        params.pending_sp = true;
+      }
+
       const response = await axios.get(apiEndpoint, { params });
       onFilter(response.data);
     } catch (error) {
@@ -84,6 +90,7 @@ const FilterComponent = ({
     setSalesChecked(false);
     setPurchaseChecked(false);
     setCancelChecked(false);
+    setPendingSpChecked(false);
 
     try {
       const response = await axios.get(apiEndpoint, { params: { ...extraParams } });
@@ -117,6 +124,10 @@ const FilterComponent = ({
         if (tradeTypes.length > 0) {
           queryParams.append('trn__trade_type__icontains', tradeTypes.join('|'));
         }
+      }
+
+      if (showPendingFilter && pendingSpChecked) {
+        queryParams.append('pending_sp', 'true');
       }
 
       const separator = downloadUrl.includes('?') ? '&' : '?';
@@ -185,36 +196,51 @@ const FilterComponent = ({
             />
           </div>
 
-          {/* Checkboxes if checkBtn is enabled */}
-          {checkBtn && (
+          {/* Checkboxes if checkBtn or showPendingFilter is enabled */}
+          {(checkBtn || showPendingFilter) && (
             <div className="flex items-center gap-3 px-2 border-l border-gray-200">
-              <label className="inline-flex items-center text-sm font-medium text-gray-600 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={salesChecked}
-                  onChange={() => setSalesChecked(!salesChecked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 mr-1.5"
-                />
-                Sales
-              </label>
-              <label className="inline-flex items-center text-sm font-medium text-gray-600 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={purchaseChecked}
-                  onChange={() => setPurchaseChecked(!purchaseChecked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 mr-1.5"
-                />
-                Purchase
-              </label>
-              <label className="inline-flex items-center text-sm font-medium text-gray-600 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={cancelChecked}
-                  onChange={() => setCancelChecked(!cancelChecked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 mr-1.5"
-                />
-                Cancel
-              </label>
+              {checkBtn && (
+                <>
+                  <label className="inline-flex items-center text-sm font-medium text-gray-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={salesChecked}
+                      onChange={() => setSalesChecked(!salesChecked)}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 mr-1.5"
+                    />
+                    Sales
+                  </label>
+                  <label className="inline-flex items-center text-sm font-medium text-gray-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={purchaseChecked}
+                      onChange={() => setPurchaseChecked(!purchaseChecked)}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 mr-1.5"
+                    />
+                    Purchase
+                  </label>
+                  <label className="inline-flex items-center text-sm font-medium text-gray-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={cancelChecked}
+                      onChange={() => setCancelChecked(!cancelChecked)}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 mr-1.5"
+                    />
+                    Cancel
+                  </label>
+                </>
+              )}
+              {showPendingFilter && (
+                <label className="inline-flex items-center text-sm font-medium text-gray-600 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={pendingSpChecked}
+                    onChange={() => setPendingSpChecked(!pendingSpChecked)}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 mr-1.5"
+                  />
+                  Pending
+                </label>
+              )}
             </div>
           )}
         </div>

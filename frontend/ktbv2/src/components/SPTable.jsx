@@ -22,7 +22,6 @@ const SPTable = ({ data, onDelete, onView, basePerm }) => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
@@ -40,7 +39,6 @@ const SPTable = ({ data, onDelete, onView, basePerm }) => {
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
@@ -74,7 +72,7 @@ const SPTable = ({ data, onDelete, onView, basePerm }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="11" className="py-4 text-center text-gray-500 font-medium">
+              <td colSpan="10" className="py-4 text-center text-gray-500 font-medium">
                 Match Not Found.
               </td>
             </tr>

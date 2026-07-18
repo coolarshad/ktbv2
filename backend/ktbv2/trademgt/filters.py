@@ -140,6 +140,12 @@ class TradeFilter(SearchableFilterSet):
     # purchase = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
     # cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
     pending = django_filters.BooleanFilter(method='filter_pending')
+    pending_sp = django_filters.BooleanFilter(method='filter_pending_sp')
+
+    def filter_pending_sp(self, queryset, name, value):
+        if value:
+            return queryset.filter(salespurchase__isnull=True)
+        return queryset
 
     def filter_pending(self, queryset, name, value):
         if value is True:
@@ -147,6 +153,119 @@ class TradeFilter(SearchableFilterSet):
         elif value is False:
             return queryset.filter(approved=True, reviewed=True)
         return queryset
+
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        q_objects = Q()
+        model = self.Meta.model
+        lookups = get_searchable_lookups(model)
+
+        # 1. Resolve matching Kyc IDs
+        try:
+            from trademgt.models import Kyc
+            kyc_ids = list(Kyc.objects.filter(name__icontains=value).values_list('id', flat=True))
+            kyc_str_ids = [str(x) for x in kyc_ids]
+        except Exception:
+            kyc_str_ids = []
+
+        # 2. Resolve matching Company IDs
+        try:
+            from trademgt.models import Company
+            company_ids = list(Company.objects.filter(name__icontains=value).values_list('id', flat=True))
+            company_str_ids = [str(x) for x in company_ids]
+        except Exception:
+            company_str_ids = []
+
+        # 3. Resolve matching Bank IDs
+        try:
+            from trademgt.models import Bank
+            bank_ids = list(Bank.objects.filter(name__icontains=value).values_list('id', flat=True))
+            bank_str_ids = [str(x) for x in bank_ids]
+        except Exception:
+            bank_str_ids = []
+
+        # 4. Resolve matching Currency IDs
+        try:
+            from trademgt.models import Currency
+            currency_ids = list(Currency.objects.filter(name__icontains=value).values_list('id', flat=True))
+            currency_str_ids = [str(x) for x in currency_ids]
+        except Exception:
+            currency_str_ids = []
+
+        # 5. Resolve matching PaymentTerm IDs
+        try:
+            from trademgt.models import PaymentTerm
+            pt_ids = list(PaymentTerm.objects.filter(name__icontains=value).values_list('id', flat=True))
+            pt_str_ids = [str(x) for x in pt_ids]
+        except Exception:
+            pt_str_ids = []
+
+        # 6. Resolve matching Product Names
+        try:
+            from trademgt.models import ProductName
+            product_ids = list(ProductName.objects.filter(name__icontains=value).values_list('id', flat=True))
+            product_str_ids = [str(x) for x in product_ids]
+        except Exception:
+            product_str_ids = []
+
+        for lookup in lookups:
+            if lookup == 'customer_company_name' or lookup.endswith('__customer_company_name'):
+                if kyc_str_ids:
+                    q_objects |= Q(**{f"{lookup}__in": kyc_str_ids})
+                else:
+                    q_objects |= Q(**{f"{lookup}__icontains": value})
+            elif lookup == 'company' or lookup.endswith('__company'):
+                if company_str_ids:
+                    q_objects |= Q(**{f"{lookup}__in": company_str_ids})
+                else:
+                    q_objects |= Q(**{f"{lookup}__icontains": value})
+            elif lookup == 'bank_name_address' or lookup.endswith('__bank_name_address'):
+                if bank_str_ids:
+                    q_objects |= Q(**{f"{lookup}__in": bank_str_ids})
+                else:
+                    q_objects |= Q(**{f"{lookup}__icontains": value})
+            elif lookup == 'currency_selection' or lookup.endswith('__currency_selection'):
+                if currency_str_ids:
+                    q_objects |= Q(**{f"{lookup}__in": currency_str_ids})
+                else:
+                    q_objects |= Q(**{f"{lookup}__icontains": value})
+            elif lookup == 'payment_term' or lookup.endswith('__payment_term'):
+                if pt_str_ids:
+                    q_objects |= Q(**{f"{lookup}__in": pt_str_ids})
+                else:
+                    q_objects |= Q(**{f"{lookup}__icontains": value})
+            else:
+                q_objects |= Q(**{f"{lookup}__icontains": value})
+
+        # Add custom searches for numeric/relationship fields
+        # A. ID (if numeric)
+        if value.isdigit():
+            q_objects |= Q(id=int(value))
+
+        # B. Product name / code
+        q_objects |= Q(trade_products__product_code__icontains=value)
+        q_objects |= Q(trade_products__product_name__icontains=value)
+        if product_str_ids:
+            q_objects |= Q(trade_products__product_name__in=product_str_ids)
+
+        # C. Numeric values for rate_in_usd or contract_value
+        try:
+            num_value = float(value)
+            q_objects |= Q(trade_products__rate_in_usd=num_value)
+            q_objects |= Q(contract_value=num_value)
+        except ValueError:
+            pass
+
+        # D. Date searches (if date format)
+        from django.utils.dateparse import parse_date
+        parsed_d = parse_date(value)
+        if parsed_d:
+            q_objects |= Q(trd=parsed_d)
+            q_objects |= Q(approval_date=parsed_d)
+
+        return queryset.filter(q_objects).distinct()
 
     class Meta:
         model = Trade
@@ -187,6 +306,13 @@ class TradeExtraCostFilter(SearchableFilterSet):
 class PreSalePurchaseFilter(SearchableFilterSet):
     date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
     date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+    pending_sp = django_filters.BooleanFilter(method='filter_pending_sp')
+
+    def filter_pending_sp(self, queryset, name, value):
+        if value:
+            return queryset.filter(trn__salespurchase__isnull=True)
+        return queryset
+
     class Meta:
         model = PreSalePurchase
         fields = {
@@ -202,6 +328,13 @@ class PreSalePurchaseFilter(SearchableFilterSet):
 class PrePaymentFilter(SearchableFilterSet):
     date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
     date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+    pending_sp = django_filters.BooleanFilter(method='filter_pending_sp')
+
+    def filter_pending_sp(self, queryset, name, value):
+        if value:
+            return queryset.filter(trn__salespurchase__isnull=True)
+        return queryset
+
     class Meta:
         model = PrePayment
         fields = {

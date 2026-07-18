@@ -123,7 +123,7 @@ class TradeExtraCostSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TradeSerializer(serializers.ModelSerializer):
-    trade_products = TradeProductSerializer(many=True, read_only=True)
+    trade_products = serializers.SerializerMethodField()
     trade_extra_costs = TradeExtraCostSerializer(many=True, read_only=True)
     notified_users_emails = serializers.SerializerMethodField()
 
@@ -131,6 +131,39 @@ class TradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trade
         fields = '__all__'
+
+    def get_trade_products(self, obj):
+        products = obj.trade_products.all()
+        request = self.context.get('request')
+        if request and request.GET.get('q'):
+            q_val = request.GET.get('q').strip()
+            if q_val:
+                matching_products = []
+                for p in products:
+                    if q_val.lower() in p.product_code.lower():
+                        matching_products.append(p)
+                        continue
+                    if q_val.lower() in p.product_name.lower():
+                        matching_products.append(p)
+                        continue
+                    try:
+                        from trademgt.models import ProductName
+                        p_name_obj = ProductName.objects.get(id=p.product_name)
+                        if q_val.lower() in p_name_obj.name.lower():
+                            matching_products.append(p)
+                            continue
+                    except Exception:
+                        pass
+                    try:
+                        if float(q_val) == float(p.rate_in_usd):
+                            matching_products.append(p)
+                            continue
+                    except ValueError:
+                        pass
+                if matching_products:
+                    return TradeProductSerializer(matching_products, many=True, context=self.context).data
+
+        return TradeProductSerializer(products, many=True, context=self.context).data
 
     def get_notified_users_emails(self, obj):
         if hasattr(obj, 'notified_users'):

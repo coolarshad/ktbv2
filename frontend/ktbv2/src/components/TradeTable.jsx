@@ -37,8 +37,24 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
     }
   };
 
-  const sortedData = useMemo(() => {
-    return [...(data || [])].sort((a, b) => b.id - a.id);
+  const flattenedData = useMemo(() => {
+    const list = [];
+    const sortedTrades = [...(data || [])].sort((a, b) => b.id - a.id);
+    sortedTrades.forEach(trade => {
+      if (trade.trade_products && trade.trade_products.length > 0) {
+        trade.trade_products.forEach(product => {
+          list.push({
+            ...product,
+            trade: trade
+          });
+        });
+      } else {
+        list.push({
+          trade: trade
+        });
+      }
+    });
+    return list;
   }, [data]);
 
   return (
@@ -47,12 +63,14 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
 
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in USD</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th>
@@ -63,40 +81,59 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
             </tr>
           </thead>
           <tbody>
-            {sortedData && sortedData.length > 0 ? (
-              sortedData.map((trade, index) => (
-                <tr key={index} onClick={() => onRowClick(trade.id)}>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trade_type}</td>
+            {flattenedData && flattenedData.length > 0 ? (
+              flattenedData.map((row, index) => (
+                <tr key={index} onClick={() => onRowClick(row.trade.id)}>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.id}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.trade_type}</td>
   
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.trn}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.companyName?.name || '-'}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.customer?.name || '-'}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.trd)}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.trn}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.companyName?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.customer?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.productName?.name || row.product_name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.rate_in_usd || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.trd)}</td>
   
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(trade.approval_date)}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.contract_value}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.approval_date)}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.contract_value}</td>
                   {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.reviewed} readOnly />
+                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={row.trade.reviewed} readOnly />
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={trade.approved} readOnly />
+                    <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={row.trade.approved} readOnly />
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                     <div className="space-x-2">
-                      {trade.reviewed && hasPermission(user, `print_${basePerm}`) ? <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={() => handlePrintClick(trade.id)}>Print</button> : ''}
+                      {row.trade.reviewed && hasPermission(user, `print_${basePerm}`) ? (
+                        <button
+                          className="bg-green-500 text-white px-2 py-1 rounded"
+                          onClick={(e) => { e.stopPropagation(); handlePrintClick(row.trade.id); }}
+                        >
+                          Print
+                        </button>
+                      ) : ''}
                       <button
                         className="bg-blue-500 text-white px-2 py-1 rounded"
-                        onClick={(e) => { e.stopPropagation(); onView(trade.id); }}
+                        onClick={(e) => { e.stopPropagation(); onView(row.trade.id); }}
                       >
                         View
                       </button>
                       {hasPermission(user, `update_${basePerm}`) && (
-                        <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(trade.id)}>Edit</button>
+                        <button
+                          className="bg-yellow-500 text-white px-2 py-1 rounded"
+                          onClick={(e) => { e.stopPropagation(); handleEdit(row.trade.id); }}
+                        >
+                          Edit
+                        </button>
                       )}
                       {hasPermission(user, `delete_${basePerm}`) && (
-                        <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(trade.id)}>Delete</button>
+                        <button
+                          className="bg-red-500 text-white px-2 py-1 rounded"
+                          onClick={(e) => { e.stopPropagation(); onDelete(row.trade.id); }}
+                        >
+                          Delete
+                        </button>
                       )}
                     </div>
                   </td>
@@ -104,7 +141,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
               ))
             ) : (
               <tr>
-                <td colSpan="11" className="py-4 text-center text-gray-500 font-medium">
+                <td colSpan="13" className="py-4 text-center text-gray-500 font-medium">
                   Match Not Found.
                 </td>
               </tr>

@@ -101,7 +101,7 @@ function TradeApproved() {
           <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades'} fieldOptions={[
             { value: 'trn', label: 'TRN' },
             { value: 'company', label: 'Company' },
-          ]} extraParams={{ pending: false }} downloadUrl="/excel/export/trade/" />
+          ]} extraParams={{ pending: false }} downloadUrl="/excel/export/trade/" showPendingFilter={true} />
         </div>
         <div className=" rounded p-2">
           <TradeTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} basePerm="trade_approved" />

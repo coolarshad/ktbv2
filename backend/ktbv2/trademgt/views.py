@@ -93,7 +93,7 @@ class TradeView(APIView):
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            serializer = TradeSerializer(filterset.qs, many=True)
+            serializer = TradeSerializer(filterset.qs, many=True, context={'request': request})
             return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):

@@ -22,7 +22,7 @@ const PFTable = ({ data, onDelete, onView, basePerm }) => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S&P ID</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
@@ -40,7 +40,7 @@ const PFTable = ({ data, onDelete, onView, basePerm }) => {
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trn}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trade_type}</td>
