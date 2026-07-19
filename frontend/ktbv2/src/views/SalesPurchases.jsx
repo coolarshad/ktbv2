@@ -69,7 +69,7 @@ function SalesPurchases() {
     navigate('/sales-purchase-form');
   };
 
-  const handleFilter = (filters) => {
+  const handleFilter = (filters, isPageChange = false) => {
     if (filters && filters.results) {
       setSPData(filters.results);
       setTotalItems(filters.count);
@@ -77,7 +77,9 @@ function SalesPurchases() {
       setSPData(filters || []);
       setTotalItems(filters ? filters.length : 0);
     }
-    setCurrentPage(1);
+    if (!isPageChange) {
+      setCurrentPage(1);
+    }
   };
 
   const handleViewClick = async (tradeId) => {
@@ -174,7 +176,7 @@ function SalesPurchases() {
         </div>
         <div className=" rounded p-2">
           <SPTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="sales_purchases" />
-        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

@@ -26,25 +26,30 @@ const FilterComponent = ({
 
   const isFirstRender = useRef(true);
   const isResetting = useRef(false);
+  const prevPageRef = useRef(currentPage);
 
   // Debounced search trigger
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      prevPageRef.current = currentPage;
       return;
     }
     if (isResetting.current) {
       return;
     }
 
+    const isPageChange = prevPageRef.current !== currentPage;
+    prevPageRef.current = currentPage;
+
     const delayDebounceFn = setTimeout(() => {
-      performSearch();
+      performSearch(isPageChange);
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
   }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked, pendingSpChecked, currentPage]);
 
-  const performSearch = async () => {
+  const performSearch = async (isPageChange = false) => {
     try {
       const params = {
         ...extraParams,
@@ -81,7 +86,7 @@ const FilterComponent = ({
       }
 
       const response = await axios.get(apiEndpoint, { params });
-      onFilter(response.data);
+      onFilter(response.data, isPageChange);
     } catch (error) {
       console.error('Error fetching filtered data:', error);
     }

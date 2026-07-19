@@ -45,7 +45,7 @@ function TradeApproved() {
     fetchTradeData();
   }, [currentPage]);
 
-  const handleFilter = (filters) => {
+  const handleFilter = (filters, isPageChange = false) => {
     if (filters && filters.results) {
       setTradeData(filters.results);
       setTotalItems(filters.count);
@@ -53,7 +53,9 @@ function TradeApproved() {
       setTradeData(filters || []);
       setTotalItems(filters ? filters.length : 0);
     }
-    setCurrentPage(1);
+    if (!isPageChange) {
+      setCurrentPage(1);
+    }
   };
 
   const closeModal = () => {
@@ -114,7 +116,7 @@ function TradeApproved() {
         </div>
         <div className=" rounded p-2">
           <TradeTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} basePerm="trade_approved" />
-          <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+          <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

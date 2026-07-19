@@ -111,7 +111,7 @@ function PrePayment() {
     navigate('/pre-payment-form');
   };
 
-  const handleFilter = (filters) => {
+  const handleFilter = (filters, isPageChange = false) => {
     if (filters && filters.results) {
       setPrePaymentData(filters.results);
       setTotalItems(filters.count);
@@ -119,7 +119,9 @@ function PrePayment() {
       setPrePaymentData(filters || []);
       setTotalItems(filters ? filters.length : 0);
     }
-    setCurrentPage(1);
+    if (!isPageChange) {
+      setCurrentPage(1);
+    }
   };
 
   const fieldOptions = [
@@ -163,7 +165,7 @@ function PrePayment() {
         </div>
         <div className=" rounded p-2">
         <PrePaymentTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pre_payment" />
-        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

@@ -60,7 +60,7 @@ function PreSalePurchase() {
     }
   };
 
-  const handleFilter = (filters) => {
+  const handleFilter = (filters, isPageChange = false) => {
     if (filters && filters.results) {
       setPreSPData(filters.results);
       setTotalItems(filters.count);
@@ -68,7 +68,9 @@ function PreSalePurchase() {
       setPreSPData(filters || []);
       setTotalItems(filters ? filters.length : 0);
     }
-    setCurrentPage(1);
+    if (!isPageChange) {
+      setCurrentPage(1);
+    }
   };
 
   const fieldOptions = [
@@ -110,7 +112,7 @@ function PreSalePurchase() {
         <div className=" rounded p-2">
 
         <PreSPTable data={currentItems} onDelete={handleDelete} basePerm="pre_sale_purchase" />
-        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
 

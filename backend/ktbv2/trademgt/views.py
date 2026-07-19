@@ -21,7 +21,7 @@ from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
 from rest_framework.pagination import PageNumberPagination
 
 class TradeMgtPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 15
     page_size_query_param = 'page_size'
     max_page_size = 100
 

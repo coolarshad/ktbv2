@@ -70,7 +70,7 @@ function PaymentFinance() {
   };
 
 
-  const handleFilter = (filters) => {
+  const handleFilter = (filters, isPageChange = false) => {
     if (filters && filters.results) {
       setPFData(filters.results);
       setTotalItems(filters.count);
@@ -78,7 +78,9 @@ function PaymentFinance() {
       setPFData(filters || []);
       setTotalItems(filters ? filters.length : 0);
     }
-    setCurrentPage(1);
+    if (!isPageChange) {
+      setCurrentPage(1);
+    }
   };
 
   const reviewTrade = async () => {
@@ -167,7 +169,7 @@ function PaymentFinance() {
         </div>
         <div className=" rounded p-2">
         <PFTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="payment_finance" />
-        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>
