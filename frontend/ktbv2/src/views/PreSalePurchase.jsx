@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from "../components/FilterComponent";
 import { dateFormatter } from "../dateUtils";
+import Loading from "../components/Loading";
 
 
 function PreSalePurchase() {
@@ -15,27 +16,31 @@ function PreSalePurchase() {
   const navigate = useNavigate();
  
   const [preSPData, setPreSPData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
- 
+  const fetchPreSPData = async () => {
+    try {
+      const response = await axios.get(`/trademgt/pre-sales-purchases/?page=${currentPage}`);
+      if (response.data && response.data.results) {
+        setPreSPData(response.data.results);
+        setTotalItems(response.data.count);
+      } else {
+        setPreSPData(response.data || []);
+        setTotalItems(response.data ? response.data.length : 0);
+      }
+    } catch (error) {
+      setError('Failed to fetch trade data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPreSPData = async () => {
-      try {
-        const response = await axios.get('/trademgt/pre-sales-purchases/'); // Replace with your API endpoint
-        setPreSPData(response.data);
-      } catch (error) {
-        setError('Failed to fetch trade data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPreSPData();
-  }, []);
+  }, [currentPage]);
 
   const handleAddPreSPClick = () => {
     navigate('/pre-sale-purchase-form');
@@ -56,8 +61,14 @@ function PreSalePurchase() {
   };
 
   const handleFilter = (filters) => {
-    setPreSPData(filters)
-        setCurrentPage(1);
+    if (filters && filters.results) {
+      setPreSPData(filters.results);
+      setTotalItems(filters.count);
+    } else {
+      setPreSPData(filters || []);
+      setTotalItems(filters ? filters.length : 0);
+    }
+    setCurrentPage(1);
   };
 
   const fieldOptions = [
@@ -69,13 +80,11 @@ function PreSalePurchase() {
     { value: 'remarks', label: 'Remarks' },
   ];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
-    const indexOfLastItem = currentPage * 50;
-    const indexOfFirstItem = indexOfLastItem - 50;
-    const currentItems = preSPData?.slice(indexOfFirstItem, indexOfLastItem) || [];
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const currentItems = preSPData || [];
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     
 
@@ -95,13 +104,13 @@ function PreSalePurchase() {
 )}
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-sales-purchases'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/presp/" showPendingFilter={true} 
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/presp/" showPendingFilter={true} currentPage={currentPage}
         />
         </div>
         <div className=" rounded p-2">
 
         <PreSPTable data={currentItems} onDelete={handleDelete} basePerm="pre_sale_purchase" />
-        <Pagination itemsPerPage={50} totalItems={preSPData?.length || 0} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
 

@@ -86,7 +86,7 @@ const ShipmentSize = ({ mode = 'add', id = null }) => {
 
   return (
     <div>
-      {hasPermission(user, currentMode === 'add' ? 'create_shipmentsize' : 'update_shipmentsize') && (
+      {hasPermission(user, currentMode === 'add' ? 'create_shipment_size' : 'update_shipment_size') && (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
@@ -119,7 +119,7 @@ const ShipmentSize = ({ mode = 'add', id = null }) => {
                 <h3 className="text-lg font-medium">{size.name}</h3>
               </div>
               <div className="flex space-x-2">
-                {hasPermission(user, 'update_shipmentsize') && (
+                {hasPermission(user, 'update_shipment_size') && (
                   <button
                     onClick={() => handleUpdate(size.id)}
                     className="bg-green-500 text-white p-2 rounded"
@@ -127,7 +127,7 @@ const ShipmentSize = ({ mode = 'add', id = null }) => {
                     Update
                   </button>
                 )}
-                {hasPermission(user, 'delete_shipmentsize') && (
+                {hasPermission(user, 'delete_shipment_size') && (
                   <button
                     onClick={() => handleDelete(size.id)}
                     className="bg-red-500 text-white p-2 rounded"

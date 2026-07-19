@@ -12,6 +12,7 @@ const FilterComponent = ({
   checkBtn = true,
   downloadUrl = '/excel/export/trade/',
   showPendingFilter = false,
+  currentPage,
 }) => {
   const { user } = useAuth();
   
@@ -41,13 +42,17 @@ const FilterComponent = ({
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked, pendingSpChecked]);
+  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked, pendingSpChecked, currentPage]);
 
   const performSearch = async () => {
     try {
       const params = {
         ...extraParams,
       };
+
+      if (currentPage) {
+        params.page = currentPage;
+      }
 
       if (search) {
         params.q = search;
@@ -93,7 +98,11 @@ const FilterComponent = ({
     setPendingSpChecked(false);
 
     try {
-      const response = await axios.get(apiEndpoint, { params: { ...extraParams } });
+      const params = { ...extraParams };
+      if (currentPage) {
+        params.page = 1;
+      }
+      const response = await axios.get(apiEndpoint, { params });
       onFilter(response.data);
     } catch (error) {
       console.error('Error resetting filters:', error);

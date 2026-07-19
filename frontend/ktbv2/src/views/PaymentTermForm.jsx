@@ -136,7 +136,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
   ];
   return (
     <div>
-      {hasPermission(user, currentMode === 'add' ? 'create_paymentterm' : 'update_paymentterm') && (
+      {hasPermission(user, currentMode === 'add' ? 'create_payment_term_form' : 'update_payment_term_form') && (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-2  p-4">
           <div>
@@ -260,7 +260,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                {hasPermission(user, 'update_paymentterm') && (
+                {hasPermission(user, 'update_payment_term_form') && (
                   <button
                     onClick={() => handleUpdate(term.id)}
                     className="bg-green-500 text-white p-2 rounded"
@@ -268,7 +268,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
                     Update
                   </button>
                 )}
-                {hasPermission(user, 'delete_paymentterm') && (
+                {hasPermission(user, 'delete_payment_term_form') && (
                   <button
                     onClick={() => handleDelete(term.id)}
                     className="bg-red-500 text-white p-2 rounded"

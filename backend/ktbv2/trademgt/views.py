@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
 from rest_framework.views import APIView
+from django.db.models import Q
 from rest_framework import viewsets
 from .models import *
 from .serializers import *
@@ -17,6 +18,17 @@ from accounts.models import CustomUser
 from .utils.email_service import send_async_email
 from notifications.services import NotificationService
 from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
+from rest_framework.pagination import PageNumberPagination
+
+class TradeMgtPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+    def paginate_queryset(self, queryset, request, view=None):
+        if 'page' not in request.query_params:
+            return None
+        return super().paginate_queryset(queryset, request, view)
 
 BATCH_SIZE = getattr(settings, 'TRADE_PRODUCT_BATCH_SIZE', 100)
 
@@ -30,6 +42,19 @@ def negate_trade_type(trade_type):
         return 'Purchase'
     else:
         return 'Unknown'
+    
+def get_serializer_context_cache(request):
+    return {
+        'request': request,
+        'companies': {str(c.id): CompanySerializer(c).data for c in Company.objects.all()},
+        'kycs': {str(k.id): KycSerializer(k).data for k in Kyc.objects.all()},
+        'banks': {str(b.id): BankSerializer(b).data for b in Bank.objects.all()},
+        'currencies': {str(cu.id): CurrencySerializer(cu).data for cu in Currency.objects.all()},
+        'payment_terms': {str(pt.id): PaymentTermSerializer(pt).data for pt in PaymentTerm.objects.all()},
+        'product_names': {str(pn.id): ProductNameSerializer(pn).data for pn in ProductName.objects.all()},
+        'packings': {str(p.id): PackingSerializer(p).data for p in Packing.objects.all()},
+        'shipment_sizes': {str(ss.id): ShipmentSizeSerializer(ss).data for ss in ShipmentSize.objects.all()},
+    }
     
 actor = None
 class TradeView(APIView):
@@ -59,7 +84,7 @@ class TradeView(APIView):
             return Response(response_data)
 
         else:  # If `pk` is not provided, list all trades
-            queryset = get_authorized_queryset(request, Trade.objects.all())
+            queryset = get_authorized_queryset(request, Trade.objects.all()).prefetch_related('trade_products', 'trade_extra_costs')
             
             exclude_presalepurchase = request.query_params.get('exclude_presalepurchase')
             if exclude_presalepurchase == 'true':
@@ -93,7 +118,14 @@ class TradeView(APIView):
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            serializer = TradeSerializer(filterset.qs, many=True, context={'request': request})
+            context = get_serializer_context_cache(request)
+            if 'page' in request.query_params:
+                paginator = TradeMgtPagination()
+                page = paginator.paginate_queryset(filterset.qs, request)
+                serializer = TradeSerializer(page, many=True, context=context)
+                return paginator.get_paginated_response(serializer.data)
+            
+            serializer = TradeSerializer(filterset.qs, many=True, context=context)
             return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -145,7 +177,9 @@ class TradeView(APIView):
         trade_extra_costs_data = []
         # related_trades_data = []
 
-        notified_users = request.data.getlist('notifiedUsers[]')
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        if not isinstance(notified_users, list):
+            notified_users = [notified_users] if notified_users else []
         notified_user_ids = list(map(int, notified_users))
         emails = list(CustomUser.objects.filter(id__in=notified_user_ids).values_list('email', flat=True))
         
@@ -214,6 +248,46 @@ class TradeView(APIView):
             j += 1
         
         
+        # Validate customer and suppliers KYC approval status
+        def validate_kyc_approved(kyc_id, field_name_for_error, index=None):
+            if not kyc_id or str(kyc_id).strip().lower() in ['', 'null', 'undefined', 'na']:
+                return None
+            try:
+                kyc = Kyc.objects.get(id=int(kyc_id))
+                if not (kyc.approve1 and kyc.approve2):
+                    err_msg = "The selected KYC record is not approved (both Approve 1 and Approve 2 must be approved)."
+                    if index is not None:
+                        return Response(
+                            {'error': f"Product at index {index + 1}: {err_msg}"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    else:
+                        return Response(
+                            {field_name_for_error: [err_msg]},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+            except (Kyc.DoesNotExist, ValueError):
+                err_msg = "Invalid KYC record selected."
+                if index is not None:
+                    return Response(
+                        {'error': f"Product at index {index + 1}: {err_msg}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                else:
+                    return Response(
+                        {field_name_for_error: [err_msg]},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            return None
+
+        kyc_res = validate_kyc_approved(trade_data.get('customer_company_name'), 'customer_company_name')
+        if kyc_res:
+            return kyc_res
+
+        for idx, prod in enumerate(trade_products_data):
+            supplier_res = validate_kyc_approved(prod.get('packaging_supplier'), 'packaging_supplier', index=idx)
+            if supplier_res:
+                return supplier_res
 
         with transaction.atomic():
             trade_serializer = TradeSerializer(data=trade_data)
@@ -347,7 +421,9 @@ class TradeView(APIView):
         trade_extra_costs_data = []
         # related_trades_data = []
         
-        notified_users = request.data.getlist('notifiedUsers[]')
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        if not isinstance(notified_users, list):
+            notified_users = [notified_users] if notified_users else []
         notified_user_ids = list(map(int, notified_users))
         emails = list(CustomUser.objects.filter(id__in=notified_user_ids).values_list('email', flat=True))
 
@@ -418,6 +494,46 @@ class TradeView(APIView):
             trade_extra_costs_data.append(cost_data)
             j += 1
         
+        # Validate customer and suppliers KYC approval status
+        def validate_kyc_approved(kyc_id, field_name_for_error, index=None):
+            if not kyc_id or str(kyc_id).strip().lower() in ['', 'null', 'undefined', 'na']:
+                return None
+            try:
+                kyc = Kyc.objects.get(id=int(kyc_id))
+                if not (kyc.approve1 and kyc.approve2):
+                    err_msg = "The selected KYC record is not approved (both Approve 1 and Approve 2 must be approved)."
+                    if index is not None:
+                        return Response(
+                            {'error': f"Product at index {index + 1}: {err_msg}"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    else:
+                        return Response(
+                            {field_name_for_error: [err_msg]},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+            except (Kyc.DoesNotExist, ValueError):
+                err_msg = "Invalid KYC record selected."
+                if index is not None:
+                    return Response(
+                        {'error': f"Product at index {index + 1}: {err_msg}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                else:
+                    return Response(
+                        {field_name_for_error: [err_msg]},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            return None
+
+        kyc_res = validate_kyc_approved(trade_data.get('customer_company_name'), 'customer_company_name')
+        if kyc_res:
+            return kyc_res
+
+        for idx, prod in enumerate(trade_products_data):
+            supplier_res = validate_kyc_approved(prod.get('packaging_supplier'), 'packaging_supplier', index=idx)
+            if supplier_res:
+                return supplier_res
 
         with transaction.atomic():
             trade_serializer = TradeSerializer(trade, data=trade_data, partial=True)
@@ -526,10 +642,37 @@ class TradeView(APIView):
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         
+        try:
+            trade = Trade.objects.get(pk=pk)
+        except Trade.DoesNotExist:
+            return Response({'error': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if trade.reviewed or trade.approved:
+            return Response(
+                {'error': 'Cannot delete a trade that has been reviewed or approved.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if PreSalePurchase.objects.filter(trn=trade).exists():
+            return Response(
+                {'error': 'Cannot delete this trade because it has associated Pre-Sale/Purchase records.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if PrePayment.objects.filter(trn=trade).exists():
+            return Response(
+                {'error': 'Cannot delete this trade because it has associated Pre-Payment records.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if SalesPurchase.objects.filter(trn=trade).exists():
+            return Response(
+                {'error': 'Cannot delete this trade because it has associated Sales/Purchase records.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             try:
-                trade = Trade.objects.get(pk=pk)
-                
                 # Get all trade products before deletion to update traces
                 trade_products = TradeProduct.objects.filter(trade=trade)
                 
@@ -545,8 +688,6 @@ class TradeView(APIView):
                         trace.save()
                     except Exception as e:
                         pass
-
-                    pass
                 
                 # Delete the trade (will cascade delete products and extra costs)
                 trade.delete()
@@ -680,68 +821,61 @@ class PaymentTermViewSet(viewsets.ModelViewSet):
     queryset = PaymentTerm.objects.all()
     serializer_class = PaymentTermSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if Trade.objects.filter(payment_term=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this payment term because it is associated with existing trades."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class PreSalePurchaseView(APIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = PreSalePurchaseFilter
 
     def get(self, request, *args, **kwargs):
-
-        pre_sp_id = kwargs.get('pk')  
+        pre_sp_id = kwargs.get('pk')  # URL parameter for PreSalePurchase ID
         
-        if pre_sp_id:  # If `pk` is provided, retrieve a specific trade
+        if pre_sp_id:  # If `pk` is provided, retrieve a specific PreSalePurchase
             try:
-                pre_sp = PreSalePurchase.objects.get(id=pre_sp_id)
+                pre_sp = get_authorized_queryset(request, PreSalePurchase.objects.all()).select_related('trn').prefetch_related(
+                    'trn__trade_products',
+                    'trn__trade_extra_costs',
+                    'predocument_set',
+                    'acknowledgedpi_set',
+                    'acknowledgedpo_set'
+                ).get(pk=pre_sp_id)
             except PreSalePurchase.DoesNotExist:
-                return Response({'detail': 'PreSalePurchase not found.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'PreSalePurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            pre_sp_serializer = PreSalePurchaseSerializer(pre_sp)
-            docs = PreDocument.objects.filter(presalepurchase=pre_sp)
-            ack_pis = AcknowledgedPI.objects.filter(presalepurchase=pre_sp)
-            ack_pos = AcknowledgedPO.objects.filter(presalepurchase=pre_sp)
-
-            docs_serializer = PreDocumentSerializer(docs, many=True)
-            ack_pis_serializer = AcknowledgedPISerializer(ack_pis, many=True)
-            ack_pos_serializer = AcknowledgedPOSerializer(ack_pos, many=True)
-
-            response_data = pre_sp_serializer.data
-            response_data['acknowledgedPI'] = ack_pis_serializer.data
-            response_data['acknowledgedPO'] = ack_pos_serializer.data
-            response_data['documentRequired'] = docs_serializer.data
-
-            return Response(response_data)
+            context = get_serializer_context_cache(request)
+            pre_sp_serializer = PreSalePurchaseSerializer(pre_sp, context=context)
+            return Response(pre_sp_serializer.data)
 
         else:
-            queryset = get_authorized_queryset(request, PreSalePurchase.objects.all())
+            queryset = get_authorized_queryset(request, PreSalePurchase.objects.all()).select_related('trn').prefetch_related(
+                'trn__trade_products',
+                'trn__trade_extra_costs',
+                'predocument_set',
+                'acknowledgedpi_set',
+                'acknowledgedpo_set'
+            )
             filterset = PreSalePurchaseFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            # Serialize the queryset with related acknowledgedPI and acknowledgedPO data
-            response_data = []
-
-            for pre_sp in filterset.qs:
-                pre_sp_serializer = PreSalePurchaseSerializer(pre_sp)
-                
-                # Get related acknowledgedPI and acknowledgedPO for the current PreSalePurchase
-                docs = PreDocument.objects.filter(presalepurchase=pre_sp)
-                ack_pis = AcknowledgedPI.objects.filter(presalepurchase=pre_sp)
-                ack_pos = AcknowledgedPO.objects.filter(presalepurchase=pre_sp)
-
-                docs_serializer = PreDocumentSerializer(docs, many=True)
-                ack_pis_serializer = AcknowledgedPISerializer(ack_pis, many=True)
-                ack_pos_serializer = AcknowledgedPOSerializer(ack_pos, many=True)
-
-                # Add related data to serialized PreSalePurchase data
-                pre_sp_data = pre_sp_serializer.data
-                pre_sp_data['documentRequired'] = docs_serializer.data
-                pre_sp_data['acknowledgedPI'] = ack_pis_serializer.data
-                pre_sp_data['acknowledgedPO'] = ack_pos_serializer.data
-
-                # Append the enriched data to the response list
-                response_data.append(pre_sp_data)
-
-            return Response(response_data)
+            context = get_serializer_context_cache(request)
+            if 'page' in request.query_params:
+                paginator = TradeMgtPagination()
+                page = paginator.paginate_queryset(filterset.qs, request)
+                serializer = PreSalePurchaseSerializer(page, many=True, context=context)
+                return paginator.get_paginated_response(serializer.data)
+            
+            serializer = PreSalePurchaseSerializer(filterset.qs, many=True, context=context)
+            return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         data = request.data
@@ -969,6 +1103,12 @@ class PreSalePurchaseView(APIView):
         except PreSalePurchase.DoesNotExist:
             return Response({'error': 'PreSalePurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if pre_sp.approved:
+            return Response(
+                {'error': 'Cannot delete an approved Pre-Sale/Purchase record.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             # Delete related trade products and extra costs
             PreDocument.objects.filter(presalepurchase=pre_sp).delete()
@@ -1030,34 +1170,45 @@ class PrePaymentView(APIView):
         
         if prepayment_id:  # If `pk` is provided, retrieve a specific trade
             try:
-                prepayment = PrePayment.objects.get(id=prepayment_id)
+                prepayment = get_authorized_queryset(request, PrePayment.objects.all()).select_related('trn').prefetch_related(
+                    'trn__trade_products',
+                    'trn__trade_extra_costs',
+                    'lccopy_set',
+                    'lcammendment_set',
+                    'advancettcopy_set'
+                ).get(pk=prepayment_id)
             except PrePayment.DoesNotExist:
-                return Response({'detail': 'PrePayment not found.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'PrePayment not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            prepayment_serializer = PrePaymentSerializer(prepayment)
-            lc_copies = LcCopy.objects.filter(prepayment=prepayment)
-            lc_ammendments = LcAmmendment.objects.filter(prepayment=prepayment)
-            advance_tt_copies = AdvanceTTCopy.objects.filter(prepayment=prepayment)
-
-            lc_copies_serializer = LcCopySerializer(lc_copies, many=True)
-            lc_ammendments_serializer = LcAmmendmentSerializer(lc_ammendments, many=True)
-            advance_tt_copies_serializer = AdvanceTTCopySerializer(advance_tt_copies, many=True)
-
+            context = get_serializer_context_cache(request)
+            prepayment_serializer = PrePaymentSerializer(prepayment, context=context)
             response_data = prepayment_serializer.data
-            response_data['lcCopies'] = lc_copies_serializer.data
-            response_data['lcAmmendments'] = lc_ammendments_serializer.data
-            response_data['advanceTTCopies'] = advance_tt_copies_serializer.data
-
+            response_data['lcCopies'] = response_data.get('lcCopy')
+            response_data['lcAmmendments'] = response_data.get('lcAmmendment')
+            response_data['advanceTTCopies'] = response_data.get('advanceTTCopy')
             return Response(response_data)
 
         else:
-            queryset = get_authorized_queryset(request, PrePayment.objects.all())
+            queryset = get_authorized_queryset(request, PrePayment.objects.all()).select_related('trn').prefetch_related(
+                'trn__trade_products',
+                'trn__trade_extra_costs',
+                'lccopy_set',
+                'lcammendment_set',
+                'advancettcopy_set'
+            )
             filterset = PrePaymentFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            serializer = PrePaymentSerializer(filterset.qs, many=True)
+            context = get_serializer_context_cache(request)
+            if 'page' in request.query_params:
+                paginator = TradeMgtPagination()
+                page = paginator.paginate_queryset(filterset.qs, request)
+                serializer = PrePaymentSerializer(page, many=True, context=context)
+                return paginator.get_paginated_response(serializer.data)
+            
+            serializer = PrePaymentSerializer(filterset.qs, many=True, context=context)
             return Response(serializer.data)
     
     def post(self, request, *args, **kwargs):
@@ -1330,6 +1481,12 @@ class PrePaymentView(APIView):
         except PrePayment.DoesNotExist:
             return Response({'error': 'PrePayment not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if prepayment.reviewed:
+            return Response(
+                {'error': 'Cannot delete a reviewed Pre-Payment record.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             # Delete related trade products and extra costs
             LcCopy.objects.filter(prepayment=prepayment).delete()
@@ -1407,37 +1564,42 @@ class SalesPurchaseView(APIView):
         
         if sp_id:  # If `pk` is provided, retrieve a specific trade
             try:
-                sp = SalesPurchase.objects.get(id=sp_id)
+                sp = get_authorized_queryset(request, SalesPurchase.objects.all()).select_related('trn').prefetch_related(
+                    'trn__trade_products',
+                    'trn__trade_extra_costs',
+                    'sp_product',
+                    'sp_extra_charges',
+                    'packinglist_set',
+                    'invoice_set',
+                    'coa_set',
+                    'bl_copy_set'
+                ).get(pk=sp_id)
             except SalesPurchase.DoesNotExist:
-                return Response({'detail': 'SalesPurchase not found.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'SalesPurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            sp_serializer = SalesPurchaseSerializer(sp)
-            sp_products = SalesPurchaseProduct.objects.filter(sp=sp)
-            sp_extra_charges = SalesPurchaseExtraCharge.objects.filter(sp=sp)
-            packing_list = PackingList.objects.filter(sp=sp)
-            invoices = Invoice.objects.filter(sp=sp)
-            coas = COA.objects.filter(sp=sp)
-            bl_copies = BL_Copy.objects.filter(sp=sp)
-
-            sp_products_serializer = SalesPurchaseProductSerializer(sp_products, many=True)
-            sp_extra_charges_serializer = SalesPurchaseExtraChargeSerializer(sp_extra_charges, many=True)
-            packing_list_serializer = PackingListSerializer(packing_list, many=True)
-            invoices_serializer = InvoiceSerializer(invoices, many=True)
-            coas_serializer = COASerializer(coas, many=True)
-            bl_copies_serializer = BL_CopySerializer(bl_copies, many=True)
-
+            context = get_serializer_context_cache(request)
+            sp_serializer = SalesPurchaseSerializer(sp, context=context)
             response_data = sp_serializer.data
-            response_data['salesPurchaseProducts'] = sp_products_serializer.data
-            response_data['extraCharges'] = sp_extra_charges_serializer.data
-            response_data['invoices'] = invoices_serializer.data
-            response_data['coas'] = coas_serializer.data
-            response_data['packingLists'] = packing_list_serializer.data
-            response_data['blCopies'] = bl_copies_serializer.data
+            response_data['salesPurchaseProducts'] = response_data.get('sp_product')
+            response_data['extraCharges'] = response_data.get('sp_extra_charges')
+            response_data['packingLists'] = response_data.get('packingList')
+            response_data['invoices'] = InvoiceSerializer(sp.invoice_set.all(), many=True).data
+            response_data['coas'] = COASerializer(sp.coa_set.all(), many=True).data
+            response_data['blCopies'] = BL_CopySerializer(sp.bl_copy_set.all(), many=True).data
 
             return Response(response_data)
 
         else:
-            queryset = get_authorized_queryset(request, SalesPurchase.objects.all())
+            queryset = get_authorized_queryset(request, SalesPurchase.objects.all()).select_related('trn').prefetch_related(
+                'trn__trade_products',
+                'trn__trade_extra_costs',
+                'sp_product',
+                'sp_extra_charges',
+                'packinglist_set',
+                'invoice_set',
+                'coa_set',
+                'bl_copy_set'
+            )
             
             exclude_paymentfinance = request.query_params.get('exclude_paymentfinance')
             if exclude_paymentfinance == 'true':
@@ -1448,12 +1610,23 @@ class SalesPurchaseView(APIView):
                 excluded_sp_ids = exclude_qs.values_list('sp_id', flat=True)
                 queryset = queryset.exclude(id__in=excluded_sp_ids)
 
+            pf_approved = request.query_params.get('pf_approved')
+            if pf_approved == 'true':
+                queryset = queryset.filter(pfs__reviewed=True).distinct()
+
             filterset = SalesPurchaseFilter(request.GET, queryset=queryset)
 
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            serializer = SalesPurchaseSerializer(filterset.qs, many=True)
+            context = get_serializer_context_cache(request)
+            if 'page' in request.query_params:
+                paginator = TradeMgtPagination()
+                page = paginator.paginate_queryset(filterset.qs, request)
+                serializer = SalesPurchaseSerializer(page, many=True, context=context)
+                return paginator.get_paginated_response(serializer.data)
+            
+            serializer = SalesPurchaseSerializer(filterset.qs, many=True, context=context)
             return Response(serializer.data)
     
     def post(self, request, *args, **kwargs):
@@ -1879,6 +2052,24 @@ class SalesPurchaseView(APIView):
         except SalesPurchase.DoesNotExist:
             return Response({'error': 'SalesPurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if sp.reviewed:
+            return Response(
+                {'error': 'Cannot delete a reviewed Sales/Purchase record.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if PaymentFinance.objects.filter(sp=sp).exists():
+            return Response(
+                {'error': 'Cannot delete this Sales/Purchase record because it has associated Payment/Finance records.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if PL.objects.filter(Q(sales_trn=sp) | Q(purchase_trn=sp)).exists():
+            return Response(
+                {'error': 'Cannot delete this Sales/Purchase record because it is referenced in Profit/Loss records.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
            
@@ -2077,6 +2268,12 @@ class PaymentFinanceView(APIView):
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
 
+            if 'page' in request.query_params:
+                paginator = TradeMgtPagination()
+                page = paginator.paginate_queryset(filterset.qs, request)
+                serializer = PaymentFinanceSerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
+            
             serializer = PaymentFinanceSerializer(filterset.qs, many=True)
             return Response(serializer.data)
 
@@ -2309,6 +2506,12 @@ class PaymentFinanceView(APIView):
         except PaymentFinance.DoesNotExist:
             return Response({'error': 'PaymentFinance not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if pf.reviewed:
+            return Response(
+                {'error': 'Cannot delete a reviewed Payment/Finance record.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
             # Delete related trade products and extra costs
             PFCharges.objects.filter(payment_finance=pf).delete()
@@ -2382,6 +2585,16 @@ class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     serializer_class = KycSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = KycFilter
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if Trade.objects.filter(customer_company_name=str(instance.id)).exists() or TradeProduct.objects.filter(packaging_supplier=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this KYC record because it is associated with existing trades or trade products."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class KycApproveOneView(APIView):
     def get(self, request, *args, **kwargs):
@@ -2480,24 +2693,28 @@ class TradeProductTraceViewSet(viewsets.ModelViewSet):
     serializer_class = TradeProductTraceSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradeProductTraceFilter
+    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
 
 class TradeProductRefViewSet(viewsets.ModelViewSet):
     queryset = TradeProductRef.objects.all()
     serializer_class =TradeProductRefSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradeProductRefFilter
+    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
    
 class TradePendingViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     queryset = TradePending.objects.all()
     serializer_class = TradePendingSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradePendingFilter
+    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
 
  
 
 class SalesPendingViewSet(viewsets.ModelViewSet):
     queryset = TradePending.objects.all()
     serializer_class = SalesPendingSerializer
+    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
 
 
 
@@ -2505,9 +2722,29 @@ class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if Trade.objects.filter(company=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this company because it is associated with existing trades."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class BankViewSet(viewsets.ModelViewSet):
     queryset = Bank.objects.all()
     serializer_class = BankSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if Trade.objects.filter(bank_name_address=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this bank because it is associated with existing trades."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UnitViewSet(viewsets.ModelViewSet):
     queryset = Unit.objects.all()
@@ -2613,23 +2850,64 @@ class PFView(APIView):
 class InventoryViewSet(viewsets.ModelViewSet):
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
+    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
 
 
 class ProductNameViewSet(viewsets.ModelViewSet):
     queryset = ProductName.objects.all()
     serializer_class = ProductNameSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if TradeProduct.objects.filter(product_name=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this product name because it is associated with existing trade products."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class ShipmentSizeViewSet(viewsets.ModelViewSet):
     queryset = ShipmentSize.objects.all()
     serializer_class = ShipmentSizeSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if TradeProduct.objects.filter(container_shipment_size=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this shipment size because it is associated with existing trade products."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CurrencyViewSet(viewsets.ModelViewSet):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if Trade.objects.filter(currency_selection=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this currency because it is associated with existing trades."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class PackingViewSet(viewsets.ModelViewSet):
     queryset = Packing.objects.all()
     serializer_class = PackingSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if TradeProduct.objects.filter(mode_of_packing=str(instance.id)).exists():
+            return Response(
+                {"detail": "Cannot delete this packing mode because it is associated with existing trade products."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RefBalanceView(APIView):   
@@ -2681,6 +2959,11 @@ class ProfitLossViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     serializer_class = ProfitLossSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = PLFilter
+    pagination_class = TradeMgtPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(sales_trn__pfs__reviewed=True, purchase_trn__pfs__reviewed=True).distinct()
 
 class PLView(APIView):
     def get(self, request, *args, **kwargs):
@@ -2688,7 +2971,7 @@ class PLView(APIView):
         
         if trade_id:  # If `pk` is provided, retrieve a specific trade
             try:
-                trade = SalesPurchase.objects.get(id=trade_id)
+                trade = SalesPurchase.objects.filter(pfs__reviewed=True).distinct().get(id=trade_id)
             except SalesPurchase.DoesNotExist:
                 return Response({'detail': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -2696,7 +2979,13 @@ class PLView(APIView):
             response_data = trade_serializer.data
             return Response(response_data)
         else:  # If `pk` is not provided, list all trades
-            trades = get_authorized_queryset(request, SalesPurchase.objects.all())
+            trades = get_authorized_queryset(request, SalesPurchase.objects.filter(pfs__reviewed=True).distinct())
+            if 'page' in request.query_params:
+                paginator = TradeMgtPagination()
+                page = paginator.paginate_queryset(trades, request)
+                serializer = PLSerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
+            
             serializer = PLSerializer(trades, many=True)
             return Response(serializer.data)
         

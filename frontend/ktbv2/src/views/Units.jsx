@@ -86,7 +86,7 @@ const Units = ({ mode = 'add', unitId = null }) => {
 
   return (
     <div>
-      {hasPermission(user, currentMode === 'add' ? 'create_unit' : 'update_unit') && (
+      {hasPermission(user, currentMode === 'add' ? 'create_units' : 'update_units') && (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
@@ -119,7 +119,7 @@ const Units = ({ mode = 'add', unitId = null }) => {
                 <h3 className="text-lg font-medium">{unit.name}</h3>
               </div>
               <div className="flex space-x-2">
-                {hasPermission(user, 'update_unit') && (
+                {hasPermission(user, 'update_units') && (
                   <button
                     onClick={() => handleUpdate(unit.id)}
                     className="bg-green-500 text-white p-2 rounded"
@@ -127,7 +127,7 @@ const Units = ({ mode = 'add', unitId = null }) => {
                     Update
                   </button>
                 )}
-                {hasPermission(user, 'delete_unit') && (
+                {hasPermission(user, 'delete_units') && (
                   <button
                     onClick={() => handleDelete(unit.id)}
                     className="bg-red-500 text-white p-2 rounded"

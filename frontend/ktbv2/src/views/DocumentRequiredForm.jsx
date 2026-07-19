@@ -86,7 +86,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
 
   return (
     <div>
-      {hasPermission(user, currentMode === 'add' ? 'create_documentsrequired' : 'update_documentsrequired') && (
+      {hasPermission(user, currentMode === 'add' ? 'create_documents_required_form' : 'update_documents_required_form') && (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
@@ -119,7 +119,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
                 <h3 className="text-lg font-medium">{doc.name}</h3>
               </div>
               <div className="flex space-x-2">
-                {hasPermission(user, 'update_documentsrequired') && (
+                {hasPermission(user, 'update_documents_required_form') && (
                   <button
                     onClick={() => handleUpdate(doc.id)}
                     className="bg-green-500 text-white p-2 rounded"
@@ -127,7 +127,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
                     Update
                   </button>
                 )}
-                {hasPermission(user, 'delete_documentsrequired') && (
+                {hasPermission(user, 'delete_documents_required_form') && (
                   <button
                     onClick={() => handleDelete(doc.id)}
                     className="bg-red-500 text-white p-2 rounded"

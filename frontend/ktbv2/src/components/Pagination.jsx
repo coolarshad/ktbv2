@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
   const { user } = useAuth();
   const pageNumbers = [];
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
@@ -29,8 +29,6 @@ const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
     }
     return pages;
   };
-
-  if (totalPages <= 1) return null;
 
   return (
     <div className="flex justify-center mt-4 mb-4">

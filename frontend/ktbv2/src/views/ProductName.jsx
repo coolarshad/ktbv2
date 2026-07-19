@@ -86,7 +86,7 @@ const ProductName = ({ mode = 'add', id = null }) => {
 
   return (
     <div>
-      {hasPermission(user, currentMode === 'add' ? 'create_productname' : 'update_productname') && (
+      {hasPermission(user, currentMode === 'add' ? 'create_product_name' : 'update_product_name') && (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div className="grid grid-cols-1 gap-4 p-4">
           <input
@@ -119,7 +119,7 @@ const ProductName = ({ mode = 'add', id = null }) => {
                 <h3 className="text-lg font-medium">{prod.name}</h3>
               </div>
               <div className="flex space-x-2">
-                {hasPermission(user, 'update_productname') && (
+                {hasPermission(user, 'update_product_name') && (
                   <button
                     onClick={() => handleUpdate(prod.id)}
                     className="bg-green-500 text-white p-2 rounded"
@@ -127,7 +127,7 @@ const ProductName = ({ mode = 'add', id = null }) => {
                     Update
                   </button>
                 )}
-                {hasPermission(user, 'delete_productname') && (
+                {hasPermission(user, 'delete_product_name') && (
                   <button
                     onClick={() => handleDelete(prod.id)}
                     className="bg-red-500 text-white p-2 rounded"

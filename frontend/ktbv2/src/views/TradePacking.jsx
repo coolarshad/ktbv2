@@ -86,7 +86,7 @@ const TradePacking = ({ mode = 'add', id = null }) => {
 
   return (
     <div>
-      {hasPermission(user, currentMode === 'add' ? 'create_packing' : 'update_packing') && (
+      {hasPermission(user, currentMode === 'add' ? 'create_packings' : 'update_packings') && (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
           <div className="grid grid-cols-1 gap-4 p-4">
           <input
@@ -119,7 +119,7 @@ const TradePacking = ({ mode = 'add', id = null }) => {
                 <h3 className="text-lg font-medium">{curr.name}</h3>
               </div>
               <div className="flex space-x-2">
-                {hasPermission(user, 'update_packing') && (
+                {hasPermission(user, 'update_packings') && (
                   <button
                     onClick={() => handleUpdate(curr.id)}
                     className="bg-green-500 text-white p-2 rounded"
@@ -127,7 +127,7 @@ const TradePacking = ({ mode = 'add', id = null }) => {
                     Update
                   </button>
                 )}
-                {hasPermission(user, 'delete_packing') && (
+                {hasPermission(user, 'delete_packings') && (
                   <button
                     onClick={() => handleDelete(curr.id)}
                     className="bg-red-500 text-white p-2 rounded"

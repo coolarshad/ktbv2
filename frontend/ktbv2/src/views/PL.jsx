@@ -11,6 +11,7 @@ import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
 import Modal from '../components/Modal';
 import { dateFormatter } from "../dateUtils.jsx";
+import Loading from '../components/Loading';
 
 function PL() {
   const navigate = useNavigate();
@@ -19,26 +20,32 @@ function PL() {
 
   const [plData, setPLData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPL, setSelectedPL] = useState(null);
 
+  const fetchPLData = async () => {
+    try {
+      const response = await axios.get(`/trademgt/profitloss/?page=${currentPage}`);
+      if (response.data && response.data.results) {
+        setPLData(response.data.results);
+        setTotalItems(response.data.count);
+      } else {
+        setPLData(response.data || []);
+        setTotalItems(response.data ? response.data.length : 0);
+      }
+    } catch (error) {
+      setError('Failed to fetch PL data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPLData = async () => {
-      try {
-        const response = await axios.get('/trademgt/profitloss/'); // Replace with your API endpoint
-        setPLData(response.data);
-      } catch (error) {
-        setError('Failed to fetch PL data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPLData();
-  }, []);
+  }, [currentPage]);
 
   const handleAddPLClick = () => {
     navigate('/pl-form');
@@ -72,7 +79,13 @@ function PL() {
   };
 
   const handleFilter = (filters) => {
-    setPLData(filters)
+    if (filters && filters.results) {
+      setPLData(filters.results);
+      setTotalItems(filters.count);
+    } else {
+      setPLData(filters || []);
+      setTotalItems(filters ? filters.length : 0);
+    }
     setCurrentPage(1);
   };
 
@@ -83,23 +96,23 @@ function PL() {
 
 
   const sumPackingCost = (sp) => {
-    return sp.trn.trade_products.reduce((acc, item) => acc + item.total_packing_cost, 0);
+    return sp?.trn?.trade_products?.reduce((acc, item) => acc + (parseFloat(item.total_packing_cost) || 0), 0) || 0;
   };
   const sumOtherCharges = (sp) => {
-    return sp.sp_extra_charges.reduce((acc, item) => acc + item.charge, 0);
+    return sp?.sp_extra_charges?.reduce((acc, item) => acc + (parseFloat(item.charge) || 0), 0) || 0;
   };
   const sumPFCharges = (pf) => {
-    return pf?.pf_charges.reduce((acc, item) => acc + item.charge, 0);
+    return pf?.pf_charges?.reduce((acc, item) => acc + (parseFloat(item.charge) || 0), 0) || 0;
   };
   const sumBLQty = (sp) => {
-    return sp.sp_product.reduce((acc, item) => acc + item.bl_qty, 0);
+    return sp?.sp_product?.reduce((acc, item) => acc + (parseFloat(item.bl_qty) || 0), 0) || 0;
   };
 
   // const sumTotal=(packing_cost,invoice_amount,commission_value,bl_value,bl_fees,bl_collection_cost,other_charges,logistic_cost,pf_charges)=>{
   //   return 0;
   // }
   const sumTotal = (...args) => {
-    return args.reduce((acc, value) => acc + (value || 0), 0);
+    return args.reduce((acc, value) => acc + (parseFloat(value) || 0), 0);
   };
 
 
@@ -126,22 +139,22 @@ function PL() {
   ];
 
   const findTrade = (sp, row) => {
-    return sp.trn.trade_products.find((trade) => trade.product_code == row.product_code && trade.product_name == row.product_name && trade.hs_code == row.hs_code)
+    return sp?.trn?.trade_products?.find((trade) => trade.product_code == row.product_code && trade.product_name == row.product_name && trade.hs_code == row.hs_code)
   }
 
   const MiniTable = ({ data }) => (
     <>
-      {data.sp.sp_product.map((row, index) => (
-        <div className="flex flex-col p-2">
-          <div key={index} className="border border-gray-300 rounded-md p-4 shadow-sm grid grid-cols-3 gap-4">
+      {data?.sp?.sp_product?.map((row, index) => (
+        <div className="flex flex-col p-2" key={index}>
+          <div className="border border-gray-300 rounded-md p-4 shadow-sm grid grid-cols-3 gap-4">
             {/* <span className="text-sm border-gray-200">Product Code: {row.product_code}</span> */}
-            <span className="text-sm border-gray-200">Product Name: {row.productName.name}</span>
+            <span className="text-sm border-gray-200">Product Name: {row.productName?.name}</span>
             <span className="text-sm border-gray-200">BL Qty: {row.bl_qty}</span>
             <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
             <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
-            <span className="text-sm border-gray-200">Commission Rate: {findTrade(data.sp, row).commission_rate}</span>
+            <span className="text-sm border-gray-200">Commission Rate: {findTrade(data?.sp, row)?.commission_rate}</span>
             {/* <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span> */}
-            <span className="text-sm border-gray-200">Packaging Sum: {sumPackingCost(data.sp)}</span>
+            <span className="text-sm border-gray-200">Packaging Sum: {sumPackingCost(data?.sp)}</span>
             <span className="text-sm border-gray-200">Logistic: {row.logistic}</span>
             {/* <span>Product Code: {row.product_code}</span> */}
           </div>
@@ -153,11 +166,11 @@ function PL() {
   const MiniGross = ({ sales_data, purchase_data }) => {
     const { user } = useAuth();
     // Helper function to calculate totals
-    const calculateSalesTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
-    const calculateExpenseTotal = (commission_rate, bl_qty, logistic, packing) => (commission_rate * bl_qty) + logistic + packing;
-    const calculatePurchaseTotal = (bl_qty, rate_in_usd) => bl_qty * rate_in_usd;
+    const calculateSalesTotal = (bl_qty, rate_in_usd) => (parseFloat(bl_qty) || 0) * (parseFloat(rate_in_usd) || 0);
+    const calculateExpenseTotal = (commission_rate, bl_qty, logistic, packing) => ((parseFloat(commission_rate) || 0) * (parseFloat(bl_qty) || 0)) + (parseFloat(logistic) || 0) + (parseFloat(packing) || 0);
+    const calculatePurchaseTotal = (bl_qty, rate_in_usd) => (parseFloat(bl_qty) || 0) * (parseFloat(rate_in_usd) || 0);
     const calculateGross = (salesTotal, purchaseTotal, expenseTotal) => salesTotal - purchaseTotal - expenseTotal;
-    const calculatePerUnit = (gross, sales_bl_qty) => gross / sales_bl_qty;
+    const calculatePerUnit = (gross, sales_bl_qty) => sales_bl_qty ? gross / sales_bl_qty : 0;
 
     const indexOfLastItem = currentPage * 50;
     const indexOfFirstItem = indexOfLastItem - 50;
@@ -169,16 +182,16 @@ function PL() {
     return (
       <>
         {/* Mapping over sales and purchase data with index to pair them */}
-        {sales_data?.sp?.sp_product.map((salesRow, index) => {
+        {sales_data?.sp?.sp_product?.map((salesRow, index) => {
           // Find corresponding purchase row by index
-          const purchaseRow = purchase_data?.sp?.sp_product[index];
+          const purchaseRow = purchase_data?.sp?.sp_product?.[index];
 
           // If there's no corresponding purchase row, we skip this pair
           if (!purchaseRow) return null;
 
           // Calculating salesTotal, expenseTotal, purchaseTotal, gross, perUnit for this pair
           const salesTotal = calculateSalesTotal(salesRow.bl_qty, salesRow.rate_in_usd);
-          const expenseTotal = calculateExpenseTotal(findTrade(sales_data.sp, salesRow).commission_rate, salesRow.bl_qty, salesRow.logistic, sumPackingCost(sales_data.sp)) + calculateExpenseTotal(findTrade(purchase_data.sp, purchaseRow).commission_rate, purchaseRow.bl_qty, purchaseRow.logistic, sumPackingCost(purchase_data.sp));
+          const expenseTotal = calculateExpenseTotal(findTrade(sales_data?.sp, salesRow)?.commission_rate, salesRow.bl_qty, salesRow.logistic, sumPackingCost(sales_data?.sp)) + calculateExpenseTotal(findTrade(purchase_data?.sp, purchaseRow)?.commission_rate, purchaseRow.bl_qty, purchaseRow.logistic, sumPackingCost(purchase_data?.sp));
           const purchaseTotal = calculatePurchaseTotal(purchaseRow.bl_qty, purchaseRow.rate_in_usd);
           const gross = calculateGross(salesTotal, purchaseTotal, expenseTotal);
           const perUnit = calculatePerUnit(gross, salesRow.bl_qty);
@@ -225,24 +238,23 @@ function PL() {
   };
 
   const calculateSPTotal = (pf) => {
-    if (!pf) return 0; // Handle undefined or null SP
+    if (!pf || !pf.sp) return 0; // Handle undefined or null SP
     return parseFloat(
-      sumPackingCost(pf.sp) +
-      // pf.sp.trn.commission_value +
-      calculateTotalCommission(pf.sp.sp_product, pf.sp, findTrade),
-      pf.sp.bl_fees +
-      pf.sp.bl_collection_cost +
-      sumOtherCharges(pf.sp) +
-      pf.sp.logistic_cost +
-      sumPFCharges(pf)
+      (sumPackingCost(pf.sp) || 0) +
+      (calculateTotalCommission(pf.sp.sp_product, pf.sp, findTrade) || 0) +
+      (parseFloat(pf.sp.bl_fees) || 0) +
+      (parseFloat(pf.sp.bl_collection_cost) || 0) +
+      (sumOtherCharges(pf.sp) || 0) +
+      (parseFloat(pf.sp.logistic_cost) || 0) +
+      (sumPFCharges(pf) || 0)
     );
   };
 
   // Calculate gross profit
   const calculateGrossProfit = (salesPF, purchasePF) => {
     if (!salesPF || !purchasePF) return 0; // Handle undefined salesPF or purchasePF
-    const salesTotal = parseFloat(salesPF.sp.invoice_amount);
-    const purchaseTotal = parseFloat(purchasePF.sp.invoice_amount);
+    const salesTotal = parseFloat(salesPF.sp?.invoice_amount || 0);
+    const purchaseTotal = parseFloat(purchasePF.sp?.invoice_amount || 0);
     const totalExpense = calculateSPTotal(purchasePF) + calculateSPTotal(salesPF);
     return salesTotal - purchaseTotal - totalExpense;
   };
@@ -256,12 +268,10 @@ function PL() {
 
 
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
-  const indexOfLastItem = currentPage * 50;
-  const indexOfFirstItem = indexOfLastItem - 50;
-  const currentItems = plData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const currentItems = plData || [];
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
@@ -283,13 +293,13 @@ function PL() {
         )}
         <div>
           <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/profitloss'}
-            fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/"
+            fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/" currentPage={currentPage}
           />
         </div>
         <div className=" rounded p-2">
 
           <PLTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pl" />
-          <Pagination itemsPerPage={50} totalItems={plData?.length || 0} paginate={paginate} currentPage={currentPage} />
+          <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
 
@@ -325,118 +335,118 @@ function PL() {
                       {/* Example Row */}
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Company</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.companyName.name}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.companyName?.name}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Company</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.companyName.name}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.companyName?.name}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trade Reference Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF.sp.trn.trd)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF?.sp?.trn?.trd)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trade Reference Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF.sp.trn.trd)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF?.sp?.trn?.trd)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trade Reference Number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.trn}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.trn}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trade Reference Number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.trn}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.trn}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">S&P ID</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.id}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.id}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">S&P ID</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.id}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.id}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trader Name </td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.trader_name}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.trader_name}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Trader Name </td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.trader_name}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.trader_name}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Insurrance policy number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.insurance_policy_number}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.insurance_policy_number}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Insurrance policy number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.insurance_policy_number}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.insurance_policy_number}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Customer Company Name in Full Detail </td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.customer.name}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.customer?.name}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Customer Company Name in Full Detail </td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.customer.name}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.customer?.name}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Commission Agent</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.commission_agent}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.commission_agent}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Commission Agent</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.commission_agent}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.commission_agent}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Provider</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.logistic_provider}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.logistic_provider}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Provider</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.trn.logistic_provider}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.logistic_provider}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Packing cost(Sum)</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumPackingCost(selectedPL.salesPF.sp)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumPackingCost(selectedPL.salesPF?.sp)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Packing cost(Sum)</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumPackingCost(selectedPL.purchasePF.sp)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumPackingCost(selectedPL.purchasePF?.sp)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF.sp.invoice_date)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF?.sp?.invoice_date)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF.sp.invoice_date)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF?.sp?.invoice_date)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_number}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.invoice_number}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.invoice_number}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.invoice_number}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Amount</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_amount}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.invoice_amount}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Invoice Amount</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.invoice_amount}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.invoice_amount}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">COMMISSION VALUE</td>
                         {/* <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.trn.commission_value}</td> */}
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{calculateTotalCommission(selectedPL.salesPF?.sp?.sp_product, selectedPL.salesPF?.sp, findTrade)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">COMMISSION VALUE</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{calculateTotalCommission(selectedPL.purchasePF?.sp?.sp_product, selectedPL.purchasePF?.sp, findTrade)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.bl_number}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.bl_number}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Number</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.bl_number}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.bl_number}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL FEES</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.bl_fees}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.bl_fees}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL FEES</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.bl_fees}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.bl_fees}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL COLLECTION COST</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.bl_collection_cost}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.bl_collection_cost}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL COLLECTION COST</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF.sp.bl_collection_cost}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.bl_collection_cost}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">OTHER CHARGES</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumOtherCharges(selectedPL.salesPF.sp)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumOtherCharges(selectedPL.salesPF?.sp)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">OTHER CHARGES</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumOtherCharges(selectedPL.purchasePF.sp)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumOtherCharges(selectedPL.purchasePF?.sp)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF.sp.bl_date)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.salesPF?.sp?.bl_date)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">BL Date</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF.sp.bl_date)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{dateFormatter(selectedPL.purchasePF?.sp?.bl_date)}</td>
                       </tr>
                       {/* <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logitics Cost</td>
@@ -452,10 +462,25 @@ function PL() {
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Income</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF.sp.invoice_amount}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.invoice_amount}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Expense</td>
                         {/* <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td> */}
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(selectedPL.purchasePF.sp.invoice_amount, calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade), calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade), 0, selectedPL.purchasePF.sp.bl_fees, selectedPL.salesPF.sp.bl_fees, selectedPL.purchasePF.sp.bl_collection_cost, selectedPL.salesPF.sp.bl_collection_cost, sumOtherCharges(selectedPL.purchasePF.sp), sumOtherCharges(selectedPL.salesPF.sp), sumPFCharges(selectedPL.purchasePF), sumPFCharges(selectedPL.salesPF))}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">
+                          {sumTotal(
+                            selectedPL.purchasePF?.sp?.invoice_amount,
+                            calculateTotalCommission(selectedPL.purchasePF?.sp?.sp_product, selectedPL.purchasePF?.sp, findTrade),
+                            calculateTotalCommission(selectedPL.salesPF?.sp?.sp_product, selectedPL.salesPF?.sp, findTrade),
+                            0,
+                            selectedPL.purchasePF?.sp?.bl_fees,
+                            selectedPL.salesPF?.sp?.bl_fees,
+                            selectedPL.purchasePF?.sp?.bl_collection_cost,
+                            selectedPL.salesPF?.sp?.bl_collection_cost,
+                            sumOtherCharges(selectedPL.purchasePF?.sp),
+                            sumOtherCharges(selectedPL.salesPF?.sp),
+                            sumPFCharges(selectedPL.purchasePF),
+                            sumPFCharges(selectedPL.salesPF)
+                          )}
+                        </td>
 
                       </tr>
                     </tbody>

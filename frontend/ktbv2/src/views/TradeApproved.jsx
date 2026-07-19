@@ -10,6 +10,7 @@ import Modal from '../components/Modal';
 import FilterComponent from "../components/FilterComponent";
 import { BASE_URL } from "../utils";
 import { dateFormatter } from "../dateUtils";
+import Loading from "../components/Loading";
 
 function TradeApproved() {
   const { user } = useAuth();
@@ -17,31 +18,41 @@ function TradeApproved() {
   const navigate = useNavigate();
   const [tradeData, setTradeData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
 
-  useEffect(() => {
-    const params = {
-      [`pending`]: false,
-    };
-    const fetchTradeData = async () => {
-      try {
-        const response = await axios.get('/trademgt/trades', { params }); // Replace with your API endpoint
-        setTradeData(response.data);
-      } catch (error) {
-        setError('Failed to fetch trade data');
-      } finally {
-        setLoading(false);
+  const fetchTradeData = async () => {
+    try {
+      const response = await axios.get(`/trademgt/trades/?approved=true&page=${currentPage}`);
+      if (response.data && response.data.results) {
+        setTradeData(response.data.results);
+        setTotalItems(response.data.count);
+      } else {
+        setTradeData(response.data || []);
+        setTotalItems(response.data ? response.data.length : 0);
       }
-    };
+    } catch (err) {
+      setError('Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchTradeData();
-  }, []);
+  }, [currentPage]);
 
   const handleFilter = (filters) => {
-    setTradeData(filters)
+    if (filters && filters.results) {
+      setTradeData(filters.results);
+      setTotalItems(filters.count);
+    } else {
+      setTradeData(filters || []);
+      setTotalItems(filters ? filters.length : 0);
+    }
     setCurrentPage(1);
   };
 
@@ -84,12 +95,10 @@ function TradeApproved() {
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
-  const indexOfLastItem = currentPage * 50;
-  const indexOfFirstItem = indexOfLastItem - 50;
-  const currentItems = tradeData?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const currentItems = tradeData || [];
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
@@ -101,11 +110,11 @@ function TradeApproved() {
           <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades'} fieldOptions={[
             { value: 'trn', label: 'TRN' },
             { value: 'company', label: 'Company' },
-          ]} extraParams={{ pending: false }} downloadUrl="/excel/export/trade/" showPendingFilter={true} />
+          ]} extraParams={{ pending: false }} downloadUrl="/excel/export/trade/" showPendingFilter={true} currentPage={currentPage} />
         </div>
         <div className=" rounded p-2">
           <TradeTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} basePerm="trade_approved" />
-          <Pagination itemsPerPage={50} totalItems={tradeData?.length || 0} paginate={paginate} currentPage={currentPage} />
+          <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

@@ -70,18 +70,24 @@ class TradeProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def get_product_details(self, obj):
+        if 'product_names' in self.context:
+            return self.context['product_names'].get(str(obj.product_name))
         try:
             instance = ProductName.objects.get(id=obj.product_name)
             return ProductNameSerializer(instance).data
         except ProductName.DoesNotExist:
             return None
     def get_supplier_details(self, obj):
+        if 'kycs' in self.context:
+            return self.context['kycs'].get(str(obj.packaging_supplier))
         try:
             instance = Kyc.objects.get(id=obj.packaging_supplier)  # or use another field to identify the company
             return KycSerializer(instance).data
         except Kyc.DoesNotExist:
             return None
     def get_packing_details(self, obj):
+        if 'packings' in self.context:
+            return self.context['packings'].get(str(obj.mode_of_packing))
         try:
             instance = Packing.objects.get(id=obj.mode_of_packing)  # or use another field to identify the company
             return PackingSerializer(instance).data
@@ -89,14 +95,24 @@ class TradeProductSerializer(serializers.ModelSerializer):
             return None
     
     def get_ref_trn_details(self, obj):
+        if not obj.ref_trn or obj.ref_trn == 'NA':
+            return None
+        if 'trades_by_trn' in self.context:
+            trade_obj = self.context['trades_by_trn'].get(obj.ref_trn)
+            if trade_obj:
+                return trade_obj.trn
         try:
-            if obj.ref_trn != 'NA':
-                instance = Trade.objects.get(trn=obj.ref_trn)  # or use another field to identify the company
-                return instance.trn
+            instance = Trade.objects.get(trn=obj.ref_trn)
+            if 'trades_by_trn' not in self.context:
+                self.context['trades_by_trn'] = {}
+            self.context['trades_by_trn'][obj.ref_trn] = instance
+            return instance.trn
         except Trade.DoesNotExist:
             return None
     
     def get_container_details(self, obj):
+        if 'shipment_sizes' in self.context:
+            return self.context['shipment_sizes'].get(str(obj.container_shipment_size))
         try:
             instance = ShipmentSize.objects.get(id=obj.container_shipment_size)
             return ShipmentSizeSerializer(instance).data
@@ -172,6 +188,8 @@ class TradeSerializer(serializers.ModelSerializer):
 
     ## additional related info
     def get_company_details(self, obj):
+        if 'companies' in self.context:
+            return self.context['companies'].get(str(obj.company))
         try:
             company_instance = Company.objects.get(id=obj.company)  
             return CompanySerializer(company_instance).data
@@ -179,6 +197,8 @@ class TradeSerializer(serializers.ModelSerializer):
             return None 
 
     def get_kyc_details(self, obj):
+        if 'kycs' in self.context:
+            return self.context['kycs'].get(str(obj.customer_company_name))
         try:
             kyc_instance = Kyc.objects.get(id=obj.customer_company_name)  # or use another field to identify the company
             return KycSerializer(kyc_instance).data
@@ -186,18 +206,24 @@ class TradeSerializer(serializers.ModelSerializer):
             return None
     
     def get_bank_details(self, obj):
+        if 'banks' in self.context:
+            return self.context['banks'].get(str(obj.bank_name_address))
         try:
             instance = Bank.objects.get(id=obj.bank_name_address)
             return BankSerializer(instance).data
         except Bank.DoesNotExist:
             return None
     def get_currency_details(self, obj):
+        if 'currencies' in self.context:
+            return self.context['currencies'].get(str(obj.currency_selection))
         try:
             instance = Currency.objects.get(id=obj.currency_selection)
             return CurrencySerializer(instance).data
         except Currency.DoesNotExist:
             return None
     def get_payment_term_details(self, obj):
+        if 'payment_terms' in self.context:
+            return self.context['payment_terms'].get(str(obj.payment_term))
         try:
             instance = PaymentTerm.objects.get(id=obj.payment_term)
             return PaymentTermSerializer(instance).data
@@ -361,28 +387,32 @@ class PreSalePurchaseSerializer(serializers.ModelSerializer):
         return []
 
     def get_trade_details(self, obj):
-        try:
-            instance = Trade.objects.get(id=obj.trn.id)
-            return TradeSerializer(instance).data
-        except Trade.DoesNotExist:
-            return None
+        if obj.trn:
+            return TradeSerializer(obj.trn, context=self.context).data
+        return None
     def get_doc_details(self, obj):
         try:
+            if hasattr(obj, 'predocument_set'):
+                return PreDocumentSerializer(obj.predocument_set.all(), many=True, context=self.context).data
             instance = PreDocument.objects.filter(presalepurchase=obj)
-            return PreDocumentSerializer(instance,many=True).data
-        except PreDocument.DoesNotExist:
+            return PreDocumentSerializer(instance, many=True, context=self.context).data
+        except Exception:
             return None
     def get_pi_details(self, obj):
         try:
+            if hasattr(obj, 'acknowledgedpi_set'):
+                return AcknowledgedPISerializer(obj.acknowledgedpi_set.all(), many=True, context=self.context).data
             instance = AcknowledgedPI.objects.filter(presalepurchase=obj)
-            return AcknowledgedPISerializer(instance,many=True).data
-        except AcknowledgedPI.DoesNotExist:
+            return AcknowledgedPISerializer(instance, many=True, context=self.context).data
+        except Exception:
             return None
     def get_po_details(self, obj):
         try:
+            if hasattr(obj, 'acknowledgedpo_set'):
+                return AcknowledgedPOSerializer(obj.acknowledgedpo_set.all(), many=True, context=self.context).data
             instance = AcknowledgedPO.objects.filter(presalepurchase=obj)
-            return AcknowledgedPOSerializer(instance,many=True).data
-        except AcknowledgedPO.DoesNotExist:
+            return AcknowledgedPOSerializer(instance, many=True, context=self.context).data
+        except Exception:
             return None
     
     def to_representation(self, instance):
@@ -424,60 +454,76 @@ class PrePaymentSerializer(serializers.ModelSerializer):
         return []
     
     def get_trade_details(self, obj):
-        # Fetch company details manually
-        try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = Trade.objects.get(id=obj.trn.id)  # or use another field to identify the company
-            return TradeSerializer(instance).data
-        except Trade.DoesNotExist:
-            return None  # Or handle it as needed
+        if obj.trn:
+            return TradeSerializer(obj.trn, context=self.context).data
+        return None
 
     def get_payment_term_details(self, obj):
-        # Fetch company details manually
-        try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = PaymentTerm.objects.get(id=obj.trn.payment_term)  # or use another field to identify the company
-            return PaymentTermSerializer(instance).data
-        except PaymentTerm.DoesNotExist:
-            return None  # Or handle it as needed
+        term_id = str(obj.trn.payment_term) if obj.trn else None
+        if term_id:
+            if 'payment_terms' in self.context:
+                return self.context['payment_terms'].get(term_id)
+            try:
+                instance = PaymentTerm.objects.get(id=term_id)
+                return PaymentTermSerializer(instance).data
+            except PaymentTerm.DoesNotExist:
+                pass
+        return None
 
     def get_kyc_details(self, obj):
-        # Fetch company details manually
-        try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            kyc_instance = Kyc.objects.get(id=obj.trn.customer_company_name)  # or use another field to identify the company
-            return KycSerializer(kyc_instance).data
-        except Kyc.DoesNotExist:
-            return None  # Or handle it as needed
+        kyc_id = str(obj.trn.customer_company_name) if obj.trn else None
+        if kyc_id:
+            if 'kycs' in self.context:
+                return self.context['kycs'].get(kyc_id)
+            try:
+                kyc_instance = Kyc.objects.get(id=kyc_id)
+                return KycSerializer(kyc_instance).data
+            except Kyc.DoesNotExist:
+                pass
+        return None
 
     def get_presp_details(self, obj):
-        # Fetch company details manually
+        if not obj.trn:
+            return None
+        if 'presps_by_trn_id' in self.context:
+            presp_data = self.context['presps_by_trn_id'].get(obj.trn.id)
+            if presp_data:
+                return presp_data
         try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = PreSalePurchase.objects.get(trn=obj.trn)  # or use another field to identify the company
-            return PreSalePurchaseSerializer(instance).data
+            instance = PreSalePurchase.objects.get(trn=obj.trn)
+            data = PreSalePurchaseSerializer(instance, context=self.context).data
+            if 'presps_by_trn_id' not in self.context:
+                self.context['presps_by_trn_id'] = {}
+            self.context['presps_by_trn_id'][obj.trn.id] = data
+            return data
         except PreSalePurchase.DoesNotExist:
-            return None  # Or handle it as needed
+            return None
     
     def get_lcCopy_details(self, obj):
         try:
+            if hasattr(obj, 'lccopy_set'):
+                return LcCopySerializer(obj.lccopy_set.all(), many=True, context=self.context).data
             instance = LcCopy.objects.filter(prepayment=obj)
-            return LcCopySerializer(instance,many=True).data
-        except LcCopy.DoesNotExist:
+            return LcCopySerializer(instance, many=True, context=self.context).data
+        except Exception:
             return None
     
     def get_advanceTTCopy_details(self, obj):
         try:
+            if hasattr(obj, 'advancettcopy_set'):
+                return AdvanceTTCopySerializer(obj.advancettcopy_set.all(), many=True, context=self.context).data
             instance = AdvanceTTCopy.objects.filter(prepayment=obj)
-            return AdvanceTTCopySerializer(instance,many=True).data
-        except AdvanceTTCopy.DoesNotExist:
+            return AdvanceTTCopySerializer(instance, many=True, context=self.context).data
+        except Exception:
             return None
     
     def get_LcAmmendment_details(self, obj):
         try:
+            if hasattr(obj, 'lcammendment_set'):
+                return LcAmmendmentSerializer(obj.lcammendment_set.all(), many=True, context=self.context).data
             instance = LcAmmendment.objects.filter(prepayment=obj)
-            return LcAmmendmentSerializer(instance,many=True).data
-        except LcAmmendment.DoesNotExist:
+            return LcAmmendmentSerializer(instance, many=True, context=self.context).data
+        except Exception:
             return None
 
     def to_representation(self, instance):
@@ -581,6 +627,8 @@ class SalesPurchaseProductSerializer(serializers.ModelSerializer):
             return obj.pending_qty 
 
     def get_product_details(self, obj):
+        if 'product_names' in self.context:
+            return self.context['product_names'].get(str(obj.product_name))
         try:
             instance = ProductName.objects.get(id=obj.product_name)
             return ProductNameSerializer(instance).data
@@ -633,28 +681,34 @@ class SalesPurchaseSerializer(serializers.ModelSerializer):
         return []
     
     def get_trade_details(self, obj):
-        # Fetch company details manually
-        try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = Trade.objects.get(id=obj.trn.id)  # or use another field to identify the company
-            return TradeSerializer(instance).data
-        except Trade.DoesNotExist:
-            return None  # Or handle it as needed
+        if obj.trn:
+            return TradeSerializer(obj.trn, context=self.context).data
+        return None
 
     def get_prepay_details(self, obj):
-        # Fetch company details manually
+        if not obj.trn:
+            return None
+        if 'prepayments_by_trn_id' in self.context:
+            prepay_data = self.context['prepayments_by_trn_id'].get(obj.trn.id)
+            if prepay_data:
+                return prepay_data
         try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = PrePayment.objects.get(trn=obj.trn)  # or use another field to identify the company
-            return PrePaymentSerializer(instance).data
+            instance = PrePayment.objects.get(trn=obj.trn)
+            data = PrePaymentSerializer(instance, context=self.context).data
+            if 'prepayments_by_trn_id' not in self.context:
+                self.context['prepayments_by_trn_id'] = {}
+            self.context['prepayments_by_trn_id'][obj.trn.id] = data
+            return data
         except PrePayment.DoesNotExist:
-            return None  # Or handle it as needed
+            return None
     
     def get_packingList_details(self, obj):
         try:
+            if hasattr(obj, 'packinglist_set'):
+                return PackingListSerializer(obj.packinglist_set.all(), many=True, context=self.context).data
             instance = PackingList.objects.filter(sp=obj)
-            return PackingListSerializer(instance,many=True).data
-        except PackingList.DoesNotExist:
+            return PackingListSerializer(instance, many=True, context=self.context).data
+        except Exception:
             return None
         
 
@@ -880,17 +934,21 @@ class ProfitLossSerializer(serializers.ModelSerializer):
 
     def get_sales_trn_details(self, obj):
         try:
-            instance = PaymentFinance.objects.get(sp=obj.sales_trn)
-            return PaymentFinanceSerializer(instance).data
-        except PaymentFinance.DoesNotExist:
-            return None  # Or handle it as needed
+            instance = PaymentFinance.objects.filter(sp=obj.sales_trn).first()
+            if instance:
+                return PaymentFinanceSerializer(instance, context=self.context).data
+            return None
+        except Exception:
+            return None
     
     def get_purchase_trn_details(self, obj):
         try:
-            instance = PaymentFinance.objects.get(sp=obj.purchase_trn)
-            return PaymentFinanceSerializer(instance).data
-        except PaymentFinance.DoesNotExist:
-            return None  # Or handle it as needed
+            instance = PaymentFinance.objects.filter(sp=obj.purchase_trn).first()
+            if instance:
+                return PaymentFinanceSerializer(instance, context=self.context).data
+            return None
+        except Exception:
+            return None
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

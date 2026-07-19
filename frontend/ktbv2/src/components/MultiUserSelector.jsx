@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import Select from 'react-select';
 
-const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessageChange, isDisabled = false }) => {
+const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessageChange, isDisabled = false, isMessageRequired = false }) => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,12 +67,15 @@ const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessa
           {selectedUsers.length > 0 && onMessageChange && (
             <div className="mt-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Custom Email/Notification Message (Optional)
+                Custom Email/Notification Message {isMessageRequired ? '(Required)' : '(Optional)'}
               </label>
               <textarea
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
-                placeholder="Write an optional custom message that will go in the notification and email..."
+                placeholder={isMessageRequired 
+                  ? "Write a custom message that will go in the notification and email..." 
+                  : "Write an optional custom message that will go in the notification and email..."
+                }
                 className="w-full border border-gray-300 p-2 rounded focus:ring-blue-500 focus:border-blue-500 text-sm"
                 rows={3}
                 disabled={isDisabled}

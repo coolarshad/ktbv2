@@ -31,8 +31,8 @@ const PLForm = ({ mode = 'add' }) => {
     };
 
     useEffect(() => {
-        fetchData('/trademgt/sales-purchases/', { reviewed: true }, setSalesTrnOptions);
-        fetchData('/trademgt/sales-purchases/', { reviewed: true }, setPurchaseTrnOptions);
+        fetchData('/trademgt/sales-purchases/', { reviewed: true, pf_approved: 'true', trn__trade_type: 'Sales' }, setSalesTrnOptions);
+        fetchData('/trademgt/sales-purchases/', { reviewed: true, pf_approved: 'true', trn__trade_type: 'Purchase' }, setPurchaseTrnOptions);
 
     }, []);
 

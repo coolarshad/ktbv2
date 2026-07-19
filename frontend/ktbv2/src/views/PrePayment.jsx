@@ -12,6 +12,7 @@ import MultiUserSelector from '../components/MultiUserSelector';
 import { today, addDaysToDate,advanceToPay,advanceToReceive,dateFormatter } from '../dateUtils';
 import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
 
 function PrePayment() {
   const { user } = useAuth();
@@ -19,7 +20,8 @@ function PrePayment() {
   const componentRef = useRef();
 
   const [prePaymentData, setPrePaymentData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,20 +31,26 @@ function PrePayment() {
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/trademgt/pre-payments'); // Replace with your API endpoint
-        setPrePaymentData(response.data);
-      } catch (error) {
-        setError('Failed to fetch trade data');
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`/trademgt/pre-payments/?page=${currentPage}`);
+      if (response.data && response.data.results) {
+        setPrePaymentData(response.data.results);
+        setTotalItems(response.data.count);
+      } else {
+        setPrePaymentData(response.data || []);
+        setTotalItems(response.data ? response.data.length : 0);
       }
-    };
+    } catch (error) {
+      setError('Failed to fetch trade data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   const handleViewClick = async (id) => {
     try {
@@ -104,8 +112,14 @@ function PrePayment() {
   };
 
   const handleFilter = (filters) => {
-    setPrePaymentData(filters)
-        setCurrentPage(1);
+    if (filters && filters.results) {
+      setPrePaymentData(filters.results);
+      setTotalItems(filters.count);
+    } else {
+      setPrePaymentData(filters || []);
+      setTotalItems(filters ? filters.length : 0);
+    }
+    setCurrentPage(1);
   };
 
   const fieldOptions = [
@@ -123,13 +137,11 @@ function PrePayment() {
     { value: 'remarks', label: 'Remarks' },
   ];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
-    const indexOfLastItem = currentPage * 50;
-    const indexOfFirstItem = indexOfLastItem - 50;
-    const currentItems = prePaymentData?.slice(indexOfFirstItem, indexOfLastItem) || [];
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const currentItems = prePaymentData || [];
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     
   return (
@@ -146,12 +158,12 @@ function PrePayment() {
 )}
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-payments'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" showPendingFilter={true} 
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" showPendingFilter={true} currentPage={currentPage}
         />
         </div>
         <div className=" rounded p-2">
         <PrePaymentTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pre_payment" />
-        <Pagination itemsPerPage={50} totalItems={prePaymentData?.length || 0} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

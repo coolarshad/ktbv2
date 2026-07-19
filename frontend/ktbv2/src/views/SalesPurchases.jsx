@@ -12,13 +12,15 @@ import MultiUserSelector from '../components/MultiUserSelector';
 import ReactToPrint from 'react-to-print';
 import { BASE_URL } from '../utils'; 
 import { dateFormatter, calculatePFCommissionValue } from "../dateUtils";
+import Loading from '../components/Loading';
 
 function SalesPurchases() {
   const { user } = useAuth();
   const componentRef = useRef();
   const navigate = useNavigate();
   const [spData, setSPData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,20 +30,26 @@ function SalesPurchases() {
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/trademgt/sales-purchases'); // Replace with your API endpoint
-        setSPData(response.data);
-      } catch (error) {
-        setError('Failed to fetch trade data');
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`/trademgt/sales-purchases/?page=${currentPage}`);
+      if (response.data && response.data.results) {
+        setSPData(response.data.results);
+        setTotalItems(response.data.count);
+      } else {
+        setSPData(response.data || []);
+        setTotalItems(response.data ? response.data.length : 0);
       }
-    };
+    } catch (error) {
+      setError('Failed to fetch trade data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this Sale/Purchase?');
@@ -62,8 +70,14 @@ function SalesPurchases() {
   };
 
   const handleFilter = (filters) => {
-    setSPData(filters)
-        setCurrentPage(1);
+    if (filters && filters.results) {
+      setSPData(filters.results);
+      setTotalItems(filters.count);
+    } else {
+      setSPData(filters || []);
+      setTotalItems(filters ? filters.length : 0);
+    }
+    setCurrentPage(1);
   };
 
   const handleViewClick = async (tradeId) => {
@@ -128,13 +142,11 @@ function SalesPurchases() {
     { value: 'remarks', label: 'Remarks' },
   ];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
-    const indexOfLastItem = currentPage * 50;
-    const indexOfFirstItem = indexOfLastItem - 50;
-    const currentItems = spData?.slice(indexOfFirstItem, indexOfLastItem) || [];
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const currentItems = spData || [];
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     
 
@@ -157,12 +169,12 @@ function SalesPurchases() {
 )}
         <div>
           <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/sales-purchases'}
-            fieldOptions={fieldOptions} downloadUrl="/excel/export/sp/" 
+            fieldOptions={fieldOptions} downloadUrl="/excel/export/sp/" currentPage={currentPage}
           />
         </div>
         <div className=" rounded p-2">
           <SPTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="sales_purchases" />
-        <Pagination itemsPerPage={50} totalItems={spData?.length || 0} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

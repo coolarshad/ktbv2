@@ -12,13 +12,15 @@ import MultiUserSelector from '../components/MultiUserSelector';
 import { BASE_URL } from '../utils';
 import { paymentDueDate,calculateRemainingContractValue, calculatePFCommissionValue,dateFormatter } from '../dateUtils';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
 
 function PaymentFinance() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const componentRef = useRef();
   const [pfData, setPFData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,20 +30,26 @@ function PaymentFinance() {
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/trademgt/payment-finances'); // Replace with your API endpoint
-        setPFData(response.data);
-      } catch (error) {
-        setError('Failed to fetch trade data');
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`/trademgt/payment-finances/?page=${currentPage}`);
+      if (response.data && response.data.results) {
+        setPFData(response.data.results);
+        setTotalItems(response.data.count);
+      } else {
+        setPFData(response.data || []);
+        setTotalItems(response.data ? response.data.length : 0);
       }
-    };
+    } catch (error) {
+      setError('Failed to fetch trade data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this Payment/Finance?');
@@ -63,8 +71,14 @@ function PaymentFinance() {
 
 
   const handleFilter = (filters) => {
-    setPFData(filters)
-        setCurrentPage(1);
+    if (filters && filters.results) {
+      setPFData(filters.results);
+      setTotalItems(filters.count);
+    } else {
+      setPFData(filters || []);
+      setTotalItems(filters ? filters.length : 0);
+    }
+    setCurrentPage(1);
   };
 
   const reviewTrade = async () => {
@@ -123,13 +137,11 @@ function PaymentFinance() {
   ];
 
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
-    const indexOfLastItem = currentPage * 50;
-    const indexOfFirstItem = indexOfLastItem - 50;
-    const currentItems = pfData?.slice(indexOfFirstItem, indexOfLastItem) || [];
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const currentItems = pfData || [];
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     
 
@@ -150,12 +162,12 @@ function PaymentFinance() {
 )}
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/payment-finances/'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/pf/" 
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/pf/" currentPage={currentPage}
         />
         </div>
         <div className=" rounded p-2">
         <PFTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="payment_finance" />
-        <Pagination itemsPerPage={50} totalItems={pfData?.length || 0} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={10} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

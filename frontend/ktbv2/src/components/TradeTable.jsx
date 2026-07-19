@@ -105,7 +105,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                     <div className="space-x-2">
-                      {row.trade.reviewed && hasPermission(user, `print_${basePerm}`) ? (
+                      {row.trade.reviewed && row.trade.approved && hasPermission(user, `print_${basePerm}`) ? (
                         <button
                           className="bg-green-500 text-white px-2 py-1 rounded"
                           onClick={(e) => { e.stopPropagation(); handlePrintClick(row.trade.id); }}

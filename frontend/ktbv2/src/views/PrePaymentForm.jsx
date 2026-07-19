@@ -729,11 +729,14 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                     onChange={handleUsersChange}
                     message={formData.notification_message}
                     onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+                    isMessageRequired={true}
                 />
                 {validationErrors.notifiedUsers && (
-                    <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                    <span className="error-text text-red-500 block">{validationErrors.notifiedUsers}</span>
                 )}
-
+                {validationErrors.notification_message && (
+                    <span className="error-text text-red-500 block mt-1">{validationErrors.notification_message}</span>
+                )}
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">

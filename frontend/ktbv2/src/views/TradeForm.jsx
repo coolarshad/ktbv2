@@ -707,6 +707,25 @@ const TradeForm = ({ mode = 'add' }) => {
         if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
             errors.notifiedUsers = 'At least one notification recipient must be selected!';
         }
+
+        // Validate customer KYC approval status
+        if (formData.customer_company_name) {
+            const isApproved = customerOptions.some(opt => String(opt.id) === String(formData.customer_company_name));
+            if (!isApproved) {
+                errors.customer_company_name = 'The selected customer is not approved for Approve 1 and Approve 2.';
+            }
+        }
+
+        // Validate packaging supplier KYC approval status
+        formData.tradeProducts.forEach((product, index) => {
+            if (product.packaging_supplier) {
+                const isApproved = customerOptions.some(opt => String(opt.id) === String(product.packaging_supplier));
+                if (!isApproved) {
+                    errors[`tradeProducts[${index}].packaging_supplier`] = 'The selected packaging supplier is not approved for Approve 1 and Approve 2.';
+                }
+            }
+        });
+
         setValidationErrors(errors);
 
         if (Object.keys(errors).length > 0) {
@@ -1241,9 +1260,9 @@ const TradeForm = ({ mode = 'add' }) => {
                                         {validationErrors[`tradeProducts[${index}].ref_trn`]}
                                     </p>
                                 )}
-                                {product.ref_balance && product.ref_trn !== 'NA' ? (
+                                {product.ref_trn && product.ref_trn !== 'NA' && product.ref_balance !== '' && product.ref_balance !== undefined && product.ref_balance !== null ? (
                                     <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
-                                        Reference Balance: {product.ref_balance || 'NA'}
+                                        Reference Balance: {product.ref_balance}
                                     </p>
                                 ) : ''}
                             </div>
@@ -1876,9 +1895,13 @@ const TradeForm = ({ mode = 'add' }) => {
                 onChange={handleUserSelect}
                 message={formData.notification_message}
                 onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+                isMessageRequired={true}
             />
             {validationErrors.notifiedUsers && (
-                <span className="error-text text-red-500">{validationErrors.notifiedUsers}</span>
+                <span className="error-text text-red-500 block">{validationErrors.notifiedUsers}</span>
+            )}
+            {validationErrors.notification_message && (
+                <span className="error-text text-red-500 block mt-1">{validationErrors.notification_message}</span>
             )}
 
 
