@@ -148,11 +148,13 @@ const TradeForm = ({ mode = 'add' }) => {
         // fetchData('/trademgt/refproductcode', setRefProductOptions);
     }, []);
 
+    const [hasDraft, setHasDraft] = useState(false);
+
     useEffect(() => {
         if (mode === 'add') {  // Only pre-fill for new forms
             const savedDraft = localStorage.getItem('tradeDraft');
             if (savedDraft) {
-                setFormData(JSON.parse(savedDraft));
+                setHasDraft(true);
             }
         }
     }, [mode]);
@@ -197,7 +199,7 @@ const TradeForm = ({ mode = 'add' }) => {
             axios.get(`/trademgt/trades/${id}`)
                 .then(async response => {
                     const data = response.data;
-                    
+
                     // Fetch reference balances for existing products in parallel
                     const updatedProducts = await Promise.all((data.tradeProducts || []).map(async (product) => {
                         if (product.ref_trn && product.ref_trn !== 'NA' && product.ref_product_code && product.ref_product_code !== 'NA') {
@@ -761,7 +763,7 @@ const TradeForm = ({ mode = 'add' }) => {
         });
 
         if (invalidRefBalanceProduct) {
-            alert(`Trade Quantity cannot exceed Ref Balance for product index: ${formData.tradeProducts.indexOf(invalidRefBalanceProduct) + 1}`);
+            alert(`Trade Quantity cannot exceed the selected Reference TRN's remaining balance qty for product at item number: ${formData.tradeProducts.indexOf(invalidRefBalanceProduct) + 1}`);
             return; // Stop form submission
         }
 
@@ -828,15 +830,59 @@ const TradeForm = ({ mode = 'add' }) => {
     const handleClearForm = () => {
         setFormData(initialFormData);
         localStorage.removeItem('tradeDraft');  // Remove draft from localStorage when cleared
+        setHasDraft(false);
     };
     const handleSaveDraft = () => {
         localStorage.setItem('tradeDraft', JSON.stringify(formData));
+        setHasDraft(true);
         alert('Draft saved successfully!');
+    };
+    const handleLoadDraft = async () => {
+        const savedDraft = localStorage.getItem('tradeDraft');
+        if (savedDraft) {
+            try {
+                const draftData = JSON.parse(savedDraft);
+                setFormData(draftData);
+                setHasDraft(false);
+                alert('Draft loaded successfully!');
+
+                if (draftData.company) {
+                    try {
+                        const response = await axios.get(`/trademgt/companies/${draftData.company}/next-counter/`);
+                        if (response.status === 200) {
+                            setFormData(prev => ({
+                                ...prev,
+                                trn: response.data.next_counter
+                            }));
+                        }
+                    } catch (err) {
+                        console.error('Error fetching fresh counter after draft load:', err);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to parse saved draft data:', err);
+                alert('Failed to load draft due to corrupted data.');
+            }
+        }
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6  w-full mx-auto">
             <h2 className="text-2xl mt-2 text-center">Trade Form</h2>
+            
+            {hasDraft && mode === 'add' && (
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded mx-4 mb-2 flex justify-between items-center">
+                    <span>You have a saved draft for this trade form. Do you want to load it?</span>
+                    <button
+                        type="button"
+                        onClick={handleLoadDraft}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded text-sm font-medium transition"
+                    >
+                        Load Draft
+                    </button>
+                </div>
+            )}
+
             <div className="grid grid-cols-3 gap-4 p-4 ">
                 <div>
                     <label htmlFor="trade_type" className="block text-sm font-medium text-gray-700">Select Trade Type</label>
@@ -1238,8 +1284,8 @@ const TradeForm = ({ mode = 'add' }) => {
                                         { value: 'NA', label: 'NA' },
                                         ...((product.ref_product_code && product.ref_product_code !== 'NA')
                                             ? tradesList
-                                                .filter(trade => 
-                                                    trade.trade_products && 
+                                                .filter(trade =>
+                                                    trade.trade_products &&
                                                     trade.trade_products.some(p => p.product_code === product.ref_product_code)
                                                 )
                                                 .map(trade => ({

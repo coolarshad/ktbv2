@@ -15,16 +15,29 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         if not user or not user.is_authenticated:
             return Notification.objects.none()
         
-        if user.is_superuser or user.role == 'Manager2':
-            return Notification.objects.all()
+        # 1. Base queryset: User only sees notifications where they are the recipient
+        queryset = Notification.objects.filter(recipient=user)
 
-        from django.db.models import Q
-        return Notification.objects.filter(
-            Q(notification_type='PERSONAL', recipient=user) |
-            Q(actor=user) |
-            Q(actor__reports_to=user) |
-            Q(actor=user.reports_to)
+        # 2. Scope GENERAL notifications for non-managers
+        if not (user.is_superuser or user.role == 'Manager2'):
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(notification_type='PERSONAL') |
+                Q(notification_type='GENERAL', actor__reports_to=user) |
+                Q(notification_type='GENERAL', actor=user.reports_to)
+            )
+
+        # 3. De-duplicate PERSONAL and GENERAL notifications by target_url
+        personal_urls = queryset.filter(notification_type='PERSONAL').exclude(
+            target_url__isnull=True
+        ).values_list('target_url', flat=True)
+        
+        queryset = queryset.exclude(
+            notification_type='GENERAL',
+            target_url__in=list(personal_urls)
         )
+
+        return queryset
 
     @action(detail=False, methods=['get'])
     def unread(self, request):

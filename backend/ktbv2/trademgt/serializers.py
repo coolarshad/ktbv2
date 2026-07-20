@@ -148,6 +148,12 @@ class TradeSerializer(serializers.ModelSerializer):
         model = Trade
         fields = '__all__'
 
+    def validate_trn(self, value):
+        if not self.instance:  # Only validate on creation
+            if Trade.objects.filter(trn=value).exists():
+                raise serializers.ValidationError(f"Trade with TRN '{value}' already exists.")
+        return value
+
     def get_trade_products(self, obj):
         products = obj.trade_products.all()
         request = self.context.get('request')

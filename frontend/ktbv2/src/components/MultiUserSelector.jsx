@@ -45,7 +45,7 @@ const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessa
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 mx-2">
       <label className="block text-sm font-medium mb-1">Notify Users</label>
 
       {loading ? (
@@ -72,8 +72,8 @@ const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessa
               <textarea
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
-                placeholder={isMessageRequired 
-                  ? "Write a custom message that will go in the notification and email..." 
+                placeholder={isMessageRequired
+                  ? "Write a custom message that will go in the notification and email..."
                   : "Write an optional custom message that will go in the notification and email..."
                 }
                 className="w-full border border-gray-300 p-2 rounded focus:ring-blue-500 focus:border-blue-500 text-sm"
