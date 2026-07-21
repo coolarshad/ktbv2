@@ -130,7 +130,7 @@ const Consumption = () => {
         </button>
 )}
         <div>
-          <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/consumption/" />
+          <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/consumption/" fileName="Consumption_export" />
         </div>
         <div className=" rounded p-2">
           <ConsumptionTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="consumption" />

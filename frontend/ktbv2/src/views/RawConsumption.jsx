@@ -90,6 +90,7 @@ function RawConsumption() {
                 onFilter={handleFilter}
                 apiEndpoint="/costmgt/final-product/"
                 downloadUrl="/excel/export/report/raw-cons/"
+                fileName="Raw_Consumption_export"
                 fieldOptions={[]}
             />
 

@@ -80,7 +80,7 @@ const PurchasePending = () => {
         <p className="text-xl">Purchase Pending</p>
        
         <div>
-        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/trade-pending'} extraParams={{ trade_type: 'Purchase' }} downloadUrl="/excel/export/trade-pending/?trade_type=Purchase" fieldOptions={fieldOptions} />
+        <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/trade-pending'} extraParams={{ trade_type: 'Purchase' }} downloadUrl="/excel/export/trade-pending/?trade_type=Purchase" fileName="Purchase_Pending_export" fieldOptions={fieldOptions} />
         </div>
         <div className=" rounded p-2">
         <PurchasePendingTable data={currentItems} onDelete={handleDelete} />

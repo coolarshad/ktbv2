@@ -135,7 +135,7 @@ const Additive = () => {
         </button>
 )}
         <div>
-        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/additives/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/additive/" />
+        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/additives/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/additive/" fileName="Additive_export" />
         </div>
         <div className=" rounded p-2">
         <AdditiveTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="additive_pricing" />

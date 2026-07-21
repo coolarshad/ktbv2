@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaDownload, FaUndo, FaSearch } from 'react-icons/fa';
 import axios from '../axiosConfig';
+import { getExportFileName } from '../utils/exportHelper';
 
 const CostMgtFilterComponent = ({
   apiEndpoint,
@@ -9,6 +10,8 @@ const CostMgtFilterComponent = ({
   onFilter,
   checkBtn = true,
   downloadUrl = '/excel/export/trade/',
+  fileName,
+  exportFileName,
 }) => {
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -114,10 +117,11 @@ const CostMgtFilterComponent = ({
       const fullDownloadUrl = `${downloadUrl}${separator}${queryParams.toString()}`;
 
       const response = await axios.get(fullDownloadUrl, { responseType: 'blob' });
+      const finalFileName = getExportFileName(exportFileName || fileName, downloadUrl, response, extraParams);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'data_export.xlsx');
+      link.setAttribute('download', finalFileName);
       document.body.appendChild(link);
       link.click();
       link.remove();

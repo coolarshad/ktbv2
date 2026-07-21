@@ -160,7 +160,7 @@ function PrePayment() {
 )}
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-payments'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" showPendingFilter={true} currentPage={currentPage}
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" fileName="Pre_Payment_export" showPendingFilter={true} currentPage={currentPage}
         />
         </div>
         <div className=" rounded p-2">

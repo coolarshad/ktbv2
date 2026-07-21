@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaDownload, FaUndo, FaSearch } from 'react-icons/fa';
 import axios from '../axiosConfig';
+import { getExportFileName } from '../utils/exportHelper';
 
 const FilterComponent = ({
   flag,
@@ -13,6 +14,8 @@ const FilterComponent = ({
   downloadUrl = '/excel/export/trade/',
   showPendingFilter = false,
   currentPage,
+  fileName,
+  exportFileName,
 }) => {
   const { user } = useAuth();
   
@@ -154,10 +157,11 @@ const FilterComponent = ({
         },
       });
   
+      const finalFileName = getExportFileName(exportFileName || fileName, downloadUrl, response, extraParams);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'data_export.xlsx');
+      link.setAttribute('download', finalFileName);
       document.body.appendChild(link);
       link.click();
       link.remove();

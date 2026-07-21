@@ -106,7 +106,7 @@ function PreSalePurchase() {
 )}
         <div>
         <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-sales-purchases'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/presp/" showPendingFilter={true} currentPage={currentPage}
+        fieldOptions={fieldOptions} downloadUrl="/excel/export/presp/" fileName="Pre_Sale_Purchase_export" showPendingFilter={true} currentPage={currentPage}
         />
         </div>
         <div className=" rounded p-2">

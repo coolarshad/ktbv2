@@ -93,6 +93,7 @@ function AdditiveConsumption() {
                 onFilter={handleFilter}
                 apiEndpoint="/costmgt/final-product/"
                 downloadUrl="/excel/export/report/additive-cons/"
+                fileName="Additive_Consumption_export"
                 fieldOptions={[]}
             />
 

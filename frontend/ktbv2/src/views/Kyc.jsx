@@ -147,7 +147,7 @@ const Kyc = () => {
           </button>
         )}
         <div>
-          <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/kyc'} fieldOptions={fieldOptions} downloadUrl="/excel/export/kyc/" />
+          <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/kyc'} fieldOptions={fieldOptions} downloadUrl="/excel/export/kyc/" fileName="KYC_export" />
         </div>
         <div className=" rounded p-2">
           <KycTable data={kycData} onDelete={handleDelete} onView={handleViewClick} />

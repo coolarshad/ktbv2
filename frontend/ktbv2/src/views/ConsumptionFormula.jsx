@@ -133,7 +133,7 @@ const ConsumptionFormula = () => {
         </button>
 )}
         <div>
-          <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption-formula/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/consumption-formula/" />
+          <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/consumption-formula/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/consumption-formula/" fileName="Blending_Formulation_export" />
         </div>
         <div className=" rounded p-2">
         <ConsumptionFormulaTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="blending_formulation" />

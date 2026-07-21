@@ -76,6 +76,7 @@ function PackingConsumption() {
                 onFilter={handleFilter}
                 apiEndpoint="/costmgt/final-product/"
                 downloadUrl="/excel/export/report/packing-cons/"
+                fileName="Packing_Consumption_export"
                 fieldOptions={[]}
             />
 

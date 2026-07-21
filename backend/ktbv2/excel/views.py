@@ -446,7 +446,7 @@ class ExportKycExcelView(APIView):
        
         df = pd.DataFrame(data)
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="kyc.xlsx"'
+        response['Content-Disposition'] = 'attachment; filename="KYC_export.xlsx"'
         df.to_excel(response, index=False)
 
         return response

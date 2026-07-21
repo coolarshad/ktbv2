@@ -110,6 +110,7 @@ const Category = () => {
             onFilter={handleFilter}
             apiEndpoint={'/costmgt/categories'}
             fieldOptions={fieldOptions}
+            fileName="Category_export"
           />
         </div>
         <div className="max-h-[95vh] overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-sm">

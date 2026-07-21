@@ -178,7 +178,7 @@ function TradeApproval() {
           <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades/'} fieldOptions={[
             { value: 'trn', label: 'TRN' },
             { value: 'company', label: 'Company' },
-          ]} extraParams={{ pending: true }} downloadUrl="/excel/export/trade/" currentPage={currentPage} />
+          ]} extraParams={{ pending: true }} downloadUrl="/excel/export/trade/" fileName="Trade_Approval_export" currentPage={currentPage} />
         </div>
         <div className=" rounded py-2">
           <TradeTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} basePerm="trade_approval" />
