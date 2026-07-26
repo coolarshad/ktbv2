@@ -307,7 +307,9 @@ class FinalProductFilter(SearchableFilterSet):
 
     class Meta:
         model = FinalProduct
-        fields = []
+        fields = {
+            'approved': ['exact'],
+        }
 
     def global_search(self, queryset, name, value):
         if not value:

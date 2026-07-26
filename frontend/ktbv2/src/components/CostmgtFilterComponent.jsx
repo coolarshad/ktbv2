@@ -10,6 +10,7 @@ const CostMgtFilterComponent = ({
   onFilter,
   checkBtn = true,
   downloadUrl = '/excel/export/trade/',
+  statusField = null,
   fileName,
   exportFileName,
 }) => {
@@ -19,6 +20,7 @@ const CostMgtFilterComponent = ({
   const [salesChecked, setSalesChecked] = useState(false);
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
+  const [statusValue, setStatusValue] = useState('');
 
   const isFirstRender = useRef(true);
   const isResetting = useRef(false);
@@ -38,7 +40,7 @@ const CostMgtFilterComponent = ({
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked]);
+  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked, statusValue]);
 
   const performSearch = async () => {
     try {
@@ -52,6 +54,10 @@ const CostMgtFilterComponent = ({
       }
       if (dateTo) {
         params.date_to = dateTo;
+      }
+
+      if (statusField && statusValue !== '') {
+        params[statusField] = statusValue;
       }
 
       const tradeTypes = [];
@@ -78,6 +84,7 @@ const CostMgtFilterComponent = ({
     setSalesChecked(false);
     setPurchaseChecked(false);
     setCancelChecked(false);
+    setStatusValue('');
 
     try {
       const response = await axios.get(apiEndpoint, { params: { ...extraParams } });
@@ -102,6 +109,9 @@ const CostMgtFilterComponent = ({
       }
       if (dateTo) {
         queryParams.append('date_to', dateTo);
+      }
+      if (statusField && statusValue !== '') {
+        queryParams.append(statusField, statusValue);
       }
 
       const tradeTypes = [];
@@ -173,6 +183,22 @@ const CostMgtFilterComponent = ({
               className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             />
           </div>
+
+          {/* Status Filter */}
+          {statusField && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Status</span>
+              <select
+                value={statusValue}
+                onChange={(e) => setStatusValue(e.target.value)}
+                className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+              >
+                <option value="">All</option>
+                <option value="true">Approved</option>
+                <option value="false">Pending (Unapproved)</option>
+              </select>
+            </div>
+          )}
 
           {/* Checkboxes if checkBtn is enabled */}
           {checkBtn && (

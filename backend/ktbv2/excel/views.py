@@ -1125,6 +1125,35 @@ class ExportInventoryExcelView(APIView):
             excel_data.append(row)
         return excel_data
 
+class ExportDashboardInventoryExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        from django.db.models import Sum
+        from trademgt.models import Inventory, ProductName
+        import pandas as pd
+
+        inventory_summary = (
+            Inventory.objects.values('product_name', 'unit')
+            .annotate(total_stock=Sum('quantity'))
+            .order_by('-total_stock')
+        )
+        product_name_map = {str(pn.id): pn.name for pn in ProductName.objects.all()}
+        
+        excel_data = []
+        for item in inventory_summary:
+            pn_id = str(item['product_name'])
+            unit = item['unit'] or ''
+            stock_val = round(item['total_stock'] or 0, 2)
+            excel_data.append({
+                'Product Name': product_name_map.get(pn_id, pn_id),
+                'Stock (Quantity)': f"{stock_val} {unit}".strip(),
+            })
+
+        df = pd.DataFrame(excel_data)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="dashboard_inventory_summary.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
 class ExportTradePendingExcelView(APIView):
     def get(self, request, *args, **kwargs):
         trade_type = request.GET.get('trade_type', None)

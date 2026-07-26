@@ -154,6 +154,7 @@ const RawCategory = () => {
             fieldOptions={fieldOptions}
             downloadUrl="/excel/export/raw-category/"
             fileName="Raw_Category_export"
+            statusField="approved"
           />
         </div>
         <div className="rounded p-2 overflow-x-auto">

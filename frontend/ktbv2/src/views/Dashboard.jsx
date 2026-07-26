@@ -12,7 +12,9 @@ import {
   FaFileInvoiceDollar,
   FaMoneyCheckAlt,
   FaClipboardList,
-  FaBox
+  FaBox,
+  FaCreditCard,
+  FaDownload
 } from 'react-icons/fa';
 
 export default function Dashboard() {
@@ -33,6 +35,23 @@ export default function Dashboard() {
       });
   }, []);
 
+  const downloadInventoryExcel = async () => {
+    try {
+      const response = await axios.get('/excel/export/dashboard-inventory/', {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Dashboard_Inventory_Summary.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading inventory summary file:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 lg:p-10 bg-gray-50 min-h-screen">
@@ -40,8 +59,8 @@ export default function Dashboard() {
           <div className="h-10 bg-gray-200 rounded w-1/4 mb-10"></div>
 
           <div className="h-8 bg-gray-200 rounded w-1/6 mb-4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {[...Array(5)].map((_, i) => (
               <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
             ))}
           </div>
@@ -58,6 +77,7 @@ export default function Dashboard() {
   const tradeMetrics = data?.trade_management?.metrics || {};
   const tradeRecent = data?.trade_management?.recent_trades || [];
   const presaleRecent = data?.trade_management?.recent_presales || [];
+  const inventoryRecent = data?.trade_management?.recent_inventory || [];
 
   const costMetrics = data?.cost_management?.metrics || {};
   const productRecent = data?.cost_management?.recent_products || [];
@@ -86,7 +106,7 @@ export default function Dashboard() {
         </div>
 
         {/* Trade KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <StatCard
             title="Total Trades"
             data={tradeMetrics.trades || 0}
@@ -98,6 +118,12 @@ export default function Dashboard() {
             data={tradeMetrics.presales || 0}
             icon={<FaClipboardList className="text-indigo-500" size={24} />}
             color="bg-indigo-50"
+          />
+          <StatCard
+            title="Pre Payment"
+            data={tradeMetrics.pre_payment || 0}
+            icon={<FaCreditCard className="text-cyan-500" size={24} />}
+            color="bg-cyan-50"
           />
           <StatCard
             title="Sales Purchases"
@@ -196,6 +222,43 @@ export default function Dashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+
+        {/* Recent Inventory Table */}
+        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+            <h3 className="text-lg font-semibold text-gray-800">Inventory Stock Summary</h3>
+            <button
+              onClick={downloadInventoryExcel}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200"
+            >
+              <FaDownload size={11} />
+              Export
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 text-sm">
+                  <th className="p-4 font-medium">Product Name</th>
+                  <th className="p-4 font-medium">Stock (Quantity)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inventoryRecent.map((item, i) => (
+                  <tr key={i} className="border-b border-gray-50 hover:bg-cyan-50 transition-colors">
+                    <td className="p-4 text-gray-800 font-medium">{item.product_name || '-'}</td>
+                    <td className="p-4 text-gray-800 font-semibold">{item.total_stock} {item.unit || ''}</td>
+                  </tr>
+                ))}
+                {inventoryRecent.length === 0 && (
+                  <tr>
+                    <td colSpan="2" className="p-8 text-center text-gray-400">No inventory records found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

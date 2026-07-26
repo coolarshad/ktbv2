@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from trademgt.models import Trade, PreSalePurchase, SalesPurchase, PaymentFinance
+from trademgt.models import Trade, PreSalePurchase, SalesPurchase, PaymentFinance, PrePayment, Inventory
+from trademgt.serializers import InventorySerializer
 from costmgt.models import FinalProduct, Additive, RawMaterial, ConsumptionFormula, Packing, Category
 from notifications.models import Notification
 # Create your views here.
@@ -62,6 +63,9 @@ class DashboardAPIView(APIView):
         total_payment_finance = PaymentFinance.objects.count()
         payment_finance_appr = PaymentFinance.objects.filter(reviewed=True).count()
 
+        total_pre_payment = PrePayment.objects.count()
+        pre_payment_appr = PrePayment.objects.filter(reviewed=True).count()
+
         # Cost Management Metrics
         total_products = FinalProduct.objects.count()
         products_appr = FinalProduct.objects.filter(approved=True).count()
@@ -90,6 +94,24 @@ class DashboardAPIView(APIView):
         recent_trades = Trade.objects.order_by('-id')[:5].values('id', 'trn', 'trd', 'trade_type', 'company', 'approved')
         recent_presales = PreSalePurchase.objects.order_by('-id')[:5].values('id', 'date', 'trn__trn', 'approved')
 
+        # Inventory Stock Summary Aggregated by Product Name
+        from django.db.models import Sum
+        from trademgt.models import ProductName
+        inventory_summary = (
+            Inventory.objects.values('product_name', 'unit')
+            .annotate(total_stock=Sum('quantity'))
+            .order_by('-total_stock')
+        )
+        product_name_map = {str(pn.id): pn.name for pn in ProductName.objects.all()}
+        recent_inventory_data = []
+        for item in inventory_summary:
+            pn_id = str(item['product_name'])
+            recent_inventory_data.append({
+                'product_name': product_name_map.get(pn_id, pn_id),
+                'total_stock': round(item['total_stock'] or 0, 2),
+                'unit': item['unit'] or ''
+            })
+
         # Recent Cost Activities
         recent_cost_activities = FinalProduct.objects.order_by('-id')[:5].values('id', 'date', 'total_qty', 'total_cfr_pricing', 'approved')
         recent_consumptions = ConsumptionFormula.objects.order_by('-id')[:5].values('id', 'ref', 'date', 'approved')
@@ -101,9 +123,11 @@ class DashboardAPIView(APIView):
                     'presales': {'total': total_presales, 'approved': presales_appr, 'pending': total_presales - presales_appr},
                     'sales_purchases': {'total': total_sales_purchases, 'approved': sales_purchases_appr, 'pending': total_sales_purchases - sales_purchases_appr},
                     'payment_finance': {'total': total_payment_finance, 'approved': payment_finance_appr, 'pending': total_payment_finance - payment_finance_appr},
+                    'pre_payment': {'total': total_pre_payment, 'approved': pre_payment_appr, 'pending': total_pre_payment - pre_payment_appr},
                 },
                 'recent_trades': list(recent_trades),
                 'recent_presales': list(recent_presales),
+                'recent_inventory': recent_inventory_data,
             },
             'cost_management': {
                 'metrics': {

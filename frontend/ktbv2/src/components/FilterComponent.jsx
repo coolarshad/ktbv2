@@ -13,6 +13,7 @@ const FilterComponent = ({
   checkBtn = true,
   downloadUrl = '/excel/export/trade/',
   showPendingFilter = false,
+  statusField = null,
   currentPage,
   fileName,
   exportFileName,
@@ -26,6 +27,7 @@ const FilterComponent = ({
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
   const [pendingSpChecked, setPendingSpChecked] = useState(false);
+  const [statusValue, setStatusValue] = useState('');
 
   const isFirstRender = useRef(true);
   const isResetting = useRef(false);
@@ -50,7 +52,7 @@ const FilterComponent = ({
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked, pendingSpChecked, currentPage]);
+  }, [search, dateFrom, dateTo, salesChecked, purchaseChecked, cancelChecked, pendingSpChecked, statusValue, currentPage]);
 
   const performSearch = async (isPageChange = false) => {
     try {
@@ -68,6 +70,10 @@ const FilterComponent = ({
 
       if (dateFrom) params.date_from = dateFrom;
       if (dateTo) params.date_to = dateTo;
+
+      if (statusField && statusValue !== '') {
+        params[statusField] = statusValue;
+      }
 
       const tradeTypes = [];
       if (salesChecked) tradeTypes.push('sales');
@@ -104,6 +110,7 @@ const FilterComponent = ({
     setPurchaseChecked(false);
     setCancelChecked(false);
     setPendingSpChecked(false);
+    setStatusValue('');
 
     try {
       const params = { ...extraParams };
@@ -127,6 +134,9 @@ const FilterComponent = ({
       if (search) queryParams.append('q', search);
       if (dateFrom) queryParams.append('date_from', dateFrom);
       if (dateTo) queryParams.append('date_to', dateTo);
+      if (statusField && statusValue !== '') {
+        queryParams.append(statusField, statusValue);
+      }
 
       const tradeTypes = [];
       if (salesChecked) tradeTypes.push('sales');
@@ -213,6 +223,22 @@ const FilterComponent = ({
               className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             />
           </div>
+
+          {/* Status Filter */}
+          {statusField && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Status</span>
+              <select
+                value={statusValue}
+                onChange={(e) => setStatusValue(e.target.value)}
+                className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+              >
+                <option value="">All</option>
+                <option value="true">{statusField === 'approved' ? 'Approved' : 'Reviewed'}</option>
+                <option value="false">{statusField === 'approved' ? 'Pending (Unapproved)' : 'Pending (Unreviewed)'}</option>
+              </select>
+            </div>
+          )}
 
           {/* Checkboxes if checkBtn or showPendingFilter is enabled */}
           {(checkBtn || showPendingFilter) && (

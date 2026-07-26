@@ -131,7 +131,7 @@ const ProductFormula = () => {
         </button>
 )}
         <div>
-        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/product-formula/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/product-formula/" fileName="Packing_Formulation_export" />
+        <CostMgtFilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/costmgt/product-formula/'} fieldOptions={fieldOptions} downloadUrl="/excel/export/product-formula/" fileName="Packing_Formulation_export" statusField="approved" />
         </div>
         <div className=" rounded p-2">
         <ProductFormulaTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} />

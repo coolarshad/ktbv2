@@ -28,6 +28,7 @@ urlpatterns = [
     path('export/additive-category/', ExportAdditiveCategoryExcelView.as_view(), name='export_additive_category'),
     
     path('export/inventory/', ExportInventoryExcelView.as_view(), name='export_inventory'),
+    path('export/dashboard-inventory/', ExportDashboardInventoryExcelView.as_view(), name='export_dashboard_inventory'),
     path('export/trade-pending/', ExportTradePendingExcelView.as_view(), name='export_trade_pending'),
     path('export/product-trace/', ExportTradeProductTraceExcelView.as_view(), name='export_product_trace'),
     path('export/product-ref/', ExportTradeProductRefExcelView.as_view(), name='export_product_ref'),

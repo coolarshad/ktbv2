@@ -153,6 +153,7 @@ const AdditivesCategory = () => {
             fieldOptions={fieldOptions}
             downloadUrl="/excel/export/additive-category/"
             fileName="Additive_Category_export"
+            statusField="approved"
           />
         </div>
         <div className="rounded p-2 overflow-x-auto">
