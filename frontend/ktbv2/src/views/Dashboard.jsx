@@ -35,21 +35,25 @@ export default function Dashboard() {
       });
   }, []);
 
-  const downloadInventoryExcel = async () => {
+  const downloadExcel = async (endpoint, defaultFilename) => {
     try {
-      const response = await axios.get('/excel/export/dashboard-inventory/', {
+      const response = await axios.get(endpoint, {
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'Dashboard_Inventory_Summary.xlsx');
+      link.setAttribute('download', defaultFilename);
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Error downloading inventory summary file:', error);
+      console.error(`Error downloading file from ${endpoint}:`, error);
     }
+  };
+
+  const downloadInventoryExcel = async () => {
+    downloadExcel('/excel/export/dashboard-inventory/', 'Dashboard_Inventory_Summary.xlsx');
   };
 
   if (loading) {
@@ -75,6 +79,7 @@ export default function Dashboard() {
   }
 
   const tradeMetrics = data?.trade_management?.metrics || {};
+  const financialSummary = data?.trade_management?.financial_summary || {};
   const tradeRecent = data?.trade_management?.recent_trades || [];
   const presaleRecent = data?.trade_management?.recent_presales || [];
   const inventoryRecent = data?.trade_management?.recent_inventory || [];
@@ -82,6 +87,10 @@ export default function Dashboard() {
   const costMetrics = data?.cost_management?.metrics || {};
   const productRecent = data?.cost_management?.recent_products || [];
   const consumptionRecent = data?.cost_management?.recent_consumptions || [];
+
+  const formatCurrency = (val) => {
+    return '$' + (val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   return (
     <div className="p-6 lg:p-10 bg-gray-50 min-h-screen font-sans">
@@ -92,9 +101,81 @@ export default function Dashboard() {
             <FaBell className="text-red-500 mr-2" />
             <span className="font-semibold mr-1">{data?.general?.unread_notifications || 0}</span> Unread Alerts
           </div>
-          {/* <div className="text-sm text-green-600 bg-green-50 border border-green-200 px-4 py-2 rounded-full shadow-sm">
-            Live Data Active
-          </div> */}
+        </div>
+      </div>
+
+      {/* SECTION: FINANCIAL & COMPLIANCE SUMMARY */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <div className="w-2 h-6 bg-emerald-500 rounded-full mr-3"></div>
+          <h3 className="text-lg font-bold text-gray-700">Financial & Compliance Overview</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Account Receivables Card */}
+          <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-green-100 font-medium text-sm">Account Receivables (AR)</span>
+                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <FaFileInvoiceDollar size={22} className="text-white" />
+                </div>
+              </div>
+              <h3 className="text-3xl font-extrabold tracking-tight mt-1">{formatCurrency(financialSummary.account_receivables)}</h3>
+              <p className="text-xs text-green-100 mt-1">Total pending balance to receive from sales</p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-green-400/30 flex justify-end">
+              <button
+                onClick={() => downloadExcel('/excel/export/account-receivables/', 'Account_Receivables_Summary.xlsx')}
+                className="flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition backdrop-blur-sm"
+              >
+                <FaDownload size={12} /> Export Excel
+              </button>
+            </div>
+          </div>
+
+          {/* Account Payables Card */}
+          <div className="bg-gradient-to-br from-rose-500 to-red-600 text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-rose-100 font-medium text-sm">Account Payables (AP)</span>
+                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <FaCreditCard size={22} className="text-white" />
+                </div>
+              </div>
+              <h3 className="text-3xl font-extrabold tracking-tight mt-1">{formatCurrency(financialSummary.account_payables)}</h3>
+              <p className="text-xs text-rose-100 mt-1">Total balance due for purchases & logistics</p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-rose-400/30 flex justify-end">
+              <button
+                onClick={() => downloadExcel('/excel/export/account-payables/', 'Account_Payables_Summary.xlsx')}
+                className="flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition backdrop-blur-sm"
+              >
+                <FaDownload size={12} /> Export Excel
+              </button>
+            </div>
+          </div>
+
+          {/* Insurance Pending Card */}
+          <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-amber-100 font-medium text-sm">Insurance Pending</span>
+                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <FaClipboardList size={22} className="text-white" />
+                </div>
+              </div>
+              <h3 className="text-3xl font-extrabold tracking-tight mt-1">{financialSummary.insurance_pending || 0} <span className="text-lg font-medium text-amber-100">Trades</span></h3>
+              <p className="text-xs text-amber-100 mt-1">Trades with pending policy details or 'NA'</p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-amber-400/30 flex justify-end">
+              <button
+                onClick={() => downloadExcel('/excel/export/insurance-pending/', 'Insurance_Pending_Summary.xlsx')}
+                className="flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition backdrop-blur-sm"
+              >
+                <FaDownload size={12} /> Export Excel
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

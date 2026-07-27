@@ -32,11 +32,24 @@ def send_notification_email_task(subject, body, recipient_emails):
 @shared_task
 def spawn_general_notifications_task(actor_id, verb, message, target_url=None):
     from accounts.models import CustomUser
-    actor = CustomUser.objects.get(id=actor_id) if actor_id else None
-    all_users = CustomUser.objects.filter(is_active=True).exclude(id=actor_id)
+    actor = CustomUser.objects.filter(id=actor_id).first() if actor_id else None
+    
+    if actor and not (actor.is_superuser or actor.role == 'Manager2'):
+        actor_orgs = actor.organizations.all()
+        if actor_orgs.exists():
+            target_users = CustomUser.objects.filter(
+                is_active=True,
+                organizations__in=actor_orgs
+            ).exclude(id=actor_id).distinct()
+        else:
+            target_users = CustomUser.objects.filter(is_active=True).exclude(id=actor_id)
+    else:
+        target_users = CustomUser.objects.filter(is_active=True)
+        if actor_id:
+            target_users = target_users.exclude(id=actor_id)
     
     notifications = []
-    for user in all_users:
+    for user in target_users:
         notifications.append(
             Notification(
                 recipient=user,

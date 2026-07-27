@@ -8,9 +8,17 @@ from notifications.models import Notification
 # Create your views here.
 from rest_framework import generics, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from accounts.models import CustomUser, Permission, ActivityLog
-from .serializers import PermissionSerializer, UserSerializer, UserProfileSerializer, ChangePasswordSerializer, ActivityLogSerializer
+from accounts.models import CustomUser, Organization, Permission, ActivityLog
+from .serializers import OrganizationSerializer, PermissionSerializer, UserSerializer, UserProfileSerializer, ChangePasswordSerializer, ActivityLogSerializer
 from rest_framework.permissions import BasePermission, IsAuthenticated
+
+class OrganizationListCreateView(generics.ListCreateAPIView):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+
+class OrganizationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
 
 class HasPermission(BasePermission):
     def has_permission(self, request, view):
@@ -50,21 +58,86 @@ class PermissionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView)
 
 class DashboardAPIView(APIView):
     def get(self, request):
+        from django.db.models import Q, Sum
+        from accounts.mixins import get_authorized_queryset
+
+        # Scoped querysets for authorized access
+        auth_trades = get_authorized_queryset(request, Trade.objects.all())
+        auth_presales = get_authorized_queryset(request, PreSalePurchase.objects.all())
+        auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all())
+        auth_pfs = get_authorized_queryset(request, PaymentFinance.objects.all())
+        auth_prepayments = get_authorized_queryset(request, PrePayment.objects.all())
+
         # Trade Management Metrics
-        total_trades = Trade.objects.count()
-        trades_appr = Trade.objects.filter(approved=True).count()
+        total_trades = auth_trades.count()
+        trades_appr = auth_trades.filter(approved=True).count()
 
-        total_presales = PreSalePurchase.objects.count()
-        presales_appr = PreSalePurchase.objects.filter(approved=True).count()
+        total_presales = auth_presales.count()
+        presales_appr = auth_presales.filter(approved=True).count()
 
-        total_sales_purchases = SalesPurchase.objects.count()
-        sales_purchases_appr = SalesPurchase.objects.filter(reviewed=True).count()
+        total_sales_purchases = auth_sps.count()
+        sales_purchases_appr = auth_sps.filter(reviewed=True).count()
 
-        total_payment_finance = PaymentFinance.objects.count()
-        payment_finance_appr = PaymentFinance.objects.filter(reviewed=True).count()
+        total_payment_finance = auth_pfs.count()
+        payment_finance_appr = auth_pfs.filter(reviewed=True).count()
 
-        total_pre_payment = PrePayment.objects.count()
-        pre_payment_appr = PrePayment.objects.filter(reviewed=True).count()
+        total_pre_payment = auth_prepayments.count()
+        pre_payment_appr = auth_prepayments.filter(reviewed=True).count()
+
+        # Financial & Compliance Summary Metrics
+        # 1. Insurance Pending Count (trades where policy number is blank, null, NA, N/A, PENDING, or NONE)
+        insurance_pending_query = (
+            Q(insurance_policy_number__isnull=True) |
+            Q(insurance_policy_number__exact='') |
+            Q(insurance_policy_number__iexact='na') |
+            Q(insurance_policy_number__iexact='n/a') |
+            Q(insurance_policy_number__iexact='n.a.') |
+            Q(insurance_policy_number__iexact='pending') |
+            Q(insurance_policy_number__iexact='none')
+        )
+        insurance_pending_count = auth_trades.filter(insurance_pending_query).count()
+
+        # 2. Account Receivables (Sales Trades)
+        sales_sps = auth_sps.filter(trn__trade_type='Sales')
+        sales_sp_agg = sales_sps.aggregate(total=Sum('invoice_amount'))
+        total_sales_invoiced = sales_sp_agg['total'] or 0.0
+
+        sales_pfs = auth_pfs.filter(sp__trn__trade_type='Sales')
+        sales_pf_agg = sales_pfs.aggregate(recv=Sum('balance_payment_received'), adv=Sum('advance_adjusted'))
+        sales_received = (sales_pf_agg['recv'] or 0.0) + (sales_pf_agg['adv'] or 0.0)
+
+        sales_trades = auth_trades.filter(trade_type='Sales')
+        sales_trd_agg = sales_trades.aggregate(total=Sum('advance_value_to_receive'))
+        total_sales_adv_to_receive = sales_trd_agg['total'] or 0.0
+
+        sales_prepayments = auth_prepayments.filter(trn__trade_type='Sales')
+        sales_prep_agg = sales_prepayments.aggregate(total=Sum('advance_received'))
+        total_sales_adv_received = sales_prep_agg['total'] or 0.0
+
+        invoiced_ar = max(0.0, total_sales_invoiced - sales_received)
+        advance_ar = max(0.0, total_sales_adv_to_receive - total_sales_adv_received)
+        account_receivables = round(invoiced_ar + advance_ar, 2)
+
+        # 3. Account Payables (Purchase Trades)
+        purchase_sps = auth_sps.filter(trn__trade_type='Purchase')
+        purchase_sp_agg = purchase_sps.aggregate(inv=Sum('invoice_amount'), log=Sum('logistic_cost'))
+        total_purchase_invoiced = (purchase_sp_agg['inv'] or 0.0) + (purchase_sp_agg['log'] or 0.0)
+
+        purchase_pfs = auth_pfs.filter(sp__trn__trade_type='Purchase')
+        purchase_pf_agg = purchase_pfs.aggregate(paid=Sum('balance_payment_made'), adv=Sum('advance_adjusted'))
+        purchase_paid = (purchase_pf_agg['paid'] or 0.0) + (purchase_pf_agg['adv'] or 0.0)
+
+        purchase_trades = auth_trades.filter(trade_type='Purchase')
+        purchase_trd_agg = purchase_trades.aggregate(total=Sum('advance_value_to_receive'))
+        total_purchase_adv_expected = purchase_trd_agg['total'] or 0.0
+
+        purchase_prepayments = auth_prepayments.filter(trn__trade_type='Purchase')
+        purchase_prep_agg = purchase_prepayments.aggregate(total=Sum('advance_paid'))
+        total_purchase_adv_paid = purchase_prep_agg['total'] or 0.0
+
+        invoiced_ap = max(0.0, total_purchase_invoiced - purchase_paid)
+        advance_ap = max(0.0, total_purchase_adv_expected - total_purchase_adv_paid)
+        account_payables = round(invoiced_ap + advance_ap, 2)
 
         # Cost Management Metrics
         total_products = FinalProduct.objects.count()
@@ -91,11 +164,10 @@ class DashboardAPIView(APIView):
             recent_notifications = []
 
         # Recent Trade Activities
-        recent_trades = Trade.objects.order_by('-id')[:5].values('id', 'trn', 'trd', 'trade_type', 'company', 'approved')
-        recent_presales = PreSalePurchase.objects.order_by('-id')[:5].values('id', 'date', 'trn__trn', 'approved')
+        recent_trades = auth_trades.order_by('-id')[:5].values('id', 'trn', 'trd', 'trade_type', 'company', 'approved')
+        recent_presales = auth_presales.order_by('-id')[:5].values('id', 'date', 'trn__trn', 'approved')
 
         # Inventory Stock Summary Aggregated by Product Name
-        from django.db.models import Sum
         from trademgt.models import ProductName
         inventory_summary = (
             Inventory.objects.values('product_name', 'unit')
@@ -124,6 +196,11 @@ class DashboardAPIView(APIView):
                     'sales_purchases': {'total': total_sales_purchases, 'approved': sales_purchases_appr, 'pending': total_sales_purchases - sales_purchases_appr},
                     'payment_finance': {'total': total_payment_finance, 'approved': payment_finance_appr, 'pending': total_payment_finance - payment_finance_appr},
                     'pre_payment': {'total': total_pre_payment, 'approved': pre_payment_appr, 'pending': total_pre_payment - pre_payment_appr},
+                },
+                'financial_summary': {
+                    'account_receivables': account_receivables,
+                    'account_payables': account_payables,
+                    'insurance_pending': insurance_pending_count,
                 },
                 'recent_trades': list(recent_trades),
                 'recent_presales': list(recent_presales),

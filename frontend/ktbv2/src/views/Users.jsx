@@ -106,6 +106,7 @@ const Users = () => {
                 <th className="px-4 py-2 border-b text-left">Name</th>
                 <th className="px-4 py-2 border-b text-left">Email</th>
                 <th className="px-4 py-2 border-b text-left">Role</th>
+                <th className="px-4 py-2 border-b text-left">Organizations</th>
                 <th className="px-4 py-2 border-b text-left">Designation</th>
                 <th className="px-4 py-2 border-b text-center">Actions</th>
               </tr>
@@ -117,6 +118,11 @@ const Users = () => {
                   <td className="px-4 py-2 border-b">{user.name}</td>
                   <td className="px-4 py-2 border-b">{user.email}</td>
                   <td className="px-4 py-2 border-b">{user.role || 'N/A'}</td>
+                  <td className="px-4 py-2 border-b">
+                    {(user.organizations && user.organizations.length > 0)
+                      ? user.organizations.map(o => typeof o === 'object' ? o.name : o).join(', ')
+                      : 'N/A'}
+                  </td>
                   <td className="px-4 py-2 border-b">{user.designation || 'N/A'}</td>
                   <td className="px-4 py-2 border-b flex justify-center gap-2">
                     <button
@@ -174,6 +180,18 @@ const Users = () => {
                   />
                 </div>
               ))}
+              <div>
+                <label className="block mb-1 font-medium">Organizations</label>
+                <input
+                  value={
+                    (selectedUser.organizations && selectedUser.organizations.length > 0)
+                      ? selectedUser.organizations.map(o => typeof o === 'object' ? o.name : o).join(', ')
+                      : 'None'
+                  }
+                  readOnly
+                  className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed text-gray-700 focus:outline-none"
+                />
+              </div>
             </div>
 
             {/* Permissions Section */}

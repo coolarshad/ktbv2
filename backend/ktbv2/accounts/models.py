@@ -3,6 +3,15 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
+class Organization(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Permission(models.Model):
     code = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255)
@@ -49,7 +58,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     designation = models.CharField(max_length=100, blank=True, null=True)
     role = models.CharField(max_length=100, choices=ROLE_CHOICES, blank=True, null=True)
     
-    reports_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
+    organizations = models.ManyToManyField(Organization, related_name='members', blank=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

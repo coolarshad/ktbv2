@@ -18,14 +18,15 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         # 1. Base queryset: User only sees notifications where they are the recipient
         queryset = Notification.objects.filter(recipient=user)
 
-        # 2. Scope GENERAL notifications for non-managers
+        # 2. Scope GENERAL notifications for non-managers by organization
         if not (user.is_superuser or user.role == 'Manager2'):
             from django.db.models import Q
+            user_orgs = user.organizations.all()
             queryset = queryset.filter(
                 Q(notification_type='PERSONAL') |
-                Q(notification_type='GENERAL', actor__reports_to=user) |
-                Q(notification_type='GENERAL', actor=user.reports_to)
-            )
+                Q(notification_type='GENERAL', actor__organizations__in=user_orgs) |
+                Q(notification_type='GENERAL', actor__isnull=True)
+            ).distinct()
 
         # 3. De-duplicate PERSONAL and GENERAL notifications by target_url
         personal_urls = queryset.filter(notification_type='PERSONAL').exclude(

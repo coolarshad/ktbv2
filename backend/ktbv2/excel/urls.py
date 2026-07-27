@@ -32,4 +32,7 @@ urlpatterns = [
     path('export/trade-pending/', ExportTradePendingExcelView.as_view(), name='export_trade_pending'),
     path('export/product-trace/', ExportTradeProductTraceExcelView.as_view(), name='export_product_trace'),
     path('export/product-ref/', ExportTradeProductRefExcelView.as_view(), name='export_product_ref'),
+    path('export/account-receivables/', ExportAccountReceivablesExcelView.as_view(), name='export_account_receivables'),
+    path('export/account-payables/', ExportAccountPayablesExcelView.as_view(), name='export_account_payables'),
+    path('export/insurance-pending/', ExportInsurancePendingExcelView.as_view(), name='export_insurance_pending'),
 ]

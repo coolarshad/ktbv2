@@ -1251,3 +1251,148 @@ class ExportTradeProductRefExcelView(APIView):
             excel_data.append(row)
         return excel_data
 
+
+class ExportAccountReceivablesExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        import pandas as pd
+        from django.db.models import Sum
+        from accounts.mixins import get_authorized_queryset
+        from trademgt.models import Trade, SalesPurchase, PaymentFinance, Company, Kyc
+
+        company_map = {str(c.id): c.name for c in Company.objects.all()}
+        kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
+
+        auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(trn__trade_type='Sales')
+        
+        excel_data = []
+        for sp in auth_sps:
+            pfs = PaymentFinance.objects.filter(sp=sp)
+            pf_agg = pfs.aggregate(recv=Sum('balance_payment_received'), adv=Sum('advance_adjusted'))
+            total_received = (pf_agg['recv'] or 0.0) + (pf_agg['adv'] or 0.0)
+            invoiced_amt = sp.invoice_amount or 0.0
+            balance_due = max(0.0, round(invoiced_amt - total_received, 2))
+
+            trade_obj = sp.trn
+            raw_comp = str(trade_obj.company) if trade_obj and trade_obj.company else ''
+            raw_cust = str(trade_obj.customer_company_name) if trade_obj and trade_obj.customer_company_name else ''
+
+            excel_data.append({
+                'TRN Ref': trade_obj.trn if trade_obj else '',
+                'Company': company_map.get(raw_comp, raw_comp),
+                'Customer Name': kyc_map.get(raw_cust, raw_cust),
+                'Invoice Number': sp.invoice_number or '',
+                'Invoice Date': str(sp.invoice_date) if sp.invoice_date else '',
+                'BL Number': sp.bl_number or '',
+                'Invoiced Amount ($)': round(invoiced_amt, 2),
+                'Amount Received ($)': round(total_received, 2),
+                'Balance Receivable ($)': balance_due,
+                'Trader Name': trade_obj.trader_name if trade_obj else '',
+                'Status': 'Paid' if balance_due <= 0 else 'Pending Receivable',
+            })
+
+        df = pd.DataFrame(excel_data)
+        if df.empty:
+            df = pd.DataFrame(columns=['TRN Ref', 'Company', 'Customer Name', 'Invoice Number', 'Invoice Date', 'BL Number', 'Invoiced Amount ($)', 'Amount Received ($)', 'Balance Receivable ($)', 'Trader Name', 'Status'])
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="Account_Receivables_Summary.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+
+class ExportAccountPayablesExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        import pandas as pd
+        from django.db.models import Sum
+        from accounts.mixins import get_authorized_queryset
+        from trademgt.models import Trade, SalesPurchase, PaymentFinance, Company, Kyc
+
+        company_map = {str(c.id): c.name for c in Company.objects.all()}
+        kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
+
+        auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(trn__trade_type='Purchase')
+        
+        excel_data = []
+        for sp in auth_sps:
+            pfs = PaymentFinance.objects.filter(sp=sp)
+            pf_agg = pfs.aggregate(paid=Sum('balance_payment_made'), adv=Sum('advance_adjusted'))
+            total_paid = (pf_agg['paid'] or 0.0) + (pf_agg['adv'] or 0.0)
+            invoiced_amt = (sp.invoice_amount or 0.0) + (sp.logistic_cost or 0.0)
+            balance_due = max(0.0, round(invoiced_amt - total_paid, 2))
+
+            trade_obj = sp.trn
+            raw_comp = str(trade_obj.company) if trade_obj and trade_obj.company else ''
+            raw_cust = str(trade_obj.customer_company_name) if trade_obj and trade_obj.customer_company_name else ''
+
+            excel_data.append({
+                'TRN Ref': trade_obj.trn if trade_obj else '',
+                'Company': company_map.get(raw_comp, raw_comp),
+                'Supplier/Vendor Name': kyc_map.get(raw_cust, raw_cust),
+                'Invoice Number': sp.invoice_number or '',
+                'Invoice Date': str(sp.invoice_date) if sp.invoice_date else '',
+                'Liner / Logistic Provider': sp.liner or (trade_obj.logistic_provider if trade_obj else ''),
+                'Invoice + Logistic ($)': round(invoiced_amt, 2),
+                'Amount Paid ($)': round(total_paid, 2),
+                'Balance Payable ($)': balance_due,
+                'Trader Name': trade_obj.trader_name if trade_obj else '',
+                'Status': 'Settled' if balance_due <= 0 else 'Pending Payable',
+            })
+
+        df = pd.DataFrame(excel_data)
+        if df.empty:
+            df = pd.DataFrame(columns=['TRN Ref', 'Company', 'Supplier/Vendor Name', 'Invoice Number', 'Invoice Date', 'Liner / Logistic Provider', 'Invoice + Logistic ($)', 'Amount Paid ($)', 'Balance Payable ($)', 'Trader Name', 'Status'])
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="Account_Payables_Summary.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+
+
+class ExportInsurancePendingExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        import pandas as pd
+        from django.db.models import Q
+        from accounts.mixins import get_authorized_queryset
+        from trademgt.models import Trade, Company, Kyc
+
+        company_map = {str(c.id): c.name for c in Company.objects.all()}
+        kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
+
+        auth_trades = get_authorized_queryset(request, Trade.objects.all())
+        insurance_pending_query = (
+            Q(insurance_policy_number__isnull=True) |
+            Q(insurance_policy_number__exact='') |
+            Q(insurance_policy_number__iexact='na') |
+            Q(insurance_policy_number__iexact='n/a') |
+            Q(insurance_policy_number__iexact='n.a.') |
+            Q(insurance_policy_number__iexact='pending') |
+            Q(insurance_policy_number__iexact='none')
+        )
+        pending_trades = auth_trades.filter(insurance_pending_query)
+
+        excel_data = []
+        for trade in pending_trades:
+            raw_comp = str(trade.company) if trade.company else ''
+            raw_cust = str(trade.customer_company_name) if trade.customer_company_name else ''
+
+            excel_data.append({
+                'TRN Ref': trade.trn,
+                'Trade Date': str(trade.trd) if trade.trd else '',
+                'Trade Type': trade.trade_type,
+                'Company': company_map.get(raw_comp, raw_comp),
+                'Customer / Vendor': kyc_map.get(raw_cust, raw_cust),
+                'Incoterm': trade.incoterm or '',
+                'Insurance Policy Value': trade.insurance_policy_number or 'NA',
+                'Trader Name': trade.trader_name or '',
+                'Approval Status': 'Approved' if trade.approved else 'Pending',
+            })
+
+        df = pd.DataFrame(excel_data)
+        if df.empty:
+            df = pd.DataFrame(columns=['TRN Ref', 'Trade Date', 'Trade Type', 'Company', 'Customer / Vendor', 'Incoterm', 'Insurance Policy Value', 'Trader Name', 'Approval Status'])
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="Insurance_Pending_Summary.xlsx"'
+        df.to_excel(response, index=False)
+        return response
+

@@ -19,21 +19,23 @@ const UserForm = ({ mode }) => {
     password: '',
   });
 
+  const [allOrganizations, setAllOrganizations] = useState([]);
+  const [selectedOrganizations, setSelectedOrganizations] = useState([]);
+  const [newOrgName, setNewOrgName] = useState('');
   const [allPermissions, setAllPermissions] = useState([]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [resettingPassword, setResettingPassword] = useState(false);
-  const [allUsers, setAllUsers] = useState([]);
 
-  // 🔹 Fetch all permissions and users
+  // 🔹 Fetch permissions and organizations
   useEffect(() => {
     axios.get("/accounts/permissions/")
       .then(res => setAllPermissions(res.data))
       .catch(err => console.error(err));
       
-    axios.get("/accounts/users/")
-      .then(res => setAllUsers(res.data))
+    axios.get("/accounts/organizations/")
+      .then(res => setAllOrganizations(res.data))
       .catch(err => console.error(err));
   }, []);
 
@@ -51,11 +53,14 @@ const UserForm = ({ mode }) => {
           phone: data.phone || '',
           designation: data.designation || '',
           role: data.role || '',
-          reports_to: data.reports_to || '',
           password: '',
         });
 
-        // Extract permission IDs from data.permissions
+        // Extract organization IDs
+        const orgs = (data.organizations || []).map(o => typeof o === 'object' ? o.id : o);
+        setSelectedOrganizations(orgs);
+
+        // Extract permission IDs
         const perms = (data.permissions || []).map(p => typeof p === 'object' ? p.id : p);
         setSelectedPermissions(perms);
       })
@@ -67,6 +72,29 @@ const UserForm = ({ mode }) => {
   const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // 🔹 Toggle Organization selection
+  const handleOrganizationChange = id => {
+    setSelectedOrganizations(prev =>
+      prev.includes(id)
+        ? prev.filter(o => o !== id)
+        : [...prev, id]
+    );
+  };
+
+  // 🔹 Create New Organization on the fly
+  const handleAddOrganization = async () => {
+    if (!newOrgName.trim()) return;
+    try {
+      const res = await axios.post("/accounts/organizations/", { name: newOrgName.trim() });
+      setAllOrganizations(prev => [...prev, res.data]);
+      setSelectedOrganizations(prev => [...prev, res.data.id]);
+      setNewOrgName('');
+      toast.success(`Organization '${res.data.name}' created!`);
+    } catch (err) {
+      toast.error('Failed to create organization');
+    }
   };
 
   // 🔹 Toggle single permission
@@ -102,9 +130,9 @@ const UserForm = ({ mode }) => {
   const handleSubmit = e => {
     e.preventDefault();
 
-    // 🔹 Send permission_ids instead of permissions
     const payload = {
       ...formData,
+      organization_ids: selectedOrganizations,
       permission_ids: selectedPermissions
     };
 
@@ -207,22 +235,42 @@ const UserForm = ({ mode }) => {
             <option value="Viewer">Viewer</option>
           </select>
         </div>
+      </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Reports To (Manager)</label>
-          <select
-            name="reports_to"
-            value={formData.reports_to || ''}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+      {/* Organizations Section */}
+      <div className="p-4 border rounded bg-gray-50 space-y-3">
+        <h3 className="text-lg font-semibold text-gray-800 border-b pb-1">Organizations</h3>
+        <p className="text-xs text-gray-500">Select one or more organizations this user belongs to. Members of the same organization can share notifications and data.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          {allOrganizations.map(org => (
+            <label key={org.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer bg-white hover:bg-blue-50 transition">
+              <input
+                type="checkbox"
+                checked={selectedOrganizations.includes(org.id)}
+                onChange={() => handleOrganizationChange(org.id)}
+              />
+              <span className="font-medium text-sm text-gray-700">{org.name}</span>
+            </label>
+          ))}
+        </div>
+
+        {/* Quick Add Organization */}
+        <div className="flex gap-2 pt-2">
+          <input
+            type="text"
+            placeholder="New Organization Name"
+            value={newOrgName}
+            onChange={(e) => setNewOrgName(e.target.value)}
+            className="border rounded px-3 py-1.5 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+          />
+          <button
+            type="button"
+            onClick={handleAddOrganization}
+            className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition"
           >
-            <option value="">None (Top Level)</option>
-            {allUsers.map(u => (
-              u.id.toString() !== userId?.toString() && (
-                <option key={u.id} value={u.id}>{u.name || u.email}</option>
-              )
-            ))}
-          </select>
+            + Add Org
+          </button>
         </div>
       </div>
 

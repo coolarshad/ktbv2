@@ -1,35 +1,21 @@
-from django.db import models
-
+from accounts.models import CustomUser
 
 def get_authorized_queryset(request, queryset):
     user = request.user
-    if not user.is_authenticated:
+    if not user or not user.is_authenticated:
         return queryset.none()
     
     if user.role == 'Manager2' or user.is_superuser:
         return queryset
 
-    subordinate_ids = set()
-    def get_subordinates(u):
-        subs = u.subordinates.all()
-        for sub in subs:
-            if sub.id not in subordinate_ids:
-                subordinate_ids.add(sub.id)
-                get_subordinates(sub)
-                
-    get_subordinates(user)
+    org_ids = list(user.organizations.values_list('id', flat=True))
+    if not org_ids:
+        return queryset.filter(created_by_id=user.id)
 
-    manager_ids = set()
-    def get_managers(u):
-        if u.reports_to:
-            if u.reports_to.id not in manager_ids:
-                manager_ids.add(u.reports_to.id)
-                get_managers(u.reports_to)
+    org_member_ids = set(CustomUser.objects.filter(organizations__in=org_ids).values_list('id', flat=True))
+    org_member_ids.add(user.id)
 
-    get_managers(user)
-
-    authorized_ids = [user.id] + list(subordinate_ids) + list(manager_ids)
-    return queryset.filter(created_by_id__in=authorized_ids)
+    return queryset.filter(created_by_id__in=org_member_ids)
 
 
 class HierarchicalSecurityMixin:
