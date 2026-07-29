@@ -240,9 +240,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     useEffect(() => {
         fetchData('/trademgt/trades', { 
             approved: true, 
-            reviewed: true,
-            exclude_salespurchase: true,
-            current_salespurchase_id: mode === 'update' ? id : undefined
+            reviewed: true
         }, setTrnOptions);  // Example with params
         fetchData('/trademgt/unit', {}, setUnitOptions);
         fetchData('/trademgt/product-names', {}, setProductOptions);

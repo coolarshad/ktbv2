@@ -63,18 +63,19 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
 
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-30 bg-gray-100 min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">Company</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[600px] z-30 bg-gray-100 min-w-[240px] max-w-[240px] w-[240px] border-r border-gray-300 whitespace-normal break-words">Buyer/Seller Name</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in USD</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in (AED)</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th>
-              {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th> */}
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Approval Date</th>
+              {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th> */}
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approved</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
@@ -84,18 +85,19 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
             {flattenedData && flattenedData.length > 0 ? (
               flattenedData.map((row, index) => (
                 <tr key={index} onClick={() => onRowClick(row.trade.id)}>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.id}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.trade_type}</td>
-  
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.trn}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.companyName?.name || '-'}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.customer?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">{row.trade.id}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trade_type}>{row.trade.trade_type}</td>
+
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trn}>{row.trade.trn}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">{row.trade.companyName?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[600px] z-10 bg-white min-w-[240px] max-w-[240px] w-[240px] border-r border-gray-300 whitespace-normal break-words">{row.trade.customer?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.productName?.name || row.product_name || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.productName?.name || row.product_name || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.rate_in_usd || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.trd)}</td>
-  
+
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.approval_date)}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.contract_value}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade_qty || '-'}</td>
                   {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                     <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={row.trade.reviewed} readOnly />

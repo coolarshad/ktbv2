@@ -22,10 +22,10 @@ const PFTable = ({ data, onDelete, onView, basePerm }) => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S&P ID</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[100px] max-w-[100px] w-[100px] whitespace-nowrap overflow-hidden text-ellipsis">S&P ID</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[320px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Payment Mode</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status Of Payment</th>
             {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Shipment Status</th> */}
@@ -40,10 +40,10 @@ const PFTable = ({ data, onDelete, onView, basePerm }) => {
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trn}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.id}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.trade_type}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">{item.id}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.sp?.trn?.trn}>{item.sp?.trn?.trn}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[100px] max-w-[100px] w-[100px] whitespace-nowrap overflow-hidden text-ellipsis">{item.sp?.id}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[320px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis" title={item.sp?.trn?.trade_type}>{item.sp?.trn?.trade_type}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.paymentTerm.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.status_of_payment}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.shipment_status}</td> */}

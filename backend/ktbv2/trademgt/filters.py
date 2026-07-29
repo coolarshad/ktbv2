@@ -158,109 +158,59 @@ class TradeFilter(SearchableFilterSet):
         if not value:
             return queryset
 
+        val = value.strip()
         q_objects = Q()
-        model = self.Meta.model
-        lookups = get_searchable_lookups(model)
 
-        # 1. Resolve matching Kyc IDs
-        try:
-            from trademgt.models import Kyc
-            kyc_ids = list(Kyc.objects.filter(name__icontains=value).values_list('id', flat=True))
-            kyc_str_ids = [str(x) for x in kyc_ids]
-        except Exception:
-            kyc_str_ids = []
+        # ID
+        if val.isdigit():
+            q_objects |= Q(id=int(val))
 
-        # 2. Resolve matching Company IDs
+        # Trade Type & TRN
+        q_objects |= Q(trade_type__icontains=val)
+        q_objects |= Q(trn__icontains=val)
+
+        # Company
         try:
             from trademgt.models import Company
-            company_ids = list(Company.objects.filter(name__icontains=value).values_list('id', flat=True))
-            company_str_ids = [str(x) for x in company_ids]
+            comp_ids = list(Company.objects.filter(name__icontains=val).values_list('id', flat=True))
+            if comp_ids:
+                q_objects |= Q(company__in=comp_ids)
         except Exception:
-            company_str_ids = []
+            pass
 
-        # 3. Resolve matching Bank IDs
+        # Buyer/Seller Name (Kyc)
         try:
-            from trademgt.models import Bank
-            bank_ids = list(Bank.objects.filter(name__icontains=value).values_list('id', flat=True))
-            bank_str_ids = [str(x) for x in bank_ids]
+            from trademgt.models import Kyc
+            kyc_ids = list(Kyc.objects.filter(name__icontains=val).values_list('id', flat=True))
+            if kyc_ids:
+                q_objects |= Q(customer_company_name__in=[str(k) for k in kyc_ids])
         except Exception:
-            bank_str_ids = []
+            pass
+        q_objects |= Q(customer_company_name__icontains=val)
 
-        # 4. Resolve matching Currency IDs
-        try:
-            from trademgt.models import Currency
-            currency_ids = list(Currency.objects.filter(name__icontains=value).values_list('id', flat=True))
-            currency_str_ids = [str(x) for x in currency_ids]
-        except Exception:
-            currency_str_ids = []
-
-        # 5. Resolve matching PaymentTerm IDs
-        try:
-            from trademgt.models import PaymentTerm
-            pt_ids = list(PaymentTerm.objects.filter(name__icontains=value).values_list('id', flat=True))
-            pt_str_ids = [str(x) for x in pt_ids]
-        except Exception:
-            pt_str_ids = []
-
-        # 6. Resolve matching Product Names
+        # Product Name & Code & Rate & Trade Qty
+        q_objects |= Q(trade_products__product_code__icontains=val)
+        q_objects |= Q(trade_products__product_name__icontains=val)
+        q_objects |= Q(trade_products__product_name_for_client__icontains=val)
         try:
             from trademgt.models import ProductName
-            product_ids = list(ProductName.objects.filter(name__icontains=value).values_list('id', flat=True))
-            product_str_ids = [str(x) for x in product_ids]
+            p_ids = list(ProductName.objects.filter(name__icontains=val).values_list('id', flat=True))
+            if p_ids:
+                p_str_ids = [str(x) for x in p_ids]
+                q_objects |= Q(trade_products__product_name__in=p_str_ids)
         except Exception:
-            product_str_ids = []
+            pass
 
-        for lookup in lookups:
-            if lookup == 'customer_company_name' or lookup.endswith('__customer_company_name'):
-                if kyc_str_ids:
-                    q_objects |= Q(**{f"{lookup}__in": kyc_str_ids})
-                else:
-                    q_objects |= Q(**{f"{lookup}__icontains": value})
-            elif lookup == 'company' or lookup.endswith('__company'):
-                if company_str_ids:
-                    q_objects |= Q(**{f"{lookup}__in": company_str_ids})
-                else:
-                    q_objects |= Q(**{f"{lookup}__icontains": value})
-            elif lookup == 'bank_name_address' or lookup.endswith('__bank_name_address'):
-                if bank_str_ids:
-                    q_objects |= Q(**{f"{lookup}__in": bank_str_ids})
-                else:
-                    q_objects |= Q(**{f"{lookup}__icontains": value})
-            elif lookup == 'currency_selection' or lookup.endswith('__currency_selection'):
-                if currency_str_ids:
-                    q_objects |= Q(**{f"{lookup}__in": currency_str_ids})
-                else:
-                    q_objects |= Q(**{f"{lookup}__icontains": value})
-            elif lookup == 'payment_term' or lookup.endswith('__payment_term'):
-                if pt_str_ids:
-                    q_objects |= Q(**{f"{lookup}__in": pt_str_ids})
-                else:
-                    q_objects |= Q(**{f"{lookup}__icontains": value})
-            else:
-                q_objects |= Q(**{f"{lookup}__icontains": value})
-
-        # Add custom searches for numeric/relationship fields
-        # A. ID (if numeric)
-        if value.isdigit():
-            q_objects |= Q(id=int(value))
-
-        # B. Product name / code
-        q_objects |= Q(trade_products__product_code__icontains=value)
-        q_objects |= Q(trade_products__product_name__icontains=value)
-        if product_str_ids:
-            q_objects |= Q(trade_products__product_name__in=product_str_ids)
-
-        # C. Numeric values for rate_in_usd or contract_value
         try:
-            num_value = float(value)
-            q_objects |= Q(trade_products__rate_in_usd=num_value)
-            q_objects |= Q(contract_value=num_value)
+            num_val = float(val)
+            q_objects |= Q(trade_products__rate_in_usd=num_val)
+            q_objects |= Q(trade_products__trade_qty=num_val)
         except ValueError:
             pass
 
-        # D. Date searches (if date format)
+        # Dates
         from django.utils.dateparse import parse_date
-        parsed_d = parse_date(value)
+        parsed_d = parse_date(val)
         if parsed_d:
             q_objects |= Q(trd=parsed_d)
             q_objects |= Q(approval_date=parsed_d)
@@ -313,6 +263,48 @@ class PreSalePurchaseFilter(SearchableFilterSet):
             return queryset.filter(trn__salespurchase__isnull=True)
         return queryset
 
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        val = value.strip()
+        q_objects = Q()
+
+        if val.isdigit():
+            q_objects |= Q(id=int(val))
+
+        q_objects |= Q(trn__trn__icontains=val)
+        q_objects |= Q(trn__trade_type__icontains=val)
+        q_objects |= Q(remarks__icontains=val)
+        q_objects |= Q(trn__remarks__icontains=val)
+
+        # Buyer/Seller (Kyc)
+        q_objects |= Q(trn__customer_company_name__icontains=val)
+        try:
+            from trademgt.models import Kyc
+            kyc_ids = list(Kyc.objects.filter(name__icontains=val).values_list('id', flat=True))
+            if kyc_ids:
+                q_objects |= Q(trn__customer_company_name__in=[str(k) for k in kyc_ids])
+        except Exception:
+            pass
+
+        # Payment Term
+        try:
+            from trademgt.models import PaymentTerm
+            pt_ids = list(PaymentTerm.objects.filter(name__icontains=val).values_list('id', flat=True))
+            if pt_ids:
+                q_objects |= Q(trn__payment_term__in=[str(p) for p in pt_ids])
+        except Exception:
+            pass
+
+        from django.utils.dateparse import parse_date
+        parsed_d = parse_date(val)
+        if parsed_d:
+            q_objects |= Q(doc_issuance_date=parsed_d)
+            q_objects |= Q(date=parsed_d)
+
+        return queryset.filter(q_objects).distinct()
+
     class Meta:
         model = PreSalePurchase
         fields = {
@@ -335,6 +327,48 @@ class PrePaymentFilter(SearchableFilterSet):
             return queryset.filter(trn__salespurchase__isnull=True)
         return queryset
 
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        val = value.strip()
+        q_objects = Q()
+
+        if val.isdigit():
+            q_objects |= Q(id=int(val))
+
+        q_objects |= Q(trn__trn__icontains=val)
+        q_objects |= Q(trn__trade_type__icontains=val)
+        q_objects |= Q(lc_number__icontains=val)
+        q_objects |= Q(lc_opening_bank__icontains=val)
+        q_objects |= Q(remarks__icontains=val)
+        q_objects |= Q(trn__remarks__icontains=val)
+
+        try:
+            from trademgt.models import Bank
+            bank_ids = list(Bank.objects.filter(name__icontains=val).values_list('id', flat=True))
+            if bank_ids:
+                q_objects |= Q(lc_opening_bank__in=[str(b) for b in bank_ids])
+        except Exception:
+            pass
+
+        try:
+            num_val = float(val)
+            q_objects |= Q(advance_received=num_val)
+            q_objects |= Q(advance_paid=num_val)
+        except ValueError:
+            pass
+
+        from django.utils.dateparse import parse_date
+        parsed_d = parse_date(val)
+        if parsed_d:
+            q_objects |= Q(date_of_receipt=parsed_d)
+            q_objects |= Q(date_of_payment=parsed_d)
+            q_objects |= Q(lc_expiry_date=parsed_d)
+            q_objects |= Q(latest_shipment_date_in_lc=parsed_d)
+
+        return queryset.filter(q_objects).distinct()
+
     class Meta:
         model = PrePayment
         fields = {
@@ -356,6 +390,37 @@ class PrePaymentFilter(SearchableFilterSet):
 class SalesPurchaseFilter(SearchableFilterSet):
     date_from = django_filters.DateFilter(field_name='trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
     date_to = django_filters.DateFilter(field_name='trn__trd', lookup_expr='lte') 
+
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        val = value.strip()
+        q_objects = Q()
+
+        if val.isdigit():
+            q_objects |= Q(id=int(val))
+
+        q_objects |= Q(trn__trn__icontains=val)
+        q_objects |= Q(trn__trade_type__icontains=val)
+        q_objects |= Q(invoice_number__icontains=val)
+        q_objects |= Q(bl_number__icontains=val)
+        q_objects |= Q(remarks__icontains=val)
+        q_objects |= Q(trn__remarks__icontains=val)
+
+        try:
+            num_val = float(val)
+            q_objects |= Q(invoice_amount=num_val)
+        except ValueError:
+            pass
+
+        from django.utils.dateparse import parse_date
+        parsed_d = parse_date(val)
+        if parsed_d:
+            q_objects |= Q(invoice_date=parsed_d)
+            q_objects |= Q(bl_date=parsed_d)
+
+        return queryset.filter(q_objects).distinct()
     class Meta:
         model = SalesPurchase
         fields = {
@@ -391,6 +456,67 @@ class SalesPurchaseFilter(SearchableFilterSet):
 class PaymentFinanceFilter(SearchableFilterSet):
     date_from = django_filters.DateFilter(field_name='sp__trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
     date_to = django_filters.DateFilter(field_name='sp__trn__trd', lookup_expr='lte') 
+
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        val = value.strip()
+        q_objects = Q()
+
+        if val.isdigit():
+            q_objects |= Q(id=int(val))
+            q_objects |= Q(sp__id=int(val))
+
+        q_objects |= Q(sp__trn__trn__icontains=val)
+        q_objects |= Q(sp__trn__trade_type__icontains=val)
+        q_objects |= Q(status_of_payment__icontains=val)
+        q_objects |= Q(remarks__icontains=val)
+        q_objects |= Q(sp__remarks__icontains=val)
+        q_objects |= Q(sp__trn__remarks__icontains=val)
+
+        # Payment Mode (PaymentTerm)
+        try:
+            from trademgt.models import PaymentTerm
+            pt_ids = list(PaymentTerm.objects.filter(name__icontains=val).values_list('id', flat=True))
+            if pt_ids:
+                q_objects |= Q(sp__trn__payment_term__in=[str(p) for p in pt_ids])
+        except Exception:
+            pass
+
+        try:
+            num_val = float(val)
+            q_objects |= Q(balance_payment_made=num_val)
+            q_objects |= Q(balance_payment_received=num_val)
+            q_objects |= Q(sp__invoice_amount=num_val)
+            q_objects |= Q(net_due_in_this_trade=num_val)
+            q_objects |= Q(advance_adjusted=num_val)
+
+            # Match calculated Balance Payment (sp.invoice_amount - advance)
+            from trademgt.models import SalesPurchase, PrePayment
+            matching_sp_ids = set()
+            for sp_obj in SalesPurchase.objects.select_related('trn').all():
+                try:
+                    prepay = PrePayment.objects.filter(trn=sp_obj.trn).first()
+                    if prepay and sp_obj.invoice_amount is not None:
+                        inv = float(sp_obj.invoice_amount)
+                        adv = 0.0
+                        if sp_obj.trn.trade_type == 'Sales' and prepay.advance_received is not None:
+                            adv = float(prepay.advance_received)
+                        elif sp_obj.trn.trade_type == 'Purchase' and prepay.advance_paid is not None:
+                            adv = float(prepay.advance_paid)
+                        
+                        rem_val = inv - adv
+                        if abs(rem_val - num_val) < 0.01:
+                            matching_sp_ids.add(sp_obj.id)
+                except Exception:
+                    pass
+            if matching_sp_ids:
+                q_objects |= Q(sp_id__in=list(matching_sp_ids))
+        except ValueError:
+            pass
+
+        return queryset.filter(q_objects).distinct()
     class Meta:
         model = PaymentFinance
         fields = {
@@ -491,6 +617,24 @@ class TradePendingFilter(SearchableFilterSet):
 class PLFilter(SearchableFilterSet):
     date_from = django_filters.DateFilter(field_name='sales_trn__trn__trd', lookup_expr='gte')  # Replace `date_field` with the actual field name
     date_to = django_filters.DateFilter(field_name='sales_trn__trn__trd', lookup_expr='lte') 
+
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        val = value.strip()
+        q_objects = Q()
+
+        if val.isdigit():
+            q_objects |= Q(id=int(val))
+            q_objects |= Q(sales_trn__id=int(val))
+            q_objects |= Q(purchase_trn__id=int(val))
+
+        q_objects |= Q(sales_trn__trn__trn__icontains=val)
+        q_objects |= Q(purchase_trn__trn__trn__icontains=val)
+        q_objects |= Q(remarks__icontains=val)
+
+        return queryset.filter(q_objects).distinct()
     class Meta:
         model = PL
         fields = {

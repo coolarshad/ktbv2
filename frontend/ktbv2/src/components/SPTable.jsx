@@ -22,10 +22,10 @@ const SPTable = ({ data, onDelete, onView, basePerm }) => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Date</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-30 bg-gray-100 min-w-[140px] max-w-[140px] w-[140px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">Invoice Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Number</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Amount</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Number</th>
@@ -39,10 +39,10 @@ const SPTable = ({ data, onDelete, onView, basePerm }) => {
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.invoice_date)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">{item.id}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trn}>{item.trn?.trn}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trade_type}>{item.trn?.trade_type}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[140px] max-w-[140px] w-[140px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">{dateFormatter(item.invoice_date)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_number}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_amount}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_number}</td>

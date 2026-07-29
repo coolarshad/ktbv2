@@ -162,10 +162,13 @@ class TradeSerializer(serializers.ModelSerializer):
             if q_val:
                 matching_products = []
                 for p in products:
-                    if q_val.lower() in p.product_code.lower():
+                    if p.product_code and q_val.lower() in p.product_code.lower():
                         matching_products.append(p)
                         continue
-                    if q_val.lower() in p.product_name.lower():
+                    if p.product_name and q_val.lower() in p.product_name.lower():
+                        matching_products.append(p)
+                        continue
+                    if p.product_name_for_client and q_val.lower() in p.product_name_for_client.lower():
                         matching_products.append(p)
                         continue
                     try:

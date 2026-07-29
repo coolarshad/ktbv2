@@ -22,10 +22,10 @@ const PrePaymentTable = ({ data, onDelete, onView, basePerm }) => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Type</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Number</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-30 bg-gray-100 min-w-[180px] max-w-[180px] w-[180px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">LC Number</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Opening Bank</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Advance Received</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date Of Receipt</th>
@@ -42,10 +42,10 @@ const PrePaymentTable = ({ data, onDelete, onView, basePerm }) => {
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trn}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trn.trade_type}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_number}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">{item.id}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trn}>{item.trn?.trn}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trade_type}>{item.trn?.trade_type}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[180px] max-w-[180px] w-[180px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis" title={item.lc_number}>{item.lc_number}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_received}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_receipt)}</td>
