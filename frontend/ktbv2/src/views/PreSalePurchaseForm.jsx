@@ -194,9 +194,35 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                 }
             }
         });
-         // Validate notifiedUsers
+        // Validate notifiedUsers
         if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
             errors.notifiedUsers = 'At least one notification recipient must be selected!';
+        }
+
+        // Validate acknowledgedPI: if file or name is provided, both must be provided
+        if (formData.acknowledgedPI && Array.isArray(formData.acknowledgedPI)) {
+            formData.acknowledgedPI.forEach((ackPi, index) => {
+                const hasFile = Boolean(ackPi.ackn_pi);
+                const hasName = Boolean(ackPi.ackn_pi_name && ackPi.ackn_pi_name.trim());
+                if (hasFile && !hasName) {
+                    errors[`acknowledgedPI[${index}].ackn_pi_name`] = 'PI Name is required when file is uploaded!';
+                } else if (!hasFile && hasName) {
+                    errors[`acknowledgedPI[${index}].ackn_pi`] = 'File is required when PI Name is entered!';
+                }
+            });
+        }
+
+        // Validate acknowledgedPO: if file or name is provided, both must be provided
+        if (formData.acknowledgedPO && Array.isArray(formData.acknowledgedPO)) {
+            formData.acknowledgedPO.forEach((ackPo, index) => {
+                const hasFile = Boolean(ackPo.ackn_po);
+                const hasName = Boolean(ackPo.ackn_po_name && ackPo.ackn_po_name.trim());
+                if (hasFile && !hasName) {
+                    errors[`acknowledgedPO[${index}].ackn_po_name`] = 'PO Name is required when file is uploaded!';
+                } else if (!hasFile && hasName) {
+                    errors[`acknowledgedPO[${index}].ackn_po`] = 'File is required when PO Name is entered!';
+                }
+            });
         }
 
         setValidationErrors(errors);
@@ -459,13 +485,11 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 name="ackn_pi"
                                 type="file"
                                 onChange={e => handleChange(e, index, 'acknowledgedPI')}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                className={`border p-2 rounded w-full col-span-1 ${getFieldErrorClass(`acknowledgedPI[${index}].ackn_pi`)}`}
                             />
-                            {/* {ackPi.ackn_pi && (
-                                <span className="block mt-2 text-gray-600">
-                                    {ackPi.ackn_pi} 
-                                </span>
-                            )} */}
+                            {validationErrors[`acknowledgedPI[${index}].ackn_pi`] && (
+                                <span className="text-red-500 text-xs block mt-1">{validationErrors[`acknowledgedPI[${index}].ackn_pi`]}</span>
+                            )}
                         </div>
                         <div>
                             <label htmlFor={`ackn_pi_name_${index}`} className="block text-sm font-medium text-gray-700">PI Name</label>
@@ -475,8 +499,11 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={ackPi.ackn_pi_name || ''}
                                 onChange={e => handleChange(e, index, 'acknowledgedPI')}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                className={`border p-2 rounded w-full col-span-1 ${getFieldErrorClass(`acknowledgedPI[${index}].ackn_pi_name`)}`}
                             />
+                            {validationErrors[`acknowledgedPI[${index}].ackn_pi_name`] && (
+                                <span className="text-red-500 text-xs block mt-1">{validationErrors[`acknowledgedPI[${index}].ackn_pi_name`]}</span>
+                            )}
                         </div>
                         <div className="flex items-end">
                             
@@ -514,9 +541,11 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 name="ackn_po"
                                 type="file"
                                 onChange={e => handleChange(e, index, 'acknowledgedPO')}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                className={`border p-2 rounded w-full col-span-1 ${getFieldErrorClass(`acknowledgedPO[${index}].ackn_po`)}`}
                             />
-                            {/* {ackPo.ackn_po && <span className="block mt-2 text-gray-600">{ackPo.ackn_po}</span>} */}
+                            {validationErrors[`acknowledgedPO[${index}].ackn_po`] && (
+                                <span className="text-red-500 text-xs block mt-1">{validationErrors[`acknowledgedPO[${index}].ackn_po`]}</span>
+                            )}
                         </div>
                         <div>
                             <label htmlFor={`ackn_po_name_${index}`} className="block text-sm font-medium text-gray-700">PO Name</label>
@@ -526,8 +555,11 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                                 type="text"
                                 value={ackPo.ackn_po_name || ''}
                                 onChange={e => handleChange(e, index, 'acknowledgedPO')}
-                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                                className={`border p-2 rounded w-full col-span-1 ${getFieldErrorClass(`acknowledgedPO[${index}].ackn_po_name`)}`}
                             />
+                            {validationErrors[`acknowledgedPO[${index}].ackn_po_name`] && (
+                                <span className="text-red-500 text-xs block mt-1">{validationErrors[`acknowledgedPO[${index}].ackn_po_name`]}</span>
+                            )}
                         </div>
                         <div className="flex items-end">
                             

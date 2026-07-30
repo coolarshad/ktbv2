@@ -122,7 +122,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[130px] max-w-[130px] w-[130px] whitespace-nowrap">Doc Issuance Date</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[190px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[350px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[510px] z-30 bg-gray-100 min-w-[240px] max-w-[240px] w-[240px] border-r border-gray-300 whitespace-normal break-words">Buyer/Seller</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Payment Term</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
               {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Due Date</th> */}
@@ -142,7 +142,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[130px] max-w-[130px] w-[130px] whitespace-nowrap">{dateFormatter(presp.doc_issuance_date)}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[190px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={presp.trade?.trn}>{presp.trade?.trn}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[350px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={presp.trade?.trade_type}>{presp.trade?.trade_type}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[510px] z-10 bg-white min-w-[240px] max-w-[240px] w-[240px] border-r border-gray-300 whitespace-normal break-words">{presp.trade?.customer?.name}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade?.customer?.name}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.trade.paymentTerm.name}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(presp.date)}</td>
                   {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{presp.lc_due_date}</td> */}
@@ -189,7 +189,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                 <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
                   <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
                   {hasPermission(user, `print_${basePerm}`) && (
-                    <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+                    <ReactToPrint documentTitle={`${selectedTrade?.trn || 'KTB'}_PO`} trigger={() => <button>Print</button>} content={() => componentRef.current} />
                   )}
 
                   <div className="p-4 max-w-6xl mx-auto" ref={componentRef}>
@@ -204,7 +204,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* Col 1 with 3 Rows */}
                       <div className="flex flex-col  border-l border-t border-r  border-black">
                         <div className="border-b border-black px-2 py-2">
-                          <p className='font-light text-sm'>Invoice To</p>
+                          {/* <p className='font-light text-sm'>Invoice To</p> */}
                           <p className='font-bold text-sm uppercase'>{selectedTrade.company.name}</p>
                           <p className='text-sm uppercase'>
                             {selectedTrade.company.address}
@@ -344,7 +344,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* Row 1 */}
                       <div className=" p-2">
                         <p className='text-sm'>Amount Chargeable (in words)</p>
-                        <p className='font-bold mb-1 text-sm uppercase'>{selectedTrade.currency.name} {toWords(totalAmount)} Only</p>
+                        <p className='font-bold mb-1 text-sm uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
                         <p className='text-sm'>DOCUMENTS REQUIRED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
@@ -396,7 +396,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                 <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
                   <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
                   {hasPermission(user, `print_${basePerm}`) && (
-                    <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+                    <ReactToPrint documentTitle={`${selectedTrade?.trn || 'KTB'}_PI`} trigger={() => <button>Print</button>} content={() => componentRef.current} />
                   )}
 
                   <div className="py-3 px-4 max-w-6xl mx-auto" ref={componentRef}>
@@ -560,7 +560,8 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* Row 1 */}
                       <div className=" px-2 py-1">
                         <p>Amount Chargeable (in words)</p>
-                        <p className='font-bold uppercase'>{selectedTrade.currency.name} {toWords(totalAmount)} Only</p>
+                        <p className='font-bold uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
+                        <p className='text-xs my-1 font-semibold'>Note: Outstanding payments must be paid within 15 days from the date of submission of original copy documents by mail. Non settlement shall incur 12% interest per annum.</p>
                         <p>DOCUMENTS PROVIDED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
@@ -794,24 +795,52 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                   </div>
                 )))}
               <p className='my-2 underline'>Acknowledged PI</p>
-              {selectedPresp.acknowledgedPI && (
+              {selectedPresp.acknowledgedPI && selectedPresp.acknowledgedPI.length > 0 ? (
                 selectedPresp.acknowledgedPI.map((product, index) => (
                   <div key={index}>
-                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_pi}`} target="_blank"
-                      rel="noopener noreferrer">{product.ackn_pi_name}</a></p>
-
+                    <p className='text-sm underline'>
+                      {index + 1}.{' '}
+                      {product.ackn_pi ? (
+                        <a
+                          href={product.ackn_pi.startsWith('http') ? product.ackn_pi : `${BACKEND_URL}${product.ackn_pi.startsWith('/') ? '' : '/'}${product.ackn_pi}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {product.ackn_pi_name || 'View File'}
+                        </a>
+                      ) : (
+                        <span>{product.ackn_pi_name || 'PI File'} (No file attached)</span>
+                      )}
+                    </p>
                   </div>
-                )))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No Document data available.</p>
+              )}
 
               <p className='my-2 underline'>Acknowledged PO</p>
-              {selectedPresp.acknowledgedPO && (
+              {selectedPresp.acknowledgedPO && selectedPresp.acknowledgedPO.length > 0 ? (
                 selectedPresp.acknowledgedPO.map((product, index) => (
                   <div key={index}>
-                    <p className='text-sm underline'>{index + 1}. <a href={`${BACKEND_URL}${product.ackn_po}`} target="_blank"
-                      rel="noopener noreferrer">{product.ackn_po_name}</a></p>
-
+                    <p className='text-sm underline'>
+                      {index + 1}.{' '}
+                      {product.ackn_po ? (
+                        <a
+                          href={product.ackn_po.startsWith('http') ? product.ackn_po : `${BACKEND_URL}${product.ackn_po.startsWith('/') ? '' : '/'}${product.ackn_po}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {product.ackn_po_name || 'View File'}
+                        </a>
+                      ) : (
+                        <span>{product.ackn_po_name || 'PO File'} (No file attached)</span>
+                      )}
+                    </p>
                   </div>
-                )))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No Document data available.</p>
+              )}
               {/* Notified Users Section */}
               <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
                 <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>

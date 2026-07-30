@@ -68,10 +68,10 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
 
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-30 bg-gray-100 min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">Company</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[600px] z-30 bg-gray-100 min-w-[240px] max-w-[240px] w-[240px] border-r border-gray-300 whitespace-normal break-words">Buyer/Seller Name</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate in (AED)</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Approval Date</th>
               {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th> */}
@@ -90,9 +90,9 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
 
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trn}>{row.trade.trn}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">{row.trade.companyName?.name || '-'}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[600px] z-10 bg-white min-w-[240px] max-w-[240px] w-[240px] border-r border-gray-300 whitespace-normal break-words">{row.trade.customer?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.customer?.name || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.productName?.name || row.product_name || '-'}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.productName?.name || row.product_name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.product_code || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.rate_in_usd || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.trd)}</td>
 

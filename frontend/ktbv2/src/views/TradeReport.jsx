@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import { BASE_URL } from '../utils';
@@ -57,20 +58,23 @@ const TradeReport = () => {
             <form onSubmit={handleSubmit} className="space-y-2 w-full">
                 <h2 className="text-xl font-semibold text-center">Trade Report</h2>
                 <div className="grid grid-cols-1 gap-2 p-2">
-                    <select
+                    <Select
                         id="trn"
                         name="trn"
-                        value={formData.trn}
-                        onChange={handleChange} // Directly pass the function
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                    >
-                        <option value="">Select TRN</option>
-                        {trnOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.trn}
-                            </option>
-                        ))}
-                    </select>
+                        options={trnOptions.map(option => ({ value: option.id, label: option.trn }))}
+                        value={
+                            formData.trn
+                                ? { value: formData.trn, label: trnOptions.find(opt => String(opt.id) === String(formData.trn))?.trn || '' }
+                                : null
+                        }
+                        onChange={(selectedOption) =>
+                            handleChange({ target: { name: 'trn', value: selectedOption ? selectedOption.value : '' } })
+                        }
+                        placeholder="Select TRN"
+                        isSearchable
+                        isClearable
+                        className="w-full col-span-1"
+                    />
                     <button
                         type="submit"
                         className="bg-blue-500 text-white p-2 rounded"
@@ -233,30 +237,48 @@ const TradeReport = () => {
                                                 </div>
                                             ) : null
                                         )}
-                                    <p className='my-2 underline'>Acknowledged PI</p>
-                                    {reportData.presp.acknowledgedPI &&
-                                        reportData.presp.acknowledgedPI.map((item, index) =>
-                                            item.name !== '' ? (
-                                                <div key={index}>
-                                                    <p className="text-sm">
-                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.ackn_pi}`} target="_blank"
-                                                            rel="noopener noreferrer">{item.ackn_pi_name}</a>
-                                                    </p>
-                                                </div>
-                                            ) : null
-                                        )}
-                                    <p className='my-2 underline'>Acknowledged PO</p>
-                                    {reportData.presp.acknowledgedPO &&
-                                        reportData.presp.acknowledgedPO.map((item, index) =>
-                                            item.name !== '' ? (
-                                                <div key={index}>
-                                                    <p className="text-sm">
-                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.ackn_po}`} target="_blank"
-                                                            rel="noopener noreferrer">{item.ackn_po_name}</a>
-                                                    </p>
-                                                </div>
-                                            ) : null
-                                        )}
+                                     <p className='my-2 underline'>Acknowledged PI</p>
+                                     {reportData.presp.acknowledgedPI &&
+                                         reportData.presp.acknowledgedPI.map((item, index) => (
+                                             <div key={index}>
+                                                 <p className="text-sm">
+                                                     {index + 1}.{' '}
+                                                     {item.ackn_pi ? (
+                                                         <a
+                                                             className="text-blue-800 border px-2 hover:underline"
+                                                             href={item.ackn_pi.startsWith('http') ? item.ackn_pi : `${BACKEND_URL}${item.ackn_pi.startsWith('/') ? '' : '/'}${item.ackn_pi}`}
+                                                             target="_blank"
+                                                             rel="noopener noreferrer"
+                                                         >
+                                                             {item.ackn_pi_name || 'View File'}
+                                                         </a>
+                                                     ) : (
+                                                         <span>{item.ackn_pi_name || 'PI File'} (No file attached)</span>
+                                                     )}
+                                                 </p>
+                                             </div>
+                                         ))}
+                                     <p className='my-2 underline'>Acknowledged PO</p>
+                                     {reportData.presp.acknowledgedPO &&
+                                         reportData.presp.acknowledgedPO.map((item, index) => (
+                                             <div key={index}>
+                                                 <p className="text-sm">
+                                                     {index + 1}.{' '}
+                                                     {item.ackn_po ? (
+                                                         <a
+                                                             className="text-blue-800 border px-2 hover:underline"
+                                                             href={item.ackn_po.startsWith('http') ? item.ackn_po : `${BACKEND_URL}${item.ackn_po.startsWith('/') ? '' : '/'}${item.ackn_po}`}
+                                                             target="_blank"
+                                                             rel="noopener noreferrer"
+                                                         >
+                                                             {item.ackn_po_name || 'View File'}
+                                                         </a>
+                                                     ) : (
+                                                         <span>{item.ackn_po_name || 'PO File'} (No file attached)</span>
+                                                     )}
+                                                 </p>
+                                             </div>
+                                         ))}
                                 </div>
                             </>
                         ) : (

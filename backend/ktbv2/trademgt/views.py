@@ -904,20 +904,26 @@ class PreSalePurchaseView(APIView):
 
         i = 0
         while f'acknowledgedPI[{i}].ackn_pi_name' in data:
-            pi_data = {
-                'ackn_pi_name': data.get(f'acknowledgedPI[{i}].ackn_pi_name'),
-                'ackn_pi': request.FILES.get(f'acknowledgedPI[{i}].ackn_pi',None),  # Handle binary data as needed
-            }
-            acknowledged_pi_data.append(pi_data)
+            pi_name = data.get(f'acknowledgedPI[{i}].ackn_pi_name')
+            pi_file = request.FILES.get(f'acknowledgedPI[{i}].ackn_pi', None)
+            if (pi_name and pi_name.strip()) or pi_file:
+                pi_data = {
+                    'ackn_pi_name': pi_name,
+                    'ackn_pi': pi_file,
+                }
+                acknowledged_pi_data.append(pi_data)
             i += 1
 
         j = 0
         while f'acknowledgedPO[{j}].ackn_po_name' in data:
-            po_data = {
-                'ackn_po_name': data.get(f'acknowledgedPO[{j}].ackn_po_name'),
-                'ackn_po': request.FILES.get(f'acknowledgedPO[{j}].ackn_po',None),
-            }
-            acknowledged_po_data.append(po_data)
+            po_name = data.get(f'acknowledgedPO[{j}].ackn_po_name')
+            po_file = request.FILES.get(f'acknowledgedPO[{j}].ackn_po', None)
+            if (po_name and po_name.strip()) or po_file:
+                po_data = {
+                    'ackn_po_name': po_name,
+                    'ackn_po': po_file,
+                }
+                acknowledged_po_data.append(po_data)
             j += 1
         
         with transaction.atomic():
@@ -1009,30 +1015,34 @@ class PreSalePurchaseView(APIView):
 
         i = 0
         while f'acknowledgedPI[{i}].ackn_pi_name' in data:
-            pi_file = request.FILES.get(f'acknowledgedPI[{i}].ackn_pi',None)
-            if not pi_file:
-                existing_pi = AcknowledgedPI.objects.filter(presalepurchase=pre_sp, ackn_pi_name=data.get(f'acknowledgedPI[{i}].ackn_pi_name')).first()
+            pi_name = data.get(f'acknowledgedPI[{i}].ackn_pi_name')
+            pi_file = request.FILES.get(f'acknowledgedPI[{i}].ackn_pi', None)
+            if not pi_file and pi_name:
+                existing_pi = AcknowledgedPI.objects.filter(presalepurchase=pre_sp, ackn_pi_name=pi_name).first()
                 if existing_pi:
                     pi_file = existing_pi.ackn_pi  # retain existing file
-            pi_data = {
-                'ackn_pi_name': data.get(f'acknowledgedPI[{i}].ackn_pi_name'),
-                'ackn_pi': pi_file,  # Handle binary data as needed
-            }
-            acknowledged_pi_data.append(pi_data)
+            if (pi_name and pi_name.strip()) or pi_file:
+                pi_data = {
+                    'ackn_pi_name': pi_name,
+                    'ackn_pi': pi_file,
+                }
+                acknowledged_pi_data.append(pi_data)
             i += 1
 
         j = 0
         while f'acknowledgedPO[{j}].ackn_po_name' in data:
-            po_file = request.FILES.get(f'acknowledgedPO[{j}].ackn_po',None)
-            if not po_file:
-                existing_po = AcknowledgedPO.objects.filter(presalepurchase=pre_sp, ackn_po_name=data.get(f'acknowledgedPO[{j}].ackn_po_name')).first()
+            po_name = data.get(f'acknowledgedPO[{j}].ackn_po_name')
+            po_file = request.FILES.get(f'acknowledgedPO[{j}].ackn_po', None)
+            if not po_file and po_name:
+                existing_po = AcknowledgedPO.objects.filter(presalepurchase=pre_sp, ackn_po_name=po_name).first()
                 if existing_po:
                     po_file = existing_po.ackn_po  # retain existing file
-            po_data = {
-                'ackn_po_name': data.get(f'acknowledgedPO[{j}].ackn_po_name'),
-                'ackn_po': po_file,
-            }
-            acknowledged_po_data.append(po_data)
+            if (po_name and po_name.strip()) or po_file:
+                po_data = {
+                    'ackn_po_name': po_name,
+                    'ackn_po': po_file,
+                }
+                acknowledged_po_data.append(po_data)
             j += 1
        
         with transaction.atomic():

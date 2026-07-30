@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import Select from 'react-select';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../axiosConfig';
@@ -30,11 +31,39 @@ const PLForm = ({ mode = 'add' }) => {
         }
     };
 
+    const [existingPlList, setExistingPlList] = useState([]);
+
     useEffect(() => {
         fetchData('/trademgt/sales-purchases/', { reviewed: true, pf_approved: 'true', trn__trade_type: 'Sales' }, setSalesTrnOptions);
         fetchData('/trademgt/sales-purchases/', { reviewed: true, pf_approved: 'true', trn__trade_type: 'Purchase' }, setPurchaseTrnOptions);
 
+        axios.get('/trademgt/profitloss/')
+            .then(res => {
+                const list = Array.isArray(res.data) ? res.data : (res.data.results || []);
+                setExistingPlList(list);
+            })
+            .catch(err => console.error('Error fetching existing PL list:', err));
     }, []);
+
+    const filteredSalesOptions = useMemo(() => {
+        const usedSalesIds = new Set(
+            existingPlList
+                .filter(pl => mode !== 'update' || String(pl.id) !== String(id))
+                .map(pl => Number(typeof pl.sales_trn === 'object' ? pl.sales_trn?.id : pl.sales_trn))
+                .filter(Boolean)
+        );
+        return salesTrnOptions.filter(option => !usedSalesIds.has(Number(option.id)));
+    }, [salesTrnOptions, existingPlList, mode, id]);
+
+    const filteredPurchaseOptions = useMemo(() => {
+        const usedPurchaseIds = new Set(
+            existingPlList
+                .filter(pl => mode !== 'update' || String(pl.id) !== String(id))
+                .map(pl => Number(typeof pl.purchase_trn === 'object' ? pl.purchase_trn?.id : pl.purchase_trn))
+                .filter(Boolean)
+        );
+        return purchaseTrnOptions.filter(option => !usedPurchaseIds.has(Number(option.id)));
+    }, [purchaseTrnOptions, existingPlList, mode, id]);
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -177,39 +206,61 @@ const PLForm = ({ mode = 'add' }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 <div>
                     <label htmlFor="trn" className="block text-sm font-medium text-gray-700">Sales TRN & ID</label>
-                    <select
+                    <Select
                         id="sales_trn"
                         name="sales_trn"
-                        value={formData.sales_trn}
-                        onChange={(e) => handleChange(e)}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('sales_trn')}`}
-                    >
-                        <option value="">Select TRN</option>
-                        {salesTrnOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.trn.trn} ({option.id})
-                            </option>
-                        ))}
-                    </select>
+                        options={filteredSalesOptions.map(option => ({
+                            value: option.id,
+                            label: `${option.trn.trn} (${option.id})`
+                        }))}
+                        value={
+                            formData.sales_trn
+                                ? {
+                                    value: formData.sales_trn,
+                                    label: salesTrnOptions.find(opt => String(opt.id) === String(formData.sales_trn))
+                                        ? `${salesTrnOptions.find(opt => String(opt.id) === String(formData.sales_trn)).trn.trn} (${formData.sales_trn})`
+                                        : String(formData.sales_trn)
+                                }
+                                : null
+                        }
+                        onChange={(selectedOption) =>
+                            handleChange({ target: { name: 'sales_trn', value: selectedOption ? selectedOption.value : '' } })
+                        }
+                        placeholder="Select Sales TRN"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-1 ${getFieldErrorClass('sales_trn')}`}
+                    />
                     {validationErrors.sales_trn && <p className="text-red-500">{validationErrors.sales_trn}</p>}
                 </div>
 
                 <div>
                     <label htmlFor="purchase_trn" className="block text-sm font-medium text-gray-700">Purchase TRN & ID</label>
-                    <select
+                    <Select
                         id="purchase_trn"
                         name="purchase_trn"
-                        value={formData.purchase_trn}
-                        onChange={(e) => handleChange(e)}
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('purchase_trn')}`}
-                    >
-                        <option value="">Select TRN</option>
-                        {purchaseTrnOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.trn.trn} ({option.id})
-                            </option>
-                        ))}
-                    </select>
+                        options={filteredPurchaseOptions.map(option => ({
+                            value: option.id,
+                            label: `${option.trn.trn} (${option.id})`
+                        }))}
+                        value={
+                            formData.purchase_trn
+                                ? {
+                                    value: formData.purchase_trn,
+                                    label: purchaseTrnOptions.find(opt => String(opt.id) === String(formData.purchase_trn))
+                                        ? `${purchaseTrnOptions.find(opt => String(opt.id) === String(formData.purchase_trn)).trn.trn} (${formData.purchase_trn})`
+                                        : String(formData.purchase_trn)
+                                }
+                                : null
+                        }
+                        onChange={(selectedOption) =>
+                            handleChange({ target: { name: 'purchase_trn', value: selectedOption ? selectedOption.value : '' } })
+                        }
+                        placeholder="Select Purchase TRN"
+                        isSearchable
+                        isClearable
+                        className={`w-full col-span-1 ${getFieldErrorClass('purchase_trn')}`}
+                    />
                     {validationErrors.purchase_trn && <p className="text-red-500">{validationErrors.purchase_trn}</p>}
                 </div>
             
