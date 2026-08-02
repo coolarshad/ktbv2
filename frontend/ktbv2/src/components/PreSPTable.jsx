@@ -192,10 +192,10 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                     <ReactToPrint documentTitle={`${selectedTrade?.trn || 'KTB'}_PO`} trigger={() => <button>Print</button>} content={() => componentRef.current} />
                   )}
 
-                  <div className="p-4 max-w-6xl mx-auto" ref={componentRef}>
+                  <div className="p-4 max-w-6xl mx-auto print-page-a4" ref={componentRef}>
 
                     {/* Header Section */}
-                    <div className="text-center pb-3">
+                    <div className="text-center pb-2">
                       <h1 className="text-xl font-bold">PURCHASE ORDER</h1>
                     </div>
 
@@ -204,7 +204,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* Col 1 with 3 Rows */}
                       <div className="flex flex-col  border-l border-t border-r  border-black">
                         <div className="border-b border-black px-2 py-2">
-                          {/* <p className='font-light text-sm'>Invoice To</p> */}
+                          <p className='font-light text-sm'>Invoice To</p>
                           <p className='font-bold text-sm uppercase'>{selectedTrade.company.name}</p>
                           <p className='text-sm uppercase'>
                             {selectedTrade.company.address}
@@ -239,10 +239,10 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             <p className='text-sm uppercase'>{selectedTrade.incoterm}</p>
                           </div>
 
-                          {/* <div className="border-b border-black p-2">
-                            <p className='font-bold text-sm'>CONTAINER SIZE</p>
-                            <p className='text-sm uppercase'>{selectedTrade.shipmentSize.name}</p>
-                          </div> */}
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold text-sm'>CURRENCY</p>
+                            <p className='text-sm uppercase'>{selectedTrade.currency.name}</p>
+                          </div>
                           <div className="p-2">
                             <p className='font-bold text-sm'>
                               ESTIMATED TIME OF DEPARTURE
@@ -281,59 +281,59 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
 
                     {/* Table Section */}
                     <div className="">
-                      <table className="table-auto w-full border-collapse border border-black">
+                      <table className="table-fixed w-full border-collapse border border-black text-xs">
                         <thead>
-                          <tr>
-                            <th className="border border-black p-2 text-sm">SN</th>
-                            <th className="border border-black p-2 text-sm">Description of Goods</th>
-                            <th className="border border-black p-2 text-sm">HS Code</th>
-                            <th className="border border-black p-2 text-sm">Trade Quantity</th>
-                            <th className="border border-black p-2 text-sm">Unit</th>
-                            <th className="border border-black p-2 text-sm">Rate</th>
-                            <th className="border border-black p-2 text-sm">Currency</th>
-                            <th className="border border-black p-2 text-sm">Tolerance</th>
-                            <th className="border border-black p-2 text-sm">Amount</th>
+                          <tr className="bg-gray-50">
+                            <th className="border border-black px-1 py-1.5 w-[4%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">SN</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[26%] text-left text-xs font-bold break-words [overflow-wrap:anywhere]">Description of Goods</th>
+                            <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">HS Code</th>
+                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Trade Quantity</th>
+                            <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Unit</th>
+                            <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
+                            <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
+                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[15%] text-right text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
                           </tr>
                         </thead>
                         <tbody>
                           {selectedTrade.tradeProducts.map((product, index) => (
                             <tr key={index}>
-                              <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
-                              <td className="border-l border-r border-black p-1 font-bold text-sm">
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{index + 1}</td>
+                              <td className="border-l border-r border-black px-1.5 py-1 font-bold text-xs break-words [overflow-wrap:anywhere]">
                                 {product.product_name_for_client && product.product_name_for_client.toLowerCase() !== "na" ? product.product_name_for_client : product.productName.name}
                               </td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center ">{product.trade_qty_unit}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.selected_currency_rate.toFixed(2)}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{selectedTrade.currency.name}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.tolerance}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-right">{parseFloat(product.selected_currency_rate * product.trade_qty).toFixed(2)}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.hs_code}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty_unit}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.selected_currency_rate.toFixed(2)}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.packing?.name || product.packing || ''}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.tolerance}</td>
+                              <td className="border-l border-r border-black px-1.5 py-1 text-xs text-right break-words [overflow-wrap:anywhere]">{parseFloat(product.selected_currency_rate * product.trade_qty).toFixed(2)}</td>
                             </tr>
                           ))}
-                          {Array.from({ length: 12 - selectedTrade.tradeProducts.length }, (_, index) => (
+                          {Array.from({ length: Math.max(0, Math.min(3, 4 - selectedTrade.tradeProducts.length)) }, (_, index) => (
                             <tr key={index}>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1.5 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1.5 py-1">&nbsp;</td>
                             </tr>
                           ))}
-                          <tr>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2 text-sm text-center">Total</td>
-                            <td className="border border-black p-2 text-sm text-center">{totalTradeQuantity}</td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2 text-right text-sm">{totalAmount.toFixed(2)}</td>
+                          <tr className="font-bold border-t border-black">
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1.5 py-1"></td>
+                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">Total</td>
+                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">{totalTradeQuantity}</td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1.5 py-1 text-right text-xs font-bold">{totalAmount.toFixed(2)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -345,6 +345,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       <div className=" p-2">
                         <p className='text-sm'>Amount Chargeable (in words)</p>
                         <p className='font-bold mb-1 text-sm uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
+                        <p className='text-xs my-1 font-semibold'>Remark: {selectedPresp.remarks}</p>
                         <p className='text-sm'>DOCUMENTS REQUIRED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
@@ -372,21 +373,21 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       </div> */}
                       <div className="grid grid-cols-2">
                         <div className="p-2">
-                          <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
-                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" /> */}
-                          <div className="w-16 h-16 mx-auto"></div>
+                          <p className='mb-3 font-bold text-sm'>Acknowledged By</p>
+                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-12 h-12 mx-auto" /> */}
+                          <div className="w-12 h-12 mx-auto"></div>
                           <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
                         </div>
                         <div className="border-t border-l border-black p-2">
-                          <p className='mb-8 font-bold text-sm'>for {selectedTrade.company.name}</p>
-                          <div className="w-16 h-16 mx-auto"></div>
-                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" /> */}
+                          <p className='mb-3 font-bold text-sm'>for {selectedTrade.company.name}</p>
+                          <div className="w-12 h-12 mx-auto"></div>
+                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-12 h-12 mx-auto" /> */}
                           <p className='text-right text-sm'>Authorized Signatory</p>
                         </div>
                       </div>
                     </div>
-                    <div className="text-center pb-2 mt-1">
-                      <h1 className="text-sm font-md text-sm">This is a computer generated invoice</h1>
+                    <div className="text-center pb-1 mt-1">
+                      <h1 className="text-xs font-medium text-gray-700">This is a computer generated invoice</h1>
                     </div>
                   </div>
                 </div>
@@ -399,7 +400,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                     <ReactToPrint documentTitle={`${selectedTrade?.trn || 'KTB'}_PI`} trigger={() => <button>Print</button>} content={() => componentRef.current} />
                   )}
 
-                  <div className="py-3 px-4 max-w-6xl mx-auto" ref={componentRef}>
+                  <div className="py-3 px-4 max-w-6xl mx-auto print-page-a4" ref={componentRef}>
 
                     {/* Header Section */}
                     <div className="text-center pb-2">
@@ -409,8 +410,8 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                     {/* First Div with 2 Columns */}
                     <div className="grid grid-cols-2 gap-0">
                       {/* Col 1 with 3 Rows */}
-                      <div className="flex flex-col  content-startjustify-between border-l border-t border-r  border-black">
-                        <div className="border-b border-black px-2 py-3">
+                      <div className="flex flex-col justify-between border-l border-t border-r border-black">
+                        <div className="border-b border-black px-2 py-1.5">
                           <p className='font-bold uppercase'>{selectedTrade.company.name}</p>
                           <p className='uppercase'>
                             {selectedTrade.company.address}
@@ -419,14 +420,14 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             Cmp Regn No. : <span className='font-bold uppercase'>{selectedTrade.company.registration_number}</span>
                           </p>
                         </div>
-                        <div className="border-b border-black px-2 py-3">
-                          <p className=' pb-2'>Buyer</p>
+                        <div className="border-b border-black px-2 py-1.5">
+                          <p className=' pb-1'>Buyer</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.name}</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.regAddress}</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.companyRegNo}</p>
                         </div>
-                        <div className="px-2 py-2">
-                          <p className=' pb-2'>OUR BANK DETAILS</p>
+                        <div className="px-2 py-1.5">
+                          <p className=' pb-1'>OUR BANK DETAILS</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.name}</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.account_number}</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.swift_code}</p>
@@ -450,10 +451,10 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             <p className='uppercase'>{selectedTrade.incoterm}</p>
                           </div>
 
-                          {/* <div className="border-b border-black p-2">
-                              <p className='font-bold'>CONTAINER SIZE</p>
-                              <p className='uppercase'>{selectedTrade.shipmentSize.name}</p>
-                            </div> */}
+                          <div className="border-b border-black p-2">
+                            <p className='font-bold'>CURRENCY</p>
+                            <p className='uppercase'>{selectedTrade.currency.name}</p>
+                          </div>
                           <div className="p-2">
                             <p className='font-bold'>
                               ESTIMATED TIME OF DEPARTURE
@@ -495,61 +496,61 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
 
                     {/* Table Section */}
                     <div className="">
-                      <table className="table-auto w-full border-collapse border border-black">
+                      <table className="table-fixed w-full border-collapse border border-black text-xs">
                         <thead>
-                          <tr>
-                            <th className="border border-black p-1">SN</th>
-                            <th className="border border-black p-1">Description of Goods</th>
-                            <th className="border border-black p-1">HS Code</th>
-                            <th className="border border-black p-1">Trade Quantity</th>
-                            <th className="border border-black p-1">Unit</th>
-                            <th className="border border-black p-1">Rate</th>
-                            <th className="border border-black p-1">Currency</th>
-                            <th className="border border-black p-1">Tolerance</th>
-                            <th className="border border-black p-1">Amount</th>
+                          <tr className="bg-gray-50">
+                            <th className="border border-black px-1 py-1.5 w-[4%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">SN</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[26%] text-left text-xs font-bold break-words [overflow-wrap:anywhere]">Description of Goods</th>
+                            <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">HS Code</th>
+                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Trade Quantity</th>
+                            <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Unit</th>
+                            <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
+                            <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
+                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[15%] text-right text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
                           </tr>
                         </thead>
                         <tbody>
                           {selectedTrade.tradeProducts.map((product, index) => (
                             <tr key={index}>
-                              <td className="border-l border-r border-black p-1 text-sm">{index + 1}</td>
-                              <td className="border-l border-r border-black p-1 font-bold text-sm">
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{index + 1}</td>
+                              <td className="border-l border-r border-black px-1.5 py-1 font-bold text-xs break-words [overflow-wrap:anywhere]">
                                 {product.product_name_for_client && product.product_name_for_client.toLowerCase() !== "na" ? product.product_name_for_client : product.productName.name}
                               </td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.hs_code}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.trade_qty_unit}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.selected_currency_rate.toFixed(2)}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{selectedTrade.currency.name}</td>
-                              <td className="border-l border-r border-black p-1 text-sm text-center">{product.tolerance}</td>
-                              <td className="border-l border-r border-black p-1 text-right text-sm">
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.hs_code}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty_unit}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.selected_currency_rate.toFixed(2)}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.packing?.name || product.packing || ''}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.tolerance}</td>
+                              <td className="border-l border-r border-black px-1.5 py-1 text-xs text-right break-words [overflow-wrap:anywhere]">
                                 {parseFloat(product.selected_currency_rate * product.trade_qty).toFixed(2)}
                               </td>
                             </tr>
                           ))}
-                          {Array.from({ length: 7 - selectedTrade.tradeProducts.length }, (_, index) => (
+                          {Array.from({ length: Math.max(0, Math.min(3, 4 - selectedTrade.tradeProducts.length)) }, (_, index) => (
                             <tr key={index}>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
-                              <td className="border-l border-r border-black p-2"></td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1.5 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                              <td className="border-l border-r border-black px-1.5 py-1">&nbsp;</td>
                             </tr>
                           ))}
-                          <tr>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2 text-sm text-center">Total</td>
-                            <td className="border border-black p-2 text-sm text-center">{totalTradeQuantity}</td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2"></td>
-                            <td className="border border-black p-2 text-right text-sm">{totalAmount.toFixed(2)}</td>
+                          <tr className="font-bold border-t border-black">
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1.5 py-1"></td>
+                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">Total</td>
+                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">{totalTradeQuantity}</td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1 py-1"></td>
+                            <td className="border border-black px-1.5 py-1 text-right text-xs font-bold">{totalAmount.toFixed(2)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -562,6 +563,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                         <p>Amount Chargeable (in words)</p>
                         <p className='font-bold uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
                         <p className='text-xs my-1 font-semibold'>Note: Outstanding payments must be paid within 15 days from the date of submission of original copy documents by mail. Non settlement shall incur 12% interest per annum.</p>
+                        <p className='text-xs my-1 font-semibold'>Remark: {selectedPresp.remarks}</p>
                         <p>DOCUMENTS PROVIDED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
@@ -579,21 +581,21 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* Row 2 with 2 Columns */}
                       <div className="grid grid-cols-2">
                         <div className="p-2">
-                          <p className='mb-8 font-bold text-sm'>Acknowledged By</p>
-                          <div className="w-16 h-16 mx-auto"></div>
-                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-16 h-16 mx-auto" /> */}
+                          <p className='mb-3 font-bold text-sm'>Acknowledged By</p>
+                          <div className="w-12 h-12 mx-auto"></div>
+                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-12 h-12 mx-auto" /> */}
                           <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
                         </div>
                         <div className="border-t border-l border-black p-2">
-                          <p className='mb-8 font-bold text-sm'>for {selectedTrade.company.name}</p>
-                          <div className="w-16 h-16 mx-auto"></div>
-                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-16 h-16 mx-auto" /> */}
+                          <p className='mb-3 font-bold text-sm'>for {selectedTrade.company.name}</p>
+                          <div className="w-12 h-12 mx-auto"></div>
+                          {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-12 h-12 mx-auto" /> */}
                           <p className='text-right text-sm'>Authorized Signatory</p>
                         </div>
                       </div>
                     </div>
-                    <div className="text-center pb-0 mt-1">
-                      <h1 className="text-sm font-md">This is a computer generated invoice</h1>
+                    <div className="text-center pb-1 mt-1">
+                      <h1 className="text-xs font-medium text-gray-700">This is a computer generated invoice</h1>
                     </div>
                   </div>
                 </div>

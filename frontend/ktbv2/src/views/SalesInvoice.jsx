@@ -4,17 +4,17 @@ import { useAuth } from '../context/AuthContext';
 const SalesInvoice = () => {
   const { user } = useAuth();
   return (
-    <div className="p-4 max-w-6xl mx-auto">
+    <div className="p-4 max-w-6xl mx-auto print-page-a4">
       
       {/* Header Section */}
-      <div className="text-center pb-3">
+      <div className="text-center pb-2">
         <h1 className="text-xl font-bold">PROFORMA INVOICE</h1>
       </div>
 
       {/* First Div with 2 Columns */}
       <div className="grid grid-cols-2 gap-0">
         {/* Col 1 with 3 Rows */}
-        <div className="flex flex-col  content-startjustify-between border-l border-t border-r  border-black">
+        <div className="flex flex-col justify-between border-l border-t border-r border-black">
           <div className="border-b border-black px-2 py-3">
             <p className='font-bold'>KISMAT PETROLEUM TRADING PTE LTD</p>
             <p>
@@ -104,127 +104,74 @@ const SalesInvoice = () => {
 
       {/* Table Section */}
       <div className="">
-        <table className="table-auto w-full border-collapse border border-black">
+        <table className="table-fixed w-full border-collapse border border-black text-xs">
           <thead>
-            <tr>
-              <th className="border border-black p-2">SN</th>
-              <th className="border border-black p-2">Description of Goods</th>
-              <th className="border border-black p-2">HS CODE</th>
-              <th className="border border-black p-2">Trade Quantity</th>
-              <th className="border border-black p-2">UNIT</th>
-              <th className="border border-black p-2">Rate</th>
-              <th className="border border-black p-2">CURRENCY</th>
-              <th className="border border-black p-2">TOLERANE</th>
-              <th className="border border-black p-2">Amount</th>
+            <tr className="bg-gray-50">
+              <th className="border border-black px-1 py-1.5 w-[4%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">SN</th>
+              <th className="border border-black px-1.5 py-1.5 w-[26%] text-left text-xs font-bold break-words [overflow-wrap:anywhere]">Description of Goods</th>
+              <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">HS CODE</th>
+              <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Trade Quantity</th>
+              <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">UNIT</th>
+              <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
+              <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
+              <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">TOLERANCE</th>
+              <th className="border border-black px-1.5 py-1.5 w-[15%] text-right text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
             </tr>
           </thead>
           <tbody>
-          <tr>
-              <td className="border-l border-r border-black p-2">1</td>
-              <td className="border-l border-r border-black p-2 font-bold">Base Oil</td>
-              <td className="border-l border-r border-black p-2">XXXXXX</td>
-              <td className="border-l border-r border-black p-2">XXXXXX</td>
-              <td className="border-l border-r border-black p-2">XXXXXX</td>
-              <td className="border-l border-r border-black p-2">XXXXXX</td>
-              <td className="border-l border-r border-black p-2">XXXXXX</td>
-              <td className="border-l border-r border-black p-2">XXXXXX</td>
-              <td className="border-l border-r border-black p-2 text-right">XXXXXX</td>
+            <tr>
+              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">1</td>
+              <td className="border-l border-r border-black px-1.5 py-1 font-bold text-xs break-words [overflow-wrap:anywhere]">Base Oil</td>
+              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">XXXXXX</td>
+              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">XXXXXX</td>
+              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">XXXXXX</td>
+              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">XXXXXX</td>
+              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">XXXXXX</td>
+              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">XXXXXX</td>
+              <td className="border-l border-r border-black px-1.5 py-1 text-xs text-right break-words [overflow-wrap:anywhere]">XXXXXX</td>
             </tr>
             {/* Additional rows can be added here */}
-            <tr>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
+            {Array.from({ length: 4 }, (_, index) => (
+              <tr key={index}>
+                <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1.5 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1 py-1">&nbsp;</td>
+                <td className="border-l border-r border-black px-1.5 py-1">&nbsp;</td>
+              </tr>
+            ))}
+            <tr className="font-bold border-t border-black">
+              <td className="border border-black px-1 py-1"></td>
+              <td className="border border-black px-1.5 py-1"></td>
+              <td className="border border-black px-1 py-1 text-xs text-center font-bold">Total</td>
+              <td className="border border-black px-1 py-1 text-xs text-center font-bold">XXXXX</td>
+              <td className="border border-black px-1 py-1"></td>
+              <td className="border border-black px-1 py-1"></td>
+              <td className="border border-black px-1 py-1"></td>
+              <td className="border border-black px-1 py-1"></td>
+              <td className="border border-black px-1.5 py-1 text-right text-xs font-bold">XXXXX</td>
             </tr>
             <tr>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
+              <td colSpan={3} className="border-b border-black px-1 py-1 text-right text-xs">ADVANCE AMOUNT</td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1.5 py-1 text-right text-xs">XXXXX</td>
             </tr>
             <tr>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-            </tr>
-            <tr>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-            </tr>
-            <tr>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-            </tr>
-            <tr>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-              <td className="border-l border-r border-black p-2"></td>
-            </tr>
-            <tr>
-              <td className="border border-black p-2"></td>
-              <td className="border border-black p-2"></td>
-              <td className="border border-black p-2">Total</td>
-              <td className="border border-black p-2">XXXXX</td>
-              <td className="border border-black p-2"></td>
-              <td className="border border-black p-2"></td>
-              <td className="border border-black p-2"></td>
-              <td className="border border-black p-2"></td>
-              <td className="border border-black p-2 text-right">XXXXX</td>
-            </tr>
-            <tr>
-              <td colSpan={3} className="border-b border-black p-2 text-right">ADVANCE AMOUNT</td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2 text-right">XXXXX</td>
-            </tr>
-            <tr>
-              <td colSpan={3} className="border-b border-black p-2 text-right">BALANCE DUES</td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2"></td>
-              <td className="border-b border-black p-2 text-right">XXXXX</td>
+              <td colSpan={3} className="border-b border-black px-1 py-1 text-right text-xs">BALANCE DUES</td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1 py-1"></td>
+              <td className="border-b border-black px-1.5 py-1 text-right text-xs">XXXXX</td>
             </tr>
           </tbody>
         </table>
@@ -248,17 +195,17 @@ const SalesInvoice = () => {
         {/* Row 2 with 2 Columns */}
         <div className="grid grid-cols-2">
           <div className=" p-2">
-            <p className='mb-8 font-bold'>Acknowledged By</p>
-            <p className='font-bold'>Authorized Signatory with Seal</p>
+            <p className='mb-3 font-bold text-sm'>Acknowledged By</p>
+            <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
           </div>
           <div className="border-t border-l border-black p-2">
-            <p className='mb-8 font-bold'>for KISMAT PETROLEUM TRADING PTE LTD</p>
-            <p className='text-right'>Authorised Signatory</p>
+            <p className='mb-3 font-bold text-sm'>for KISMAT PETROLEUM TRADING PTE LTD</p>
+            <p className='text-right text-sm'>Authorised Signatory</p>
           </div>
         </div>
       </div>
-      <div className="text-center pb-2 mt-1">
-        <h1 className="text-sm font-md">This is a Computer Generated Invoice</h1>
+      <div className="text-center pb-1 mt-1">
+        <h1 className="text-xs font-medium text-gray-700">This is a Computer Generated Invoice</h1>
       </div>
     </div>
   );
