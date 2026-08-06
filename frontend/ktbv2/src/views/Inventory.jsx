@@ -148,7 +148,11 @@ const Inventory = () => {
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.productName.name}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.batch_number}</td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.production_date}</td>
-                          <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.sp?.trn?.trade_type === 'Sales' ? -item.bl_qty : item.bl_qty}</td>
+                          <td className="py-2 px-4 border-b border-gray-200 text-sm">
+                            {item.bl_qty !== undefined && item.bl_qty !== null && item.bl_qty !== '' && !isNaN(Number(item.bl_qty))
+                              ? (item.sp?.trn?.trade_type === 'Sales' ? -Number(item.bl_qty) : Number(item.bl_qty)).toFixed(4)
+                              : (item.sp?.trn?.trade_type === 'Sales' ? -item.bl_qty : item.bl_qty)}
+                          </td>
                           <td className="py-2 px-4 border-b border-gray-200 text-sm">{item.trade_qty_unit}</td>
                          
                         </tr>

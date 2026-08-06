@@ -1115,11 +1115,17 @@ class ExportInventoryExcelView(APIView):
     def prepare_excel_data(self, serialized_data):
         excel_data = []
         for obj in serialized_data:
+            closing_stock = obj.get('quantity', '')
+            if closing_stock != '' and closing_stock is not None:
+                try:
+                    closing_stock = round(float(closing_stock), 4)
+                except (ValueError, TypeError):
+                    pass
             row = {
                 'Product Name': obj.get('productName', {}).get('name', '') if obj.get('productName') else obj.get('product_name', ''),
                 'Batch Number': obj.get('batch_number', ''),
                 'Production Date': obj.get('production_date', ''),
-                'Closing Stock': obj.get('quantity', ''),
+                'Closing Stock': closing_stock,
                 'Unit': obj.get('unit', ''),
             }
             excel_data.append(row)
@@ -1142,7 +1148,7 @@ class ExportDashboardInventoryExcelView(APIView):
         for item in inventory_summary:
             pn_id = str(item['product_name'])
             unit = item['unit'] or ''
-            stock_val = round(item['total_stock'] or 0, 2)
+            stock_val = round(item['total_stock'] or 0, 4)
             excel_data.append({
                 'Product Name': product_name_map.get(pn_id, pn_id),
                 'Stock (Quantity)': f"{stock_val} {unit}".strip(),
@@ -1174,6 +1180,22 @@ class ExportTradePendingExcelView(APIView):
         return response
 
     def prepare_excel_data(self, serialized_data):
+        def f4(v):
+            if v is None or v == '':
+                return ''
+            try:
+                return round(float(v), 4)
+            except (ValueError, TypeError):
+                return v
+
+        def f2(v):
+            if v is None or v == '':
+                return ''
+            try:
+                return round(float(v), 2)
+            except (ValueError, TypeError):
+                return v
+
         excel_data = []
         for obj in serialized_data:
             row = {
@@ -1184,14 +1206,14 @@ class ExportTradePendingExcelView(APIView):
                 'Product Code': obj.get('product_code', ''),
                 'Product Name': obj.get('productName', {}).get('name', '') if obj.get('productName') else obj.get('product_name', ''),
                 'HS Code': obj.get('hs_code', ''),
-                'Trade Qty': obj.get('contract_qty', ''),
+                'Trade Qty': f4(obj.get('contract_qty', '')),
                 'Trade Unit': obj.get('contract_qty_unit', ''),
-                'Balance Qty': obj.get('balance_qty', ''),
+                'Balance Qty': f4(obj.get('balance_qty', '')),
                 'Balance Unit': obj.get('balance_qty_unit', ''),
                 'Tolerance': obj.get('tolerance', ''),
-                'Selected Currency Rate': obj.get('selected_currency_rate', ''),
-                'Rate in USD': obj.get('rate_in_usd', ''),
-                'Logistic': obj.get('logistic', ''),
+                'Selected Currency Rate': f2(obj.get('selected_currency_rate', '')),
+                'Rate in USD': f2(obj.get('rate_in_usd', '')),
+                'Logistic': f2(obj.get('logistic', '')),
             }
             excel_data.append(row)
         return excel_data
@@ -1216,12 +1238,20 @@ class ExportTradeProductTraceExcelView(APIView):
         return response
 
     def prepare_excel_data(self, serialized_data):
+        def f4(v):
+            if v is None or v == '':
+                return ''
+            try:
+                return round(float(v), 4)
+            except (ValueError, TypeError):
+                return v
+
         excel_data = []
         for obj in serialized_data:
             row = {
                 'Product Code': obj.get('product_code', ''),
-                'Total Contract Qty': obj.get('total_contract_qty', ''),
-                'Contract Balance Qty': obj.get('contract_balance_qty', ''),
+                'Total Contract Qty': f4(obj.get('total_contract_qty', '')),
+                'Contract Balance Qty': f4(obj.get('contract_balance_qty', '')),
             }
             excel_data.append(row)
         return excel_data
@@ -1240,13 +1270,21 @@ class ExportTradeProductRefExcelView(APIView):
         return response
 
     def prepare_excel_data(self, serialized_data):
+        def f4(v):
+            if v is None or v == '':
+                return ''
+            try:
+                return round(float(v), 4)
+            except (ValueError, TypeError):
+                return v
+
         excel_data = []
         for obj in serialized_data:
             row = {
                 'Trade Type': obj.get('trade_type', ''),
                 'Product Code': obj.get('product_code', ''),
-                'Total Contract Qty': obj.get('total_contract_qty', ''),
-                'Reference Balance Qty': obj.get('ref_balance_qty', ''),
+                'Total Contract Qty': f4(obj.get('total_contract_qty', '')),
+                'Reference Balance Qty': f4(obj.get('ref_balance_qty', '')),
             }
             excel_data.append(row)
         return excel_data

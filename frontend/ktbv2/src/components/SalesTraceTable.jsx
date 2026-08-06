@@ -2,8 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const SalesTraceTable = ({ data , onDelete, onView }) => { // Default value for data
+  const format4Dec = (val) =>
+    val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
+      ? Number(val).toFixed(4)
+      : val;
 
-  
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
@@ -26,9 +29,9 @@ const SalesTraceTable = ({ data , onDelete, onView }) => { // Default value for 
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.product_code}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_contract_qty}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format4Dec(item.total_contract_qty)}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.trade_qty}</td> */}
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_balance_qty}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format4Dec(item.contract_balance_qty)}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.ref_balance_qty}</td> */}
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.first_trn}</td> */}
                

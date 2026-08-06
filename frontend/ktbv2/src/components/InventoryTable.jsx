@@ -27,7 +27,11 @@ const InventoryTable = ({ data , onDelete, onView }) => { // Default value for d
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.batch_number}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.production_date}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.quantity}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  {item.quantity !== undefined && item.quantity !== null && item.quantity !== '' && !isNaN(Number(item.quantity))
+                    ? Number(item.quantity).toFixed(4)
+                    : item.quantity}
+                </td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.unit}</td>
              
                
