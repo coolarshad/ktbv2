@@ -17,14 +17,14 @@ class Trade(models.Model):
     trn=models.CharField(_("trn"), max_length=50)
     trade_type = models.CharField(_("trade_type"), max_length=10, choices=TRADE_TYPES)
     trade_category = models.CharField(_("trade_category"), max_length=50)
-    country_of_origin=models.CharField(_("country_of_origin"), max_length=50)
-    customer_company_name=models.CharField(_("customer_company_name"), max_length=50)
-    address=models.CharField(_("address"), max_length=100)
+    country_of_origin=models.CharField(_("country_of_origin"), max_length=100)
+    customer_company_name=models.CharField(_("customer_company_name"), max_length=100)
+    address=models.CharField(_("address"), max_length=150)
     
-    currency_selection=models.CharField(_("currency_selection"), max_length=15)
+    currency_selection=models.CharField(_("currency_selection"), max_length=50)
     exchange_rate=models.FloatField(_("exchange_rate"))
    
-    commission_agent=models.CharField(_("commission_agent"), max_length=50)
+    commission_agent=models.CharField(_("commission_agent"), max_length=100)
     contract_value=models.FloatField(_("contract_value"))
     payment_term=models.CharField(_("payment_term"), max_length=100)
     advance_value_to_receive=models.FloatField(_("advance_value_to_receive"))
@@ -35,21 +35,21 @@ class Trade(models.Model):
     logistic_cost_tolerence=models.FloatField(_("logistic_cost_tolerence"))
     # logistic_cost_remarks=models.CharField(_("logistic_cost_remarks"), max_length=100)
     bank_name_address=models.CharField(_("bank_name_address"), max_length=100)
-    account_number=models.CharField(_("account_number"), max_length=50)
-    swift_code=models.CharField(_("swift_code"), max_length=50)
-    incoterm=models.CharField(_("incoterm"), max_length=50)
-    pod=models.CharField(_("pod"), max_length=50)
-    pol=models.CharField(_("pol"), max_length=50)
-    eta=models.CharField(_("eta"), max_length=50)
-    etd=models.CharField(_("etd"), max_length=50)
+    account_number=models.CharField(_("account_number"), max_length=100)
+    swift_code=models.CharField(_("swift_code"), max_length=100)
+    incoterm=models.CharField(_("incoterm"), max_length=100)
+    pod=models.CharField(_("pod"), max_length=100)
+    pol=models.CharField(_("pol"), max_length=100)
+    eta=models.CharField(_("eta"), max_length=100)
+    etd=models.CharField(_("etd"), max_length=100)
     remarks=models.CharField(_("remarks"), max_length=150)
     trader_name=models.CharField(_("trader_name"), max_length=150)
-    insurance_policy_number=models.CharField(_("insurance_policy_number"), max_length=50)
+    insurance_policy_number=models.CharField(_("insurance_policy_number"), max_length=100)
 
     # bl_declaration=models.CharField(_("bl_declaration"), max_length=100)
-    shipper_in_bl=models.CharField(_("shipper_in_bl"), max_length=50)
-    consignee_in_bl=models.CharField(_("consignee_in_bl"), max_length=50)
-    notify_party_in_bl=models.CharField(_("notify_party_in_bl"), max_length=50)
+    shipper_in_bl=models.CharField(_("shipper_in_bl"), max_length=100)
+    consignee_in_bl=models.CharField(_("consignee_in_bl"), max_length=100)
+    notify_party_in_bl=models.CharField(_("notify_party_in_bl"), max_length=100)
     # markings_in_packaging=models.CharField(_("markings_in_packaging"), max_length=100)
     
     # container_shipment_size=models.CharField(_("container_shipment_size"), max_length=50)
@@ -59,8 +59,8 @@ class Trade(models.Model):
     approved=models.BooleanField(_("approved"),default=False)
     reviewed=models.BooleanField(_("reviewed"),default=False)
     approval_date = models.DateField(_("approval date"), auto_now=False, auto_now_add=False, null=True, blank=True) #actual trade ref date
-    approved_by=models.CharField(_("approved_by"), max_length=50, null=True, blank=True)
-    reviewed_by=models.CharField(_("reviewed_by"), max_length=50, null=True, blank=True)
+    approved_by=models.CharField(_("approved_by"), max_length=100, null=True, blank=True)
+    reviewed_by=models.CharField(_("reviewed_by"), max_length=100, null=True, blank=True)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     # Self-referential many-to-many relationship (symmetrical)
@@ -80,53 +80,50 @@ class Trade(models.Model):
 class TradeProduct(models.Model):
     trade = models.ForeignKey(Trade, on_delete=models.CASCADE, related_name='trade_products')
     product_code = models.CharField(max_length=100)
-    product_name = models.CharField(_("product_name"), max_length=50)
-    product_name_for_client=models.CharField(_("product_name_for_client"), max_length=50)
+    product_name = models.CharField(_("product_name"), max_length=100)
+    product_name_for_client=models.CharField(_("product_name_for_client"), max_length=100)
     loi=models.FileField(_("loi"), upload_to='uploads/lois', max_length=100)
-    hs_code=models.CharField(_("hs_code"), max_length=50)
+    hs_code=models.CharField(_("hs_code"), max_length=100)
     total_contract_qty=models.FloatField(_("total_contract_qty"))
-    total_contract_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=15)
+    total_contract_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=100)
     tolerance=models.FloatField(_("tolerance"))
     contract_balance_qty=models.FloatField(_("contract_balance_qty"))
-    contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=15)
+    contract_balance_qty_unit=models.CharField(_("contract_balance_qty_unit"), max_length=100)
     trade_qty=models.FloatField(_("trade_qty"))
-    trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
+    trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=100)
     selected_currency_rate=models.FloatField(_("selected_currency_rate"))
     rate_in_usd=models.FloatField(_("rate_in_usd"))
     product_value=models.FloatField(_("product_value"))
     markings_in_packaging=models.CharField(_("markings_in_packaging"), max_length=100)
     packaging_supplier=models.CharField(_("packaging_supplier"), max_length=100)
-    mode_of_packing=models.CharField(_("mode_of_packing"), max_length=25)
+    mode_of_packing=models.CharField(_("mode_of_packing"), max_length=100)
     rate_of_each_packing=models.FloatField(_("rate_of_each_packing"))
     qty_of_packing=models.FloatField(_("qty_of_packing"))
     total_packing_cost=models.FloatField(_("total_packing_cost"))
     commission_rate=models.FloatField(_("commission_rate"))
     total_commission=models.FloatField(_("total_commission"))
     # ref_type=models.CharField(_("ref_type"), max_length=50)
-    ref_product_code=models.CharField(_("ref_product_code"), max_length=50)
-    ref_trn=models.CharField(_("ref_trn"), max_length=50)
+    ref_product_code=models.CharField(_("ref_product_code"), max_length=100)
+    ref_trn=models.CharField(_("ref_trn"), max_length=100)
     logistic=models.FloatField(_("logistic"),null=True)
-    logistic_remark=models.CharField(_("logistic_remark"), max_length=50)
+    logistic_remark=models.CharField(_("logistic_remark"), max_length=100)
     # product_code_ref=models.CharField(_("ref_trn"), max_length=50)
-    container_shipment_size=models.CharField(_("container_shipment_size"), max_length=50)
+    container_shipment_size=models.CharField(_("container_shipment_size"), max_length=100)
     previous_trade_qty = models.FloatField(_("Previous Trade Quantity"), default=0)
 
     def save(self, *args, **kwargs):
         """Override save to handle trade quantity updates"""
         # previous_trade_qty is now set by the view before calling save
-        try:
-            if not hasattr(self, 'previous_trade_qty'):
-                self.previous_trade_qty = 0
-                print(f"No previous trade qty found for trade_id: {self.trade.id}, product_code: {self.product_code}")
-            else:
-                print(f"Using previous trade qty: {self.previous_trade_qty} for product_code: {self.product_code}")
+        if not hasattr(self, 'previous_trade_qty'):
+            self.previous_trade_qty = 0
+            print(f"No previous trade qty found for trade_id: {self.trade.id}, product_code: {self.product_code}")
+        else:
+            print(f"Using previous trade qty: {self.previous_trade_qty} for product_code: {self.product_code}")
 
-            super().save(*args, **kwargs)
-            self.update_product_trace()
-            self.update_product_ref()
-            self.create_trade_pending(old_value=getattr(self, 'old_value', None))
-        except Exception as e:
-            print(str(e))
+        super().save(*args, **kwargs)
+        self.update_product_trace()
+        self.update_product_ref()
+        self.create_trade_pending(old_value=getattr(self, 'old_value', None))
 
 
     def update_product_trace(self):
@@ -206,9 +203,9 @@ class TradeProduct(models.Model):
             product_name=self.product_name,
             hs_code=self.hs_code,
             contract_qty=self.total_contract_qty,
-            contract_qty_unit=self.total_contract_qty_unit,
+            contract_qty_unit=str(self.total_contract_qty_unit or '')[:15],
             balance_qty=adjusted_balance_qty,
-            balance_qty_unit=self.contract_balance_qty_unit,
+            balance_qty_unit=str(self.contract_balance_qty_unit or '')[:15],
             selected_currency_rate=self.selected_currency_rate,
             rate_in_usd=self.rate_in_usd,
             tolerance=self.tolerance,
