@@ -203,9 +203,9 @@ class TradeProduct(models.Model):
             product_name=self.product_name,
             hs_code=self.hs_code,
             contract_qty=self.total_contract_qty,
-            contract_qty_unit=str(self.total_contract_qty_unit or '')[:15],
+            contract_qty_unit=self.total_contract_qty_unit,
             balance_qty=adjusted_balance_qty,
-            balance_qty_unit=str(self.contract_balance_qty_unit or '')[:15],
+            balance_qty_unit=self.contract_balance_qty_unit,
             selected_currency_rate=self.selected_currency_rate,
             rate_in_usd=self.rate_in_usd,
             tolerance=self.tolerance,
@@ -775,9 +775,9 @@ class TradePending(models.Model):
     product_name = models.CharField(_("Product Name"), max_length=50)
     hs_code = models.CharField(_("HS Code"), max_length=50)
     contract_qty = models.FloatField(_("Contract Quantity"))
-    contract_qty_unit = models.CharField(_("Contract Quantity Unit"), max_length=15)
+    contract_qty_unit = models.CharField(_("Contract Quantity Unit"), max_length=100)
     balance_qty = models.FloatField(_("Balance Quantity"))
-    balance_qty_unit = models.CharField(_("Balance Quantity Unit"), max_length=15)
+    balance_qty_unit = models.CharField(_("Balance Quantity Unit"), max_length=100)
     selected_currency_rate = models.FloatField(_("Selected Currency Rate"))
     rate_in_usd = models.FloatField(_("Rate in USD"))
     tolerance = models.FloatField(_("Tolerance"))
