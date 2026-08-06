@@ -318,6 +318,7 @@ class TradeView(APIView):
                             print("Error in craeting Trade Pending :",str(e))
 
                 except Exception as e:
+                    transaction.set_rollback(True)
                     return Response({'error': f"Trade Products: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
                 
             if trade_extra_costs_data:
@@ -325,6 +326,7 @@ class TradeView(APIView):
                     trade_extra_costs = [TradeExtraCost(**item, trade=trade) for item in trade_extra_costs_data]
                     TradeExtraCost.objects.bulk_create(trade_extra_costs)
                 except Exception as e:
+                    transaction.set_rollback(True)
                     return Response({'error': f"Trade Extra Costs: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
