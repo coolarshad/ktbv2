@@ -472,16 +472,16 @@ class SalesPurchase(models.Model):
 class SalesPurchaseProduct(models.Model):
     sp = models.ForeignKey(SalesPurchase, related_name='sp_product', on_delete=models.CASCADE)
     # product_code =  models.CharField(_("product_code"), max_length=50)
-    product_name = models.CharField(_("product_name"), max_length=50)
-    hs_code=models.CharField(_("hs_code"), max_length=50)
+    product_name = models.CharField(_("product_name"), max_length=100)
+    hs_code=models.CharField(_("hs_code"), max_length=100)
     tolerance=models.FloatField(_("tolerance"))
-    batch_number=models.CharField(_("batch_number"), max_length=50)
+    batch_number=models.CharField(_("batch_number"), max_length=100)
     production_date=models.CharField(_("production_date"), max_length=50)
     bl_qty=models.FloatField(_("bl_qty"))
     pending_qty=models.FloatField(_("bl_qty"))
-    trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=15)
+    trade_qty_unit=models.CharField(_("trade_qty_unit"), max_length=100)
     bl_value=models.FloatField(_("bl_value"))
-    product_code = models.CharField(_("product_code"), max_length=50)
+    product_code = models.CharField(_("product_code"), max_length=100)
     selected_currency_rate = models.FloatField(_("selected_currency_rate"))
     rate_in_usd = models.FloatField(_("selected_currency_rate"))
     logistic=models.FloatField(_("logistic"),null=True)
@@ -500,7 +500,7 @@ class SalesPurchaseProduct(models.Model):
 
 class SalesPurchaseExtraCharge(models.Model):
     sp=models.ForeignKey("SalesPurchase",related_name='sp_extra_charges', on_delete=models.CASCADE)
-    name=models.CharField(_("name"), max_length=50)
+    name=models.CharField(_("name"), max_length=100)
     charge=models.FloatField(_("charge"),null=True, blank=True)
     
 
