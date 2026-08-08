@@ -975,22 +975,22 @@ class PLSerializer(serializers.ModelSerializer):
     
 
     def get_prepay_details(self, obj):
-        # Fetch company details manually
         try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = PrePayment.objects.get(trn=obj.trn)  # or use another field to identify the company
-            return PrePaymentSerializer(instance).data
-        except PrePayment.DoesNotExist:
-            return None  # Or handle it as needed
+            instance = PrePayment.objects.filter(trn=obj.trn).first()
+            if instance:
+                return PrePaymentSerializer(instance).data
+            return None
+        except Exception:
+            return None
 
     def get_pf_details(self, obj):
-        # Fetch company details manually
         try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = PaymentFinance.objects.get(sp=obj.id)  # or use another field to identify the company
-            return PaymentFinanceSerializer(instance).data
-        except PaymentFinance.DoesNotExist:
-            return None  # Or handle it as needed
+            instance = PaymentFinance.objects.filter(sp=obj.id).first()
+            if instance:
+                return PaymentFinanceSerializer(instance).data
+            return None
+        except Exception:
+            return None
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
