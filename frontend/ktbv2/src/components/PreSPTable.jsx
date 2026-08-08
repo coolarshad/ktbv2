@@ -203,7 +203,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                     <div className="grid grid-cols-2 gap-0">
                       {/* Col 1 with 3 Rows */}
                       <div className="flex flex-col  border-l border-t border-r  border-black">
-                        <div className="border-b border-black px-2 py-2">
+                        <div className="border-b border-black px-2 py-1">
                           <p className='font-light text-sm'>Invoice To</p>
                           <p className='font-bold text-sm uppercase'>{selectedTrade.company.name}</p>
                           <p className='text-sm uppercase'>
@@ -213,8 +213,8 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             Cmp Regn No. : <span className='font-bold'>{selectedTrade.company.registration_number}</span>
                           </p>
                         </div>
-                        <div className=" border-black px-2 py-3">
-                          <p className=' pb-2'>Supplier</p>
+                        <div className=" border-black px-2 py-1">
+                          <p className=' pb-1'>Supplier</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.name}</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.regAddress}</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.companyRegNo}</p>
@@ -226,26 +226,26 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       <div className="grid grid-cols-2 gap-0 border-t border-r border-black">
                         {/* Col 3 with 6 Rows */}
                         <div className="flex flex-col justify-between border-r border-black">
-                          <div className="border-b border-black p-2 ">
-                            <p className='font-bold text-sm '>TRADE REFERENCE NO.</p>
+                          <div className="border-b border-black p-1 ">
+                            <p className='font-bold text-sm '>Trade Reference No.</p>
                             <p className='uppercase'>{selectedTrade.trn}</p>
                           </div>
-                          <div className="border-b border-black p-2 ">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold text-sm'>Country of Origin</p>
                             <p className='text-sm uppercase'>{selectedTrade.country_of_origin}</p>
                           </div>
-                          <div className="border-b border-black p-2">
-                            <p className='font-bold text-sm'>INCOTERM</p>
+                          <div className="border-b border-black p-1">
+                            <p className='font-bold text-sm'>Incoterm</p>
                             <p className='text-sm uppercase'>{selectedTrade.incoterm}</p>
                           </div>
 
-                          <div className="border-b border-black p-2">
-                            <p className='font-bold text-sm'>CURRENCY</p>
+                          <div className="border-b border-black p-1">
+                            <p className='font-bold text-sm'>Currency</p>
                             <p className='text-sm uppercase'>{selectedTrade.currency.name}</p>
                           </div>
-                          <div className="p-2">
+                          <div className="p-1">
                             <p className='font-bold text-sm'>
-                              ESTIMATED TIME OF DEPARTURE
+                              Estimated Time of Departure
                             </p>
                             <p className='text-sm uppercase'>{dateFormatter(selectedTrade.etd)}</p>
                           </div>
@@ -253,24 +253,24 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
 
                         {/* Col 4 with 5 Rows */}
                         <div className="flex flex-col ">
-                          <div className="border-b border-black p-2">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold text-sm'>Dated</p>
                             <p className='text-sm uppercase'>{dateFormatter(selectedTrade.approval_date)}</p>
 
                           </div>
-                          <div className="border-b border-black p-2">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold text-sm'>Terms of Payment</p>
                             <p className='text-sm uppercase'>{selectedTrade.paymentTerm.name}</p>
                           </div>
-                          <div className="border-b border-black p-2">
-                            <p className='font-bold text-sm'>ADVANCE/LC DUE DATE</p>
+                          <div className="border-b border-black p-1">
+                            <p className='font-bold text-sm'>Advance/LC Due Date</p>
                             <p className='uppercase'>{selectedTrade.paymentTerm.advance_within == 'NA' ? 'NA' : dateFormatter(addDaysToDate(selectedPresp.doc_issuance_date, selectedTrade.paymentTerm.advance_within))}</p>
                           </div>
-                          <div className="border-b border-black p-2">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold text-sm'>Port of Loading</p>
                             <p className='text-sm uppercase'>{selectedTrade.pol}</p>
                           </div>
-                          <div className="p-2">
+                          <div className="p-1">
                             <p className='font-bold text-sm'>Port of Discharge</p>
                             <p className='text-sm uppercase'>{selectedTrade.pod}</p>
                           </div>
@@ -285,14 +285,14 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                         <thead>
                           <tr className="bg-gray-50">
                             <th className="border border-black px-1 py-1.5 w-[4%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">SN</th>
-                            <th className="border border-black px-1.5 py-1.5 w-[26%] text-left text-xs font-bold break-words [overflow-wrap:anywhere]">Description of Goods</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[26%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Description of Goods</th>
                             <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">HS Code</th>
                             <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Trade Quantity</th>
                             <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Unit</th>
                             <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
                             <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
                             <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance</th>
-                            <th className="border border-black px-1.5 py-1.5 w-[15%] text-right text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[15%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -342,7 +342,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                     {/* Final Div with 2 Rows */}
                     <div className="flex flex-col gap-4 border-l border-r border-b border-black">
                       {/* Row 1 */}
-                      <div className=" p-2">
+                      <div className=" p-1">
                         <p className='text-sm'>Amount Chargeable (in words)</p>
                         <p className='font-bold mb-1 text-sm uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
                         <p className='text-xs my-1 font-semibold'>Remark: {selectedPresp.remarks}</p>
@@ -350,15 +350,15 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
                             <div key={index}>
-                              <p className='text-sm'>{index + 1}. {product.doc.name}</p> {/* Replace 'someField1' with the actual field name */}
+                              <p className='text-xs'>{index + 1}. {product.doc.name}</p> {/* Replace 'someField1' with the actual field name */}
 
                             </div>
                           ))
                         ) : (
                           <p>No Document data available.</p>
                         )}
-                        <p className='mt-1 underline text-sm'>Declaration</p>
-                        <p className="text-sm font-md">We declare that this purchase order shows the actual price of the goods described and that all particulars are true and correct.The tolerance quantity to be provided shall be on buyer's option.</p>
+                        <p className='mt-1 underline text-xs'>Declaration</p>
+                        <p className="text-xs font-md">We declare that this purchase order shows the actual price of the goods described and that all particulars are true and correct.The tolerance quantity to be provided shall be on buyer's option.</p>
                       </div>
                       { }
                       {/* <div className="grid grid-cols-2">
@@ -411,7 +411,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                     <div className="grid grid-cols-2 gap-0">
                       {/* Col 1 with 3 Rows */}
                       <div className="flex flex-col justify-between border-l border-t border-r border-black">
-                        <div className="border-b border-black px-2 py-1.5">
+                        <div className="border-b border-black px-2 py-1">
                           <p className='font-bold uppercase'>{selectedTrade.company.name}</p>
                           <p className='uppercase'>
                             {selectedTrade.company.address}
@@ -420,14 +420,14 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             Cmp Regn No. : <span className='font-bold uppercase'>{selectedTrade.company.registration_number}</span>
                           </p>
                         </div>
-                        <div className="border-b border-black px-2 py-1.5">
+                        <div className="border-b border-black px-2 py-1">
                           <p className=' pb-1'>Buyer</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.name}</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.regAddress}</p>
                           <p className='uppercase'>{selectedTrade.customer_company_name.companyRegNo}</p>
                         </div>
-                        <div className="px-2 py-1.5">
-                          <p className=' pb-1'>OUR BANK DETAILS</p>
+                        <div className="px-2 py-1">
+                          <p className=' pb-1'>Our Bank Details</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.name}</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.account_number}</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.swift_code}</p>
@@ -438,26 +438,26 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       <div className="grid grid-cols-2 gap-0 border-t border-r border-black">
                         {/* Col 3 with 6 Rows */}
                         <div className="flex flex-col justify-between border-r border-black">
-                          <div className="border-b border-black p-2 ">
-                            <p className='font-bold'>TRADE REFERENCE NO.</p>
+                          <div className="border-b border-black p-1">
+                            <p className='font-bold'>Trade Reference No.</p>
                             <p className='uppercase'>{selectedTrade.trn}</p>
                           </div>
-                          <div className="border-b border-black p-2">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold'>Country of Origin</p>
                             <p className='uppercase'>{selectedTrade.country_of_origin}</p>
                           </div>
-                          <div className="border-b border-black p-2">
-                            <p className='font-bold'>INCOTERM</p>
+                          <div className="border-b border-black p-1">
+                            <p className='font-bold'>Incoterm</p>
                             <p className='uppercase'>{selectedTrade.incoterm}</p>
                           </div>
 
-                          <div className="border-b border-black p-2">
-                            <p className='font-bold'>CURRENCY</p>
+                          <div className="border-b border-black p-1">
+                            <p className='font-bold'>Currency</p>
                             <p className='uppercase'>{selectedTrade.currency.name}</p>
                           </div>
-                          <div className="p-2">
+                          <div className="p-1">
                             <p className='font-bold'>
-                              ESTIMATED TIME OF DEPARTURE
+                              Estimated Time of Departure
                             </p>
                             <p className='uppercase'>{dateFormatter(selectedTrade.etd)}</p>
                           </div>
@@ -465,28 +465,28 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
 
                         {/* Col 4 with 5 Rows */}
                         <div className="flex flex-col justify-between">
-                          <div className="border-b border-black p-2">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold'>Dated</p>
                             <p className='uppercase'>{dateFormatter(selectedTrade.approval_date)}</p>
 
                           </div>
-                          <div className="border-b border-black p-2">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold'>Terms of Payment</p>
                             <p className='uppercase'>{selectedTrade.paymentTerm.name}</p>
                           </div>
-                          <div className="border-b border-black p-2">
-                            <p className='font-bold'>ADVANCE/LC DUE DATE</p>
+                          <div className="border-b border-black p-1">
+                            <p className='font-bold'>Advance/LC Due Date</p>
                             <p className='uppercase'>{selectedTrade.paymentTerm.advance_within == 'NA' ? 'NA' : dateFormatter(addDaysToDate(selectedPresp.doc_issuance_date, selectedTrade.paymentTerm.advance_within))}</p>
                           </div>
                           {/* <div className="border-b border-black p-2">
                               <p className='font-bold'>LC DUE DATE</p>
                               <p className='uppercase'>{selectedTrade.paymentTerm.advance_within=='NA'?'NA':addDaysToDate(selectedPresp.doc_issuance_date,selectedTrade.paymentTerm.advance_within)}</p>
                             </div> */}
-                          <div className="border-b border-black p-2">
+                          <div className="border-b border-black p-1">
                             <p className='font-bold'>Port of Loading</p>
                             <p className='uppercase'>{selectedTrade.pol}</p>
                           </div>
-                          <div className="p-2">
+                          <div className="p-1">
                             <p className='font-bold'>Port of Discharge</p>
                             <p className='uppercase'>{selectedTrade.pod}</p>
                           </div>
@@ -500,14 +500,14 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                         <thead>
                           <tr className="bg-gray-50">
                             <th className="border border-black px-1 py-1.5 w-[4%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">SN</th>
-                            <th className="border border-black px-1.5 py-1.5 w-[26%] text-left text-xs font-bold break-words [overflow-wrap:anywhere]">Description of Goods</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[26%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Description of Goods</th>
                             <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">HS Code</th>
                             <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Trade Quantity</th>
                             <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Unit</th>
                             <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
                             <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
                             <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance</th>
-                            <th className="border border-black px-1.5 py-1.5 w-[15%] text-right text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
+                            <th className="border border-black px-1.5 py-1.5 w-[15%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -559,7 +559,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                     {/* Final Div with 2 Rows */}
                     <div className="flex flex-col gap-4 border-l border-r border-b border-black">
                       {/* Row 1 */}
-                      <div className=" px-2 py-1">
+                      <div className=" px-1 py-1">
                         <p>Amount Chargeable (in words)</p>
                         <p className='font-bold uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
                         <p className='text-xs my-1 font-semibold'>Note: Outstanding payments must be paid within 15 days from the date of submission of original copy documents by mail. Non settlement shall incur 12% interest per annum.</p>
@@ -568,7 +568,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
                           selectedPresp.documentRequired.map((product, index) => (
                             <div key={index}>
-                              <p className='text-sm'>{index + 1}. {product.doc.name}</p> {/* Replace 'someField1' with the actual field name */}
+                              <p className='text-xs'>{index + 1}. {product.doc.name}</p> {/* Replace 'someField1' with the actual field name */}
 
                             </div>
                           ))
@@ -576,7 +576,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                           <p>No Document data available.</p>
                         )}
                         <p className='mt-2 underline'>Declaration</p>
-                        <p>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.The tolerance quantity to be provided shall be on seller's option.</p>
+                        <p className="text-xs font-md">We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.The tolerance quantity to be provided shall be on seller's option.</p>
                       </div>
                       {/* Row 2 with 2 Columns */}
                       <div className="grid grid-cols-2">
@@ -600,7 +600,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                   </div>
                 </div>
                 {/* Notified Users Section */}
-                <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
+                {/* <div className="mt-4 p-4 border-t border-gray-200 bg-gray-50 rounded">
                   <h3 className="text-md font-semibold mb-2">Notified Users (Email)</h3>
                   {selectedTrade?.notified_users_emails?.length > 0 ? (
                     <ul className="list-disc pl-5">
@@ -611,7 +611,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                   ) : (
                     <p className="text-sm text-gray-500">No users have been notified for this record.</p>
                   )}
-                </div>
+                </div> */}
               </div>
             )}
           </div>
