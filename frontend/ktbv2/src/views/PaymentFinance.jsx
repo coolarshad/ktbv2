@@ -411,7 +411,7 @@ function PaymentFinance() {
                     item.name !== '' ? (
                       <div key={index}>
                         <p className="text-center text-sm">
-                          {index + 1}. <a href={`${BACKEND_URL}${item.tt_copy}`} target="_blank"
+                          {index + 1}. <a href={item.tt_copy?.startsWith('http') ? item.tt_copy : `${BACKEND_URL}${item.tt_copy?.startsWith('/') ? '' : '/'}${item.tt_copy}`} target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-800 border px-2 hover:underline">{item.name}</a>
                         </p>

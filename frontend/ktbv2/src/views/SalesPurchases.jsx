@@ -394,10 +394,10 @@ function SalesPurchases() {
               <h3 className="text-lg mt-4 text-center">Documents List</h3>
               {selectedSP.packingLists &&
                     selectedSP.packingLists.map((item, index) =>
-                      item.name !== '' ? (
+                      item.name !== '' && item.packing_list ? (
                         <div key={index}>
                           <p className="text-sm">
-                            {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.packing_list}`} target="_blank"
+                            {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={item.packing_list.startsWith('http') ? item.packing_list : `${BACKEND_URL}${item.packing_list.startsWith('/') ? '' : '/'}${item.packing_list}`} target="_blank"
                               rel="noopener noreferrer">{item.name}</a>
                           </p>
                         </div>

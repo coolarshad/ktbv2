@@ -411,7 +411,7 @@ function TradeApproval() {
                         <span className="font-medium">LOI:</span>
                         <span>
                           <a
-                            href={`${BACKEND_URL}${product.loi}`}
+                            href={product.loi?.startsWith('http') ? product.loi : `${BACKEND_URL}${product.loi?.startsWith('/') ? '' : '/'}${product.loi}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-800 border px-2 hover:underline"

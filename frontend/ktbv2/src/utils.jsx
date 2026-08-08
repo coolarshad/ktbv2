@@ -6,7 +6,7 @@ export const capitalizeKey = (key) => {
         .join(' ');
 };
 
-export const BASE_URL = 'http://148.72.247.191:8000'
+export const BASE_URL = 'http://localhost:8000'
 
 export const hasPermission = (user, requiredCode) => {
     if (!user) return false;

@@ -178,7 +178,7 @@ const TradeReport = () => {
                                             <td className="px-4 py-2 border-b">{product.product_code || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.productName.name || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.product_name_for_client || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{<p className='text-sm'><a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${product.loi}`} target="_blank"
+                                            <td className="px-4 py-2 border-b">{<p className='text-sm'><a className="text-blue-800 border px-2 hover:underline" href={product.loi?.startsWith('http') ? product.loi : `${BACKEND_URL}${product.loi?.startsWith('/') ? '' : '/'}${product.loi}`} target="_blank"
                                                 rel="noopener noreferrer">LOI</a></p> || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.hs_code || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.markings_in_packaging || 'N/A'}</td>
@@ -345,7 +345,7 @@ const TradeReport = () => {
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
-                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.lc_copy}`} target="_blank"
+                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={item.lc_copy?.startsWith('http') ? item.lc_copy : `${BACKEND_URL}${item.lc_copy?.startsWith('/') ? '' : '/'}${item.lc_copy}`} target="_blank"
                                                             rel="noopener noreferrer">{item.name}</a>
                                                     </p>
                                                 </div>
@@ -357,7 +357,7 @@ const TradeReport = () => {
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
-                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.lc_ammendment}`} target="_blank"
+                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={item.lc_ammendment?.startsWith('http') ? item.lc_ammendment : `${BACKEND_URL}${item.lc_ammendment?.startsWith('/') ? '' : '/'}${item.lc_ammendment}`} target="_blank"
                                                             rel="noopener noreferrer">{item.name}</a>
                                                     </p>
                                                 </div>
@@ -369,7 +369,7 @@ const TradeReport = () => {
                                             item.name !== '' ? (
                                                 <div key={index}>
                                                     <p className="text-sm">
-                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.advance_tt_copy}`} target="_blank"
+                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={item.advance_tt_copy?.startsWith('http') ? item.advance_tt_copy : `${BACKEND_URL}${item.advance_tt_copy?.startsWith('/') ? '' : '/'}${item.advance_tt_copy}`} target="_blank"
                                                             rel="noopener noreferrer">{item.name}</a>
                                                     </p>
                                                 </div>
@@ -526,10 +526,10 @@ const TradeReport = () => {
                                     <p className='my-2 underline'>Documents List</p>
                                     {salespurchase.packingList?.length > 0 ? (
                                                 salespurchase.packingList.map((item, index) => (
-                                                    <p className="text-sm">
-                                                        {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.packing_list}`} target="_blank"
-                                                            rel="noopener noreferrer">{item.name}</a>
-                                                    </p>
+                                                     <p className="text-sm">
+                                                         {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={item.packing_list?.startsWith('http') ? item.packing_list : `${BACKEND_URL}${item.packing_list?.startsWith('/') ? '' : '/'}${item.packing_list}`} target="_blank"
+                                                             rel="noopener noreferrer">{item.name}</a>
+                                                     </p>
                                                 ))
                                             ) : (
                                                 <tr>
@@ -610,10 +610,10 @@ const TradeReport = () => {
                                                     <p className='my-2 underline'>Documents List</p>
                                                     {pnf.pf_ttcopy?.length > 0 ? (
                                                         pnf.pf_ttcopy.map((item, index) => (
-                                                            <p className="text-sm">
-                                                                {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={`${BACKEND_URL}${item.tt_copy}`} target="_blank"
-                                                                    rel="noopener noreferrer">{item.name}</a>
-                                                            </p>
+                                                             <p className="text-sm">
+                                                                 {index + 1}. <a className="text-blue-800 border px-2 hover:underline" href={item.tt_copy?.startsWith('http') ? item.tt_copy : `${BACKEND_URL}${item.tt_copy?.startsWith('/') ? '' : '/'}${item.tt_copy}`} target="_blank"
+                                                                     rel="noopener noreferrer">{item.name}</a>
+                                                             </p>
                                                         ))
                                                     ) : (
                                                         <tr>
