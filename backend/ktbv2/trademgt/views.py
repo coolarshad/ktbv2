@@ -570,41 +570,19 @@ class TradeView(APIView):
                 created_products = []
                 for item in trade_products_data:
                     trade_product = TradeProduct(**item, trade=trade)
-                    # Set previous quantity if it existed
+                    # Set previous quantity and calculate old adjusted balance value if it existed
                     previous = existing_values.get(trade_product.product_code, {})
                     trade_product.previous_trade_qty = previous.get("trade_qty", 0)
-                    trade_product.save()  # This will trigger the save() method
-                    created_products.append(trade_product)
-                
-                # Update TradeProductTrace and TradePending for each product
-                for product in created_products:
-                    pass
-                            
-                    previous = existing_values.get(product.product_code, {})
-                    fake_old_instance = TradeProduct(
-                    trade=product.trade,
-                    product_code=product.product_code,
-                    product_name=product.product_name,
-                    trade_qty=previous.get("trade_qty", 0),
-                    tolerance=previous.get("tolerance", 0)
-                    )
-                   
-                    prev_adjusted_balance_qty = 0
-                    try:
-                        prev_base_qty = float(fake_old_instance.trade_qty)
-                        prev_tolerance = float(fake_old_instance.tolerance)
-                        prev_adjusted_balance_qty = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
-                    except Exception as e:
-                        print(str(e))
-                    
-                    # trade_product.old_value = prev_adjusted_balance_qty
-                    # trade_product.save()
 
-                    trade_product.previous_trade_qty = previous.get("trade_qty", 0)
-                    trade_product.old_value = prev_adjusted_balance_qty  # 👈 KEY FIX
-                    trade_product.save()
-                    # product.create_trade_pending(prev_adjusted_balance_qty)
-                    print("old value found: ",prev_adjusted_balance_qty)
+                    if "trade_qty" in previous:
+                        prev_base_qty = float(previous.get("trade_qty", 0))
+                        prev_tolerance = float(previous.get("tolerance", 0))
+                        trade_product.old_value = prev_base_qty + (prev_tolerance / 100) * prev_base_qty
+                    else:
+                        trade_product.old_value = None
+
+                    trade_product.save()  # This will trigger the save() method with old_value set
+                    created_products.append(trade_product)
 
             # Clear existing trade extra costs and add new ones
             TradeExtraCost.objects.filter(trade=trade).delete()
@@ -1153,22 +1131,37 @@ class PreSalePurchaseApprove(APIView):
         if not presp_id:
             return Response({'detail': 'Pre Sales/Purchase ID not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        notified_users = request.GET.getlist('notifiedUsers[]')
+        notified_user_ids = list(map(int, notified_users)) if notified_users else []
+        custom_msg = request.GET.get('notification_message')
+
         try:
             with transaction.atomic():
                 presp = PreSalePurchase.objects.get(id=presp_id)
                 presp.approved = True
                 presp.save()
+
+                actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
                 
+                if notified_user_ids:
+                    NotificationService.notify_users_explicit(
+                        actor=actor,
+                        notified_user_ids=notified_user_ids,
+                        verb=f"PreSalePurchase Approved for {presp.trn.trn if hasattr(presp, 'trn') and hasattr(presp.trn, 'trn') else presp_id}",
+                        message=custom_msg if custom_msg else f"You have been notified that PreSalePurchase for {presp.trn if hasattr(presp, 'trn') else presp_id} has been approved.",
+                        target_url=f"/pre-sale-purchase"
+                    )
+
                 NotificationService.notify_all_general(
-                    actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
-                    verb=f"PreSalePurchase Approved for {presp.trn.trn}",
+                    actor=actor,
+                    verb=f"PreSalePurchase Approved for {presp.trn.trn if hasattr(presp, 'trn') and hasattr(presp.trn, 'trn') else presp_id}",
                     message=f"PreSalePurchase {presp.trn if hasattr(presp, 'trn') else presp_id} has been approved.",
                     target_url=f"/pre-sale-purchase"
                 )
                 
                 serializer = PreSalePurchaseSerializer(presp)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-        except PrePayment.DoesNotExist:
+        except PreSalePurchase.DoesNotExist:
             return Response({'detail': 'Pre Sales/Purchase not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
@@ -1721,7 +1714,8 @@ class SalesPurchaseView(APIView):
        
 
         with transaction.atomic():
-            sp_serializer = SalesPurchaseSerializer(data=sp_data)
+            context = get_serializer_context_cache(request)
+            sp_serializer = SalesPurchaseSerializer(data=sp_data, context=context)
             if sp_serializer.is_valid():
                 sp = sp_serializer.save(created_by=request.user)
             else:
@@ -1751,10 +1745,17 @@ class SalesPurchaseView(APIView):
             
            
             if sp_products_data:
+                pending_products_qs = TradePending.objects.filter(
+                    trn=sp.trn.id,
+                    trade_type=sp.trn.trade_type
+                )
+                pending_map = {
+                    p.product_code: p for p in pending_products_qs
+                }
                 for product in sp_products:
-                    pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,trade_type=sp.trn.trade_type).first()
+                    pending_product = pending_map.get(product.product_code)
                     if pending_product:
-                        pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
+                        pending_product.balance_qty = float(pending_product.balance_qty) - float(product.bl_qty)
                         pending_product.save()
 
             if notified_user_ids:
@@ -1765,7 +1766,6 @@ class SalesPurchaseView(APIView):
 
             custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
-                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb=f"SalesPurchase Created for {sp.trn.trn}", 
@@ -1780,14 +1780,18 @@ class SalesPurchaseView(APIView):
                 target_url=f"/sales-purchases"
             )
 
-        return Response(sp_serializer.data, status=status.HTTP_201_CREATED)
+        sp_fresh = get_authorized_queryset(request, SalesPurchase.objects.all()).select_related('trn').prefetch_related(
+            'sp_product', 'sp_extra_charges', 'packinglist_set', 'invoice_set', 'coa_set', 'bl_copy_set'
+        ).get(pk=sp.pk)
+        sp_response_serializer = SalesPurchaseSerializer(sp_fresh, context=context)
+        return Response(sp_response_serializer.data, status=status.HTTP_201_CREATED)
     
     def put(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         data = request.data
         
         try:
-            sp = SalesPurchase.objects.get(pk=pk)
+            sp = get_authorized_queryset(request, SalesPurchase.objects.all()).select_related('trn').get(pk=pk)
         except SalesPurchase.DoesNotExist:
             return Response({'error': 'SalesPurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -1872,66 +1876,33 @@ class SalesPurchaseView(APIView):
         
        
         with transaction.atomic():
+            context = get_serializer_context_cache(request)
             spProducts=SalesPurchaseProduct.objects.filter(sp=sp)
 
-            if sp.trn.trade_type.lower() == "sales":
+            if sp.trn.trade_type.lower() in ["sales", "purchase"]:
+                pending_qs = TradePending.objects.filter(trn=sp.trn.id, trade_type=sp.trn.trade_type)
+                pending_map = {p.product_code: p for p in pending_qs}
+                
                 for product in spProducts:
                     try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_pending = TradePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
-            
+                        existing_pending = pending_map.get(product.product_code)
                         if existing_pending:
-                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
+                            existing_pending.balance_qty = float(existing_pending.balance_qty) + float(product.bl_qty)
                             existing_pending.save()
-                       
                     except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating SalesPending: {e}")
+                        print(f"Error updating Pending: {e}")
                         raise
                     try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
-            
+                        existing_inv = Inventory.objects.filter(product_name=product.product_name, batch_number=product.batch_number, production_date=product.production_date, unit=product.trade_qty_unit).first()
                         if existing_inv and sp.reviewed:
-                            existing_inv.quantity = float(existing_inv.quantity)+float(product.bl_qty)
+                            delta = float(product.bl_qty) if sp.trn.trade_type.lower() == "sales" else -float(product.bl_qty)
+                            existing_inv.quantity = float(existing_inv.quantity) + delta
                             existing_inv.save()
-                       
                     except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating Inventory: {e}")
-                        raise
-                    
-            
-            if sp.trn.trade_type.lower() == "purchase":
-                for product in spProducts:
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_pending = TradePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
-            
-                        if existing_pending:
-                            existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
-                            existing_pending.save()
-                       
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
-                        print(f"Error updating PurchasePending: {e}")
-                        raise
-
-                    try:
-                        # Check if a SalesProductTrace with the given product_code exists
-                        existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
-            
-                        if existing_inv and sp.reviewed:
-                            # If it exists, update only the fields you want to update
-                            existing_inv.quantity = float(existing_inv.quantity)-float(product.bl_qty)
-                            existing_inv.save()
-                        
-                    except Exception as e:
-                        # Handle specific exception for SalesProductTrace
                         print(f"Error updating or creating Inventory: {e}")
                         raise
 
-            sp_serializer = SalesPurchaseSerializer(sp, data=sp_data, partial=True)
+            sp_serializer = SalesPurchaseSerializer(sp, data=sp_data, partial=True, context=context)
             if sp_serializer.is_valid():
                 sp = sp_serializer.save()
             else:
@@ -1968,66 +1939,35 @@ class SalesPurchaseView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
             salesPurchaseProducts=SalesPurchaseProduct.objects.filter(sp=sp)
-            if sp.trn.trade_type.lower() == "sales":
+            if sp.trn.trade_type.lower() in ["sales", "purchase"]:
+                pending_qs = TradePending.objects.filter(trn=sp.trn.id, trade_type=sp.trn.trade_type)
+                pending_map = {p.product_code: p for p in pending_qs}
+
                 for product in salesPurchaseProducts:
                     try:
-                        pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
-                        pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
-                        pending_product.save()
+                        pending_product = pending_map.get(product.product_code)
+                        if pending_product:
+                            pending_product.balance_qty = float(pending_product.balance_qty) - float(product.bl_qty)
+                            pending_product.save()
                     except Exception as e:
-                            # Handle specific exception for SalesProductTrace
-                        print(f"Error updating SalesPending: {e}")
+                        print(f"Error updating Pending: {e}")
                         raise
                     try:
                         if sp.reviewed:
-                            existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
+                            existing_inv = Inventory.objects.filter(product_name=product.product_name, batch_number=product.batch_number, production_date=product.production_date, unit=product.trade_qty_unit).first()
+                            delta = -float(product.bl_qty) if sp.trn.trade_type.lower() == "sales" else float(product.bl_qty)
                             if existing_inv:
-                                # If it exists, update only the fields you want to update
-                                existing_inv.quantity-= product.bl_qty
+                                existing_inv.quantity += delta
                                 existing_inv.save()
                             else:
-                                # If it doesn't exist, create a new record with all fields
                                 Inventory.objects.create(
-                                product_name=product.product_name,
-                                batch_number=product.batch_number,
-                                production_date=product.production_date,    
-                                quantity=0-float(product.bl_qty),
-                                unit=product.trade_qty_unit
+                                    product_name=product.product_name,
+                                    batch_number=product.batch_number,
+                                    production_date=product.production_date,
+                                    quantity=delta,
+                                    unit=product.trade_qty_unit
                                 )
                     except Exception as e:
-                            # Handle specific exception for SalesProductTrace
-                        print(f"Error updating or creating Inventory: {e}")
-                        raise
-
-            if sp.trn.trade_type.lower() == "purchase":
-                for product in salesPurchaseProducts:
-                    try:
-                        pending_product=TradePending.objects.filter(trn=sp.trn.id,product_code=product.product_code,product_name=product.product_name,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
-                        pending_product.balance_qty=float(pending_product.balance_qty)-float(product.bl_qty)
-                        pending_product.save()
-                    except Exception as e:
-                            # Handle specific exception for SalesProductTrace
-                        print(f"Error updating PurchasePending: {e}")
-                        raise
-
-                    try:
-                        if sp.reviewed:
-                            existing_inv = Inventory.objects.filter(product_name=product.product_name,batch_number=product.batch_number,production_date=product.production_date,unit=product.trade_qty_unit).first()
-                            if existing_inv:
-                                # If it exists, update only the fields you want to update
-                                existing_inv.quantity+= product.bl_qty
-                                existing_inv.save()
-                            else:
-                                # If it doesn't exist, create a new record with all fields
-                                Inventory.objects.create(
-                                product_name=product.product_name,
-                                batch_number=product.batch_number,
-                                production_date=product.production_date,    
-                                quantity=float(product.bl_qty),
-                                unit=product.trade_qty_unit
-                                )
-                    except Exception as e:
-                            # Handle specific exception for SalesProductTrace
                         print(f"Error updating or creating Inventory: {e}")
                         raise
 
@@ -2039,7 +1979,6 @@ class SalesPurchaseView(APIView):
 
             custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
-                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb=f"SalesPurchase Updated for {sp.trn.trn}", 
@@ -2054,7 +1993,11 @@ class SalesPurchaseView(APIView):
                 target_url=f"/sales-purchases"
             )
 
-        return Response(sp_serializer.data, status=status.HTTP_200_OK)
+        sp_fresh = get_authorized_queryset(request, SalesPurchase.objects.all()).select_related('trn').prefetch_related(
+            'sp_product', 'sp_extra_charges', 'packinglist_set', 'invoice_set', 'coa_set', 'bl_copy_set'
+        ).get(pk=sp.pk)
+        sp_response_serializer = SalesPurchaseSerializer(sp_fresh, context=context)
+        return Response(sp_response_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -2088,13 +2031,9 @@ class SalesPurchaseView(APIView):
             for product in salesPurchaseProducts:
                 try:
                     # Check if a SalesProductTrace with the given product_code exists
-                    existing_pending = TradePending.objects.filter(trn=sp.trn.id,product_name=product.product_name,product_code=product.product_code,hs_code=product.hs_code,trade_type=sp.trn.trade_type).first()
-                    if existing_pending and sp.trn.trade_type.lower()=='sales':
-                        existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
-                        existing_pending.save()
-                        
-                    if existing_pending and sp.trn.trade_type.lower()=='purchase':
-                        existing_pending.balance_qty = float(existing_pending.balance_qty)+float(product.bl_qty)
+                    existing_pending = TradePending.objects.filter(trn=sp.trn.id, product_code=product.product_code, trade_type=sp.trn.trade_type).first()
+                    if existing_pending:
+                        existing_pending.balance_qty = float(existing_pending.balance_qty) + float(product.bl_qty)
                         existing_pending.save()
                        
                 except Exception as e:
@@ -2338,7 +2277,8 @@ class PaymentFinanceView(APIView):
             i += 1
 
         with transaction.atomic():
-            pf_serializer = PaymentFinanceSerializer(data=pf_data)
+            context = get_serializer_context_cache(request)
+            pf_serializer = PaymentFinanceSerializer(data=pf_data, context=context)
             if pf_serializer.is_valid():
                 pf = pf_serializer.save(created_by=request.user)
             else:
@@ -2371,7 +2311,6 @@ class PaymentFinanceView(APIView):
 
             custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
-                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb=f"PaymentFinance Created for {pf.sp.trn.trn}", 
@@ -2386,7 +2325,11 @@ class PaymentFinanceView(APIView):
                 target_url=f"/payment-finances"
             )
 
-        return Response(pf_serializer.data, status=status.HTTP_201_CREATED)
+        pf_fresh = get_authorized_queryset(request, PaymentFinance.objects.all()).select_related('sp', 'sp__trn').prefetch_related(
+            'pf_charges', 'pf_ttcopy', 'sp__sp_product', 'sp__sp_extra_charges'
+        ).get(pk=pf.pk)
+        pf_response_serializer = PaymentFinanceSerializer(pf_fresh, context=context)
+        return Response(pf_response_serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -2396,7 +2339,7 @@ class PaymentFinanceView(APIView):
         notified_user_ids = list(map(int, notified_users)) if notified_users else []
 
         try:
-            pf = PaymentFinance.objects.get(pk=pk)
+            pf = get_authorized_queryset(request, PaymentFinance.objects.all()).select_related('sp', 'sp__trn').get(pk=pk)
         except PaymentFinance.DoesNotExist:
             return Response({'error': 'PaymentFinance not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -2449,18 +2392,18 @@ class PaymentFinanceView(APIView):
             i += 1
        
         with transaction.atomic():
+            context = get_serializer_context_cache(request)
             prepayment = PrePayment.objects.filter(trn=pf.sp.trn).first()
             if prepayment:
                 prepayment.advance_amount+= pf.advance_adjusted
                 prepayment.save()
 
-            pf_serializer = PaymentFinanceSerializer(pf, data=pf_data, partial=True)
+            pf_serializer = PaymentFinanceSerializer(pf, data=pf_data, partial=True, context=context)
             if pf_serializer.is_valid():
                 pf = pf_serializer.save()
             else:
                 return Response(pf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            prepayment = PrePayment.objects.filter(trn=pf.sp.trn).first()
             if prepayment:
                 prepayment.advance_amount-= pf.advance_adjusted
                 prepayment.save()
@@ -2493,7 +2436,6 @@ class PaymentFinanceView(APIView):
 
             custom_msg = request.data.get('notification_message')
             NotificationService.notify_users_explicit(
-                # actor=request.user if hasattr(request, 'user') and request.user.is_authenticated else None, 
                 actor=actor,
                 notified_user_ids=notified_user_ids,
                 verb=f"PaymentFinance Updated for {pf.sp.trn.trn}", 
@@ -2508,7 +2450,11 @@ class PaymentFinanceView(APIView):
                 target_url=f"/payment-finances"
             )
 
-        return Response(pf_serializer.data, status=status.HTTP_200_OK)
+        pf_fresh = get_authorized_queryset(request, PaymentFinance.objects.all()).select_related('sp', 'sp__trn').prefetch_related(
+            'pf_charges', 'pf_ttcopy', 'sp__sp_product', 'sp__sp_extra_charges'
+        ).get(pk=pf.pk)
+        pf_response_serializer = PaymentFinanceSerializer(pf_fresh, context=context)
+        return Response(pf_response_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get('pk')

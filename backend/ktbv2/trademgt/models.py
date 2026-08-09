@@ -174,16 +174,16 @@ class TradeProduct(models.Model):
             tolerance = float(self.tolerance)
             adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
 
-            pending.balance_qty -= old_value
-            pending.balance_qty += adjusted_balance_qty
+            pending.contract_qty = self.trade_qty
+            pending.contract_qty_unit = self.trade_qty_unit
 
-            # if old_value is not None:
-            #     # True update — remove old qty, add new qty
-            #     pending.balance_qty -= old_value
-            #     pending.balance_qty += adjusted_balance_qty
-            # else:
-            #     # No previous qty provided — just add
-            #     pending.balance_qty += adjusted_balance_qty
+            if old_value is not None:
+                # True update — remove old qty, add new qty
+                pending.balance_qty -= old_value
+                pending.balance_qty += adjusted_balance_qty
+            else:
+                # No previous qty provided — just add
+                pending.balance_qty += adjusted_balance_qty
 
             pending.save()
 
@@ -194,22 +194,22 @@ class TradeProduct(models.Model):
             adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
 
             TradePending.objects.create(
-            trn=self.trade,
-            trade_type=self.trade.trade_type,
-            trd=self.trade.trd,
-            company=self.trade.company,
-            payment_term=self.trade.payment_term,
-            product_code=self.product_code,
-            product_name=self.product_name,
-            hs_code=self.hs_code,
-            contract_qty=self.total_contract_qty,
-            contract_qty_unit=self.total_contract_qty_unit,
-            balance_qty=adjusted_balance_qty,
-            balance_qty_unit=self.contract_balance_qty_unit,
-            selected_currency_rate=self.selected_currency_rate,
-            rate_in_usd=self.rate_in_usd,
-            tolerance=self.tolerance,
-            logistic=self.logistic
+                trn=self.trade,
+                trade_type=self.trade.trade_type,
+                trd=self.trade.trd,
+                company=self.trade.company,
+                payment_term=self.trade.payment_term,
+                product_code=self.product_code,
+                product_name=self.product_name,
+                hs_code=self.hs_code,
+                contract_qty=self.trade_qty,
+                contract_qty_unit=self.trade_qty_unit,
+                balance_qty=adjusted_balance_qty,
+                balance_qty_unit=self.contract_balance_qty_unit,
+                selected_currency_rate=self.selected_currency_rate,
+                rate_in_usd=self.rate_in_usd,
+                tolerance=self.tolerance,
+                logistic=self.logistic
             )
 
 

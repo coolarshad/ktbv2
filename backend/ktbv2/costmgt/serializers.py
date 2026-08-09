@@ -593,7 +593,9 @@ class PackingSizeSerializer(serializers.ModelSerializer):
 class FinalProductPackingItemSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     selected_packing = serializers.PrimaryKeyRelatedField(
-        queryset=Packing.objects.all()
+        queryset=Packing.objects.all(),
+        required=False,
+        allow_null=True
     )
 
     class Meta:
@@ -818,6 +820,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
 
         # Create Packing Items
         for item in packing_items_data:
+            item.pop('id', None)
             FinalProductPackingItem.objects.create(
                 final_product=final_product,
                 **item
@@ -825,6 +828,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
 
         # Create Additional Costs
         for cost in additional_costs_data:
+            cost.pop('id', None)
             FinalProductAdditionalCost.objects.create(
                 final_product=final_product,
                 **cost
@@ -844,6 +848,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
         instance.packing_items.all().delete()
 
         for item in packing_items_data:
+            item.pop('id', None)
             FinalProductPackingItem.objects.create(
                 final_product=instance,
                 **item
@@ -852,6 +857,7 @@ class FinalProductSerializer(serializers.ModelSerializer):
         instance.additional_costs.all().delete()
 
         for cost in additional_costs_data:
+            cost.pop('id', None)
             FinalProductAdditionalCost.objects.create(
                 final_product=instance,
                 **cost

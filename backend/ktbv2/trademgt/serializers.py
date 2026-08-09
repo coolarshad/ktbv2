@@ -616,23 +616,17 @@ class SalesPurchaseProductSerializer(serializers.ModelSerializer):
         exclude = ['pending_qty']
     
     def get_combined_pending_qty(self, obj):
-        # Determine the trade type from the associated Trade object
         trade_type = obj.sp.trn.trade_type
-        
-        # Fetch the corresponding pending model based on trade type
         try:
-
-            pending_obj = TradePending.objects.get(
-                    product_code=obj.product_code,
-                    product_name=obj.product_name,
-                    trn=obj.sp.trn,
-                    trade_type=trade_type
-                )
-            
-           
-            # Add the balance_qty from the pending object
-            return  pending_obj.balance_qty + obj.bl_qty
-        except (TradePending.DoesNotExist):
+            pending_obj = TradePending.objects.filter(
+                product_code=obj.product_code,
+                trn=obj.sp.trn,
+                trade_type=trade_type
+            ).first()
+            if pending_obj:
+                return pending_obj.balance_qty + obj.bl_qty
+            return obj.pending_qty
+        except Exception:
             return obj.pending_qty 
 
     def get_product_details(self, obj):
@@ -783,13 +777,15 @@ class PaymentFinanceSerializer(serializers.ModelSerializer):
         return []
     
     def get_sp_details(self, obj):
-        # Fetch company details manually
         try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = SalesPurchase.objects.get(id=obj.sp.id)  # or use another field to identify the company
-            return SalesPurchaseSerializer(instance).data
-        except SalesPurchase.DoesNotExist:
-            return None  # Or handle it as needed
+            instance = getattr(obj, 'sp', None)
+            if not instance and hasattr(obj, 'sp_id') and obj.sp_id:
+                instance = SalesPurchase.objects.get(id=obj.sp_id)
+            if instance:
+                return SalesPurchaseSerializer(instance, context=self.context).data
+            return None
+        except Exception:
+            return None
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method
@@ -808,13 +804,13 @@ class PFSerializer(serializers.ModelSerializer):
         fields = '__all__'    
 
     def get_sp_details(self, obj):
-        # Fetch company details manually
         try:
-            # Assuming `company` field in `Trade` contains company name or ID
-            instance = SalesPurchase.objects.get(trn=obj.id)  # or use another field to identify the company
-            return SalesPurchaseSerializer(instance).data
+            instance = getattr(obj, 'salespurchase', None)
+            if not instance:
+                instance = SalesPurchase.objects.get(trn=obj.id)
+            return SalesPurchaseSerializer(instance, context=self.context).data
         except SalesPurchase.DoesNotExist:
-            return None  # Or handle it as needed
+            return None
 
     def to_representation(self, instance):
         # Call the parent's `to_representation` method

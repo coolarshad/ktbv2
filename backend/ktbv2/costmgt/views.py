@@ -894,9 +894,7 @@ class FinalProductViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, v
                 status=400
             )
 
-        response = super().update(request, *args, **kwargs)
-        self._dispatch_notifications(request, is_update=True)
-        return response
+        return super().update(request, *args, **kwargs)
 
 
     # ----------------------------------

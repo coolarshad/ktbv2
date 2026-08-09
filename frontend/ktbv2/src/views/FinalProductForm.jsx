@@ -132,12 +132,12 @@ export default function FinalProductForm({ mode = 'add' }) {
 
         // ✅ Formula Select
         const selectedFormula = formulaOptions.find(
-          f => f.value === data.formula
+          f => String(f.value) === String(data.formula)
         );
 
         // ✅ Batch Options
         const filteredBatches = consumptionList
-          .filter(item => item.formula?.id === selectedFormula?.raw?.consumption?.formula?.id)
+          .filter(item => !selectedFormula || item.formula?.id === selectedFormula?.raw?.consumption?.formula?.id)
           .map(item => ({
             value: item.id,
             label: item.batch || "No Batch",
@@ -146,9 +146,9 @@ export default function FinalProductForm({ mode = 'add' }) {
 
         setBatchList(filteredBatches);
 
-        const selectedBatch = filteredBatches.find(
-          b => b.value === data.batch
-        );
+        const selectedBatch =
+          filteredBatches.find(b => String(b.value) === String(data.batch)) ||
+          (data.batch_detail ? { value: data.batch_detail.id || data.batch, label: data.batch_detail.batch || "Batch " + data.batch } : (data.batch ? { value: data.batch, label: "Batch " + data.batch } : null));
 
         // ✅ Unit Select
         // const selectedUnit = unitOptions.find(
@@ -175,16 +175,35 @@ export default function FinalProductForm({ mode = 'add' }) {
 
         });
 
+        const foundConsumption = consumptionList.find(
+          c => String(c.id) === String(data.consumption) || String(c.id) === String(data.batch) || String(c.id) === String(data.consumption_detail?.id)
+        );
+
+        const consumptionLabel =
+          data.formula_detail?.consumption?.formula?.name ||
+          data.batch_detail?.formula?.name ||
+          data.consumption_detail?.formula?.name ||
+          selectedFormula?.raw?.consumption?.formula?.name ||
+          foundConsumption?.formula?.name ||
+          "No Name";
+
+        const consumptionValue =
+          data.batch ||
+          data.consumption ||
+          foundConsumption?.id ||
+          data.consumption_detail?.id ||
+          null;
+
         setFormData(prev => ({
           ...prev,
           ...data,
 
           formula: selectedFormula || null,
 
-          consumption: data.consumption_detail
+          consumption: consumptionValue
             ? {
-              value: data.consumption_detail.formula?.id,
-              label: data.consumption_detail.formula?.name,
+              value: consumptionValue,
+              label: consumptionLabel,
             }
             : null,
 
@@ -441,7 +460,12 @@ export default function FinalProductForm({ mode = 'add' }) {
   const validateForm = () => {
     let newErrors = {};
 
-    const skipValidation = ['remarks', 'notifiedUsers', 'packing_items', 'additional_costs', 'notification_message', 'approved'];
+    const skipValidation = [
+      'remarks', 'notifiedUsers', 'packing_items', 'additional_costs', 
+      'notification_message', 'approved', 'formula_detail', 'packing_size_detail', 
+      'batch_detail', 'consumption_detail', 'notified_users_emails', 
+      'total_cost_per_pail_crtn', 'created_at', 'created_by', 'id'
+    ];
     for (const [key, value] of Object.entries(formData)) {
       if (!skipValidation.includes(key)) {
         if (value === "" || value === "NaN" || value === null) {
@@ -501,6 +525,10 @@ export default function FinalProductForm({ mode = 'add' }) {
     }
 
     setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      console.warn("Validation errors preventing submit:", newErrors);
+    }
 
     return Object.keys(newErrors).length === 0;
   };

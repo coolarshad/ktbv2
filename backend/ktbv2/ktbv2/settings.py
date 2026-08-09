@@ -98,7 +98,7 @@ DATABASES = {
         'NAME': 'ktbv2_db',
         'USER': 'ktbv2_user',
         'PASSWORD': 'admin123',
-        'HOST': '148.72.247.191',  # Refers to the PostgreSQL service name in Docker Compose
+        'HOST': 'localhost',  # Refers to the PostgreSQL service name in Docker Compose
         'PORT': '5432',
     }
 }
@@ -159,7 +159,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_USE_SSL = True
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'ktbv2sender@gmail.com'   # Your email
 EMAIL_HOST_PASSWORD = 'bevp opwx toxl rhei'  # App-specific password (not your Gmail password)
 
