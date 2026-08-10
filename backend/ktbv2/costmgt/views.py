@@ -13,6 +13,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from notifications.services import NotificationService
 from accounts.models import CustomUser
 from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
+from accounts.permissions import can_user_delete_approved, can_user_delete_system_record
 # Create your views here.
 
 actor = None
@@ -174,10 +175,11 @@ class PackingViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewse
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.approved:
-            return Response(
-                {"detail": "Approved Packing Price is locked and cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_packing', 'delete_packings', 'delete_packing_price']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with delete permission can delete approved Packing Prices."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         instance_id_str = str(instance.id)
         if ProductFormulaItem.objects.filter(packing_label=instance_id_str).exists():
             return Response(
@@ -570,10 +572,11 @@ class ConsumptionFormulaView(APIView):
             return Response({'error': 'Consumption Formula not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if consumption.approved:
-            return Response(
-                {"error": "Approved Consumption Formula is locked and cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_consumption_formula', 'delete_consumption_formulas', 'delete_blending_formulation']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with delete permission can delete approved Consumption Formulas."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         if Consumption.objects.filter(name=str(consumption.id)).exists():
             return Response(
@@ -840,10 +843,11 @@ class ConsumptionView(APIView):
             return Response({'error': 'Consumption not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if consumption.approved:
-            return Response(
-                {"error": "Approved Consumption is locked and cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_consumption', 'delete_consumptions']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with delete permission can delete approved Consumption records."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         consumption_id_str = str(consumption.id)
         if (
@@ -904,10 +908,11 @@ class FinalProductViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, v
         instance = self.get_object()
 
         if instance.approved:
-            return Response(
-                {"error": "Approved Final Product cannot be deleted."},
-                status=400
-            )
+            if not can_user_delete_approved(request.user, ['delete_final_product', 'delete_final_products', 'delete_final_product_cost']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with delete permission can delete approved Final Products."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         return super().destroy(request, *args, **kwargs)
    
@@ -1378,10 +1383,11 @@ class ProductFormulaView(APIView):
             return Response({'error': 'Product Formula not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if formula.approved:
-            return Response(
-                {"error": "Approved Product Formula is locked and cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_product_formula', 'delete_product_formulas', 'delete_packing_formulation']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with delete permission can delete approved Product Formulas."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         if FinalProduct.objects.filter(formula=formula).exists():
             return Response(

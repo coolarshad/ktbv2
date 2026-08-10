@@ -1,7 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { canUserDeleteSystemRecord } from '../utils';
+import { useAuth } from '../context/AuthContext';
 
 const SalesPendingTable = ({ data , onDelete, onView }) => { // Default value for data
+  const { user } = useAuth();
   const format4Dec = (val) =>
     val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
       ? Number(val).toFixed(4)
@@ -59,9 +62,9 @@ const SalesPendingTable = ({ data , onDelete, onView }) => { // Default value fo
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.logistic)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <div className="space-x-2">
-                   
-                   
-                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                    {canUserDeleteSystemRecord(user, ['delete_sales_pending', 'delete_trade_pending']) && (
+                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                    )}
                   </div>
                 </td>
               </tr>

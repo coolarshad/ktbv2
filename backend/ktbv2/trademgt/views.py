@@ -18,6 +18,7 @@ from accounts.models import CustomUser
 from .utils.email_service import send_async_email
 from notifications.services import NotificationService
 from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
+from accounts.permissions import can_user_delete_approved, can_user_delete_system_record
 from rest_framework.pagination import PageNumberPagination
 
 class TradeMgtPagination(PageNumberPagination):
@@ -628,10 +629,11 @@ class TradeView(APIView):
             return Response({'error': 'Trade not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         if trade.reviewed or trade.approved:
-            return Response(
-                {'error': 'Cannot delete a trade that has been reviewed or approved.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_trade', 'delete_trade_approval', 'delete_trade_approved', 'delete_trade_form', 'delete_trade_form_approved', 'delete_trade_review']):
+                return Response(
+                    {'error': 'Only Superuser or Manager2 with delete permission can delete reviewed or approved trades.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         if PreSalePurchase.objects.filter(trn=trade).exists():
             return Response(
@@ -1094,10 +1096,11 @@ class PreSalePurchaseView(APIView):
             return Response({'error': 'PreSalePurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if pre_sp.approved:
-            return Response(
-                {'error': 'Cannot delete an approved Pre-Sale/Purchase record.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_presalepurchase', 'delete_pre_sale_purchase', 'delete_pre_sp']):
+                return Response(
+                    {'error': 'Only Superuser or Manager2 with delete permission can delete approved Pre-Sale/Purchase records.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         with transaction.atomic():
             # Delete related trade products and extra costs
@@ -1487,10 +1490,11 @@ class PrePaymentView(APIView):
             return Response({'error': 'PrePayment not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if prepayment.reviewed:
-            return Response(
-                {'error': 'Cannot delete a reviewed Pre-Payment record.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_prepayment', 'delete_pre_payment']):
+                return Response(
+                    {'error': 'Only Superuser or Manager2 with delete permission can delete reviewed Pre-Payment records.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         with transaction.atomic():
             # Delete related trade products and extra costs
@@ -2008,10 +2012,11 @@ class SalesPurchaseView(APIView):
             return Response({'error': 'SalesPurchase not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if sp.reviewed:
-            return Response(
-                {'error': 'Cannot delete a reviewed Sales/Purchase record.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_salespurchase', 'delete_sales_purchases', 'delete_sp']):
+                return Response(
+                    {'error': 'Only Superuser or Manager2 with delete permission can delete reviewed Sales/Purchase records.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         if PaymentFinance.objects.filter(sp=sp).exists():
             return Response(
@@ -2465,10 +2470,11 @@ class PaymentFinanceView(APIView):
             return Response({'error': 'PaymentFinance not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if pf.reviewed:
-            return Response(
-                {'error': 'Cannot delete a reviewed Payment/Finance record.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if not can_user_delete_approved(request.user, ['delete_paymentfinance', 'delete_payment_finance', 'delete_pf']):
+                return Response(
+                    {'error': 'Only Superuser or Manager2 with delete permission can delete reviewed Payment/Finance records.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         with transaction.atomic():
             # Delete related trade products and extra costs
@@ -2651,28 +2657,54 @@ class TradeProductTraceViewSet(viewsets.ModelViewSet):
     serializer_class = TradeProductTraceSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradeProductTraceFilter
-    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
+
+    def destroy(self, request, *args, **kwargs):
+        if not can_user_delete_system_record(request.user, ['delete_sales_product_trace', 'delete_purchase_product_trace', 'delete_trade_product_trace', 'delete_product_trace']):
+            return Response(
+                {'detail': 'Only Superuser or Manager2 with delete permission can delete Product Trace records.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
 
 class TradeProductRefViewSet(viewsets.ModelViewSet):
     queryset = TradeProductRef.objects.all()
-    serializer_class =TradeProductRefSerializer
+    serializer_class = TradeProductRefSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradeProductRefFilter
-    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
+
+    def destroy(self, request, *args, **kwargs):
+        if not can_user_delete_system_record(request.user, ['delete_trade_product_ref', 'delete_product_reference', 'delete_product_ref']):
+            return Response(
+                {'detail': 'Only Superuser or Manager2 with delete permission can delete Product Reference records.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
    
 class TradePendingViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     queryset = TradePending.objects.all()
     serializer_class = TradePendingSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TradePendingFilter
-    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
 
- 
+    def destroy(self, request, *args, **kwargs):
+        if not can_user_delete_system_record(request.user, ['delete_purchase_pending', 'delete_trade_pending', 'delete_pending']):
+            return Response(
+                {'detail': 'Only Superuser or Manager2 with delete permission can delete Purchase Pending records.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
 
 class SalesPendingViewSet(viewsets.ModelViewSet):
     queryset = TradePending.objects.all()
     serializer_class = SalesPendingSerializer
-    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
+
+    def destroy(self, request, *args, **kwargs):
+        if not can_user_delete_system_record(request.user, ['delete_sales_pending', 'delete_trade_pending', 'delete_pending']):
+            return Response(
+                {'detail': 'Only Superuser or Manager2 with delete permission can delete Sales Pending records.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
 
 
 
@@ -2808,7 +2840,14 @@ class PFView(APIView):
 class InventoryViewSet(viewsets.ModelViewSet):
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
-    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
+
+    def destroy(self, request, *args, **kwargs):
+        if not can_user_delete_system_record(request.user, ['delete_inventory']):
+            return Response(
+                {'detail': 'Only Superuser or Manager2 with delete permission can delete Inventory records.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
 
 
 class ProductNameViewSet(viewsets.ModelViewSet):

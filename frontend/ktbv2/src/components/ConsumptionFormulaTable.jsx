@@ -1,14 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { hasPermission } from '../utils';
+import { hasPermission, canUserDeleteApproved } from '../utils';
 
-const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // Default value for data
-  const navigate = useNavigate();
+const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleEdit = (id) => {
-    navigate(`/consumption-formula-form/${id}`);
+    navigate(`/consumption-formula-edit/${id}`);
   };
 
   return (
@@ -16,35 +16,50 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // D
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[120px] max-w-[120px] w-[120px]">Ref</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[280px] z-30 bg-gray-100 min-w-[250px] border-r border-gray-300">Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Grade</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">SAE</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Formulation Code</th>
 
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th> */}
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Formulation Name</th>
+
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Standard Batch Size</th>
+
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Unit</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Blended Density</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Cost</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
           {data && data.length > 0 ? (
             data.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[120px] max-w-[120px] w-[120px]">{item.ref}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[280px] z-10 bg-white min-w-[250px] border-r border-gray-300">{item.name}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.grade}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sae}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.consumption_formula_code}</td>
 
-                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} disabled={item.approved} onChange={() => { }} />
+                  {item.standard_batch_size !== undefined && item.standard_batch_size !== null && item.standard_batch_size !== '' && !isNaN(Number(item.standard_batch_size))
+                    ? Number(item.standard_batch_size).toFixed(4)
+                    : item.standard_batch_size}
                 </td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.unit}</td>
 
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.blended_density}</td>
+
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  {item.total_cost !== undefined && item.total_cost !== null && item.total_cost !== '' && !isNaN(Number(item.total_cost))
+                    ? Number(item.total_cost).toFixed(2)
+                    : item.total_cost}
+                </td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                    {item.approved ? 'Approved' : 'Pending'}
+                  </span>
+
+                </td>
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <div className="space-x-2">
@@ -58,7 +73,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => { // D
                     {!item.approved && hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {!item.approved && hasPermission(user, `delete_${basePerm}`) && (
+                    {(!item.approved ? hasPermission(user, `delete_${basePerm}`) : canUserDeleteApproved(user, `delete_${basePerm}`)) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>

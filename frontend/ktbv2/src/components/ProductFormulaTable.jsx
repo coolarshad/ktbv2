@@ -1,7 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { hasPermission, canUserDeleteApproved } from '../utils';
+import { useAuth } from '../context/AuthContext';
 
 const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value for data
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleEdit = (id) => {
@@ -55,7 +58,7 @@ const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value f
                     {!item.approved && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {!item.approved && (
+                    {(!item.approved ? hasPermission(user, 'delete_product_formulas') : canUserDeleteApproved(user, 'delete_product_formulas')) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>

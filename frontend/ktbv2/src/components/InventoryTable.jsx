@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { canUserDeleteSystemRecord } from '../utils';
+import { useAuth } from '../context/AuthContext';
 
 const InventoryTable = ({ data , onDelete, onView }) => { // Default value for data
-
+  const { user } = useAuth();
   
   return (
     <div className="overflow-x-auto">
@@ -37,7 +39,9 @@ const InventoryTable = ({ data , onDelete, onView }) => { // Default value for d
                
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <div className="space-x-2">
-                    <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                    {canUserDeleteSystemRecord(user, 'delete_inventory') && (
+                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}>Delete</button>
+                    )}
                   </div>
                 </td>
               </tr>

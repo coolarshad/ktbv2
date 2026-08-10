@@ -52,15 +52,26 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_qty}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.qty_in_litres}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.per_litre_cost}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_oil_consumed}</td>
-                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.dk_cost}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.final_product_code}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.final_product_name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.consumption_name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.formula_name}</td>
 
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cfr_pricing}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.total_cost_per_pail_crtn || (item.total_qty ? (Number(item.total_cfr_pricing) / Number(item.total_qty)).toFixed(2) : "0.00")}</td>
-                {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td> */}
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.packing_type_name}</td>
+
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} disabled={item.approved} onChange={() => { }} />
+                  {item.total_cost_ltr !== undefined && item.total_cost_ltr !== null && item.total_cost_ltr !== '' && !isNaN(Number(item.total_cost_ltr))
+                    ? Number(item.total_cost_ltr).toFixed(2)
+                    : item.total_cost_ltr}
+                </td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                    {item.approved ? 'Approved' : 'Pending'}
+                  </span>
+
                 </td>
 
 
@@ -76,7 +87,7 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
                     {!item.approved && hasPermission(user, `update_${basePerm}`) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {!item.approved && hasPermission(user, `delete_${basePerm}`) && (
+                    {(!item.approved ? hasPermission(user, `delete_${basePerm}`) : canUserDeleteApproved(user, `delete_${basePerm}`)) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>
