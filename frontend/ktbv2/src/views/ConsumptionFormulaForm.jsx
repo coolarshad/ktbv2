@@ -189,6 +189,8 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
             })
             .catch((error) => {
                 console.error(`There was an error ${mode === 'add' ? 'adding' : 'updating'} the consumption formula!`, error);
+                const msg = error.response?.data?.detail || error.response?.data?.error || (typeof error.response?.data === 'object' ? JSON.stringify(error.response?.data) : 'Failed to save consumption formula.');
+                alert(msg);
             });
     };
 

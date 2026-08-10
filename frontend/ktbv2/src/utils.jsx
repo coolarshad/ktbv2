@@ -6,11 +6,15 @@ export const capitalizeKey = (key) => {
         .join(' ');
 };
 
-export const BASE_URL = 'http://148.72.247.191:8000'
+export const BASE_URL = 'http://localhost:8000'
 
 export const hasPermission = (user, requiredCode) => {
     if (!user) return false;
     if (user.is_superuser) return true;
+    if (!requiredCode) return true;
+    if (Array.isArray(requiredCode)) {
+        return requiredCode.some(p => user.permission_codes && user.permission_codes.includes(p));
+    }
     if (user.permission_codes && user.permission_codes.includes(requiredCode)) return true;
     return false;
 };

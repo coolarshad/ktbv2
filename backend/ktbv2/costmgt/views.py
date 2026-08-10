@@ -505,7 +505,7 @@ class ConsumptionFormulaView(APIView):
             m += 1
 
         with transaction.atomic():
-            c_serializer = ConsumptionFormulaSerializer(data=c_data)
+            c_serializer = ConsumptionFormulaSerializer(data=c_data, context={'request': request})
             if c_serializer.is_valid():
                 consumption = c_serializer.save(created_by=request.user)
             else:
@@ -597,7 +597,7 @@ class ConsumptionFormulaView(APIView):
             m += 1
        
         with transaction.atomic():
-            c_serializer = ConsumptionFormulaSerializer(consumption, data=c_data, partial=True)
+            c_serializer = ConsumptionFormulaSerializer(consumption, data=c_data, partial=True, context={'request': request})
             if c_serializer.is_valid():
                 consumption = c_serializer.save()
             else:
@@ -765,7 +765,7 @@ class ConsumptionView(APIView):
             m += 1
 
         with transaction.atomic():
-            c_serializer = ConsumptionSerializer(data=c_data)
+            c_serializer = ConsumptionSerializer(data=c_data, context={'request': request})
             if c_serializer.is_valid():
                 consumption = c_serializer.save(created_by=request.user)
             else:
@@ -875,7 +875,7 @@ class ConsumptionView(APIView):
             m += 1
        
         with transaction.atomic():
-            c_serializer = ConsumptionSerializer(consumption, data=c_data, partial=True)
+            c_serializer = ConsumptionSerializer(consumption, data=c_data, partial=True, context={'request': request})
             if c_serializer.is_valid():
                 consumption = c_serializer.save()
             else:
@@ -1352,7 +1352,7 @@ class ProductFormulaView(APIView):
 
         # import pdb;pdb.set_trace()
         with transaction.atomic():
-            p_serializer = ProductFormulaSerializer(data=c_data)
+            p_serializer = ProductFormulaSerializer(data=c_data, context={'request': request})
             if p_serializer.is_valid():
                 p_formula = p_serializer.save(created_by=request.user)
             else:
@@ -1434,7 +1434,7 @@ class ProductFormulaView(APIView):
 
         # import pdb;pdb.set_trace()
         with transaction.atomic():
-            formula_serializer = ProductFormulaSerializer(formula, data=c_data, partial=True)
+            formula_serializer = ProductFormulaSerializer(formula, data=c_data, partial=True, context={'request': request})
             if formula_serializer.is_valid():
                 formula = formula_serializer.save()
             else:

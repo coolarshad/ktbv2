@@ -8,57 +8,33 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => {
   const navigate = useNavigate();
 
   const handleEdit = (id) => {
-    navigate(`/consumption-formula-edit/${id}`);
+    navigate(`/consumption-formula-form/${id}`);
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="max-h-[450px] overflow-auto bg-white border border-gray-200 rounded-lg shadow-sm">
       <table className="min-w-full bg-white">
-        <thead>
+        <thead className='sticky top-0 z-10 bg-white'>
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Formulation Code</th>
-
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Formulation Name</th>
-
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Standard Batch Size</th>
-
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Unit</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Blended Density</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Total Cost</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[450px] max-w-[450px] w-[450px] border-r border-gray-300">Name</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
           {data && data.length > 0 ? (
             data.map((item, index) => (
               <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.consumption_formula_code}</td>
-
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
-
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  {item.standard_batch_size !== undefined && item.standard_batch_size !== null && item.standard_batch_size !== '' && !isNaN(Number(item.standard_batch_size))
-                    ? Number(item.standard_batch_size).toFixed(4)
-                    : item.standard_batch_size}
-                </td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.unit}</td>
-
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.blended_density}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[450px] max-w-[450px] w-[450px] border-r border-gray-300">{item.name}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  {item.total_cost !== undefined && item.total_cost !== null && item.total_cost !== '' && !isNaN(Number(item.total_cost))
-                    ? Number(item.total_cost).toFixed(2)
-                    : item.total_cost}
-                </td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                    {item.approved ? 'Approved' : 'Pending'}
-                  </span>
-
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approved} disabled={item.approved} onChange={() => { }} />
                 </td>
 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
@@ -82,7 +58,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="9" className="py-4 text-center text-gray-500 font-medium">
+              <td colSpan="6" className="py-4 text-center text-gray-500 font-medium">
                 Match Not Found.
               </td>
             </tr>

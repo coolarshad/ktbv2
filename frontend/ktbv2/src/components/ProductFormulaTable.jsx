@@ -55,10 +55,10 @@ const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value f
                     >
                       View
                     </button>
-                    {(!item.approved ? hasPermission(user, ['update_product_formulas', 'update_product_formula', 'update_packing_formulation']) : canUserUpdateApproved(user, ['update_product_formulas', 'update_product_formula', 'update_packing_formulation'])) && (
+                    {(!item.approved ? hasPermission(user, ['update_product_formulas', 'update_product_formula', 'update_packing_formulation', 'update_packing_formulations']) : canUserUpdateApproved(user, ['update_product_formulas', 'update_product_formula', 'update_packing_formulation', 'update_packing_formulations'])) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
-                    {(!item.approved ? hasPermission(user, 'delete_product_formulas') : canUserDeleteApproved(user, 'delete_product_formulas')) && (
+                    {(!item.approved ? hasPermission(user, ['delete_product_formulas', 'delete_product_formula', 'delete_packing_formulation', 'delete_packing_formulations']) : canUserDeleteApproved(user, ['delete_product_formulas', 'delete_product_formula', 'delete_packing_formulation', 'delete_packing_formulations'])) && (
                       <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>

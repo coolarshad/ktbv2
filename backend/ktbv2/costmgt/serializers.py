@@ -3,6 +3,7 @@ from .models import *
 from django.db import transaction
 from trademgt.models import Packing as P
 from trademgt.serializers import PackingSerializer as PS
+from accounts.permissions import can_user_update_approved
 # class PackingSerializer(serializers.ModelSerializer):
 #     notified_users_emails = serializers.SerializerMethodField()
 #     class Meta:
@@ -78,7 +79,10 @@ class PackingSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance and self.instance.approved:
-            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+            request = self.context.get('request')
+            user = getattr(request, 'user', None) if request else None
+            if not (user and can_user_update_approved(user, ['update_packing', 'update_packings', 'update_packing_price'])):
+                raise serializers.ValidationError("This record has been approved and is locked from edits.")
         return super().validate(attrs)
 
     def create(self, validated_data):
@@ -168,7 +172,10 @@ class RawMaterialSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance and self.instance.approved:
-            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+            request = self.context.get('request')
+            user = getattr(request, 'user', None) if request else None
+            if not (user and can_user_update_approved(user, ['update_raw_material', 'update_raw_materials', 'update_raw_material_pricing'])):
+                raise serializers.ValidationError("This record has been approved and is locked from edits.")
         return super().validate(attrs)
 
     def create(self, validated_data):
@@ -253,7 +260,10 @@ class AdditiveSerializer(serializers.ModelSerializer):
     
     def validate(self, attrs):
         if self.instance and self.instance.approved:
-            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+            request = self.context.get('request')
+            user = getattr(request, 'user', None) if request else None
+            if not (user and can_user_update_approved(user, ['update_additive', 'update_additives', 'update_additive_pricing'])):
+                raise serializers.ValidationError("This record has been approved and is locked from edits.")
         return super().validate(attrs)
 
     def create(self, validated_data):
@@ -328,7 +338,10 @@ class ConsumptionFormulaSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance and self.instance.approved:
-            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+            request = self.context.get('request')
+            user = getattr(request, 'user', None) if request else None
+            if not (user and can_user_update_approved(user, ['update_consumption_formula', 'update_consumption_formulas', 'update_blending_formulation'])):
+                raise serializers.ValidationError("This record has been approved and is locked from edits.")
         return super().validate(attrs)
 
 class ConsumptionAdditiveSerializer(serializers.ModelSerializer):
@@ -399,7 +412,10 @@ class ConsumptionSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance and self.instance.approved:
-            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+            request = self.context.get('request')
+            user = getattr(request, 'user', None) if request else None
+            if not (user and can_user_update_approved(user, ['update_consumption', 'update_consumptions', 'update_blending_cost'])):
+                raise serializers.ValidationError("This record has been approved and is locked from edits.")
         return super().validate(attrs)
 
     def get_formula(self, obj):
@@ -558,7 +574,10 @@ class ProductFormulaSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance and self.instance.approved:
-            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+            request = self.context.get('request')
+            user = getattr(request, 'user', None) if request else None
+            if not (user and can_user_update_approved(user, ['update_product_formula', 'update_product_formulas', 'update_packing_formulation'])):
+                raise serializers.ValidationError("This record has been approved and is locked from edits.")
         return super().validate(attrs)
 
     def get_consumption_details(self, obj):
@@ -809,7 +828,10 @@ class FinalProductSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance and self.instance.approved:
-            raise serializers.ValidationError("This record has been approved and is locked from edits.")
+            request = self.context.get('request')
+            user = getattr(request, 'user', None) if request else None
+            if not (user and can_user_update_approved(user, ['update_final_product', 'update_final_products', 'update_final_product_cost'])):
+                raise serializers.ValidationError("This record has been approved and is locked from edits.")
         return super().validate(attrs)
 
     def create(self, validated_data):
