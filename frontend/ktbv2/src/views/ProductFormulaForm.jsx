@@ -4,6 +4,7 @@ import axios from "../axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import MultiUserSelector from "../components/MultiUserSelector";
+import { canUserUpdateApproved } from "../utils";
 
 const ProductFormulaForm = ({ mode = "add" }) => {
     const { user } = useAuth();
@@ -159,7 +160,7 @@ const ProductFormulaForm = ({ mode = "add" }) => {
 
     /* ---------------- SUBMIT ---------------- */
 
-    const isLocked = mode === "update" && formData.approved;
+    const isLocked = mode === "update" && formData.approved && !canUserUpdateApproved(user, ['update_product_formula', 'update_product_formulas', 'update_packing_formulation']);
 
     const handleSubmit = (e) => {
         e.preventDefault();

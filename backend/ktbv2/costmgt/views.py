@@ -13,7 +13,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from notifications.services import NotificationService
 from accounts.models import CustomUser
 from accounts.mixins import get_authorized_queryset, HierarchicalSecurityMixin
-from accounts.permissions import can_user_delete_approved, can_user_delete_system_record
+from accounts.permissions import can_user_delete_approved, can_user_delete_system_record, can_user_update_approved
 # Create your views here.
 
 actor = None
@@ -172,6 +172,16 @@ class PackingViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewse
     filter_backends = [DjangoFilterBackend]
     filterset_class = PackingFilter
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.approved:
+            if not can_user_update_approved(request.user, ['update_packing', 'update_packings', 'update_packing_price']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with update permission can edit approved Packing Prices."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        return super().update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.approved:
@@ -181,9 +191,13 @@ class PackingViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, viewse
                     status=status.HTTP_403_FORBIDDEN
                 )
         instance_id_str = str(instance.id)
-        if ProductFormulaItem.objects.filter(packing_label=instance_id_str).exists():
+        if (
+            ProductFormulaItem.objects.filter(packing_label=instance_id_str).exists() or
+            FinalProductPackingItem.objects.filter(selected_packing=instance).exists() or
+            FinalProductPackingItem.objects.filter(packing=instance_id_str).exists()
+        ):
             return Response(
-                {"detail": "Cannot delete this packing price because it is in use by Product Formulation records."},
+                {"detail": "Cannot delete this packing price because it is in use by Product Formulation or Final Product Cost records."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return super().destroy(request, *args, **kwargs)
@@ -217,20 +231,37 @@ class RawCategoryViewSet(viewsets.ModelViewSet):
                 qs = qs.filter(children__isnull=False).distinct()
         return qs
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if getattr(instance, 'approved', False):
+            if not can_user_update_approved(request.user, ['update_raw_category', 'update_raw_categories', 'update_raw_material_category']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with update permission can edit approved Raw Categories."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        return super().update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if getattr(instance, 'approved', False):
+            if not can_user_delete_approved(request.user, ['delete_raw_category', 'delete_raw_categories', 'delete_raw_material_category']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with delete permission can delete approved Raw Categories."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         descendant_ids = get_all_descendant_ids(RawCategory, instance.id)
         descendant_ids_str = [str(x) for x in descendant_ids]
         
         # Check references in RawMaterial, ConsumptionFormulaBaseOil, and ConsumptionBaseOil
         if (
-            RawMaterial.objects.filter(category_id__in=descendant_ids).exists() or
-            RawMaterial.objects.filter(name_id__in=descendant_ids).exists() or
+            RawMaterial.objects.filter(category_id__in=descendant_ids, is_deleted=False).exists() or
+            RawMaterial.objects.filter(name_id__in=descendant_ids, is_deleted=False).exists() or
             ConsumptionFormulaBaseOil.objects.filter(name__in=descendant_ids_str).exists() or
-            ConsumptionBaseOil.objects.filter(name__in=descendant_ids_str).exists()
+            ConsumptionBaseOil.objects.filter(name__in=descendant_ids_str).exists() or
+            ConsumptionBaseOil.objects.filter(sub_name__in=descendant_ids_str).exists()
         ):
             return Response(
-                {"detail": "Cannot delete this category because it or its subcategories are in use by Raw Material records."},
+                {"detail": "Cannot delete this category because it or its subcategories are in use by Raw Material or Consumption records."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return super().destroy(request, *args, **kwargs)
@@ -251,8 +282,24 @@ class RawMaterialViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, vi
             qs = qs.filter(is_deleted=False)
         return qs
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.approved:
+            if not can_user_update_approved(request.user, ['update_raw_material', 'update_raw_materials', 'update_raw_material_pricing']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with update permission can edit approved Raw Material Prices."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        return super().update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.approved:
+            if not can_user_delete_approved(request.user, ['delete_raw_material', 'delete_raw_materials', 'delete_raw_material_pricing']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with delete permission can delete approved Raw Material Prices."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         instance.is_deleted = True
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -279,20 +326,37 @@ class AdditiveCategoryViewSet(viewsets.ModelViewSet):
 
         return qs
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if getattr(instance, 'approved', False):
+            if not can_user_update_approved(request.user, ['update_additive_category', 'update_additive_categories', 'update_additives_pricing_category']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with update permission can edit approved Additive Categories."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        return super().update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if getattr(instance, 'approved', False):
+            if not can_user_delete_approved(request.user, ['delete_additive_category', 'delete_additive_categories', 'delete_additives_pricing_category']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with delete permission can delete approved Additive Categories."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         descendant_ids = get_all_descendant_ids(AdditiveCategory, instance.id)
         descendant_ids_str = [str(x) for x in descendant_ids]
         
         # Check references in Additive, ConsumptionFormulaAdditive, and ConsumptionAdditive
         if (
-            Additive.objects.filter(category_id__in=descendant_ids).exists() or
-            Additive.objects.filter(name_id__in=descendant_ids).exists() or
+            Additive.objects.filter(category_id__in=descendant_ids, is_deleted=False).exists() or
+            Additive.objects.filter(name_id__in=descendant_ids, is_deleted=False).exists() or
             ConsumptionFormulaAdditive.objects.filter(name__in=descendant_ids_str).exists() or
-            ConsumptionAdditive.objects.filter(name__in=descendant_ids_str).exists()
+            ConsumptionAdditive.objects.filter(name__in=descendant_ids_str).exists() or
+            ConsumptionAdditive.objects.filter(sub_name__in=descendant_ids_str).exists()
         ):
             return Response(
-                {"detail": "Cannot delete this category because it or its subcategories are in use by Additive records."},
+                {"detail": "Cannot delete this category because it or its subcategories are in use by Additive or Consumption records."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return super().destroy(request, *args, **kwargs)
@@ -312,8 +376,24 @@ class AdditiveViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, views
             qs = qs.filter(is_deleted=False)
         return qs
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.approved:
+            if not can_user_update_approved(request.user, ['update_additive', 'update_additives', 'update_additive_pricing']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with update permission can edit approved Additive Prices."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        return super().update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.approved:
+            if not can_user_delete_approved(request.user, ['delete_additive', 'delete_additives', 'delete_additive_pricing']):
+                return Response(
+                    {"detail": "Only Superuser or Manager2 with delete permission can delete approved Additive Prices."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         instance.is_deleted = True
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -476,6 +556,13 @@ class ConsumptionFormulaView(APIView):
             consumption = ConsumptionFormula.objects.get(pk=pk)
         except ConsumptionFormula.DoesNotExist:
             return Response({'error': 'Consumption Formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if consumption.approved:
+            if not can_user_update_approved(request.user, ['update_consumption_formula', 'update_consumption_formulas', 'update_blending_formulation']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with update permission can edit approved Consumption Formulas."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         # Prepare trade data separately
         c_data = {
@@ -736,6 +823,13 @@ class ConsumptionView(APIView):
         except Consumption.DoesNotExist:
             return Response({'error': 'Consumption not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if consumption.approved:
+            if not can_user_update_approved(request.user, ['update_consumption', 'update_consumptions', 'update_blending_cost']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with update permission can edit approved Consumption records."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
         # Prepare trade data separately
         c_data = {
             'date': data.get('date'),
@@ -893,10 +987,11 @@ class FinalProductViewSet(HierarchicalSecurityMixin, NotificationViewSetMixin, v
         instance = self.get_object()
 
         if instance.approved:
-            return Response(
-                {"error": "Approved Final Product cannot be edited."},
-                status=400
-            )
+            if not can_user_update_approved(request.user, ['update_final_product', 'update_final_products', 'update_final_product_cost']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with update permission can edit approved Final Products."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         return super().update(request, *args, **kwargs)
 
@@ -1180,10 +1275,11 @@ class PackingTypeViewSet(viewsets.ModelViewSet):
         instance_id_str = str(instance.id)
         if (
             Packing.objects.filter(packing_type=instance).exists() or
-            ProductFormulaItem.objects.filter(packing_type=instance_id_str).exists()
+            ProductFormulaItem.objects.filter(packing_type=instance_id_str).exists() or
+            FinalProductPackingItem.objects.filter(packing_type=instance_id_str).exists()
         ):
             return Response(
-                {"detail": "Cannot delete this packing type because it is in use by Packing Price or Product Formulation records."},
+                {"detail": "Cannot delete this packing type because it is in use by Packing Price, Product Formulation, or Final Product Cost records."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return super().destroy(request, *args, **kwargs)
@@ -1306,6 +1402,13 @@ class ProductFormulaView(APIView):
             formula = ProductFormula.objects.get(pk=pk)
         except ProductFormula.DoesNotExist:
             return Response({'error': 'Product formula not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if formula.approved:
+            if not can_user_update_approved(request.user, ['update_product_formula', 'update_product_formulas', 'update_packing_formulation']):
+                return Response(
+                    {"error": "Only Superuser or Manager2 with update permission can edit approved Product Formulas."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         
         c_data = {
             'formula_name': data.get('formula_name'),

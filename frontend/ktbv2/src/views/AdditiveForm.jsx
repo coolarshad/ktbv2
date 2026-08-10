@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import MultiUserSelector from '../components/MultiUserSelector';
+import { canUserUpdateApproved } from '../utils';
 
 const AdditiveForm = ({ mode = 'add' }) => {
   const { user } = useAuth();
@@ -255,7 +256,7 @@ const AdditiveForm = ({ mode = 'add' }) => {
   });
 
 
-  const isLocked = mode === 'update' && formData.approved;
+  const isLocked = mode === 'update' && formData.approved && !canUserUpdateApproved(user, ['update_additive', 'update_additives', 'update_additive_pricing']);
 
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { hasPermission, canUserDeleteApproved } from '../utils';
+import { hasPermission, canUserDeleteApproved, canUserUpdateApproved } from '../utils';
 
 const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => {
   const { user } = useAuth();
@@ -70,7 +70,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => {
                     >
                       View
                     </button>
-                    {!item.approved && hasPermission(user, `update_${basePerm}`) && (
+                    {(!item.approved ? hasPermission(user, `update_${basePerm}`) : canUserUpdateApproved(user, `update_${basePerm}`)) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
                     {(!item.approved ? hasPermission(user, `delete_${basePerm}`) : canUserDeleteApproved(user, `delete_${basePerm}`)) && (

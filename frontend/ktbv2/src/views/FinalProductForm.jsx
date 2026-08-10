@@ -4,6 +4,7 @@ import Select from "react-select";
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import MultiUserSelector from '../components/MultiUserSelector';
+import { canUserUpdateApproved } from '../utils';
 
 export default function FinalProductForm({ mode = 'add' }) {
   const { user } = useAuth();
@@ -455,7 +456,7 @@ export default function FinalProductForm({ mode = 'add' }) {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));
   };
 
-  const isLocked = mode === "update" && formData.approved;
+  const isLocked = mode === "update" && formData.approved && !canUserUpdateApproved(user, ['update_final_product', 'update_final_products', 'update_final_product_cost']);
 
   const validateForm = () => {
     let newErrors = {};

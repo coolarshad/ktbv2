@@ -5,6 +5,7 @@ import axios from '../axiosConfig';
 import { FaTrash } from 'react-icons/fa';
 import Select from 'react-select';
 import MultiUserSelector from '../components/MultiUserSelector';
+import { canUserUpdateApproved } from '../utils';
 
 
 const ConsumptionFormulaForm = ({ mode = 'add' }) => {
@@ -112,7 +113,7 @@ const ConsumptionFormulaForm = ({ mode = 'add' }) => {
         setFormData(prev => ({ ...prev, notifiedUsers: users }));
     };
 
-    const isLocked = mode === 'update' && formData.approved;
+    const isLocked = mode === 'update' && formData.approved && !canUserUpdateApproved(user, ['update_consumption_formula', 'update_consumption_formulas', 'update_blending_formulation']);
 
     const handleSubmit = (e) => {
         e.preventDefault();

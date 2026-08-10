@@ -104,6 +104,7 @@ const PackingTypeList = ({ mode = 'add', id = null }) => {
       })
       .catch(error => {
         console.error('There was an error deleting the packing type list!', error);
+        alert(error.response?.data?.detail || 'Failed to delete Packing Type.');
       });
   };
 

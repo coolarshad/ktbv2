@@ -50,7 +50,7 @@ const AdditivesCategory = () => {
         alert('Category deleted successfully.');
       } catch (error) {
         console.error('Error deleting Category:', error);
-        alert('Failed to delete Category.');
+        alert(error.response?.data?.detail || 'Failed to delete Category.');
       }
     }
   };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { hasPermission, canUserDeleteApproved } from '../utils';
+import { hasPermission, canUserDeleteApproved, canUserUpdateApproved } from '../utils';
 import { useAuth } from '../context/AuthContext';
 
 const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value for data
@@ -55,7 +55,7 @@ const ProductFormulaTable = ({ data, onDelete, onView }) => { // Default value f
                     >
                       View
                     </button>
-                    {!item.approved && (
+                    {(!item.approved ? hasPermission(user, ['update_product_formulas', 'update_product_formula', 'update_packing_formulation']) : canUserUpdateApproved(user, ['update_product_formulas', 'update_product_formula', 'update_packing_formulation'])) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
                     {(!item.approved ? hasPermission(user, 'delete_product_formulas') : canUserDeleteApproved(user, 'delete_product_formulas')) && (

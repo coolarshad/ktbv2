@@ -98,7 +98,6 @@ const PackingForm = ({ mode = "add" }) => {
     };
   }, []);
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -113,7 +112,7 @@ const PackingForm = ({ mode = "add" }) => {
   const addExtraRow = () => {
     setFormData({
       ...formData,
-      extras: [...formData.extras, { name: "", rate: "" }],
+      extras: [...formData.extras, { name: "", rate: "" }]
     });
   };
 
@@ -126,7 +125,7 @@ const PackingForm = ({ mode = "add" }) => {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));
   };
 
-  const isLocked = mode === "update" && formData.approved;
+  const isLocked = mode === "update" && formData.approved && !canUserUpdateApproved(user, ["update_packing", "update_packings", "update_packing_price"]);
 
   // Handle form submission
   const handleSubmit = (e) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { hasPermission } from '../utils';
+import { hasPermission, canUserDeleteApproved, canUserUpdateApproved } from '../utils';
 
 const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default value for data
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
                     >
                       View
                     </button>
-                    {!item.approved && hasPermission(user, `update_${basePerm}`) && (
+                    {(!item.approved ? hasPermission(user, `update_${basePerm}`) : canUserUpdateApproved(user, `update_${basePerm}`)) && (
                       <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
                     {(!item.approved ? hasPermission(user, `delete_${basePerm}`) : canUserDeleteApproved(user, `delete_${basePerm}`)) && (

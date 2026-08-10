@@ -4,6 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import MultiUserSelector from '../components/MultiUserSelector';
 
+import { canUserUpdateApproved } from '../utils';
+
 const RawMaterialForm = ({ mode = 'add' }) => {
   const { user } = useAuth();
   const { id } = useParams();
@@ -198,7 +200,7 @@ const RawMaterialForm = ({ mode = 'add' }) => {
     setFormData((prev) => ({ ...prev, notifiedUsers: users }));
   };
 
-  const isLocked = mode === 'update' && formData.approved;
+  const isLocked = mode === 'update' && formData.approved && !canUserUpdateApproved(user, ['update_raw_material', 'update_raw_materials', 'update_raw_material_pricing']);
 
   const handleSubmit = (e) => {
     e.preventDefault();

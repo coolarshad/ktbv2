@@ -146,7 +146,8 @@ const PackingSize = ({ mode = 'add', id = null }) => {
       setPackingSize((prevData) => prevData.filter((packing) => packing.id !== pid));
     } catch (error) {
       console.error('There was an error deleting the packing size!', error);
-      setError('Failed to delete packing size.');
+      alert(error.response?.data?.detail || 'Failed to delete packing size.');
+      setError(error.response?.data?.detail || 'Failed to delete packing size.');
     } finally {
       setLoading(false);
     }

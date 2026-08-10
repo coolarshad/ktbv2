@@ -6,6 +6,7 @@ import { FaTrash } from 'react-icons/fa';
 import SearchableSelect from '../components/SearchableSelect';
 import Select from 'react-select';
 import MultiUserSelector from '../components/MultiUserSelector';
+import { canUserUpdateApproved } from '../utils';
 
 const ConsumptionForm = ({ mode = 'add' }) => {
     const { user } = useAuth();
@@ -541,7 +542,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
         setFormData({ ...formData, [section]: finalSection });
     };
 
-    const isLocked = mode === 'update' && formData.approved;
+    const isLocked = mode === 'update' && formData.approved && !canUserUpdateApproved(user, ['update_consumption', 'update_consumptions', 'update_blending_cost']);
 
     const handleSubmit = (e) => {
         e.preventDefault();
