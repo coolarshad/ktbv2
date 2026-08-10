@@ -12,9 +12,9 @@ const FinalProductTable = ({ data, onDelete, onView, basePerm }) => { // Default
   };
 
   return (
-    <div className="max-h-[450px] overflow-auto bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
-        <thead className='sticky top-0 z-10 bg-white'>
+        <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
