@@ -50,6 +50,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
         .then(response => {
           setDocuments(prevDocs => [...prevDocs, response.data]);
           setFormData({ name: '' }); // Reset form after add
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error adding the document!', error);
@@ -61,6 +62,7 @@ const DocumentsRequiredForm = ({ mode = 'add', documentId = null }) => {
           setCurrentMode('add');  // Reset to 'add' mode after update
           setCurrentDocumentId(null);  // Reset currentDocumentId
           setFormData({ name: '' }); // Reset form after update
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error updating the document!', error);

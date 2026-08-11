@@ -64,6 +64,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
           console.log('Bank added successfully!', response.data);
           setBanks(prevData => [...prevData, response.data]);
           setFormData({ name: '',address: '', account_number: '', swift_code: '' }); // Reset form after add
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error adding the bank!', error);
@@ -76,6 +77,7 @@ const Bank = ({ mode = 'add', bankId = null }) => {
           setBanks(prevData => prevData.map(bank => bank.id === response.data.id ? response.data : bank));
           setIsUpdateMode(false);
           setFormData({ name: '',address: '', account_number: '', swift_code: '' }); // Reset form after update
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error updating the bank!', error);

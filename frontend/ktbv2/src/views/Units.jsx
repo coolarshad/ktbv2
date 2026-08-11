@@ -50,6 +50,7 @@ const Units = ({ mode = 'add', unitId = null }) => {
         .then(response => {
           setUnits(prevData => [...prevData, response.data]);
           setFormData({ name: '' }); // Reset form after add
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error adding the unit!', error);
@@ -61,6 +62,7 @@ const Units = ({ mode = 'add', unitId = null }) => {
           setCurrentMode('add');  // Reset to 'add' mode after update
           setCurrentUnitId(null);  // Reset currentUnitId
           setFormData({ name: '' }); // Reset form after update
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error updating the unit!', error);

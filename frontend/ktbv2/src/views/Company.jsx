@@ -91,6 +91,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           seal_image: null,
           signature_image: null,
         }); // Reset form after add
+        window.location.reload();
       } else if (currentMode === 'update' && currentCompanyId) {
         const response = await axios.put(`/trademgt/company/${currentCompanyId}/`, formDataObj, {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -110,6 +111,7 @@ const Company = ({ mode = 'add', companyId = null }) => {
           seal_image: null,
           signature_image: null,
         }); // Reset form after update
+        window.location.reload();
       } else {
         console.error('Update mode is enabled but companyId is missing.');
         setError('Company ID is missing for update.');

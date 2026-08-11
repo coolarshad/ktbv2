@@ -73,6 +73,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
             payment_within: '',
             payment_from: '',
           }); // Reset form after add
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error adding the payment term!', error);
@@ -91,6 +92,7 @@ const PaymentTermForm = ({ mode = 'add', paymentTermId = null }) => {
             payment_within: '',
             payment_from: '',
           }); // Reset form after update
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error updating the payment term!', error);

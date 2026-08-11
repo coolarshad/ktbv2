@@ -50,6 +50,7 @@ const ProductName = ({ mode = 'add', id = null }) => {
         .then(response => {
           setProducts(prevDocs => [...prevDocs, response.data]);
           setFormData({ name: '' }); // Reset form after add
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error adding the product name!', error);
@@ -61,6 +62,7 @@ const ProductName = ({ mode = 'add', id = null }) => {
           setCurrentMode('add');  // Reset to 'add' mode after update
           setCurrentId(null);  // Reset currentDocumentId
           setFormData({ name: '' }); // Reset form after update
+          window.location.reload();
         })
         .catch(error => {
           console.error('There was an error updating the product name!', error);

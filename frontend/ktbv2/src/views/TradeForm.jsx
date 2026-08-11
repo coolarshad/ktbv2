@@ -869,7 +869,7 @@ const TradeForm = ({ mode = 'add' }) => {
     return (
         <form onSubmit={handleSubmit} className="space-y-6  w-full mx-auto">
             <h2 className="text-2xl mt-2 text-center">Trade Form</h2>
-            
+
             {hasDraft && mode === 'add' && (
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded mx-4 mb-2 flex justify-between items-center">
                     <span>You have a saved draft for this trade form. Do you want to load it?</span>
@@ -1854,7 +1854,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     />
                     {validationErrors.bl_fee_remarks && <p className="text-red-500">{validationErrors.bl_fee_remarks}</p>}
                 </div>
-                <div>
+                <div className='col-span-2'>
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
                     <input
                         type="text"
@@ -1862,7 +1862,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         value={formData.remarks}
                         onChange={handleChange}
                         placeholder="Remarks"
-                        className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('remarks')}`}
+                        className={`border border-gray-300 p-2 rounded w-full col-span-2 ${getFieldErrorClass('remarks')}`}
                     />
                     {validationErrors.remarks && <p className="text-red-500">{validationErrors.remarks}</p>}
                 </div>

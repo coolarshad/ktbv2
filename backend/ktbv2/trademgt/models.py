@@ -42,7 +42,7 @@ class Trade(models.Model):
     pol=models.CharField(_("pol"), max_length=100)
     eta=models.CharField(_("eta"), max_length=100)
     etd=models.CharField(_("etd"), max_length=100)
-    remarks=models.CharField(_("remarks"), max_length=150)
+    remarks=models.CharField(_("remarks"), max_length=500)
     trader_name=models.CharField(_("trader_name"), max_length=150)
     insurance_policy_number=models.CharField(_("insurance_policy_number"), max_length=100)
 
@@ -270,7 +270,7 @@ class PreSalePurchase(models.Model):
     # payment_term=models.CharField(_("payment_term"), max_length=100)
     # advance_due_date=models.DateField(_("advance_due_date"), auto_now=False, auto_now_add=False)
     # lc_due_date=models.DateField(_("lc_due_date"), auto_now=False, auto_now_add=False)
-    remarks=models.CharField(_("payment_term"), max_length=100)
+    remarks=models.CharField(_("payment_term"), max_length=150)
     approved=models.BooleanField(_("approved"),default=False)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
@@ -361,7 +361,7 @@ class PrePayment(models.Model):
     date_of_payment=models.CharField(_("date_of_payment"), max_length=50)
     lc_expiry_date=models.CharField(_("lc_expiry_date"), max_length=50)
     latest_shipment_date_in_lc=models.CharField(_("lc_expiry_date"), max_length=50)
-    remarks=models.CharField(_("lc_expiry_date"), max_length=100)
+    remarks=models.CharField(_("lc_expiry_date"), max_length=150)
     reviewed=models.BooleanField(_("reviewed"),default=False)
     advance_amount=models.FloatField(_("advance_amount"),null=True,default=0)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
@@ -453,7 +453,7 @@ class SalesPurchase(models.Model):
     etd=models.DateField(_("etd"), auto_now=False, auto_now_add=False)
     eta=models.DateField(_("eta"), auto_now=False, auto_now_add=False)
     shipment_status=models.CharField(_("shipment_status"), max_length=50)
-    remarks=models.CharField(_("remarks"), max_length=50)
+    remarks=models.CharField(_("remarks"), max_length=150)
     reviewed=models.BooleanField(_("reviewed"),default=False)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
     
@@ -595,7 +595,7 @@ class PaymentFinance(models.Model):
     # shipment_status=models.CharField(_("shipment_status"), max_length=50)
     release_docs=models.CharField(_("release_docs"), max_length=100)
     release_docs_date=models.CharField(_("release_docs_date"), max_length=50)
-    remarks=models.CharField(_("remarks"), max_length=100)
+    remarks=models.CharField(_("remarks"), max_length=150)
     reviewed=models.BooleanField(_("reviewed"),default=False)
     date=models.DateField(_("date"), auto_now=False, auto_now_add=False)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
@@ -1043,7 +1043,7 @@ class PL(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     sales_trn=models.ForeignKey("SalesPurchase",related_name='sales_trn', verbose_name=_("sales_trn"), on_delete=models.CASCADE)
     purchase_trn=models.ForeignKey("SalesPurchase",related_name='purchase_trn', verbose_name=_("purchase_trn"), on_delete=models.CASCADE)
-    remarks=models.CharField(_("100"), max_length=50)
+    remarks=models.CharField(_("100"), max_length=150)
 
     class Meta:
         verbose_name = _("PL")
