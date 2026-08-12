@@ -238,8 +238,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
     // Combined useEffect for all API calls
     useEffect(() => {
-        fetchData('/trademgt/trades', { 
-            approved: true, 
+        fetchData('/trademgt/trades', {
+            approved: true,
             reviewed: true
         }, setTrnOptions);  // Example with params
         fetchData('/trademgt/unit', {}, setUnitOptions);
@@ -411,6 +411,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         bl_date: bl.bl_date,
                         bl_collection_cost: bl.bl_collection_cost,
                         bl_fees: bl.bl_fees,
+                        liner: bl.liner,
+                        pod: bl.pod,
+                        pol: bl.pol,
+                        eta: bl.eta,
+                        etd: bl.etd,
+                        shipment_status: bl.shipment_status,
+                        remarks: bl.remarks
+
                     };
                 } else if (name === 'logistic_cost') {
                     handleLogisticCostChange(value, prev); // Use the debounced function

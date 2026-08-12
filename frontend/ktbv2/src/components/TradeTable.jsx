@@ -159,7 +159,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
             <div className="bg-white w-3/4 h-5/6 p-4 overflow-auto">
               <button onClick={closePrintModal} className="float-right text-red-500">Close</button>
               {hasPermission(user, `print_${basePerm}`) && (
-                <ReactToPrint trigger={() => <button>Print</button>} content={() => componentRef.current} />
+                <ReactToPrint documentTitle={`${selectedTrade?.trn || 'KTB'}_Approved`} trigger={() => <button>Print</button>} content={() => componentRef.current} />
               )}
               <div className="p-4 max-w-6xl mx-auto" ref={componentRef}>
 
