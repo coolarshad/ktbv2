@@ -21,10 +21,10 @@ const AdditivesCategoryForm = ({ mode = "add" }) => {
     parent: "",
   });
 
-  // Fetch all categories
+  // Fetch all approved categories
   useEffect(() => {
     axios
-      .get("/costmgt/additive-categories/")
+      .get("/costmgt/additive-categories/?approved=true")
       .then((response) => {
         setCategories(response.data);
       })

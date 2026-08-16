@@ -697,6 +697,7 @@ class TradeApproveView(APIView):
 
                 # Update trade approval status
                 trade.approved = True
+                trade.approval_date = date.today()
                 trade.save()
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
@@ -751,7 +752,6 @@ class TradeReviewView(APIView):
                 trade = Trade.objects.get(id=trade_id)
                 # Update trade approval status
                 trade.reviewed = True
-                trade.approval_date = date.today()
                 trade.save()
                 
                 actor = request.user if hasattr(request, 'user') and request.user.is_authenticated else None

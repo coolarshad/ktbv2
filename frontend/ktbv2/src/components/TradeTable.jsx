@@ -73,7 +73,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Approval Date</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Approved Date</th>
               {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th> */}
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
@@ -187,11 +187,11 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.trn}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
-                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date </td>
+                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRD </td>
                         <td className="py-2 px-4 text-gray-800">{dateFormatter(selectedTrade.trd)}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
-                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">TRD</td>
+                        <td className="py-2 px-4 text-gray-600 font-medium capitalize">Trade Approved Date</td>
                         <td className="py-2 px-4 text-gray-800">{selectedTrade.approval_date ? dateFormatter(selectedTrade.approval_date) : 'Not Approved'}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
@@ -264,7 +264,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </tr> */}
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
-                        <td className="py-2 px-4 text-gray-800">{selectedTrade.bank.name}</td>
+                        <td className="py-2 px-4 text-gray-800">{selectedTrade.bank.name}, {selectedTrade.bank.address}</td>
                       </tr>
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>

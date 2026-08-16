@@ -21,10 +21,10 @@ const RawCategoryForm = ({ mode = "add" }) => {
     parent: "",
   });
 
-  // Fetch all categories
+  // Fetch all approved categories
   useEffect(() => {
     axios
-      .get("/costmgt/raw-categories/")
+      .get("/costmgt/raw-categories/?approved=true")
       .then((response) => {
         setCategories(response.data);
       })

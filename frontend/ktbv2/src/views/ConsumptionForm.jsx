@@ -84,10 +84,10 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 name: item.additive?.id || item.name || '',
                                 display_name: item.additive?.name || '',
                                 sub_name: item.sub_name || '',
-                                rate: item.rate || '',
-                                qty_in_percent: item.qty_in_percent || '',
-                                qty_in_litre: item.qty_in_litre || '',
-                                value: item.value || ''
+                                rate: item.rate ?? '',
+                                qty_in_percent: item.qty_in_percent ?? '',
+                                qty_in_litre: item.qty_in_litre ?? '',
+                                value: item.value ?? ''
                             }))
                             : [{ name: '', display_name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
                         consumptionBaseOil: data.consumptionBaseOil?.length
@@ -95,10 +95,10 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                 name: item.raw?.id || item.name || '',
                                 display_name: item.raw?.name || '',
                                 sub_name: item.sub_name || '',
-                                rate: item.rate || '',
-                                qty_in_percent: item.qty_in_percent || '',
-                                qty_in_litre: item.qty_in_litre || '',
-                                value: item.value || ''
+                                rate: item.rate ?? '',
+                                qty_in_percent: item.qty_in_percent ?? '',
+                                qty_in_litre: item.qty_in_litre ?? '',
+                                value: item.value ?? ''
                             }))
                             : [{ name: '', display_name: '', sub_name: '', rate: '', qty_in_percent: '', qty_in_litre: '', value: '' }],
                         approved: data.approved || false,
@@ -419,7 +419,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 name: item.additive?.id || '',
                 display_name: item.additive?.name || '',   // ✅ THIS
                 rate: '',
-                qty_in_percent: item.qty_in_percent || '',
+                qty_in_percent: item.qty_in_percent ?? '',
                 qty_in_litre: '',
                 value: '',
                 sub_name: ''
@@ -430,7 +430,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 name: item.raw?.id || '',
                 display_name: item.raw?.name || '',         // ✅ THIS
                 rate: '',
-                qty_in_percent: item.qty_in_percent || '',
+                qty_in_percent: item.qty_in_percent ?? '',
                 qty_in_litre: '',
                 value: '',
                 sub_name: ''
@@ -461,7 +461,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
     const updateConsumptionData = async (currentFormData, netBlendingQty) => {
         try {
             const additivePromises = currentFormData.consumptionAdditive.map(async (item) => {
-                if (!item.name || !item.qty_in_percent) return { ...item };
+                if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === undefined) return { ...item };
 
                 try {
                     const res = await axios.get(`/costmgt/additives/${item.name}/`);
@@ -483,7 +483,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
             });
 
             const baseOilPromises = currentFormData.consumptionBaseOil.map(async (item) => {
-                if (!item.name || !item.qty_in_percent) return { ...item };
+                if (!item.name || item.qty_in_percent === "" || item.qty_in_percent === null || item.qty_in_percent === undefined) return { ...item };
 
                 try {
                     const res = await axios.get(`/costmgt/raw-materials/${item.name}/`);
@@ -599,12 +599,12 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                 } else {
                     value.forEach((item, index) => {
                         for (const [subKey, subValue] of Object.entries(item)) {
-                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue || '');
+                            formDataToSend.append(`${key}[${index}].${subKey}`, subValue ?? '');
                         }
                     });
                 }
             } else {
-                formDataToSend.append(key, value || '');
+                formDataToSend.append(key, value ?? '');
             }
         }
 
@@ -874,7 +874,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                     type="number"
                                     name="qty_in_percent"
                                     placeholder="Quantity in Percent"
-                                    value={item.qty_in_percent || ''} // Ensure never undefined
+                                    value={item.qty_in_percent ?? ''} // Ensure never undefined
                                     onChange={(e) => handleChange(e, 'consumptionAdditive', index)}
                                     className="border border-gray-300 p-2 rounded w-full"
                                     step={0.0001}
@@ -979,7 +979,7 @@ const ConsumptionForm = ({ mode = 'add' }) => {
                                     type="number"
                                     name="qty_in_percent"
                                     placeholder="Quantity in Percent"
-                                    value={item.qty_in_percent || ''} // Ensure never undefined
+                                    value={item.qty_in_percent ?? ''} // Ensure never undefined
                                     onChange={(e) => handleChange(e, 'consumptionBaseOil', index)}
                                     className="border border-gray-300 p-2 rounded w-full"
                                     step={0.0001}

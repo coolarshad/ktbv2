@@ -429,6 +429,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                         <div className="px-2 py-1">
                           <p className=' pb-1'>Our Bank Details</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.name}</p>
+                          <p className='uppercase'>{selectedTrade.bank_name_address.address}</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.account_number}</p>
                           <p className='uppercase'>{selectedTrade.bank_name_address.swift_code}</p>
                         </div>
@@ -689,7 +690,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                   </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Bank Name Address</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.bank_name_address.name}</td>
+                      <td className="py-2 px-4 text-gray-800">{selectedTrade.bank_name_address.name}, {selectedTrade.bank_name_address.address}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Account Number</td>

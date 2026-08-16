@@ -17,7 +17,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => {
         <thead>
           <tr>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[50px] max-w-[50px] w-[50px]">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px]">Date</th>
+            <th className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-30 bg-gray-100 min-w-[110px] max-w-[110px] w-[110px] whitespace-nowrap">Date</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-30 bg-gray-100 min-w-[450px] max-w-[450px] w-[450px] border-r border-gray-300">Name</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve</th>
@@ -29,7 +29,7 @@ const ConsumptionFormulaTable = ({ data, onDelete, onView, basePerm }) => {
             data.map((item, index) => (
               <tr key={index}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[50px] max-w-[50px] w-[50px]">{item.id}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px]">{item.date}</td>
+                <td className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[50px] z-10 bg-white min-w-[110px] max-w-[110px] w-[110px] whitespace-nowrap">{item.date}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[160px] z-10 bg-white min-w-[450px] max-w-[450px] w-[450px] border-r border-gray-300">{item.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.remarks}</td>
 

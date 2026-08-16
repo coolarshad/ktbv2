@@ -190,6 +190,18 @@ const ConsumptionFormula = () => {
                   </tr>
                  
                   <tr className="border-b border-gray-200">
+                    <td className="py-2 px-4 text-gray-600 font-medium capitalize">% Cross Check</td>
+                    <td className={`py-2 px-4 font-semibold ${Math.abs(
+                      ((selectedConsumption.consumptionFormulaAdditive || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0) +
+                      (selectedConsumption.consumptionFormulaBaseOil || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0)) - 100
+                    ) < 0.0001 ? 'text-green-600' : 'text-red-600'}`}>
+                      {(
+                        (selectedConsumption.consumptionFormulaAdditive || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0) +
+                        (selectedConsumption.consumptionFormulaBaseOil || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0)
+                      ).toFixed(4)}%
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve</td>
                     <td className="py-2 px-4 text-gray-800">{selectedConsumption.approved? "Yes":"No"}</td>
                   </tr>
@@ -241,6 +253,20 @@ const ConsumptionFormula = () => {
                   )}
                 </tbody>
               </table>
+
+              {/* % Cross Check Summary */}
+              <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded flex justify-between items-center">
+                <span className="font-semibold text-gray-700">% Cross Check Grand Total:</span>
+                <span className={`text-base font-bold ${Math.abs(
+                  ((selectedConsumption.consumptionFormulaAdditive || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0) +
+                  (selectedConsumption.consumptionFormulaBaseOil || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0)) - 100
+                ) < 0.0001 ? 'text-green-600' : 'text-red-600'}`}>
+                  {(
+                    (selectedConsumption.consumptionFormulaAdditive || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0) +
+                    (selectedConsumption.consumptionFormulaBaseOil || []).reduce((sum, item) => sum + (parseFloat(item.qty_in_percent) || 0), 0)
+                  ).toFixed(4)}%
+                </span>
+              </div>
               </div>
              </div>
              {!selectedConsumption.approved && (
