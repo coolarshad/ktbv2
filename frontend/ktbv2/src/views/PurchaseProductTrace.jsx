@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import PurchaseTraceTable from '../components/PurchaseTraceTable';
+import Loading from '../components/Loading';
 
 const PurchaseProductTrace = () => {
     const { user } = useAuth();
@@ -61,7 +62,7 @@ const PurchaseProductTrace = () => {
       { value: 'first_trn', label: 'Starting TRN' },
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

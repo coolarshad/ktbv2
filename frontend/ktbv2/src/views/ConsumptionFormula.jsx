@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
@@ -11,10 +11,12 @@ import MultiUserSelector from "../components/MultiUserSelector";
 import ConsumptionTable from '../components/ConsumptionTable';
 import ConsumptionFormulaTable from '../components/ConsumptionFormulaTable';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
 
 const ConsumptionFormula = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const componentRef = useRef();
     const [consumptionData, setConsumptionData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +30,12 @@ const ConsumptionFormula = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get('/costmgt/consumption-formula/'); 
+          const params = {};
+          const status = searchParams.get('approved') ?? searchParams.get('status');
+          if (status !== null && status !== '') {
+            params.approved = status;
+          }
+          const response = await axios.get('/costmgt/consumption-formula/', { params }); 
           setConsumptionData(response.data);
         } catch (error) {
           setError('Failed to fetch consumption formula data');
@@ -38,7 +45,7 @@ const ConsumptionFormula = () => {
       };
   
       fetchData();
-    }, []);
+    }, [searchParams]);
 
     const handleAddConsumptionClick = () => {
       navigate('/consumption-formula-form');
@@ -110,7 +117,7 @@ const ConsumptionFormula = () => {
    
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

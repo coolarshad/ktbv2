@@ -7,6 +7,7 @@ import KycTable from '../components/KycTable';
 import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
 import { hasPermission } from '../utils';
+import Loading from '../components/Loading';
 
 const Kyc = () => {
   const { user } = useAuth();
@@ -131,7 +132,7 @@ const Kyc = () => {
     { value: 'person2', label: 'Person 2' },
   ];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
   return (

@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import InventoryTable from '../components/InventoryTable';
+import Loading from '../components/Loading';
 
 const Inventory = () => {
     const { user } = useAuth();
@@ -88,7 +89,7 @@ const Inventory = () => {
       setModalData(null); // Clear modal data
     };
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

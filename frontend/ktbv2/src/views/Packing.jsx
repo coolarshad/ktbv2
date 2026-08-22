@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
 
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
@@ -15,6 +16,7 @@ import PackingTable from '../components/PackingTable';
 const Packing = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const componentRef = useRef();
     const [packingData, setPackingData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +30,12 @@ const Packing = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get('/costmgt/packings/'); 
+          const params = {};
+          const status = searchParams.get('approved') ?? searchParams.get('status');
+          if (status !== null && status !== '') {
+            params.approved = status;
+          }
+          const response = await axios.get('/costmgt/packings/', { params }); 
           setPackingData(response.data);
         } catch (error) {
           setError('Failed to fetch packing data');
@@ -38,7 +45,7 @@ const Packing = () => {
       };
   
       fetchData();
-    }, []);
+    }, [searchParams]);
 
     const handleAddPackingClick = () => {
       navigate('/packing-form');
@@ -110,7 +117,7 @@ const Packing = () => {
      
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

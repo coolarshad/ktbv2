@@ -1,5 +1,4 @@
-import NavBar from "../components/NavBar"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +16,7 @@ import Loading from '../components/Loading';
 function PrePayment() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const componentRef = useRef();
 
   const [prePaymentData, setPrePaymentData] = useState([]);
@@ -33,7 +33,12 @@ function PrePayment() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`/trademgt/pre-payments/?page=${currentPage}`);
+      const params = { page: currentPage };
+      const status = searchParams.get('reviewed') ?? searchParams.get('status');
+      if (status !== null && status !== '') {
+        params.reviewed = status;
+      }
+      const response = await axios.get('/trademgt/pre-payments/', { params });
       if (response.data && response.data.results) {
         setPrePaymentData(response.data.results);
         setTotalItems(response.data.count);
@@ -50,7 +55,7 @@ function PrePayment() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, searchParams]);
 
   const handleViewClick = async (id) => {
     try {

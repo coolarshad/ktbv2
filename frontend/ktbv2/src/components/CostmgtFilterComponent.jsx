@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FaDownload, FaUndo, FaSearch } from 'react-icons/fa';
 import axios from '../axiosConfig';
 import { getExportFileName } from '../utils/exportHelper';
@@ -14,16 +15,35 @@ const CostMgtFilterComponent = ({
   fileName,
   exportFileName,
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const getInitialStatus = () => {
+    if (!statusField) return '';
+    const fromParam = searchParams.get(statusField) ?? searchParams.get('status');
+    return fromParam !== null ? fromParam : '';
+  };
+
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [salesChecked, setSalesChecked] = useState(false);
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
-  const [statusValue, setStatusValue] = useState('');
+  const [statusValue, setStatusValue] = useState(getInitialStatus);
 
   const isFirstRender = useRef(true);
   const isResetting = useRef(false);
+
+  // Sync statusValue if searchParams in URL change externally
+  useEffect(() => {
+    if (statusField) {
+      const fromParam = searchParams.get(statusField) ?? searchParams.get('status');
+      const nextVal = fromParam !== null ? fromParam : '';
+      if (nextVal !== statusValue) {
+        setStatusValue(nextVal);
+      }
+    }
+  }, [searchParams, statusField]);
 
   // Debounced search trigger
   useEffect(() => {
@@ -85,6 +105,7 @@ const CostMgtFilterComponent = ({
     setPurchaseChecked(false);
     setCancelChecked(false);
     setStatusValue('');
+    setSearchParams({}, { replace: true });
 
     try {
       const response = await axios.get(apiEndpoint, { params: { ...extraParams } });

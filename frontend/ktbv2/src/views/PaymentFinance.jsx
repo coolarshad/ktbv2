@@ -1,7 +1,6 @@
-import NavBar from "../components/NavBar"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
-import React, { useEffect, useState,useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
@@ -17,6 +16,7 @@ import Loading from '../components/Loading';
 function PaymentFinance() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const componentRef = useRef();
   const [pfData, setPFData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +32,12 @@ function PaymentFinance() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`/trademgt/payment-finances/?page=${currentPage}`);
+      const params = { page: currentPage };
+      const status = searchParams.get('reviewed') ?? searchParams.get('status');
+      if (status !== null && status !== '') {
+        params.reviewed = status;
+      }
+      const response = await axios.get('/trademgt/payment-finances/', { params });
       if (response.data && response.data.results) {
         setPFData(response.data.results);
         setTotalItems(response.data.count);
@@ -49,7 +54,7 @@ function PaymentFinance() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, searchParams]);
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this Payment/Finance?');

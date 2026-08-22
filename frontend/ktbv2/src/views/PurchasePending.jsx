@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import PurchasePendingTable from '../components/PurchasePendingTable';
+import Loading from '../components/Loading';
 
 
 const PurchasePending = () => {
@@ -64,7 +65,7 @@ const PurchasePending = () => {
       { value: 'company', label: 'Company' },
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

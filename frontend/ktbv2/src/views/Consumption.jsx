@@ -2,20 +2,22 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
 import ConsumptionTable from '../components/ConsumptionTable';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
 
 const Consumption = () => {
-    const { user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const componentRef = useRef();
   const [consumptionData, setConsumptionData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,7 +28,12 @@ const Consumption = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('/costmgt/consumption/');
+        const params = {};
+        const status = searchParams.get('approved') ?? searchParams.get('status');
+        if (status !== null && status !== '') {
+          params.approved = status;
+        }
+        const response = await axios.get('/costmgt/consumption/', { params });
         setConsumptionData(response.data);
       } catch (error) {
         setError('Failed to fetch consumptions data');
@@ -36,7 +43,7 @@ const Consumption = () => {
     };
 
     fetchData();
-  }, []);
+  }, [searchParams]);
 
   const handleAddConsumptionClick = () => {
     navigate('/consumption-form');
@@ -107,7 +114,7 @@ const Consumption = () => {
 
   ];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

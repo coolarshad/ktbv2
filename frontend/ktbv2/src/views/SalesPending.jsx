@@ -7,6 +7,7 @@ import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import SalesPendingTable from '../components/SalesPendingTable';
 import Modal from '../components/Modal';
+import Loading from '../components/Loading';
 
 const SalesPending = () => {
     const { user } = useAuth();
@@ -65,7 +66,7 @@ const SalesPending = () => {
       { value: 'company', label: 'Company' },
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

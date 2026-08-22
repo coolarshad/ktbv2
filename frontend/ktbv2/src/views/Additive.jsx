@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
 
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
@@ -15,6 +16,7 @@ import AdditiveTable from '../components/AdditiveTable';
 const Additive = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const componentRef = useRef();
     const [additiveData, setAdditiveData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +30,12 @@ const Additive = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get('/costmgt/additives/'); 
+          const params = {};
+          const status = searchParams.get('approved') ?? searchParams.get('status');
+          if (status !== null && status !== '') {
+            params.approved = status;
+          }
+          const response = await axios.get('/costmgt/additives/', { params }); 
           setAdditiveData(response.data);
         } catch (error) {
           setError('Failed to fetch additive data');
@@ -38,7 +45,7 @@ const Additive = () => {
       };
   
       fetchData();
-    }, []);
+    }, [searchParams]);
 
     const handleAddAdditiveClick = () => {
       navigate('/additive-form');
@@ -112,7 +119,7 @@ const Additive = () => {
    
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

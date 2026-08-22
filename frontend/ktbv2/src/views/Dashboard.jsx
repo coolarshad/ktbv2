@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import {
@@ -89,7 +90,7 @@ export default function Dashboard() {
   const consumptionRecent = data?.cost_management?.recent_consumptions || [];
 
   const formatCurrency = (val) => {
-    return '$' + (val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   return (
@@ -193,118 +194,49 @@ export default function Dashboard() {
             data={tradeMetrics.trades || 0}
             icon={<FaChartLine className="text-blue-500" size={24} />}
             color="bg-blue-50"
+            to="/trade-approved"
+            toApproved="/trade-approved"
+            toPending="/trade-approval"
           />
           <StatCard
             title="Pre-Sales"
             data={tradeMetrics.presales || 0}
             icon={<FaClipboardList className="text-indigo-500" size={24} />}
             color="bg-indigo-50"
+            to="/pre-sale-purchase"
+            toApproved="/pre-sale-purchase?approved=true"
+            toPending="/pre-sale-purchase?approved=false"
           />
           <StatCard
             title="Pre Payment"
             data={tradeMetrics.pre_payment || 0}
             icon={<FaCreditCard className="text-cyan-500" size={24} />}
             color="bg-cyan-50"
+            to="/pre-payment"
+            toApproved="/pre-payment?reviewed=true"
+            toPending="/pre-payment?reviewed=false"
           />
           <StatCard
             title="Sales Purchases"
             data={tradeMetrics.sales_purchases || 0}
             icon={<FaFileInvoiceDollar className="text-teal-500" size={24} />}
             color="bg-teal-50"
+            to="/sales-purchases"
+            toApproved="/sales-purchases?reviewed=true"
+            toPending="/sales-purchases?reviewed=false"
           />
           <StatCard
             title="Payment Finance"
             data={tradeMetrics.payment_finance || 0}
             icon={<FaMoneyCheckAlt className="text-emerald-500" size={24} />}
             color="bg-emerald-50"
+            to="/payment-finance"
+            toApproved="/payment-finance?reviewed=true"
+            toPending="/payment-finance?reviewed=false"
           />
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Recent Trades Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
-              <h3 className="text-lg font-semibold text-gray-800">Recent Trades</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-500 text-sm">
-                    <th className="p-4 font-medium">TRN</th>
-                    <th className="p-4 font-medium">Type</th>
-                    <th className="p-4 font-medium">Company</th>
-                    <th className="p-4 font-medium">Date</th>
-                    <th className="p-4 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tradeRecent.map((trade, i) => (
-                    <tr key={i} className="border-b border-gray-50 hover:bg-blue-50 transition-colors">
-                      <td className="p-4 text-gray-800 font-medium">{trade.trn}</td>
-                      <td className="p-4">
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${trade.trade_type === 'Sales' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                          {trade.trade_type}
-                        </span>
-                      </td>
-                      <td className="p-4 text-gray-600">{trade.company}</td>
-                      <td className="p-4 text-gray-500 text-sm">{trade.trd}</td>
-                      <td className="p-4">
-                        {trade.approved ?
-                          <span className="flex items-center text-green-600 text-sm"><FaCheckCircle className="mr-1" /> Approved</span> :
-                          <span className="flex items-center text-orange-500 text-sm"><FaClock className="mr-1" /> Pending</span>
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                  {tradeRecent.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="p-8 text-center text-gray-400">No recent trades found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
 
-          {/* Recent PreSales Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
-              <h3 className="text-lg font-semibold text-gray-800">Recent Pre-Sales</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-500 text-sm">
-                    <th className="p-4 font-medium">ID</th>
-                    <th className="p-4 font-medium">TRN Reference</th>
-                    <th className="p-4 font-medium">Date</th>
-                    <th className="p-4 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {presaleRecent.map((presale, i) => (
-                    <tr key={i} className="border-b border-gray-50 hover:bg-indigo-50 transition-colors">
-                      <td className="p-4 text-gray-800 font-medium">#{presale.id}</td>
-                      <td className="p-4 text-gray-600">{presale.trn__trn}</td>
-                      <td className="p-4 text-gray-500 text-sm">{presale.date}</td>
-                      <td className="p-4">
-                        {presale.approved ?
-                          <span className="flex items-center text-green-600 text-sm"><FaCheckCircle className="mr-1" /> Approved</span> :
-                          <span className="flex items-center text-orange-500 text-sm"><FaClock className="mr-1" /> Pending</span>
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                  {presaleRecent.length === 0 && (
-                    <tr>
-                      <td colSpan="4" className="p-8 text-center text-gray-400">No recent pre-sales found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
 
         {/* Recent Inventory Table */}
         <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
@@ -360,128 +292,86 @@ export default function Dashboard() {
             data={costMetrics.products || 0}
             icon={<FaBoxOpen className="text-purple-500" size={24} />}
             color="bg-purple-50"
+            to="/final-products"
+            toApproved="/final-products?approved=true"
+            toPending="/final-products?approved=false"
           />
           <StatCard
             title="Consumptions"
             data={costMetrics.consumptions || 0}
             icon={<FaBox className="text-pink-500" size={24} />}
             color="bg-pink-50"
+            to="/consumption-formula"
+            toApproved="/consumption-formula?approved=true"
+            toPending="/consumption-formula?approved=false"
           />
           <StatCard
             title="Additives"
             data={costMetrics.additives || 0}
             icon={<FaFlask className="text-green-500" size={24} />}
             color="bg-green-50"
+            to="/additives"
+            toApproved="/additives?approved=true"
+            toPending="/additives?approved=false"
           />
           <StatCard
             title="Raw Materials"
             data={costMetrics.raw_materials || 0}
             icon={<FaVial className="text-amber-500" size={24} />}
             color="bg-amber-50"
+            to="/raw-materials"
+            toApproved="/raw-materials?approved=true"
+            toPending="/raw-materials?approved=false"
           />
           <StatCard
             title="Packings"
             data={costMetrics.packings || 0}
             icon={<FaBox className="text-orange-500" size={24} />}
             color="bg-orange-50"
+            to="/packings"
+            toApproved="/packings?approved=true"
+            toPending="/packings?approved=false"
           />
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Recent Final Products */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
-              <h3 className="text-lg font-semibold text-gray-800">Recent Final Products</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-500 text-sm">
-                    <th className="p-4 font-medium">ID</th>
-                    <th className="p-4 font-medium">Date</th>
-                    <th className="p-4 font-medium">Total Qty</th>
-                    <th className="p-4 font-medium">Total CFR</th>
-                    <th className="p-4 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {productRecent.map((activity, i) => (
-                    <tr key={i} className="border-b border-gray-50 hover:bg-purple-50 transition-colors">
-                      <td className="p-4 text-gray-800 font-medium">#{activity.id}</td>
-                      <td className="p-4 text-gray-500 text-sm">{activity.date}</td>
-                      <td className="p-4 text-gray-600">{activity.total_qty}</td>
-                      <td className="p-4 text-gray-800 font-medium">${activity.total_cfr_pricing}</td>
-                      <td className="p-4">
-                        {activity.approved ?
-                          <span className="flex items-center text-green-600 text-sm"><FaCheckCircle className="mr-1" /> Approved</span> :
-                          <span className="flex items-center text-orange-500 text-sm"><FaClock className="mr-1" /> Pending</span>
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                  {productRecent.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="p-8 text-center text-gray-400">No recent final products found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
 
-          {/* Recent Consumptions */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
-              <h3 className="text-lg font-semibold text-gray-800">Recent Consumptions</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-500 text-sm">
-                    <th className="p-4 font-medium">ID</th>
-                    <th className="p-4 font-medium">Reference</th>
-                    <th className="p-4 font-medium">Date</th>
-                    <th className="p-4 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {consumptionRecent.map((cons, i) => (
-                    <tr key={i} className="border-b border-gray-50 hover:bg-pink-50 transition-colors">
-                      <td className="p-4 text-gray-800 font-medium">#{cons.id}</td>
-                      <td className="p-4 text-gray-600">{cons.ref}</td>
-                      <td className="p-4 text-gray-500 text-sm">{cons.date}</td>
-                      <td className="p-4">
-                        {cons.approved ?
-                          <span className="flex items-center text-green-600 text-sm"><FaCheckCircle className="mr-1" /> Approved</span> :
-                          <span className="flex items-center text-orange-500 text-sm"><FaClock className="mr-1" /> Pending</span>
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                  {consumptionRecent.length === 0 && (
-                    <tr>
-                      <td colSpan="4" className="p-8 text-center text-gray-400">No recent consumptions found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
       </div>
 
     </div>
   );
 }
 
-function StatCard({ title, data, icon, color }) {
+function StatCard({ title, data, icon, color, to, toApproved, toPending }) {
+  const navigate = useNavigate();
   const value = typeof data === 'object' ? data.total : data;
   const approved = typeof data === 'object' ? data.approved : null;
   const pending = typeof data === 'object' ? data.pending : null;
 
+  const handleCardClick = () => {
+    if (to) {
+      navigate(to);
+    }
+  };
+
+  const handleApprClick = (e) => {
+    e.stopPropagation();
+    if (toApproved) {
+      navigate(toApproved);
+    }
+  };
+
+  const handlePendingClick = (e) => {
+    e.stopPropagation();
+    if (toPending) {
+      navigate(toPending);
+    }
+  };
+
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col justify-between h-full">
+    <div
+      onClick={handleCardClick}
+      className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col justify-between h-full ${to ? 'cursor-pointer' : ''}`}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${color} group-hover:scale-110 transition-transform`}>
           {icon}
@@ -491,9 +381,23 @@ function StatCard({ title, data, icon, color }) {
         <p className="text-gray-500 text-sm font-medium mb-1">{title}</p>
         <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
         {approved !== null && (
-          <div className="flex items-center space-x-3 mt-2 text-xs font-medium">
-            <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{approved} Appr</span>
-            <span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">{pending} Pend</span>
+          <div className="flex items-center space-x-2 mt-3 text-xs font-medium">
+            <span
+              onClick={handleApprClick}
+              title="View Approved / Reviewed"
+              className={`text-green-700 bg-green-50 hover:bg-green-100 border border-green-200/60 px-2.5 py-1 rounded-full transition-all duration-200 flex items-center gap-1.5 select-none ${toApproved ? 'cursor-pointer hover:scale-105 active:scale-95 shadow-xs' : ''}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              {approved} Appr
+            </span>
+            <span
+              onClick={handlePendingClick}
+              title="View Unapproved / Unreviewed"
+              className={`text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200/60 px-2.5 py-1 rounded-full transition-all duration-200 flex items-center gap-1.5 select-none ${toPending ? 'cursor-pointer hover:scale-105 active:scale-95 shadow-xs' : ''}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+              {pending} Unappr
+            </span>
           </div>
         )}
       </div>

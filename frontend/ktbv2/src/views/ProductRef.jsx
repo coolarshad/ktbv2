@@ -5,8 +5,8 @@ import Pagination from '../components/Pagination';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
-import PurchaseTraceTable from '../components/PurchaseTraceTable';
 import ProductRefTable from '../components/ProductRefTable';
+import Loading from '../components/Loading';
 
 const ProductRef = () => {
     const { user } = useAuth();
@@ -62,7 +62,7 @@ const ProductRef = () => {
       { value: 'trade_type', label: 'Trade Type' },
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

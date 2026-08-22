@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
 import PreSPTable from "../components/PreSPTable"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from "../components/FilterComponent";
 import { dateFormatter } from "../dateUtils";
@@ -14,6 +14,7 @@ import Loading from "../components/Loading";
 function PreSalePurchase() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
  
   const [preSPData, setPreSPData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,7 +24,12 @@ function PreSalePurchase() {
 
   const fetchPreSPData = async () => {
     try {
-      const response = await axios.get(`/trademgt/pre-sales-purchases/?page=${currentPage}`);
+      const params = { page: currentPage };
+      const status = searchParams.get('approved') ?? searchParams.get('status');
+      if (status !== null && status !== '') {
+        params.approved = status;
+      }
+      const response = await axios.get('/trademgt/pre-sales-purchases/', { params });
       if (response.data && response.data.results) {
         setPreSPData(response.data.results);
         setTotalItems(response.data.count);
@@ -40,7 +46,7 @@ function PreSalePurchase() {
 
   useEffect(() => {
     fetchPreSPData();
-  }, [currentPage]);
+  }, [currentPage, searchParams]);
 
   const handleAddPreSPClick = () => {
     navigate('/pre-sale-purchase-form');

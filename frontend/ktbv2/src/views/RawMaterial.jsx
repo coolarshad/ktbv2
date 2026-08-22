@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
 
 import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
@@ -14,6 +15,7 @@ import RawMaterialTable from '../components/RawMaterialTable';
 const RawMaterial = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const componentRef = useRef();
     const [materialData, setMaterialData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +29,12 @@ const RawMaterial = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get('/costmgt/raw-materials/'); 
+          const params = {};
+          const status = searchParams.get('approved') ?? searchParams.get('status');
+          if (status !== null && status !== '') {
+            params.approved = status;
+          }
+          const response = await axios.get('/costmgt/raw-materials/', { params }); 
           setMaterialData(response.data);
         } catch (error) {
           setError('Failed to fetch raw material data');
@@ -37,7 +44,7 @@ const RawMaterial = () => {
       };
   
       fetchData();
-    }, []);
+    }, [searchParams]);
 
     const handleAddMaterialClick = () => {
       navigate('/raw-material-form');
@@ -109,7 +116,7 @@ const RawMaterial = () => {
     
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from "react-router-dom";
 import axios from '../axiosConfig';
 import { toast } from "react-toastify";
+import Loading from '../components/Loading';
 
 const UserForm = ({ mode }) => {
   const { user } = useAuth();
@@ -177,7 +178,7 @@ const UserForm = ({ mode }) => {
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-gray-500">Loading user data...</p>;
+  if (loading) return <Loading message="Loading user data..." />;
 
   const allSelectedGlobally = allPermissions.length > 0 && allPermissions.every(p => selectedPermissions.includes(p.id));
 

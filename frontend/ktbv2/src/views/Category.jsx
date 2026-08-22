@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from '../components/FilterComponent';
 import CostMgtFilterComponent from '../components/CostmgtFilterComponent';
+import Loading from '../components/Loading';
 
 import Modal from '../components/Modal';
 
@@ -90,7 +91,7 @@ const Category = () => {
     { value: 'name', label: 'Name' },
   ];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
 
   return (

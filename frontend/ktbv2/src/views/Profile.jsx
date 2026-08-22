@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
+import Loading from '../components/Loading';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -75,7 +76,7 @@ export default function Profile() {
     }
   };
 
-  if (loading) return <div className="p-6">Loading profile...</div>;
+  if (loading) return <Loading message="Loading profile..." />;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">

@@ -9,6 +9,7 @@ import Modal from '../components/Modal';
 import MultiUserSelector from "../components/MultiUserSelector";
 import ProductFormulaTable from '../components/ProductFormulaTable';
 import ReactToPrint from 'react-to-print';
+import Loading from '../components/Loading';
  
 const ProductFormula = () => {
     const { user } = useAuth();
@@ -108,7 +109,7 @@ const ProductFormula = () => {
    
     ];
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
     const indexOfLastItem = currentPage * 50;

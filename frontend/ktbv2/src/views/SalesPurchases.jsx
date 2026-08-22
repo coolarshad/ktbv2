@@ -1,6 +1,5 @@
-import NavBar from "../components/NavBar"
 import SPTable from "../components/SPTable"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +17,7 @@ function SalesPurchases() {
   const { user } = useAuth();
   const componentRef = useRef();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [spData, setSPData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -32,7 +32,12 @@ function SalesPurchases() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`/trademgt/sales-purchases/?page=${currentPage}`);
+      const params = { page: currentPage };
+      const status = searchParams.get('reviewed') ?? searchParams.get('status');
+      if (status !== null && status !== '') {
+        params.reviewed = status;
+      }
+      const response = await axios.get('/trademgt/sales-purchases/', { params });
       if (response.data && response.data.results) {
         setSPData(response.data.results);
         setTotalItems(response.data.count);
@@ -49,7 +54,7 @@ function SalesPurchases() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, searchParams]);
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this Sale/Purchase?');
