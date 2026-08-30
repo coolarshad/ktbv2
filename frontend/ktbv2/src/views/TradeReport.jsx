@@ -161,6 +161,7 @@ const TradeReport = () => {
                                     <th className="px-4 py-2 border-b text-left">Product Name</th>
                                     <th className="px-4 py-2 border-b text-left">Product Name in BL</th>
                                     <th className="px-4 py-2 border-b text-left">LOI</th>
+                                    <th className="px-4 py-2 border-b text-left">Specs</th>
                                     <th className="px-4 py-2 border-b text-left">HS Code</th>
                                     <th className="px-4 py-2 border-b text-left">Markings</th>
                                     <th className="px-4 py-2 border-b text-left">Total Contract Qty</th>
@@ -178,8 +179,10 @@ const TradeReport = () => {
                                             <td className="px-4 py-2 border-b">{product.product_code || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.productName.name || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.product_name_for_client || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{<p className='text-sm'><a className="text-blue-800 border px-2 hover:underline" href={product.loi?.startsWith('http') ? product.loi : `${BACKEND_URL}${product.loi?.startsWith('/') ? '' : '/'}${product.loi}`} target="_blank"
-                                                rel="noopener noreferrer">LOI</a></p> || 'N/A'}</td>
+                                            <td className="px-4 py-2 border-b">{product.loi ? <p className='text-sm'><a className="text-blue-800 border px-2 hover:underline" href={product.loi?.startsWith('http') ? product.loi : `${BACKEND_URL}${product.loi?.startsWith('/') ? '' : '/'}${product.loi}`} target="_blank"
+                                                rel="noopener noreferrer">LOI</a></p> : 'N/A'}</td>
+                                            <td className="px-4 py-2 border-b">{product.specs ? <p className='text-sm'><a className="text-blue-800 border px-2 hover:underline" href={product.specs?.startsWith('http') ? product.specs : `${BACKEND_URL}${product.specs?.startsWith('/') ? '' : '/'}${product.specs}`} target="_blank"
+                                                rel="noopener noreferrer">Specs</a></p> : 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.hs_code || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.markings_in_packaging || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.total_contract_qty || 'N/A'}</td>
@@ -192,7 +195,7 @@ const TradeReport = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td className="px-4 py-2 border-b text-center" colSpan={11}>
+                                        <td className="px-4 py-2 border-b text-center" colSpan={13}>
                                             No trade products available.
                                         </td>
                                     </tr>

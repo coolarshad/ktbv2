@@ -83,6 +83,7 @@ class TradeProduct(models.Model):
     product_name = models.CharField(_("product_name"), max_length=100)
     product_name_for_client=models.CharField(_("product_name_for_client"), max_length=100)
     loi=models.FileField(_("loi"), upload_to='uploads/lois', max_length=100)
+    specs=models.FileField(_("specs"), upload_to='uploads/specs', max_length=100, null=True, blank=True)
     hs_code=models.CharField(_("hs_code"), max_length=100)
     total_contract_qty=models.FloatField(_("total_contract_qty"))
     total_contract_qty_unit=models.CharField(_("total_contract_qty_unit"), max_length=100)

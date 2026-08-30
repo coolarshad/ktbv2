@@ -188,6 +188,7 @@ class TradeView(APIView):
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
             loi_file = request.FILES.get(f'tradeProducts[{i}].loi')
+            specs_file = request.FILES.get(f'tradeProducts[{i}].specs') or ""
             product_name_for_client = data.get(f'tradeProducts[{i}].product_name_for_client')
             if product_name_for_client and product_name_for_client.lower() == 'na':
                 loi_file = ""
@@ -200,6 +201,7 @@ class TradeView(APIView):
                 'product_name': data.get(f'tradeProducts[{i}].product_name'),
                 'product_name_for_client': product_name_for_client,
                 'loi': loi_file,  # Handle binary data as needed
+                'specs': specs_file,
                 'hs_code': data.get(f'tradeProducts[{i}].hs_code'),
                 'total_contract_qty': data.get(f'tradeProducts[{i}].total_contract_qty'),
                 'total_contract_qty_unit': data.get(f'tradeProducts[{i}].total_contract_qty_unit'),
@@ -433,14 +435,26 @@ class TradeView(APIView):
         i = 0
         while f'tradeProducts[{i}].product_code' in data:
             loi_file = request.FILES.get(f'tradeProducts[{i}].loi')
+            specs_file = request.FILES.get(f'tradeProducts[{i}].specs')
             product_name_for_client=data.get(f'tradeProducts[{i}].product_name_for_client')
-            # If no new file is provided, use the existing file
-            if not loi_file:
+            
+            existing_trade_product = None
+            if not loi_file or not specs_file:
                 existing_trade_product = TradeProduct.objects.filter(trade=trade, product_code=data.get(f'tradeProducts[{i}].product_code')).first()
+
+            # If no new LOI file is provided, use the existing file
+            if not loi_file:
                 if existing_trade_product and existing_trade_product.loi:
                     loi_file = existing_trade_product.loi  # retain existing file
                 else:
                     loi_file = ""
+
+            # If no new Specs file is provided, use the existing file
+            if not specs_file:
+                if existing_trade_product and existing_trade_product.specs:
+                    specs_file = existing_trade_product.specs  # retain existing file
+                else:
+                    specs_file = ""
 
             if product_name_for_client and product_name_for_client.lower() == 'na':
                 loi_file = ""
@@ -451,6 +465,7 @@ class TradeView(APIView):
                 'product_name': data.get(f'tradeProducts[{i}].product_name'),
                 'product_name_for_client': product_name_for_client,
                 'loi': loi_file,  # Handle binary data as needed
+                'specs': specs_file,
                 'hs_code': data.get(f'tradeProducts[{i}].hs_code'),
                 'total_contract_qty': data.get(f'tradeProducts[{i}].total_contract_qty'),
                 'total_contract_qty_unit': data.get(f'tradeProducts[{i}].total_contract_qty_unit'),

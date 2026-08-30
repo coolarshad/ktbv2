@@ -4,7 +4,7 @@ import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import debounce from 'lodash.debounce';
-import { capitalizeKey } from '../utils';
+import { capitalizeKey, BASE_URL } from '../utils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 
@@ -68,6 +68,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 product_name: '',
                 product_name_for_client: '',
                 loi: null,
+                specs: null,
                 hs_code: '',
                 total_contract_qty: '',
                 total_contract_qty_unit: '',
@@ -541,6 +542,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     product_name: '',
                     product_name_for_client: '',
                     loi: null,
+                    specs: null,
                     hs_code: '',
                     total_contract_qty: '',
                     total_contract_qty_unit: '',
@@ -656,7 +658,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
         console.log("Submitting formData:", formData);  // Debug here
         // Define fields to skip validation for
-        const skipValidation = ['loi', 'relatedTrades', 'approved_by', 'ref_balance'];
+        const skipValidation = ['loi', 'specs', 'relatedTrades', 'approved_by', 'ref_balance'];
 
         // Trade category validation rules
         const validCategories = {
@@ -1255,7 +1257,35 @@ const TradeForm = ({ mode = 'add' }) => {
                                         {validationErrors[`tradeProducts[${index}].loi`]}
                                     </p>
                                 )}
-                                {/* {product.loi && <span className="block mt-2 text-gray-600">{product.loi}</span>} */}
+                                {product.loi && typeof product.loi === 'string' && (
+                                    <a
+                                        href={product.loi.startsWith('http') ? product.loi : `${BASE_URL}${product.loi.startsWith('/') ? '' : '/'}${product.loi}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block mt-1 text-xs text-blue-600 hover:underline"
+                                    >
+                                        View Current LOI
+                                    </a>
+                                )}
+                            </div>
+                            <div>
+                                <label htmlFor="specs" className="block text-sm font-medium text-gray-700">Specs</label>
+                                <input
+                                    type="file"
+                                    name="specs"
+                                    onChange={(e) => handleChange(e, index, 'products')}
+                                    className="border border-gray-300 p-2 rounded w-full"
+                                />
+                                {product.specs && typeof product.specs === 'string' && (
+                                    <a
+                                        href={product.specs.startsWith('http') ? product.specs : `${BASE_URL}${product.specs.startsWith('/') ? '' : '/'}${product.specs}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block mt-1 text-xs text-blue-600 hover:underline"
+                                    >
+                                        View Current Specs
+                                    </a>
+                                )}
                             </div>
                             <div>
                                 <label htmlFor="ref_product_code" className="block text-sm font-medium text-gray-700">Reference Product Code</label>

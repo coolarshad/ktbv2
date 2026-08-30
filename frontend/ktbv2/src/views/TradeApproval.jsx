@@ -421,6 +421,21 @@ function TradeApproval() {
                         </span>
                       </div>
                     )}
+                    {product?.specs && (
+                      <div className="flex flex-col">
+                        <span className="font-medium">Specs:</span>
+                        <span>
+                          <a
+                            href={product.specs?.startsWith('http') ? product.specs : `${BACKEND_URL}${product.specs?.startsWith('/') ? '' : '/'}${product.specs}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-800 border px-2 hover:underline"
+                          >
+                            View
+                          </a>
+                        </span>
+                      </div>
+                    )}
                     <div className="flex flex-col">
                       <span className="font-medium">HS Code:</span>
                       <span>{product.hs_code}</span>
