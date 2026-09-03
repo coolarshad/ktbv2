@@ -532,7 +532,12 @@ class ExportConsumptionExcelView(APIView):
     def get(self, request, *args, **kwargs):
         from costmgt.models import Consumption
         from costmgt.serializers import ConsumptionSerializer
-        objs = Consumption.objects.all()
+        from costmgt.filters import ConsumptionFilter
+        from accounts.mixins import get_authorized_queryset
+
+        queryset = get_authorized_queryset(request, Consumption.objects.all())
+        filterset = ConsumptionFilter(request.GET, queryset=queryset)
+        objs = filterset.qs if filterset.is_valid() else queryset
         serializer = ConsumptionSerializer(objs, many=True)
         data = self.prepare_excel_data(serializer.data)
        
@@ -618,7 +623,12 @@ class ExportConsumptionFormulaExcelView(APIView):
     def get(self, request, *args, **kwargs):
         from costmgt.models import ConsumptionFormula
         from costmgt.serializers import ConsumptionFormulaSerializer
-        objs = ConsumptionFormula.objects.all()
+        from costmgt.filters import ConsumptionFormulaFilter
+        from accounts.mixins import get_authorized_queryset
+
+        queryset = get_authorized_queryset(request, ConsumptionFormula.objects.all())
+        filterset = ConsumptionFormulaFilter(request.GET, queryset=queryset)
+        objs = filterset.qs if filterset.is_valid() else queryset
         serializer = ConsumptionFormulaSerializer(objs, many=True)
         data = self.prepare_excel_data(serializer.data)
         df = pd.DataFrame(data)
@@ -670,7 +680,12 @@ class ExportProductFormulaExcelView(APIView):
     def get(self, request, *args, **kwargs):
         from costmgt.models import ProductFormula
         from costmgt.serializers import ProductFormulaSerializer
-        objs = ProductFormula.objects.all()
+        from costmgt.filters import ProductFormulaFilter
+        from accounts.mixins import get_authorized_queryset
+
+        queryset = get_authorized_queryset(request, ProductFormula.objects.all())
+        filterset = ProductFormulaFilter(request.GET, queryset=queryset)
+        objs = filterset.qs if filterset.is_valid() else queryset
         serializer = ProductFormulaSerializer(objs, many=True)
         data = self.prepare_excel_data(serializer.data)
         df = pd.DataFrame(data)
@@ -712,7 +727,12 @@ class ExportFinalProductExcelView(APIView):
     def get(self, request, *args, **kwargs):
         from costmgt.models import FinalProduct
         from costmgt.serializers import FinalProductSerializer
-        objs = FinalProduct.objects.all()
+        from costmgt.filters import FinalProductFilter
+        from accounts.mixins import get_authorized_queryset
+
+        queryset = get_authorized_queryset(request, FinalProduct.objects.all())
+        filterset = FinalProductFilter(request.GET, queryset=queryset)
+        objs = filterset.qs if filterset.is_valid() else queryset
         serializer = FinalProductSerializer(objs, many=True)
         data = self.prepare_excel_data(serializer.data)
         df = pd.DataFrame(data)

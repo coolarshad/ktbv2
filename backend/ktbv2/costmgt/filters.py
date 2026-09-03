@@ -213,12 +213,9 @@ class CategoryFilter(SearchableFilterSet):
         return queryset.filter(q_objects).distinct()
 
 class ConsumptionFilter(SearchableFilterSet):
-    date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')  # Replace `date_field` with the actual field name
-    date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')    # Replace `date_field` with the actual field name
-    # sales = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-    # purchase = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-    # cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-   
+    date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')
+    date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')
+    name = django_filters.CharFilter(method='filter_name', label='Name')
 
     class Meta:
         model = Consumption
@@ -230,14 +227,128 @@ class ConsumptionFilter(SearchableFilterSet):
             'approved': ['exact'],
         }
 
+    def filter_name(self, queryset, name, value):
+        if not value:
+            return queryset
+        try:
+            from costmgt.models import ConsumptionFormula
+            cf_ids = list(ConsumptionFormula.objects.filter(
+                Q(name__icontains=value) | Q(ref__icontains=value)
+            ).values_list('id', flat=True))
+            cf_ids_str = [str(x) for x in cf_ids]
+            return queryset.filter(
+                Q(name__in=cf_ids_str) | Q(name__icontains=value) | Q(alias__icontains=value)
+            )
+        except Exception:
+            return queryset.filter(Q(name__icontains=value) | Q(alias__icontains=value))
+
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        val_float = None
+        try:
+            val_float = float(value.strip())
+        except ValueError:
+            pass
+
+        q_objects = Q()
+        model = self.Meta.model
+        lookups = get_searchable_lookups(model)
+
+        for lookup in lookups:
+            q_objects |= Q(**{f"{lookup}__icontains": value})
+
+        # Local numeric/date/ID fields generically
+        for field in model._meta.get_fields():
+            if field.one_to_many or field.many_to_many:
+                continue
+            if field.is_relation:
+                continue
+
+            if field.primary_key or isinstance(field, (
+                models.AutoField, models.IntegerField, models.BigIntegerField, models.SmallIntegerField,
+                models.FloatField, models.DecimalField,
+                models.DateField, models.DateTimeField
+            )):
+                q_objects |= Q(**{f"{field.name}__icontains": value.strip()})
+                if val_float is not None and isinstance(field, (models.FloatField, models.DecimalField)):
+                    q_objects |= Q(**{f"{field.name}": val_float})
+
+        # 1. Resolve Formula Name / Formula Ref to Consumption.name
+        try:
+            from costmgt.models import ConsumptionFormula
+            cf_ids = list(ConsumptionFormula.objects.filter(
+                Q(name__icontains=value) | Q(ref__icontains=value)
+            ).values_list('id', flat=True))
+            cf_ids_str = [str(x) for x in cf_ids]
+            if cf_ids_str:
+                q_objects |= Q(name__in=cf_ids_str)
+        except Exception:
+            pass
+
+        # 2. Additives in ConsumptionAdditive
+        try:
+            from costmgt.models import AdditiveCategory, Additive
+            add_cat_ids = list(AdditiveCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
+            add_cat_str_ids = [str(x) for x in add_cat_ids]
+
+            additive_ids = list(Additive.objects.filter(
+                Q(category__name__icontains=value) | Q(name__name__icontains=value)
+            ).values_list('id', flat=True))
+            additive_str_ids = [str(x) for x in additive_ids]
+
+            if add_cat_str_ids:
+                q_objects |= Q(consumptionadditive__name__in=add_cat_str_ids)
+            if additive_str_ids:
+                q_objects |= Q(consumptionadditive__sub_name__in=additive_str_ids)
+
+            q_objects |= Q(consumptionadditive__qty_in_percent__icontains=value)
+            q_objects |= Q(consumptionadditive__qty_in_litre__icontains=value)
+            q_objects |= Q(consumptionadditive__rate__icontains=value)
+            q_objects |= Q(consumptionadditive__value__icontains=value)
+            if val_float is not None:
+                q_objects |= Q(consumptionadditive__qty_in_percent=val_float)
+                q_objects |= Q(consumptionadditive__qty_in_litre=val_float)
+                q_objects |= Q(consumptionadditive__rate=val_float)
+                q_objects |= Q(consumptionadditive__value=val_float)
+        except Exception:
+            pass
+
+        # 3. Base Oils in ConsumptionBaseOil
+        try:
+            from costmgt.models import RawCategory, RawMaterial
+            raw_cat_ids = list(RawCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
+            raw_cat_str_ids = [str(x) for x in raw_cat_ids]
+
+            raw_material_ids = list(RawMaterial.objects.filter(
+                Q(category__name__icontains=value) | Q(name__name__icontains=value)
+            ).values_list('id', flat=True))
+            raw_material_str_ids = [str(x) for x in raw_material_ids]
+
+            if raw_cat_str_ids:
+                q_objects |= Q(consumptionbaseoil__name__in=raw_cat_str_ids)
+            if raw_material_str_ids:
+                q_objects |= Q(consumptionbaseoil__sub_name__in=raw_material_str_ids)
+
+            q_objects |= Q(consumptionbaseoil__qty_in_percent__icontains=value)
+            q_objects |= Q(consumptionbaseoil__qty_in_litre__icontains=value)
+            q_objects |= Q(consumptionbaseoil__rate__icontains=value)
+            q_objects |= Q(consumptionbaseoil__value__icontains=value)
+            if val_float is not None:
+                q_objects |= Q(consumptionbaseoil__qty_in_percent=val_float)
+                q_objects |= Q(consumptionbaseoil__qty_in_litre=val_float)
+                q_objects |= Q(consumptionbaseoil__rate=val_float)
+                q_objects |= Q(consumptionbaseoil__value=val_float)
+        except Exception:
+            pass
+
+        return queryset.filter(q_objects).distinct()
+
 
 class ConsumptionFormulaFilter(SearchableFilterSet):
-    date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')  # Replace `date_field` with the actual field name
-    date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')    # Replace `date_field` with the actual field name
-    # sales = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-    # purchase = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-    # cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
-   
+    date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')
+    date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')
 
     class Meta:
         model = ConsumptionFormula
@@ -249,10 +360,69 @@ class ConsumptionFormulaFilter(SearchableFilterSet):
             'approved': ['exact'],
         }
 
-class ProductFormulaFilter(SearchableFilterSet):
-    # date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')  # Replace `date_field` with the actual field name
-    # date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')    # Replace `date_field` with the actual field name
+    def global_search(self, queryset, name, value):
+        if not value:
+            return queryset
 
+        val_float = None
+        try:
+            val_float = float(value.strip())
+        except ValueError:
+            pass
+
+        q_objects = Q()
+        model = self.Meta.model
+        lookups = get_searchable_lookups(model)
+
+        for lookup in lookups:
+            q_objects |= Q(**{f"{lookup}__icontains": value})
+
+        # Local numeric/date/ID fields generically
+        for field in model._meta.get_fields():
+            if field.one_to_many or field.many_to_many:
+                continue
+            if field.is_relation:
+                continue
+
+            if field.primary_key or isinstance(field, (
+                models.AutoField, models.IntegerField, models.BigIntegerField, models.SmallIntegerField,
+                models.FloatField, models.DecimalField,
+                models.DateField, models.DateTimeField
+            )):
+                q_objects |= Q(**{f"{field.name}__icontains": value.strip()})
+                if val_float is not None and isinstance(field, (models.FloatField, models.DecimalField)):
+                    q_objects |= Q(**{f"{field.name}": val_float})
+
+        # Additives in ConsumptionFormulaAdditive
+        try:
+            from costmgt.models import AdditiveCategory
+            add_cat_ids = list(AdditiveCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
+            add_cat_str_ids = [str(x) for x in add_cat_ids]
+            if add_cat_str_ids:
+                q_objects |= Q(consumptionformulaadditive__name__in=add_cat_str_ids)
+            q_objects |= Q(consumptionformulaadditive__qty_in_percent__icontains=value)
+            if val_float is not None:
+                q_objects |= Q(consumptionformulaadditive__qty_in_percent=val_float)
+        except Exception:
+            pass
+
+        # Base Oils in ConsumptionFormulaBaseOil
+        try:
+            from costmgt.models import RawCategory
+            raw_cat_ids = list(RawCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
+            raw_cat_str_ids = [str(x) for x in raw_cat_ids]
+            if raw_cat_str_ids:
+                q_objects |= Q(consumptionformulabaseoil__name__in=raw_cat_str_ids)
+            q_objects |= Q(consumptionformulabaseoil__qty_in_percent__icontains=value)
+            if val_float is not None:
+                q_objects |= Q(consumptionformulabaseoil__qty_in_percent=val_float)
+        except Exception:
+            pass
+
+        return queryset.filter(q_objects).distinct()
+
+
+class ProductFormulaFilter(SearchableFilterSet):
     class Meta:
         model = ProductFormula
         fields = {
@@ -265,42 +435,78 @@ class ProductFormulaFilter(SearchableFilterSet):
     def global_search(self, queryset, name, value):
         if not value:
             return queryset
-        
+
+        val_float = None
+        try:
+            val_float = float(value.strip())
+        except ValueError:
+            pass
+
         q_objects = Q()
         model = self.Meta.model
         lookups = get_searchable_lookups(model)
         for lookup in lookups:
             q_objects |= Q(**{f"{lookup}__icontains": value})
-            
+
         # Search S.N and local numeric/date fields
         for field in model._meta.get_fields():
             if field.one_to_many or field.many_to_many:
                 continue
             if field.is_relation:
                 continue
-            
+
             if field.primary_key or isinstance(field, (
                 models.AutoField, models.IntegerField, models.BigIntegerField, models.SmallIntegerField,
                 models.FloatField, models.DecimalField,
                 models.DateField, models.DateTimeField
             )):
                 q_objects |= Q(**{f"{field.name}__icontains": value.strip()})
+                if val_float is not None and isinstance(field, (models.FloatField, models.DecimalField)):
+                    q_objects |= Q(**{f"{field.name}": val_float})
 
         # Resolve Consumption Name search
         try:
             from costmgt.models import ConsumptionFormula, Consumption
-            cf_ids = list(ConsumptionFormula.objects.filter(name__icontains=value).values_list('id', flat=True))
+            cf_ids = list(ConsumptionFormula.objects.filter(
+                Q(name__icontains=value) | Q(ref__icontains=value)
+            ).values_list('id', flat=True))
             cf_ids_str = [str(x) for x in cf_ids]
-            
-            c_ids = list(Consumption.objects.filter(name__in=cf_ids_str).values_list('id', flat=True))
+
+            c_ids = list(Consumption.objects.filter(
+                Q(name__in=cf_ids_str) | Q(alias__icontains=value)
+            ).values_list('id', flat=True))
             c_ids_str = [str(x) for x in c_ids]
-            
+
             if c_ids_str:
                 q_objects |= Q(consumption_name__in=c_ids_str)
+            if cf_ids_str:
+                q_objects |= Q(consumption_name__in=cf_ids_str)
+        except Exception:
+            pass
+
+        # Resolve Packing Type name
+        try:
+            from costmgt.models import PackingType, Packing
+            pt_ids = list(PackingType.objects.filter(name__icontains=value).values_list('id', flat=True))
+            pt_ids_str = [str(x) for x in pt_ids]
+            if pt_ids_str:
+                q_objects |= Q(packing_type__in=pt_ids_str)
+                q_objects |= Q(product_formula_items__packing_type__in=pt_ids_str)
+
+            packing_ids = list(Packing.objects.filter(name__icontains=value).values_list('id', flat=True))
+            packing_ids_str = [str(x) for x in packing_ids]
+            if packing_ids_str:
+                q_objects |= Q(product_formula_items__packing_label__in=packing_ids_str)
+
+            q_objects |= Q(product_formula_items__qty__icontains=value)
+            if val_float is not None:
+                q_objects |= Q(product_formula_items__qty=val_float)
         except Exception:
             pass
 
         return queryset.filter(q_objects).distinct()
+
+
 class FinalProductFilter(SearchableFilterSet):
     date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte')
     date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte')
@@ -314,9 +520,9 @@ class FinalProductFilter(SearchableFilterSet):
     def global_search(self, queryset, name, value):
         if not value:
             return queryset
-        
+
         from django.db.models import Case, When, Value, F, DecimalField, ExpressionWrapper
-        
+
         # Annotate total_cost_per_pail_crtn dynamically
         queryset = queryset.annotate(
             total_cost_per_pail_crtn=Case(
@@ -345,7 +551,7 @@ class FinalProductFilter(SearchableFilterSet):
                 continue
             if field.is_relation:
                 continue
-            
+
             if field.primary_key or isinstance(field, (
                 models.AutoField, models.IntegerField, models.BigIntegerField, models.SmallIntegerField,
                 models.FloatField, models.DecimalField,
@@ -381,7 +587,7 @@ class FinalProductFilter(SearchableFilterSet):
             from costmgt.models import AdditiveCategory, Additive, ConsumptionAdditive
             add_cat_ids = list(AdditiveCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
             add_cat_str_ids = [str(x) for x in add_cat_ids]
-            
+
             additive_ids = list(Additive.objects.filter(
                 Q(category__name__icontains=value) | Q(name__name__icontains=value)
             ).values_list('id', flat=True))
@@ -419,7 +625,7 @@ class FinalProductFilter(SearchableFilterSet):
             from costmgt.models import RawCategory, RawMaterial, ConsumptionBaseOil
             raw_cat_ids = list(RawCategory.objects.filter(name__icontains=value).values_list('id', flat=True))
             raw_cat_str_ids = [str(x) for x in raw_cat_ids]
-            
+
             raw_material_ids = list(RawMaterial.objects.filter(
                 Q(category__name__icontains=value) | Q(name__name__icontains=value)
             ).values_list('id', flat=True))
@@ -454,17 +660,31 @@ class FinalProductFilter(SearchableFilterSet):
 
         # 4. Search by Consumption Name through formula and batch relations
         try:
-            from costmgt.models import ConsumptionFormula, Consumption
-            cf_ids = list(ConsumptionFormula.objects.filter(name__icontains=value).values_list('id', flat=True))
+            from costmgt.models import ConsumptionFormula, Consumption, PackingSize
+            cf_ids = list(ConsumptionFormula.objects.filter(
+                Q(name__icontains=value) | Q(ref__icontains=value)
+            ).values_list('id', flat=True))
             cf_ids_str = [str(x) for x in cf_ids]
-            
-            c_ids = list(Consumption.objects.filter(name__in=cf_ids_str).values_list('id', flat=True))
+
+            c_ids = list(Consumption.objects.filter(
+                Q(name__in=cf_ids_str) | Q(alias__icontains=value)
+            ).values_list('id', flat=True))
             c_ids_str = [str(x) for x in c_ids]
-            
+
             if c_ids_str:
                 q_objects |= Q(formula__consumption_name__in=c_ids_str)
+                q_objects |= Q(batch_id__in=c_ids)
             if cf_ids_str:
+                q_objects |= Q(formula__consumption_name__in=cf_ids_str)
                 q_objects |= Q(batch__name__in=cf_ids_str)
+
+            q_objects |= Q(batch__alias__icontains=value)
+            q_objects |= Q(batch__batch__icontains=value)
+            q_objects |= Q(formula__formula_name__icontains=value)
+
+            ps_ids = list(PackingSize.objects.filter(name__icontains=value).values_list('id', flat=True))
+            if ps_ids:
+                q_objects |= Q(packing_size_id__in=ps_ids)
         except Exception:
             pass
 

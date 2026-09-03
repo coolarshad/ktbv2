@@ -110,8 +110,7 @@ const Consumption = () => {
   };
 
   const fieldOptions = [
-    { value: 'alias', label: 'Name' },  // Trade TRN field in PreSalePurchase filter
-
+    { value: 'name', label: 'Name' },
   ];
 
   if (loading) return <Loading />;
