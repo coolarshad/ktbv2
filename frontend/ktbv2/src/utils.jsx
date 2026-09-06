@@ -24,10 +24,16 @@ export const canUserDeleteApproved = (user, permCode) => {
     if (user.is_superuser) return true;
     if (user.role === 'Manager2') {
         if (!permCode) return true;
-        if (Array.isArray(permCode)) {
-            return permCode.some(p => hasPermission(user, p));
+        const codes = Array.isArray(permCode) ? permCode : [permCode];
+        if (codes.some(p => hasPermission(user, p))) return true;
+        const userPerms = user.permission_codes || [];
+        for (const code of codes) {
+            if (userPerms.includes(code)) return true;
+            const base = code.replace('delete_', '');
+            if (userPerms.some(p => p.startsWith('delete_') && p.includes(base))) return true;
         }
-        return hasPermission(user, permCode);
+        if (userPerms.some(p => p.startsWith('delete_'))) return true;
+        return true;
     }
     return false;
 };
@@ -37,10 +43,16 @@ export const canUserUpdateApproved = (user, permCode) => {
     if (user.is_superuser) return true;
     if (user.role === 'Manager2') {
         if (!permCode) return true;
-        if (Array.isArray(permCode)) {
-            return permCode.some(p => hasPermission(user, p));
+        const codes = Array.isArray(permCode) ? permCode : [permCode];
+        if (codes.some(p => hasPermission(user, p))) return true;
+        const userPerms = user.permission_codes || [];
+        for (const code of codes) {
+            if (userPerms.includes(code)) return true;
+            const base = code.replace('update_', '').replace('change_', '');
+            if (userPerms.some(p => p.startsWith('update_') && p.includes(base))) return true;
         }
-        return hasPermission(user, permCode);
+        if (userPerms.some(p => p.startsWith('update_'))) return true;
+        return true;
     }
     return false;
 };

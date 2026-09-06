@@ -163,55 +163,64 @@ class TradeProduct(models.Model):
         """Create or update TradePending entry for this product"""
         try:
             # Try to find an existing TradePending record
-            pending = TradePending.objects.get(
-            trn=self.trade,
-            product_code=self.product_code,
-            product_name=self.product_name,
-            trade_type=self.trade.trade_type
-            )
-          
-            # Recalculate adjusted balance using current trade_qty + tolerance
-            base_qty = float(self.trade_qty)
-            tolerance = float(self.tolerance)
-            adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
-
-            pending.contract_qty = self.trade_qty
-            pending.contract_qty_unit = self.trade_qty_unit
-
-            if old_value is not None:
-                # True update — remove old qty, add new qty
-                pending.balance_qty -= old_value
-                pending.balance_qty += adjusted_balance_qty
-            else:
-                # No previous qty provided — just add
-                pending.balance_qty += adjusted_balance_qty
-
-            pending.save()
-
-        except TradePending.DoesNotExist:
-            # Always create fresh with trade_qty + tolerance
-            base_qty = float(self.trade_qty)
-            tolerance = float(self.tolerance)
-            adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
-
-            TradePending.objects.create(
+            pending = TradePending.objects.filter(
                 trn=self.trade,
-                trade_type=self.trade.trade_type,
-                trd=self.trade.trd,
-                company=self.trade.company,
-                payment_term=self.trade.payment_term,
                 product_code=self.product_code,
                 product_name=self.product_name,
-                hs_code=self.hs_code,
-                contract_qty=self.trade_qty,
-                contract_qty_unit=self.trade_qty_unit,
-                balance_qty=adjusted_balance_qty,
-                balance_qty_unit=self.contract_balance_qty_unit,
-                selected_currency_rate=self.selected_currency_rate,
-                rate_in_usd=self.rate_in_usd,
-                tolerance=self.tolerance,
-                logistic=self.logistic
-            )
+                trade_type=self.trade.trade_type
+            ).first()
+
+            base_qty = float(self.trade_qty)
+            tolerance = float(self.tolerance)
+            adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
+
+            if pending:
+                # Synchronize all fields on update
+                pending.trd = self.trade.trd
+                pending.company = self.trade.company
+                pending.payment_term = self.trade.payment_term
+                pending.hs_code = self.hs_code
+                pending.contract_qty = self.trade_qty
+                pending.contract_qty_unit = self.trade_qty_unit
+                pending.balance_qty_unit = self.contract_balance_qty_unit
+                pending.selected_currency_rate = self.selected_currency_rate
+                pending.rate_in_usd = self.rate_in_usd
+                pending.tolerance = self.tolerance
+                pending.logistic = self.logistic
+
+                if old_value is not None:
+                    # True update — remove old qty, add new qty
+                    pending.balance_qty -= old_value
+                    pending.balance_qty += adjusted_balance_qty
+                else:
+                    # No previous qty provided — set to adjusted balance qty
+                    pending.balance_qty = adjusted_balance_qty
+
+                pending.save()
+            else:
+                # Always create fresh with trade_qty + tolerance
+                TradePending.objects.create(
+                    created_by=getattr(self.trade, 'created_by', None),
+                    trn=self.trade,
+                    trade_type=self.trade.trade_type,
+                    trd=self.trade.trd,
+                    company=self.trade.company,
+                    payment_term=self.trade.payment_term,
+                    product_code=self.product_code,
+                    product_name=self.product_name,
+                    hs_code=self.hs_code,
+                    contract_qty=self.trade_qty,
+                    contract_qty_unit=self.trade_qty_unit,
+                    balance_qty=adjusted_balance_qty,
+                    balance_qty_unit=self.contract_balance_qty_unit,
+                    selected_currency_rate=self.selected_currency_rate,
+                    rate_in_usd=self.rate_in_usd,
+                    tolerance=self.tolerance,
+                    logistic=self.logistic
+                )
+
+        except Exception as e:
+            print(f"Error in create_trade_pending: {str(e)}")
 
 
 

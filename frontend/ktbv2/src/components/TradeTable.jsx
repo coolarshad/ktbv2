@@ -5,8 +5,7 @@ import PrintModal from './PrintModal';
 import ReactToPrint from 'react-to-print';
 import axios from '../axiosConfig';
 import { dateFormatter } from '../dateUtils';
-import { useAuth } from '../context/AuthContext';
-import { hasPermission } from '../utils';
+import { hasPermission, canUserDeleteApproved, canUserUpdateApproved } from '../utils';
 
 const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
   const navigate = useNavigate();
@@ -121,7 +120,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       >
                         View
                       </button>
-                      {hasPermission(user, `update_${basePerm}`) && (
+                      {(!row.trade.approved ? hasPermission(user, `update_${basePerm}`) : canUserUpdateApproved(user, `update_${basePerm}`)) && (
                         <button
                           className="bg-yellow-500 text-white px-2 py-1 rounded"
                           onClick={(e) => { e.stopPropagation(); handleEdit(row.trade.id); }}
@@ -129,7 +128,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                           Edit
                         </button>
                       )}
-                      {hasPermission(user, `delete_${basePerm}`) && (
+                      {(!row.trade.approved ? hasPermission(user, `delete_${basePerm}`) : canUserDeleteApproved(user, `delete_${basePerm}`)) && (
                         <button
                           className="bg-red-500 text-white px-2 py-1 rounded"
                           onClick={(e) => { e.stopPropagation(); onDelete(row.trade.id); }}
