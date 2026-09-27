@@ -1312,17 +1312,54 @@ class ExportTradeProductRefExcelView(APIView):
 
 class ExportAccountReceivablesExcelView(APIView):
     def get(self, request, *args, **kwargs):
-        import pandas as pd
+        import io
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
         from django.db.models import Sum
         from accounts.mixins import get_authorized_queryset
-        from trademgt.models import Trade, SalesPurchase, PaymentFinance, Company, Kyc
+        from trademgt.models import (
+            Trade, SalesPurchase, PaymentFinance, Company, Kyc
+        )
 
         company_map = {str(c.id): c.name for c in Company.objects.all()}
         kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
 
-        auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(trn__trade_type='Sales')
-        
-        excel_data = []
+        auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(
+            trn__trade_type='Sales'
+        ).order_by('-invoice_date', '-id')
+
+        include_all = request.GET.get('all', 'false').lower() == 'true'
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Account Receivables"
+
+        headers = [
+            'TRN Ref', 'Company', 'Customer Name', 'Invoice Number', 'Invoice Date',
+            'BL Number', 'Invoiced Amount ($)', 'Amount Received ($)', 'FORMULA',
+            'Balance Receivable ($)', 'Trader Name', 'Status'
+        ]
+        ws.append(headers)
+
+        # Header styling
+        header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+        header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+        header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+        for col_idx in range(1, len(headers) + 1):
+            cell = ws.cell(row=1, column=col_idx)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+
+        thin_side = Side(style='thin', color="D1D5DB")
+        data_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+        align_left = Alignment(horizontal="left", vertical="center")
+        align_center = Alignment(horizontal="center", vertical="center")
+        align_right = Alignment(horizontal="right", vertical="center")
+
+        data_rows_count = 0
         for sp in auth_sps:
             pfs = PaymentFinance.objects.filter(sp=sp)
             pf_agg = pfs.aggregate(recv=Sum('balance_payment_received'), adv=Sum('advance_adjusted'))
@@ -1330,37 +1367,109 @@ class ExportAccountReceivablesExcelView(APIView):
             invoiced_amt = sp.invoice_amount or 0.0
             balance_due = max(0.0, round(invoiced_amt - total_received, 2))
 
+            # Filter: only pending receivables by default unless ?all=true
+            if not include_all and balance_due <= 0:
+                continue
+
             trade_obj = sp.trn
             raw_comp = str(trade_obj.company) if trade_obj and trade_obj.company else ''
             raw_cust = str(trade_obj.customer_company_name) if trade_obj and trade_obj.customer_company_name else ''
 
-            excel_data.append({
-                'TRN Ref': trade_obj.trn if trade_obj else '',
-                'Company': company_map.get(raw_comp, raw_comp),
-                'Customer Name': kyc_map.get(raw_cust, raw_cust),
-                'Invoice Number': sp.invoice_number or '',
-                'Invoice Date': str(sp.invoice_date) if sp.invoice_date else '',
-                'BL Number': sp.bl_number or '',
-                'Invoiced Amount ($)': round(invoiced_amt, 2),
-                'Amount Received ($)': round(total_received, 2),
-                'Balance Receivable ($)': balance_due,
-                'Trader Name': trade_obj.trader_name if trade_obj else '',
-                'Status': 'Paid' if balance_due <= 0 else 'Pending Receivable',
-            })
+            data_rows_count += 1
+            current_row = data_rows_count + 1
 
-        df = pd.DataFrame(excel_data)
-        if df.empty:
-            df = pd.DataFrame(columns=['TRN Ref', 'Company', 'Customer Name', 'Invoice Number', 'Invoice Date', 'BL Number', 'Invoiced Amount ($)', 'Amount Received ($)', 'Balance Receivable ($)', 'Trader Name', 'Status'])
+            row_data = [
+                trade_obj.trn if trade_obj else '',
+                company_map.get(raw_comp, raw_comp),
+                kyc_map.get(raw_cust, raw_cust),
+                sp.invoice_number or '',
+                str(sp.invoice_date) if sp.invoice_date else '',
+                sp.bl_number or '',
+                round(invoiced_amt, 2),
+                round(total_received, 2),
+                f"=G{current_row}-H{current_row}",
+                balance_due,
+                trade_obj.trader_name if trade_obj else '',
+                'Settled' if balance_due <= 0 else 'Pending Receivable',
+            ]
+            ws.append(row_data)
 
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            # Apply cell styles for data row
+            for col_idx in range(1, 13):
+                cell = ws.cell(row=current_row, column=col_idx)
+                cell.border = data_border
+                cell.font = Font(name="Calibri", size=10)
+
+                # Format numeric currency columns
+                if col_idx in (7, 8, 9, 10):
+                    cell.number_format = '#,##0.00'
+                    cell.alignment = align_right
+                elif col_idx in (1, 5, 6, 12):
+                    cell.alignment = align_center
+                else:
+                    cell.alignment = align_left
+
+        # Add Total Summary Row at the bottom
+        if data_rows_count > 0:
+            summary_row = data_rows_count + 2
+            double_bottom = Border(
+                top=Side(style='thin', color="000000"),
+                bottom=Side(style='double', color="000000")
+            )
+            summary_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid")
+            summary_font = Font(name="Calibri", size=11, bold=True, color="000000")
+
+            label_cell = ws.cell(row=summary_row, column=8, value="TOTAL")
+            label_cell.font = summary_font
+            label_cell.alignment = Alignment(horizontal="right", vertical="center")
+            label_cell.fill = summary_fill
+            label_cell.border = double_bottom
+
+            for c_idx in (9, 10):
+                col_let = get_column_letter(c_idx)
+                sum_cell = ws.cell(row=summary_row, column=c_idx, value=f"=SUM({col_let}2:{col_let}{data_rows_count + 1})")
+                sum_cell.font = summary_font
+                sum_cell.number_format = '#,##0.00'
+                sum_cell.alignment = align_right
+                sum_cell.fill = summary_fill
+                sum_cell.border = double_bottom
+
+        # Auto-adjust column widths
+        for col in ws.columns:
+            col_letter = get_column_letter(col[0].column)
+            max_len = 0
+            for cell in col:
+                val_str = str(cell.value or '')
+                if not val_str.startswith('='):
+                    max_len = max(max_len, len(val_str))
+                else:
+                    max_len = max(max_len, 14)
+            ws.column_dimensions[col_letter].width = max(max_len + 4, 14)
+
+        # Ensure key descriptive columns have generous minimum width
+        ws.column_dimensions['B'].width = max(ws.column_dimensions['B'].width or 14, 28)
+        ws.column_dimensions['C'].width = max(ws.column_dimensions['C'].width or 14, 28)
+        ws.column_dimensions['D'].width = max(ws.column_dimensions['D'].width or 14, 24)
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+
+        response = HttpResponse(
+            buf.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
         response['Content-Disposition'] = 'attachment; filename="Account_Receivables_Summary.xlsx"'
-        df.to_excel(response, index=False)
         return response
+
 
 
 class ExportAccountPayablesExcelView(APIView):
     def get(self, request, *args, **kwargs):
-        import pandas as pd
+        import io
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
         from django.db.models import Sum
         from accounts.mixins import get_authorized_queryset
         from trademgt.models import Trade, SalesPurchase, PaymentFinance, Company, Kyc
@@ -1368,9 +1477,41 @@ class ExportAccountPayablesExcelView(APIView):
         company_map = {str(c.id): c.name for c in Company.objects.all()}
         kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
 
-        auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(trn__trade_type='Purchase')
-        
-        excel_data = []
+        auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(
+            trn__trade_type='Purchase'
+        ).order_by('-invoice_date', '-id')
+
+        include_all = request.GET.get('all', 'false').lower() == 'true'
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Account Payables"
+
+        headers = [
+            'TRN Ref', 'Company', 'Supplier/Vendor Name', 'Invoice Number', 'Invoice Date',
+            'Liner / Logistic Provider', 'Invoice + Logistic ($)', 'Amount Paid ($)',
+            'AMOUNT CALC', 'Balance Payable ($)', 'Trader Name', 'Status'
+        ]
+        ws.append(headers)
+
+        # Header styling
+        header_fill = PatternFill(start_color="991B1B", end_color="991B1B", fill_type="solid")  # Crimson Red
+        header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+        header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+        for col_idx in range(1, len(headers) + 1):
+            cell = ws.cell(row=1, column=col_idx)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+
+        thin_side = Side(style='thin', color="D1D5DB")
+        data_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+        align_left = Alignment(horizontal="left", vertical="center")
+        align_center = Alignment(horizontal="center", vertical="center")
+        align_right = Alignment(horizontal="right", vertical="center")
+
+        data_rows_count = 0
         for sp in auth_sps:
             pfs = PaymentFinance.objects.filter(sp=sp)
             pf_agg = pfs.aggregate(paid=Sum('balance_payment_made'), adv=Sum('advance_adjusted'))
@@ -1378,32 +1519,100 @@ class ExportAccountPayablesExcelView(APIView):
             invoiced_amt = (sp.invoice_amount or 0.0) + (sp.logistic_cost or 0.0)
             balance_due = max(0.0, round(invoiced_amt - total_paid, 2))
 
+            if not include_all and balance_due <= 0:
+                continue
+
             trade_obj = sp.trn
             raw_comp = str(trade_obj.company) if trade_obj and trade_obj.company else ''
             raw_cust = str(trade_obj.customer_company_name) if trade_obj and trade_obj.customer_company_name else ''
 
-            excel_data.append({
-                'TRN Ref': trade_obj.trn if trade_obj else '',
-                'Company': company_map.get(raw_comp, raw_comp),
-                'Supplier/Vendor Name': kyc_map.get(raw_cust, raw_cust),
-                'Invoice Number': sp.invoice_number or '',
-                'Invoice Date': str(sp.invoice_date) if sp.invoice_date else '',
-                'Liner / Logistic Provider': sp.liner or (trade_obj.logistic_provider if trade_obj else ''),
-                'Invoice + Logistic ($)': round(invoiced_amt, 2),
-                'Amount Paid ($)': round(total_paid, 2),
-                'Balance Payable ($)': balance_due,
-                'Trader Name': trade_obj.trader_name if trade_obj else '',
-                'Status': 'Settled' if balance_due <= 0 else 'Pending Payable',
-            })
+            data_rows_count += 1
+            current_row = data_rows_count + 1
 
-        df = pd.DataFrame(excel_data)
-        if df.empty:
-            df = pd.DataFrame(columns=['TRN Ref', 'Company', 'Supplier/Vendor Name', 'Invoice Number', 'Invoice Date', 'Liner / Logistic Provider', 'Invoice + Logistic ($)', 'Amount Paid ($)', 'Balance Payable ($)', 'Trader Name', 'Status'])
+            row_data = [
+                trade_obj.trn if trade_obj else '',
+                company_map.get(raw_comp, raw_comp),
+                kyc_map.get(raw_cust, raw_cust),
+                sp.invoice_number or '',
+                str(sp.invoice_date) if sp.invoice_date else '',
+                sp.liner or (trade_obj.logistic_provider if trade_obj else ''),
+                round(invoiced_amt, 2),
+                round(total_paid, 2),
+                f"=G{current_row}-H{current_row}",
+                balance_due,
+                trade_obj.trader_name if trade_obj else '',
+                'Settled' if balance_due <= 0 else 'Pending Payable',
+            ]
+            ws.append(row_data)
 
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            # Cell styles
+            for col_idx in range(1, 13):
+                cell = ws.cell(row=current_row, column=col_idx)
+                cell.border = data_border
+                cell.font = Font(name="Calibri", size=10)
+
+                if col_idx in (7, 8, 9, 10):
+                    cell.number_format = '#,##0.00'
+                    cell.alignment = align_right
+                elif col_idx in (1, 5, 12):
+                    cell.alignment = align_center
+                else:
+                    cell.alignment = align_left
+
+        # Add Total Summary Row at the bottom
+        if data_rows_count > 0:
+            summary_row = data_rows_count + 2
+            double_bottom = Border(
+                top=Side(style='thin', color="000000"),
+                bottom=Side(style='double', color="000000")
+            )
+            summary_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid")
+            summary_font = Font(name="Calibri", size=11, bold=True, color="000000")
+
+            label_cell = ws.cell(row=summary_row, column=8, value="TOTAL")
+            label_cell.font = summary_font
+            label_cell.alignment = Alignment(horizontal="right", vertical="center")
+            label_cell.fill = summary_fill
+            label_cell.border = double_bottom
+
+            for c_idx in (9, 10):
+                col_let = get_column_letter(c_idx)
+                sum_cell = ws.cell(row=summary_row, column=c_idx, value=f"=SUM({col_let}2:{col_let}{data_rows_count + 1})")
+                sum_cell.font = summary_font
+                sum_cell.number_format = '#,##0.00'
+                sum_cell.alignment = align_right
+                sum_cell.fill = summary_fill
+                sum_cell.border = double_bottom
+
+        # Auto-adjust column widths
+        for col in ws.columns:
+            col_letter = get_column_letter(col[0].column)
+            max_len = 0
+            for cell in col:
+                val_str = str(cell.value or '')
+                if not val_str.startswith('='):
+                    max_len = max(max_len, len(val_str))
+                else:
+                    max_len = max(max_len, 14)
+            ws.column_dimensions[col_letter].width = max(max_len + 4, 14)
+
+        # Ensure key descriptive columns have generous minimum width
+        ws.column_dimensions['B'].width = max(ws.column_dimensions['B'].width or 14, 28)
+        ws.column_dimensions['C'].width = max(ws.column_dimensions['C'].width or 14, 28)
+        ws.column_dimensions['D'].width = max(ws.column_dimensions['D'].width or 14, 24)
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+
+        response = HttpResponse(
+            buf.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
         response['Content-Disposition'] = 'attachment; filename="Account_Payables_Summary.xlsx"'
-        df.to_excel(response, index=False)
         return response
+
+
 
 
 class ExportInsurancePendingExcelView(APIView):
@@ -1411,10 +1620,15 @@ class ExportInsurancePendingExcelView(APIView):
         import pandas as pd
         from django.db.models import Q
         from accounts.mixins import get_authorized_queryset
-        from trademgt.models import Trade, Company, Kyc
+        from trademgt.models import (
+            Trade, Company, Kyc, PaymentTerm, Currency, Bank
+        )
 
         company_map = {str(c.id): c.name for c in Company.objects.all()}
         kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
+        payment_map = {str(pt.id): pt.name for pt in PaymentTerm.objects.all()}
+        currency_map = {str(curr.id): curr.name for curr in Currency.objects.all()}
+        bank_map = {str(b.id): b.name for b in Bank.objects.all()}
 
         auth_trades = get_authorized_queryset(request, Trade.objects.all())
         insurance_pending_query = (
@@ -1426,31 +1640,64 @@ class ExportInsurancePendingExcelView(APIView):
             Q(insurance_policy_number__iexact='pending') |
             Q(insurance_policy_number__iexact='none')
         )
-        pending_trades = auth_trades.filter(insurance_pending_query)
+        pending_trades = auth_trades.filter(insurance_pending_query).order_by('-id')
 
         excel_data = []
         for trade in pending_trades:
             raw_comp = str(trade.company) if trade.company else ''
             raw_cust = str(trade.customer_company_name) if trade.customer_company_name else ''
+            raw_bank = str(trade.bank_name_address) if trade.bank_name_address else ''
+            raw_pay = str(trade.payment_term) if trade.payment_term else ''
+            raw_curr = str(trade.currency_selection) if trade.currency_selection else ''
 
             excel_data.append({
-                'TRN Ref': trade.trn,
+                'TRN Ref': trade.trn or '',
                 'Trade Date': str(trade.trd) if trade.trd else '',
-                'Trade Type': trade.trade_type,
+                'Trade Type': trade.trade_type or '',
+                'Trade Category': trade.trade_category or '',
                 'Company': company_map.get(raw_comp, raw_comp),
                 'Customer / Vendor': kyc_map.get(raw_cust, raw_cust),
-                'Incoterm': trade.incoterm or '',
-                'Insurance Policy Value': trade.insurance_policy_number or 'NA',
                 'Trader Name': trade.trader_name or '',
+                'Insurance Policy Number': trade.insurance_policy_number or 'NA',
                 'Approval Status': 'Approved' if trade.approved else 'Pending',
+                'Contract Value': trade.contract_value or 0.0,
+                'Currency': currency_map.get(raw_curr, raw_curr),
+                'Exchange Rate': trade.exchange_rate or 1.0,
+                'Payment Term': payment_map.get(raw_pay, raw_pay),
+                'Advance Value to Receive': trade.advance_value_to_receive or 0.0,
+                'Incoterm': trade.incoterm or '',
+                'POL': trade.pol or '',
+                'POD': trade.pod or '',
+                'ETA': trade.eta or '',
+                'ETD': trade.etd or '',
+                'Shipper in BL': trade.shipper_in_bl or '',
+                'Consignee in BL': trade.consignee_in_bl or '',
+                'Notify Party in BL': trade.notify_party_in_bl or '',
+                'Logistic Provider': trade.logistic_provider or '',
+                'Estimated Logistic Cost': trade.estimated_logistic_cost or 0.0,
+                'Bank': bank_map.get(raw_bank, raw_bank),
+                'Account Number': trade.account_number or '',
+                'Swift Code': trade.swift_code or '',
+                'Commission Agent': trade.commission_agent or '',
+                'Commission Value': trade.commission_value or 0.0,
+                'Remarks': trade.remarks or '',
             })
 
         df = pd.DataFrame(excel_data)
         if df.empty:
-            df = pd.DataFrame(columns=['TRN Ref', 'Trade Date', 'Trade Type', 'Company', 'Customer / Vendor', 'Incoterm', 'Insurance Policy Value', 'Trader Name', 'Approval Status'])
+            df = pd.DataFrame(columns=[
+                'TRN Ref', 'Trade Date', 'Trade Type', 'Trade Category', 'Company', 'Customer / Vendor',
+                'Trader Name', 'Insurance Policy Number', 'Approval Status', 'Contract Value',
+                'Currency', 'Exchange Rate', 'Payment Term', 'Advance Value to Receive',
+                'Incoterm', 'POL', 'POD', 'ETA', 'ETD', 'Shipper in BL', 'Consignee in BL',
+                'Notify Party in BL', 'Logistic Provider', 'Estimated Logistic Cost', 'Bank',
+                'Account Number', 'Swift Code', 'Commission Agent', 'Commission Value', 'Remarks'
+            ])
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="Insurance_Pending_Summary.xlsx"'
         df.to_excel(response, index=False)
         return response
+
+
 

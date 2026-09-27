@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
 import TradeTable from "../components/TradeTable"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import Modal from '../components/Modal';
 import FilterComponent from "../components/FilterComponent";
@@ -16,6 +16,10 @@ function TradeApproved() {
   const { user } = useAuth();
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPendingSp = searchParams.get('pending_sp') === 'true' || searchParams.get('pending') === 'true';
+  const isInsurancePending = searchParams.get('insurance_pending') === 'true';
+
   const [tradeData, setTradeData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -26,7 +30,10 @@ function TradeApproved() {
 
   const fetchTradeData = async () => {
     try {
-      const response = await axios.get(`/trademgt/trades/?approved=true&page=${currentPage}`);
+      let extraFilter = '';
+      if (isPendingSp) extraFilter += '&pending_sp=true';
+      if (isInsurancePending) extraFilter += '&insurance_pending=true';
+      const response = await axios.get(`/trademgt/trades/?approved=true${extraFilter}&page=${currentPage}`);
       if (response.data && response.data.results) {
         setTradeData(response.data.results);
         setTotalItems(response.data.count);
@@ -43,7 +50,7 @@ function TradeApproved() {
 
   useEffect(() => {
     fetchTradeData();
-  }, [currentPage]);
+  }, [currentPage, isPendingSp, isInsurancePending]);
 
   const handleFilter = (filters, isPageChange = false) => {
     if (filters && filters.results) {

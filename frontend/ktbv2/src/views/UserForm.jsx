@@ -4,11 +4,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from '../axiosConfig';
 import { toast } from "react-toastify";
 import Loading from '../components/Loading';
+import { hasPermission } from '../utils';
 
 const UserForm = ({ mode }) => {
   const { user } = useAuth();
   const { id: userId } = useParams();
   const navigate = useNavigate();
+
+  const canCreate = hasPermission(user, 'create_users');
+  const canUpdate = hasPermission(user, 'update_users');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,6 +33,18 @@ const UserForm = ({ mode }) => {
   const [newPassword, setNewPassword] = useState('');
   const [resettingPassword, setResettingPassword] = useState(false);
 
+  // 🔹 Permission guard
+  useEffect(() => {
+    if (!user) return;
+    if (userId && !canUpdate) {
+      toast.error('You do not have permission to edit users.');
+      navigate('/users');
+    } else if (!userId && !canCreate) {
+      toast.error('You do not have permission to create users.');
+      navigate('/users');
+    }
+  }, [user, userId, canCreate, canUpdate, navigate]);
+
   // 🔹 Fetch permissions and organizations
   useEffect(() => {
     axios.get("/accounts/permissions/")
@@ -42,7 +58,7 @@ const UserForm = ({ mode }) => {
 
   // 🔹 Fetch user in edit mode
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !canUpdate) return;
 
     setLoading(true);
     axios.get(`/accounts/users/${userId}/`)
@@ -67,7 +83,7 @@ const UserForm = ({ mode }) => {
       })
       .catch(() => toast.error('Failed to load user data'))
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [userId, canUpdate]);
 
   // 🔹 Input change
   const handleChange = e => {
@@ -131,6 +147,15 @@ const UserForm = ({ mode }) => {
   const handleSubmit = e => {
     e.preventDefault();
 
+    if (userId && !canUpdate) {
+      toast.error('You do not have permission to update users.');
+      return;
+    }
+    if (!userId && !canCreate) {
+      toast.error('You do not have permission to create users.');
+      return;
+    }
+
     const payload = {
       ...formData,
       organization_ids: selectedOrganizations,
@@ -161,6 +186,11 @@ const UserForm = ({ mode }) => {
 
   // 🔹 Reset Password Handler
   const handleResetPassword = async () => {
+    if (!canUpdate) {
+      toast.error('You do not have permission to reset user passwords.');
+      return;
+    }
+
     if (newPassword.length < 8) {
       toast.error('Password must be at least 8 characters long.');
       return;
@@ -179,6 +209,7 @@ const UserForm = ({ mode }) => {
   };
 
   if (loading) return <Loading message="Loading user data..." />;
+  if (user && ((userId && !canUpdate) || (!userId && !canCreate))) return null;
 
   const allSelectedGlobally = allPermissions.length > 0 && allPermissions.every(p => selectedPermissions.includes(p.id));
 
@@ -324,7 +355,7 @@ const UserForm = ({ mode }) => {
       </button>
 
       {/* Admin Password Reset Section */}
-      {userId && (
+      {userId && canUpdate && (
         <div className="mt-8 pt-6 border-t border-gray-200">
           <h3 className="text-xl font-semibold mb-4 text-gray-800">Danger Zone</h3>
           <div className="bg-red-50 p-4 rounded border border-red-100 flex flex-col md:flex-row gap-4 items-end">

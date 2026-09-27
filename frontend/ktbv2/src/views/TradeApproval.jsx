@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 import Pagination from '../components/Pagination';
 import TradeTable from "../components/TradeTable"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
@@ -16,6 +16,9 @@ import Loading from '../components/Loading';
 function TradeApproval() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isInsurancePending = searchParams.get('insurance_pending') === 'true';
+
   const [tradeData, setTradeData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -30,7 +33,8 @@ function TradeApproval() {
 
   const fetchTradeData = async () => {
     try {
-      const response = await axios.get(`/trademgt/trades/?pending=true&page=${currentPage}`);
+      const insParam = isInsurancePending ? '&insurance_pending=true' : '';
+      const response = await axios.get(`/trademgt/trades/?pending=true${insParam}&page=${currentPage}`);
       if (response.data && response.data.results) {
         setTradeData(response.data.results);
         setTotalItems(response.data.count);
@@ -47,7 +51,7 @@ function TradeApproval() {
 
   useEffect(() => {
     fetchTradeData();
-  }, [currentPage]);
+  }, [currentPage, isInsurancePending]);
 
   const handleDelete = async (tradeId) => {
     const confirmed = window.confirm('Are you sure you want to delete this trade?');

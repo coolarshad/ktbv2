@@ -5,9 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import Modal from '../components/Modal';
 import { toast } from 'react-toastify';
+import { hasPermission } from '../utils';
 
 const Users = () => {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +16,11 @@ const Users = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [allPermissions, setAllPermissions] = useState([]);
+
+  const canCreate = hasPermission(currentUser, 'create_users');
+  const canUpdate = hasPermission(currentUser, 'update_users');
+  const canDelete = hasPermission(currentUser, 'delete_users');
+  const canView = hasPermission(currentUser, 'view_users');
 
   const componentRef = useRef();
   const handlePrint = useReactToPrint({
@@ -49,13 +55,16 @@ const Users = () => {
   const groupedPermissions = allPermissions.reduce((acc, perm) => {
     const parts = perm.code.split('_');
     const module = parts.slice(1).join('_');
-    console.log(module, acc);
     if (!acc[module]) acc[module] = [];
     acc[module].push(perm);
     return acc;
   }, {});
 
   const handleDelete = async (id) => {
+    if (!canDelete) {
+      toast.error('You do not have permission to delete users.');
+      return;
+    }
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       await axios.delete(`/accounts/users/${id}/`);
@@ -85,12 +94,14 @@ const Users = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">User Management</h1>
-        <button
-          onClick={() => navigate('/user-form')}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          + Add User
-        </button>
+        {canCreate && (
+          <button
+            onClick={() => navigate('/user-form')}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            + Add User
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -108,42 +119,52 @@ const Users = () => {
                 <th className="px-4 py-2 border-b text-left">Role</th>
                 <th className="px-4 py-2 border-b text-left">Organizations</th>
                 <th className="px-4 py-2 border-b text-left">Designation</th>
-                <th className="px-4 py-2 border-b text-center">Actions</th>
+                {(canView || canUpdate || canDelete) && (
+                  <th className="px-4 py-2 border-b text-center">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody>
-              {userData.map((user, index) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+              {userData.map((item, index) => (
+                <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border-b">{index + 1}</td>
-                  <td className="px-4 py-2 border-b">{user.name}</td>
-                  <td className="px-4 py-2 border-b">{user.email}</td>
-                  <td className="px-4 py-2 border-b">{user.role || 'N/A'}</td>
+                  <td className="px-4 py-2 border-b">{item.name}</td>
+                  <td className="px-4 py-2 border-b">{item.email}</td>
+                  <td className="px-4 py-2 border-b">{item.role || 'N/A'}</td>
                   <td className="px-4 py-2 border-b">
-                    {(user.organizations && user.organizations.length > 0)
-                      ? user.organizations.map(o => typeof o === 'object' ? o.name : o).join(', ')
+                    {(item.organizations && item.organizations.length > 0)
+                      ? item.organizations.map(o => typeof o === 'object' ? o.name : o).join(', ')
                       : 'N/A'}
                   </td>
-                  <td className="px-4 py-2 border-b">{user.designation || 'N/A'}</td>
-                  <td className="px-4 py-2 border-b flex justify-center gap-2">
-                    <button
-                      onClick={() => handleView(user.id)}
-                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => navigate(`/user-form/${user.id}`)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
+                  <td className="px-4 py-2 border-b">{item.designation || 'N/A'}</td>
+                  {(canView || canUpdate || canDelete) && (
+                    <td className="px-4 py-2 border-b flex justify-center gap-2">
+                      {canView && (
+                        <button
+                          onClick={() => handleView(item.id)}
+                          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs"
+                        >
+                          View
+                        </button>
+                      )}
+                      {canUpdate && (
+                        <button
+                          onClick={() => navigate(`/user-form/${item.id}`)}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs"
+                        >
+                          Edit
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

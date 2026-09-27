@@ -22,20 +22,46 @@ class OrganizationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVie
 
 class HasPermission(BasePermission):
     def has_permission(self, request, view):
-        required_permission = getattr(view, 'required_permission', None)
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.user.is_superuser:
+            return True
 
+        required_permission = getattr(view, 'required_permission', None)
         if not required_permission:
             return True
 
         return request.user.permissions.filter(code=required_permission).exists()
 
+class UserCRUDPermission(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.user.is_superuser:
+            return True
+
+        user_perms = set(request.user.permissions.values_list('code', flat=True))
+
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return 'view_users' in user_perms
+        elif request.method == 'POST':
+            return 'create_users' in user_perms
+        elif request.method in ('PUT', 'PATCH'):
+            return 'update_users' in user_perms
+        elif request.method == 'DELETE':
+            return 'delete_users' in user_perms
+
+        return False
+
 class UserListCreateView(generics.ListCreateAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = CustomUser.objects.all().order_by('-id')
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, UserCRUDPermission]
 
 class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = CustomUser.objects.all().order_by('-id')
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, UserCRUDPermission]
 
 # List + Create
 class PermissionListCreateView(generics.ListCreateAPIView):
@@ -71,6 +97,12 @@ class DashboardAPIView(APIView):
         # Trade Management Metrics
         total_trades = auth_trades.count()
         trades_appr = auth_trades.filter(approved=True).count()
+        trades_unappr = auth_trades.filter(approved=False).count()
+
+        # Pending: Approved trades which do not yet have any sales/purchase entry
+        trades_pending = auth_trades.filter(approved=True).exclude(
+            id__in=SalesPurchase.objects.values_list('trn_id', flat=True)
+        ).count()
 
         total_presales = auth_presales.count()
         presales_appr = auth_presales.filter(approved=True).count()
@@ -99,45 +131,28 @@ class DashboardAPIView(APIView):
 
         # 2. Account Receivables (Sales Trades)
         sales_sps = auth_sps.filter(trn__trade_type='Sales')
-        sales_sp_agg = sales_sps.aggregate(total=Sum('invoice_amount'))
-        total_sales_invoiced = sales_sp_agg['total'] or 0.0
-
-        sales_pfs = auth_pfs.filter(sp__trn__trade_type='Sales')
-        sales_pf_agg = sales_pfs.aggregate(recv=Sum('balance_payment_received'), adv=Sum('advance_adjusted'))
-        sales_received = (sales_pf_agg['recv'] or 0.0) + (sales_pf_agg['adv'] or 0.0)
-
-        sales_trades = auth_trades.filter(trade_type='Sales')
-        sales_trd_agg = sales_trades.aggregate(total=Sum('advance_value_to_receive'))
-        total_sales_adv_to_receive = sales_trd_agg['total'] or 0.0
-
-        sales_prepayments = auth_prepayments.filter(trn__trade_type='Sales')
-        sales_prep_agg = sales_prepayments.aggregate(total=Sum('advance_received'))
-        total_sales_adv_received = sales_prep_agg['total'] or 0.0
-
-        invoiced_ar = max(0.0, total_sales_invoiced - sales_received)
-        advance_ar = max(0.0, total_sales_adv_to_receive - total_sales_adv_received)
-        account_receivables = round(invoiced_ar + advance_ar, 2)
+        total_ar = 0.0
+        for sp in sales_sps:
+            pfs = PaymentFinance.objects.filter(sp=sp)
+            pf_agg = pfs.aggregate(recv=Sum('balance_payment_received'), adv=Sum('advance_adjusted'))
+            total_received = (pf_agg['recv'] or 0.0) + (pf_agg['adv'] or 0.0)
+            invoiced_amt = sp.invoice_amount or 0.0
+            balance_due = max(0.0, round(invoiced_amt - total_received, 2))
+            total_ar += balance_due
+        account_receivables = round(total_ar, 2)
 
         # 3. Account Payables (Purchase Trades)
         purchase_sps = auth_sps.filter(trn__trade_type='Purchase')
-        purchase_sp_agg = purchase_sps.aggregate(inv=Sum('invoice_amount'), log=Sum('logistic_cost'))
-        total_purchase_invoiced = (purchase_sp_agg['inv'] or 0.0) + (purchase_sp_agg['log'] or 0.0)
+        total_ap = 0.0
+        for sp in purchase_sps:
+            pfs = PaymentFinance.objects.filter(sp=sp)
+            pf_agg = pfs.aggregate(paid=Sum('balance_payment_made'), adv=Sum('advance_adjusted'))
+            total_paid = (pf_agg['paid'] or 0.0) + (pf_agg['adv'] or 0.0)
+            invoiced_amt = (sp.invoice_amount or 0.0) + (sp.logistic_cost or 0.0)
+            balance_due = max(0.0, round(invoiced_amt - total_paid, 2))
+            total_ap += balance_due
+        account_payables = round(total_ap, 2)
 
-        purchase_pfs = auth_pfs.filter(sp__trn__trade_type='Purchase')
-        purchase_pf_agg = purchase_pfs.aggregate(paid=Sum('balance_payment_made'), adv=Sum('advance_adjusted'))
-        purchase_paid = (purchase_pf_agg['paid'] or 0.0) + (purchase_pf_agg['adv'] or 0.0)
-
-        purchase_trades = auth_trades.filter(trade_type='Purchase')
-        purchase_trd_agg = purchase_trades.aggregate(total=Sum('advance_value_to_receive'))
-        total_purchase_adv_expected = purchase_trd_agg['total'] or 0.0
-
-        purchase_prepayments = auth_prepayments.filter(trn__trade_type='Purchase')
-        purchase_prep_agg = purchase_prepayments.aggregate(total=Sum('advance_paid'))
-        total_purchase_adv_paid = purchase_prep_agg['total'] or 0.0
-
-        invoiced_ap = max(0.0, total_purchase_invoiced - purchase_paid)
-        advance_ap = max(0.0, total_purchase_adv_expected - total_purchase_adv_paid)
-        account_payables = round(invoiced_ap + advance_ap, 2)
 
         # Cost Management Metrics
         total_products = FinalProduct.objects.count()
@@ -191,7 +206,10 @@ class DashboardAPIView(APIView):
         return Response({
             'trade_management': {
                 'metrics': {
-                    'trades': {'total': total_trades, 'approved': trades_appr, 'pending': total_trades - trades_appr},
+                    'pending': trades_pending,
+                    'approved': trades_appr,
+                    'unapproved': trades_unappr,
+                    'trades': {'total': total_trades, 'approved': trades_appr, 'pending': trades_unappr},
                     'presales': {'total': total_presales, 'approved': presales_appr, 'pending': total_presales - presales_appr},
                     'sales_purchases': {'total': total_sales_purchases, 'approved': sales_purchases_appr, 'pending': total_sales_purchases - sales_purchases_appr},
                     'payment_finance': {'total': total_payment_finance, 'approved': payment_finance_appr, 'pending': total_payment_finance - payment_finance_appr},
@@ -246,6 +264,9 @@ class AdminPasswordResetAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        if not request.user.is_superuser and not request.user.permissions.filter(code='update_users').exists():
+            return Response({"detail": "You do not have permission to reset user passwords."}, status=status.HTTP_403_FORBIDDEN)
+
         user_id = kwargs.get('pk')
         try:
             target_user = CustomUser.objects.get(pk=user_id)

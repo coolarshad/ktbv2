@@ -28,20 +28,24 @@ const FilterComponent = ({
     return fromParam !== null ? fromParam : '';
   };
 
+  const getInitialPendingSp = () => {
+    return searchParams.get('pending_sp') === 'true' || (showPendingFilter && searchParams.get('pending') === 'true');
+  };
+
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [salesChecked, setSalesChecked] = useState(false);
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [cancelChecked, setCancelChecked] = useState(false);
-  const [pendingSpChecked, setPendingSpChecked] = useState(false);
+  const [pendingSpChecked, setPendingSpChecked] = useState(getInitialPendingSp);
   const [statusValue, setStatusValue] = useState(getInitialStatus);
 
   const isFirstRender = useRef(true);
   const isResetting = useRef(false);
   const prevPageRef = useRef(currentPage);
 
-  // Sync statusValue if searchParams in URL change externally
+  // Sync statusValue & pendingSpChecked if searchParams in URL change externally
   useEffect(() => {
     if (statusField) {
       const fromParam = searchParams.get(statusField) ?? searchParams.get('status');
@@ -50,7 +54,13 @@ const FilterComponent = ({
         setStatusValue(nextVal);
       }
     }
-  }, [searchParams, statusField]);
+    if (showPendingFilter) {
+      const isPending = searchParams.get('pending_sp') === 'true' || searchParams.get('pending') === 'true';
+      if (isPending !== pendingSpChecked) {
+        setPendingSpChecked(isPending);
+      }
+    }
+  }, [searchParams, statusField, showPendingFilter]);
 
   // Debounced search trigger
   useEffect(() => {
@@ -111,6 +121,10 @@ const FilterComponent = ({
 
       if (showPendingFilter && pendingSpChecked) {
         params.pending_sp = true;
+      }
+
+      if (searchParams.get('insurance_pending') === 'true') {
+        params.insurance_pending = true;
       }
 
       const response = await axios.get(apiEndpoint, { params });
@@ -175,6 +189,10 @@ const FilterComponent = ({
 
       if (showPendingFilter && pendingSpChecked) {
         queryParams.append('pending_sp', 'true');
+      }
+
+      if (searchParams.get('insurance_pending') === 'true') {
+        queryParams.append('insurance_pending', 'true');
       }
 
       const separator = downloadUrl.includes('?') ? '&' : '?';

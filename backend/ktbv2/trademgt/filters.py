@@ -141,10 +141,34 @@ class TradeFilter(SearchableFilterSet):
     # cancel = django_filters.BooleanFilter(field_name='trade_category', lookup_expr='exact')
     pending = django_filters.BooleanFilter(method='filter_pending')
     pending_sp = django_filters.BooleanFilter(method='filter_pending_sp')
+    insurance_pending = django_filters.BooleanFilter(method='filter_insurance_pending')
+
+    def filter_insurance_pending(self, queryset, name, value):
+        if value is True:
+            return queryset.filter(
+                Q(insurance_policy_number__isnull=True) |
+                Q(insurance_policy_number__exact='') |
+                Q(insurance_policy_number__iexact='na') |
+                Q(insurance_policy_number__iexact='n/a') |
+                Q(insurance_policy_number__iexact='n.a.') |
+                Q(insurance_policy_number__iexact='pending') |
+                Q(insurance_policy_number__iexact='none')
+            ).distinct()
+        elif value is False:
+            return queryset.exclude(
+                Q(insurance_policy_number__isnull=True) |
+                Q(insurance_policy_number__exact='') |
+                Q(insurance_policy_number__iexact='na') |
+                Q(insurance_policy_number__iexact='n/a') |
+                Q(insurance_policy_number__iexact='n.a.') |
+                Q(insurance_policy_number__iexact='pending') |
+                Q(insurance_policy_number__iexact='none')
+            ).distinct()
+        return queryset
 
     def filter_pending_sp(self, queryset, name, value):
         if value:
-            return queryset.filter(salespurchase__isnull=True)
+            return queryset.filter(salespurchase__isnull=True).distinct()
         return queryset
 
     def filter_pending(self, queryset, name, value):

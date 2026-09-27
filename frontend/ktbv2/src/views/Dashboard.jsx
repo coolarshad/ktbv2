@@ -4,16 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import {
   FaChartLine,
-  FaBoxOpen,
-  FaFlask,
-  FaVial,
   FaBell,
   FaCheckCircle,
   FaClock,
+  FaHourglassHalf,
   FaFileInvoiceDollar,
   FaMoneyCheckAlt,
   FaClipboardList,
-  FaBox,
   FaCreditCard,
   FaDownload
 } from 'react-icons/fa';
@@ -157,20 +154,27 @@ export default function Dashboard() {
           </div>
 
           {/* Insurance Pending Card */}
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+          <div
+            onClick={() => navigate('/trade-approved?insurance_pending=true')}
+            className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-6 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+          >
             <div>
               <div className="flex justify-between items-start mb-2">
                 <span className="text-amber-100 font-medium text-sm">Insurance Pending</span>
-                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
+                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm group-hover:scale-110 transition-transform">
                   <FaClipboardList size={22} className="text-white" />
                 </div>
               </div>
               <h3 className="text-3xl font-extrabold tracking-tight mt-1">{financialSummary.insurance_pending || 0} <span className="text-lg font-medium text-amber-100">Trades</span></h3>
-              <p className="text-xs text-amber-100 mt-1">Trades with pending policy details or 'NA'</p>
+              <p className="text-xs text-amber-100 mt-1">Trades with &apos;NA&apos; or missing insurance policy</p>
             </div>
-            <div className="mt-4 pt-3 border-t border-amber-400/30 flex justify-end">
+            <div className="mt-4 pt-3 border-t border-amber-400/30 flex items-center justify-between">
+              <span className="text-xs text-amber-100 font-medium underline group-hover:text-white transition-colors">View Trades &rarr;</span>
               <button
-                onClick={() => downloadExcel('/excel/export/insurance-pending/', 'Insurance_Pending_Summary.xlsx')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadExcel('/excel/export/insurance-pending/', 'Insurance_Pending_Summary.xlsx');
+                }}
                 className="flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition backdrop-blur-sm"
               >
                 <FaDownload size={12} /> Export Excel
@@ -187,161 +191,54 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold text-gray-800">Trade Management</h2>
         </div>
 
-        {/* Trade KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        {/* Trade KPI Cards: 3 Cards (Pending, Approved, Unapproved) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard
-            title="Total Trades"
-            data={tradeMetrics.trades || 0}
-            icon={<FaChartLine className="text-blue-500" size={24} />}
-            color="bg-blue-50"
-            to="/trade-approved"
-            toApproved="/trade-approved"
-            toPending="/trade-approval"
-          />
-          <StatCard
-            title="Pre-Sales"
-            data={tradeMetrics.presales || 0}
-            icon={<FaClipboardList className="text-indigo-500" size={24} />}
-            color="bg-indigo-50"
-            to="/pre-sale-purchase"
-            toApproved="/pre-sale-purchase?approved=true"
-            toPending="/pre-sale-purchase?approved=false"
-          />
-          <StatCard
-            title="Pre Payment"
-            data={tradeMetrics.pre_payment || 0}
-            icon={<FaCreditCard className="text-cyan-500" size={24} />}
-            color="bg-cyan-50"
-            to="/pre-payment"
-            toApproved="/pre-payment?reviewed=true"
-            toPending="/pre-payment?reviewed=false"
-          />
-          <StatCard
-            title="Sales Purchases"
-            data={tradeMetrics.sales_purchases || 0}
-            icon={<FaFileInvoiceDollar className="text-teal-500" size={24} />}
-            color="bg-teal-50"
-            to="/sales-purchases"
-            toApproved="/sales-purchases?reviewed=true"
-            toPending="/sales-purchases?reviewed=false"
-          />
-          <StatCard
-            title="Payment Finance"
-            data={tradeMetrics.payment_finance || 0}
-            icon={<FaMoneyCheckAlt className="text-emerald-500" size={24} />}
-            color="bg-emerald-50"
-            to="/payment-finance"
-            toApproved="/payment-finance?reviewed=true"
-            toPending="/payment-finance?reviewed=false"
-          />
-        </div>
-
-
-
-        {/* Recent Inventory Table */}
-        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
-            <h3 className="text-lg font-semibold text-gray-800">Inventory Stock Summary</h3>
-            <button
-              onClick={downloadInventoryExcel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200"
-            >
-              <FaDownload size={11} />
-              Export
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 text-gray-500 text-sm">
-                  <th className="p-4 font-medium">Product Name</th>
-                  <th className="p-4 font-medium">Stock (Quantity)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inventoryRecent.map((item, i) => (
-                  <tr key={i} className="border-b border-gray-50 hover:bg-cyan-50 transition-colors">
-                    <td className="p-4 text-gray-800 font-medium">{item.product_name || '-'}</td>
-                    <td className="p-4 text-gray-800 font-semibold">{item.total_stock} {item.unit || ''}</td>
-                  </tr>
-                ))}
-                {inventoryRecent.length === 0 && (
-                  <tr>
-                    <td colSpan="2" className="p-8 text-center text-gray-400">No inventory records found.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <hr className="border-gray-200 mb-12" />
-
-      {/* SECTION 2: COST MANAGEMENT */}
-      <div>
-        <div className="flex items-center mb-6">
-          <div className="w-2 h-8 bg-purple-500 rounded-full mr-3"></div>
-          <h2 className="text-2xl font-bold text-gray-800">Cost Management</h2>
-        </div>
-
-        {/* Cost KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <StatCard
-            title="Final Products"
-            data={costMetrics.products || 0}
-            icon={<FaBoxOpen className="text-purple-500" size={24} />}
-            color="bg-purple-50"
-            to="/final-products"
-            toApproved="/final-products?approved=true"
-            toPending="/final-products?approved=false"
-          />
-          <StatCard
-            title="Consumptions"
-            data={costMetrics.consumptions || 0}
-            icon={<FaBox className="text-pink-500" size={24} />}
-            color="bg-pink-50"
-            to="/consumption-formula"
-            toApproved="/consumption-formula?approved=true"
-            toPending="/consumption-formula?approved=false"
-          />
-          <StatCard
-            title="Additives"
-            data={costMetrics.additives || 0}
-            icon={<FaFlask className="text-green-500" size={24} />}
-            color="bg-green-50"
-            to="/additives"
-            toApproved="/additives?approved=true"
-            toPending="/additives?approved=false"
-          />
-          <StatCard
-            title="Raw Materials"
-            data={costMetrics.raw_materials || 0}
-            icon={<FaVial className="text-amber-500" size={24} />}
+            title="Pending"
+            data={tradeMetrics.pending ?? 0}
+            icon={<FaClock className="text-amber-500" size={24} />}
             color="bg-amber-50"
-            to="/raw-materials"
-            toApproved="/raw-materials?approved=true"
-            toPending="/raw-materials?approved=false"
+            to="/trade-approved?pending_sp=true"
+            subtitle="Approved trades without sales/purchase entry"
           />
           <StatCard
-            title="Packings"
-            data={costMetrics.packings || 0}
-            icon={<FaBox className="text-orange-500" size={24} />}
-            color="bg-orange-50"
-            to="/packings"
-            toApproved="/packings?approved=true"
-            toPending="/packings?approved=false"
+            title="Approved"
+            data={tradeMetrics.approved ?? (tradeMetrics.trades?.approved ?? 0)}
+            icon={<FaCheckCircle className="text-emerald-500" size={24} />}
+            color="bg-emerald-50"
+            to="/trade-approved"
+            subtitle="Total approved trades"
+          />
+          <StatCard
+            title="Unapproved"
+            data={tradeMetrics.unapproved ?? (tradeMetrics.trades?.pending ?? 0)}
+            icon={<FaHourglassHalf className="text-blue-500" size={24} />}
+            color="bg-blue-50"
+            to="/trade-approval"
+            subtitle="Trades awaiting approval"
           />
         </div>
 
-
+        {/* Inventory Stock Export Section */}
+        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow duration-300">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">Inventory Stock Summary</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Export and download the full inventory stock summary report in Excel format</p>
+          </div>
+          <button
+            onClick={downloadInventoryExcel}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition-all duration-200"
+          >
+            <FaDownload size={12} />
+            Export Excel
+          </button>
+        </div>
       </div>
-
     </div>
   );
 }
 
-function StatCard({ title, data, icon, color, to, toApproved, toPending }) {
+function StatCard({ title, data, icon, color, to, toApproved, toPending, subtitle }) {
   const navigate = useNavigate();
   const value = typeof data === 'object' ? data.total : data;
   const approved = typeof data === 'object' ? data.approved : null;
@@ -380,6 +277,9 @@ function StatCard({ title, data, icon, color, to, toApproved, toPending }) {
       <div>
         <p className="text-gray-500 text-sm font-medium mb-1">{title}</p>
         <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
+        {subtitle && (
+          <p className="text-xs text-gray-400 mt-2 font-normal">{subtitle}</p>
+        )}
         {approved !== null && (
           <div className="flex items-center space-x-2 mt-3 text-xs font-medium">
             <span

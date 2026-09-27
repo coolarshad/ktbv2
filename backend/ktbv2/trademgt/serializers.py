@@ -1,4 +1,5 @@
 # serializers.py
+import re
 import math
 from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
@@ -153,6 +154,16 @@ class TradeSerializer(serializers.ModelSerializer):
             if Trade.objects.filter(trn=value).exists():
                 raise serializers.ValidationError(f"Trade with TRN '{value}' already exists.")
         return value
+
+    def validate_insurance_policy_number(self, value):
+        if not value:
+            return 'NA'
+        val_str = str(value).strip()
+        if val_str.upper() == 'NA':
+            return 'NA'
+        if len(val_str) <= 8 or not re.match(r'^[a-zA-Z0-9\-_/]+$', val_str):
+            raise serializers.ValidationError("Insurance Policy Number must be 'NA' or more than 8 alphanumeric characters.")
+        return val_str
 
     def get_trade_products(self, obj):
         products = obj.trade_products.all()

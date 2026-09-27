@@ -683,6 +683,18 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         }
 
+        // Validate insurance_policy_number: must be 'NA' or > 8 alphanumeric characters
+        if (!formData.insurance_policy_number || formData.insurance_policy_number.trim() === '') {
+            errors.insurance_policy_number = 'Insurance Policy Number cannot be empty! (Enter "NA" if not applicable)';
+        } else {
+            const insVal = formData.insurance_policy_number.trim();
+            const isNA = insVal.toUpperCase() === 'NA';
+            const isValidAlphanumeric = insVal.length > 8 && /^[a-zA-Z0-9\-_/]+$/.test(insVal);
+            if (!isNA && !isValidAlphanumeric) {
+                errors.insurance_policy_number = 'Insurance Policy Number must be "NA" or more than 8 alphanumeric characters.';
+            }
+        }
+
         // Validate tradeProducts array fields but skip 'loi'
         formData.tradeProducts.forEach((product, index) => {
             for (const [key, value] of Object.entries(product)) {
@@ -990,6 +1002,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Address"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('address')}`}
+                        readOnly={true}
                     />
                     {validationErrors.address && <p className="text-red-500">{validationErrors.address}</p>}
                 </div>
@@ -1131,13 +1144,15 @@ const TradeForm = ({ mode = 'add' }) => {
                     {validationErrors.trader_name && <p className="text-red-500">{validationErrors.trader_name}</p>}
                 </div>
                 <div>
-                    <label htmlFor="insurance_policy_number" className="block text-sm font-medium text-gray-700">Insurance Policy Number</label>
+                    <label htmlFor="insurance_policy_number" className="block text-sm font-medium text-gray-700">
+                        Insurance Policy Number <span className="text-xs text-gray-500 font-normal">(&gt;8 alphanumeric chars, or &apos;NA&apos;)</span>
+                    </label>
                     <input
                         type="text"
                         name="insurance_policy_number"
                         value={formData.insurance_policy_number}
                         onChange={handleChange}
-                        placeholder="Insurance Policy Number"
+                        placeholder="e.g. POL12345678 or NA"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('insurance_policy_number')}`}
                     />
                     {validationErrors.insurance_policy_number && <p className="text-red-500">{validationErrors.insurance_policy_number}</p>}
