@@ -697,6 +697,10 @@ const TradeForm = ({ mode = 'add' }) => {
 
         // Validate tradeProducts array fields but skip 'loi'
         formData.tradeProducts.forEach((product, index) => {
+            if (!product.specs) {
+                errors[`tradeProducts[${index}].specs`] = 'Specs is required';
+            }
+
             for (const [key, value] of Object.entries(product)) {
                 // Validate 'loi' only if 'product_name_for_client' is not 'NA' or 'na'
                 if (key === 'product_name_for_client' && value.toLowerCase() !== 'na') {
@@ -1289,8 +1293,13 @@ const TradeForm = ({ mode = 'add' }) => {
                                     type="file"
                                     name="specs"
                                     onChange={(e) => handleChange(e, index, 'products')}
-                                    className="border border-gray-300 p-2 rounded w-full"
+                                    className={`border border-gray-300 p-2 rounded w-full ${getFieldErrorClass(`tradeProducts[${index}].specs`)}`}
                                 />
+                                {validationErrors[`tradeProducts[${index}].specs`] && (
+                                    <p className="text-red-500">
+                                        {validationErrors[`tradeProducts[${index}].specs`]}
+                                    </p>
+                                )}
                                 {product.specs && typeof product.specs === 'string' && (
                                     <a
                                         href={product.specs.startsWith('http') ? product.specs : `${BASE_URL}${product.specs.startsWith('/') ? '' : '/'}${product.specs}`}

@@ -154,10 +154,10 @@ function PL() {
             <span className="text-sm border-gray-200">BL Qty: {row.bl_qty}</span>
             <span className="text-sm border-gray-200">Trade Unit: {row.trade_qty_unit}</span>
             <span className="text-sm border-gray-200">Rate in USD: {row.rate_in_usd}</span>
-            <span className="text-sm border-gray-200">Commission Rate: {findTrade(data?.sp, row)?.commission_rate}</span>
+            {/* <span className="text-sm border-gray-200">Commission Rate: {findTrade(data?.sp, row)?.commission_rate}</span> */}
             {/* <span className="text-sm border-gray-200">Packaging Supplier: {findTrade(data.sp,row).supplier.name}</span> */}
-            <span className="text-sm border-gray-200">Packaging Sum: {sumPackingCost(data?.sp)}</span>
-            <span className="text-sm border-gray-200">Logistic: {row.logistic}</span>
+            {/* <span className="text-sm border-gray-200">Packaging Sum: {sumPackingCost(data?.sp)}</span> */}
+            {/* <span className="text-sm border-gray-200">Logistic: {row.logistic}</span> */}
             {/* <span>Product Code: {row.product_code}</span> */}
           </div>
         </div>
