@@ -1319,11 +1319,12 @@ class ExportAccountReceivablesExcelView(APIView):
         from django.db.models import Sum
         from accounts.mixins import get_authorized_queryset
         from trademgt.models import (
-            Trade, SalesPurchase, PaymentFinance, Company, Kyc
+            Trade, SalesPurchase, PaymentFinance, Company, Kyc, Currency
         )
 
         company_map = {str(c.id): c.name for c in Company.objects.all()}
         kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
+        currency_map = {str(curr.id): curr.name for curr in Currency.objects.all()}
 
         auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(
             trn__trade_type='Sales'
@@ -1337,8 +1338,8 @@ class ExportAccountReceivablesExcelView(APIView):
 
         headers = [
             'TRN Ref', 'Company', 'Customer Name', 'Invoice Number', 'Invoice Date',
-            'BL Number', 'Invoiced Amount ($)', 'Amount Received ($)', 'FORMULA',
-            'Balance Receivable ($)', 'Trader Name', 'Status'
+            'BL Number', 'Currency', 'Invoiced Amount', 'Amount Received',
+            'Balance Receivable', 'Trader Name', 'Status'
         ]
         ws.append(headers)
 
@@ -1374,6 +1375,7 @@ class ExportAccountReceivablesExcelView(APIView):
             trade_obj = sp.trn
             raw_comp = str(trade_obj.company) if trade_obj and trade_obj.company else ''
             raw_cust = str(trade_obj.customer_company_name) if trade_obj and trade_obj.customer_company_name else ''
+            raw_curr = str(trade_obj.currency_selection) if trade_obj and trade_obj.currency_selection else ''
 
             data_rows_count += 1
             current_row = data_rows_count + 1
@@ -1385,26 +1387,26 @@ class ExportAccountReceivablesExcelView(APIView):
                 sp.invoice_number or '',
                 str(sp.invoice_date) if sp.invoice_date else '',
                 sp.bl_number or '',
+                currency_map.get(raw_curr, raw_curr),
                 round(invoiced_amt, 2),
                 round(total_received, 2),
-                f"=G{current_row}-H{current_row}",
-                balance_due,
+                f"=H{current_row}-I{current_row}",
                 trade_obj.trader_name if trade_obj else '',
                 'Settled' if balance_due <= 0 else 'Pending Receivable',
             ]
             ws.append(row_data)
 
             # Apply cell styles for data row
-            for col_idx in range(1, 13):
+            for col_idx in range(1, len(headers) + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = data_border
                 cell.font = Font(name="Calibri", size=10)
 
                 # Format numeric currency columns
-                if col_idx in (7, 8, 9, 10):
+                if col_idx in (8, 9, 10):
                     cell.number_format = '#,##0.00'
                     cell.alignment = align_right
-                elif col_idx in (1, 5, 6, 12):
+                elif col_idx in (1, 5, 6, 7, 12):
                     cell.alignment = align_center
                 else:
                     cell.alignment = align_left
@@ -1419,13 +1421,13 @@ class ExportAccountReceivablesExcelView(APIView):
             summary_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid")
             summary_font = Font(name="Calibri", size=11, bold=True, color="000000")
 
-            label_cell = ws.cell(row=summary_row, column=8, value="TOTAL")
+            label_cell = ws.cell(row=summary_row, column=7, value="TOTAL")
             label_cell.font = summary_font
             label_cell.alignment = Alignment(horizontal="right", vertical="center")
             label_cell.fill = summary_fill
             label_cell.border = double_bottom
 
-            for c_idx in (9, 10):
+            for c_idx in (8, 9, 10):
                 col_let = get_column_letter(c_idx)
                 sum_cell = ws.cell(row=summary_row, column=c_idx, value=f"=SUM({col_let}2:{col_let}{data_rows_count + 1})")
                 sum_cell.font = summary_font
@@ -1472,10 +1474,13 @@ class ExportAccountPayablesExcelView(APIView):
         from openpyxl.utils import get_column_letter
         from django.db.models import Sum
         from accounts.mixins import get_authorized_queryset
-        from trademgt.models import Trade, SalesPurchase, PaymentFinance, Company, Kyc
+        from trademgt.models import (
+            Trade, SalesPurchase, PaymentFinance, Company, Kyc, Currency
+        )
 
         company_map = {str(c.id): c.name for c in Company.objects.all()}
         kyc_map = {str(k.id): k.name for k in Kyc.objects.all()}
+        currency_map = {str(curr.id): curr.name for curr in Currency.objects.all()}
 
         auth_sps = get_authorized_queryset(request, SalesPurchase.objects.all()).filter(
             trn__trade_type='Purchase'
@@ -1489,8 +1494,8 @@ class ExportAccountPayablesExcelView(APIView):
 
         headers = [
             'TRN Ref', 'Company', 'Supplier/Vendor Name', 'Invoice Number', 'Invoice Date',
-            'Liner / Logistic Provider', 'Invoice + Logistic ($)', 'Amount Paid ($)',
-            'AMOUNT CALC', 'Balance Payable ($)', 'Trader Name', 'Status'
+            'Liner / Logistic Provider', 'Currency', 'Invoice + Logistic', 'Amount Paid',
+            'AMOUNT CALC', 'Balance Payable', 'Trader Name', 'Status'
         ]
         ws.append(headers)
 
@@ -1525,6 +1530,7 @@ class ExportAccountPayablesExcelView(APIView):
             trade_obj = sp.trn
             raw_comp = str(trade_obj.company) if trade_obj and trade_obj.company else ''
             raw_cust = str(trade_obj.customer_company_name) if trade_obj and trade_obj.customer_company_name else ''
+            raw_curr = str(trade_obj.currency_selection) if trade_obj and trade_obj.currency_selection else ''
 
             data_rows_count += 1
             current_row = data_rows_count + 1
@@ -1536,9 +1542,10 @@ class ExportAccountPayablesExcelView(APIView):
                 sp.invoice_number or '',
                 str(sp.invoice_date) if sp.invoice_date else '',
                 sp.liner or (trade_obj.logistic_provider if trade_obj else ''),
+                currency_map.get(raw_curr, raw_curr),
                 round(invoiced_amt, 2),
                 round(total_paid, 2),
-                f"=G{current_row}-H{current_row}",
+                f"=H{current_row}-I{current_row}",
                 balance_due,
                 trade_obj.trader_name if trade_obj else '',
                 'Settled' if balance_due <= 0 else 'Pending Payable',
@@ -1546,15 +1553,15 @@ class ExportAccountPayablesExcelView(APIView):
             ws.append(row_data)
 
             # Cell styles
-            for col_idx in range(1, 13):
+            for col_idx in range(1, len(headers) + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = data_border
                 cell.font = Font(name="Calibri", size=10)
 
-                if col_idx in (7, 8, 9, 10):
+                if col_idx in (8, 9, 10, 11):
                     cell.number_format = '#,##0.00'
                     cell.alignment = align_right
-                elif col_idx in (1, 5, 12):
+                elif col_idx in (1, 5, 7, 13):
                     cell.alignment = align_center
                 else:
                     cell.alignment = align_left
@@ -1569,13 +1576,13 @@ class ExportAccountPayablesExcelView(APIView):
             summary_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid")
             summary_font = Font(name="Calibri", size=11, bold=True, color="000000")
 
-            label_cell = ws.cell(row=summary_row, column=8, value="TOTAL")
+            label_cell = ws.cell(row=summary_row, column=7, value="TOTAL")
             label_cell.font = summary_font
             label_cell.alignment = Alignment(horizontal="right", vertical="center")
             label_cell.fill = summary_fill
             label_cell.border = double_bottom
 
-            for c_idx in (9, 10):
+            for c_idx in (8, 9, 10, 11):
                 col_let = get_column_letter(c_idx)
                 sum_cell = ws.cell(row=summary_row, column=c_idx, value=f"=SUM({col_let}2:{col_let}{data_rows_count + 1})")
                 sum_cell.font = summary_font
@@ -1654,32 +1661,32 @@ class ExportInsurancePendingExcelView(APIView):
                 'TRN Ref': trade.trn or '',
                 'Trade Date': str(trade.trd) if trade.trd else '',
                 'Trade Type': trade.trade_type or '',
-                'Trade Category': trade.trade_category or '',
-                'Company': company_map.get(raw_comp, raw_comp),
+                # 'Trade Category': trade.trade_category or '',
+                # 'Company': company_map.get(raw_comp, raw_comp),
                 'Customer / Vendor': kyc_map.get(raw_cust, raw_cust),
                 'Trader Name': trade.trader_name or '',
                 'Insurance Policy Number': trade.insurance_policy_number or 'NA',
-                'Approval Status': 'Approved' if trade.approved else 'Pending',
+                # 'Approval Status': 'Approved' if trade.approved else 'Pending',
                 'Contract Value': trade.contract_value or 0.0,
                 'Currency': currency_map.get(raw_curr, raw_curr),
-                'Exchange Rate': trade.exchange_rate or 1.0,
-                'Payment Term': payment_map.get(raw_pay, raw_pay),
-                'Advance Value to Receive': trade.advance_value_to_receive or 0.0,
+                # 'Exchange Rate': trade.exchange_rate or 1.0,
+                # 'Payment Term': payment_map.get(raw_pay, raw_pay),
+                # 'Advance Value to Receive': trade.advance_value_to_receive or 0.0,
                 'Incoterm': trade.incoterm or '',
                 'POL': trade.pol or '',
                 'POD': trade.pod or '',
-                'ETA': trade.eta or '',
-                'ETD': trade.etd or '',
-                'Shipper in BL': trade.shipper_in_bl or '',
-                'Consignee in BL': trade.consignee_in_bl or '',
-                'Notify Party in BL': trade.notify_party_in_bl or '',
-                'Logistic Provider': trade.logistic_provider or '',
-                'Estimated Logistic Cost': trade.estimated_logistic_cost or 0.0,
-                'Bank': bank_map.get(raw_bank, raw_bank),
-                'Account Number': trade.account_number or '',
-                'Swift Code': trade.swift_code or '',
-                'Commission Agent': trade.commission_agent or '',
-                'Commission Value': trade.commission_value or 0.0,
+                # 'ETA': trade.eta or '',
+                # 'ETD': trade.etd or '',
+                # 'Shipper in BL': trade.shipper_in_bl or '',
+                # 'Consignee in BL': trade.consignee_in_bl or '',
+                # 'Notify Party in BL': trade.notify_party_in_bl or '',
+                # 'Logistic Provider': trade.logistic_provider or '',
+                # 'Estimated Logistic Cost': trade.estimated_logistic_cost or 0.0,
+                # 'Bank': bank_map.get(raw_bank, raw_bank),
+                # 'Account Number': trade.account_number or '',
+                # 'Swift Code': trade.swift_code or '',
+                # 'Commission Agent': trade.commission_agent or '',
+                # 'Commission Value': trade.commission_value or 0.0,
                 'Remarks': trade.remarks or '',
             })
 
