@@ -9,7 +9,11 @@ from notifications.models import Notification
 from rest_framework import generics, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from accounts.models import CustomUser, Organization, Permission, ActivityLog
-from .serializers import OrganizationSerializer, PermissionSerializer, UserSerializer, UserProfileSerializer, ChangePasswordSerializer, ActivityLogSerializer
+from .serializers import (
+    OrganizationSerializer, PermissionSerializer, UserSerializer,
+    UserProfileSerializer, ChangePasswordSerializer, ActivityLogSerializer,
+    UserRecipientSerializer
+)
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
 class OrganizationListCreateView(generics.ListCreateAPIView):
@@ -62,6 +66,34 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.all().order_by('-id')
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, UserCRUDPermission]
+
+class NotifyRecipientListView(generics.ListAPIView):
+    """
+    Returns active users for notification/email multiselect dropdowns.
+    - Superusers, Manager2, or users with 'view_users' permission see all active users.
+    - Regular users see active members of any organization they belong to, plus themselves.
+    - Users with no organization see themselves.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserRecipientSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return CustomUser.objects.none()
+
+        if user.is_superuser or user.role == 'Manager2' or user.permissions.filter(code='view_users').exists():
+            return CustomUser.objects.filter(is_active=True).order_by('name')
+
+        org_ids = list(user.organizations.values_list('id', flat=True))
+        if org_ids:
+            return CustomUser.objects.filter(
+                is_active=True,
+                organizations__in=org_ids
+            ).distinct().order_by('name')
+
+        return CustomUser.objects.filter(id=user.id, is_active=True)
+
 
 # List + Create
 class PermissionListCreateView(generics.ListCreateAPIView):

@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     PermissionListCreateView, PermissionRetrieveUpdateDestroyView,
     UserListCreateView, UserRetrieveUpdateDestroyView,
+    NotifyRecipientListView,
     OrganizationListCreateView, OrganizationRetrieveUpdateDestroyView,
     DashboardAPIView, UserProfileAPIView, ChangePasswordAPIView,
     AdminPasswordResetAPIView, ActivityLogListAPIView
@@ -9,8 +10,10 @@ from .views import (
 
 urlpatterns = [
     path('users/', UserListCreateView.as_view()),
+    path('notify-recipients/', NotifyRecipientListView.as_view(), name='notify-recipients'),
     path('users/<int:pk>/', UserRetrieveUpdateDestroyView.as_view()),
     path('users/<int:pk>/reset-password/', AdminPasswordResetAPIView.as_view(), name='admin-reset-password'),
+
 
     # Organizations
     path('organizations/', OrganizationListCreateView.as_view(), name='organization-list-create'),

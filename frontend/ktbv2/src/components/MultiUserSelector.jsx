@@ -11,7 +11,7 @@ const MultiUserSelector = ({ selectedUsers = [], onChange, message = '', onMessa
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get('/accounts/users');
+        const res = await axios.get('/accounts/notify-recipients/');
         if (Array.isArray(res.data)) {
           setUsers(res.data);
         } else {

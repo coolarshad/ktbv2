@@ -16,6 +16,12 @@ class PermissionListView(ListAPIView):
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
 
+class UserRecipientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'name', 'email']
+
+
 class UserSerializer(serializers.ModelSerializer):
     organizations = OrganizationSerializer(many=True, read_only=True)
     organization_ids = serializers.PrimaryKeyRelatedField(
