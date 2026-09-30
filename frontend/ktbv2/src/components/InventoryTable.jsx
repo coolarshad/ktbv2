@@ -6,6 +6,11 @@ import { useAuth } from '../context/AuthContext';
 const InventoryTable = ({ data , onDelete, onView }) => { // Default value for data
   const { user } = useAuth();
   
+  const filteredData = (data || []).filter(item => {
+    const qty = Number(item.quantity);
+    return !isNaN(qty) && Math.abs(qty) > 0.00001;
+  });
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
@@ -22,8 +27,8 @@ const InventoryTable = ({ data , onDelete, onView }) => { // Default value for d
           </tr>
         </thead>
         <tbody>
-          {data && data.length > 0 ? (
-            data.map((item, index) => (
+          {filteredData && filteredData.length > 0 ? (
+            filteredData.map((item, index) => (
               <tr key={index}  className="hover:bg-gray-100 cursor-pointer" onClick={() => onView(item.id)}>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.productName.name}</td>

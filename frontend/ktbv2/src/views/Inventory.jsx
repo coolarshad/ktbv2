@@ -92,9 +92,14 @@ const Inventory = () => {
     if (loading) return <Loading />;
     if (error) return <p>{error}</p>;
 
+    const nonZeroData = (data || []).filter(item => {
+      const qty = Number(item.quantity);
+      return !isNaN(qty) && Math.abs(qty) > 0.00001;
+    });
+
     const indexOfLastItem = currentPage * 50;
     const indexOfFirstItem = indexOfLastItem - 50;
-    const currentItems = data?.slice(indexOfFirstItem, indexOfLastItem) || [];
+    const currentItems = nonZeroData.slice(indexOfFirstItem, indexOfLastItem);
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     
@@ -109,7 +114,7 @@ const Inventory = () => {
         </div>
         <div className=" rounded p-2">
         <InventoryTable data={currentItems} onDelete={handleDelete} onView={handleView}/>
-        <Pagination itemsPerPage={50} totalItems={data?.length || 0} paginate={paginate} currentPage={currentPage} />
+        <Pagination itemsPerPage={50} totalItems={nonZeroData.length} paginate={paginate} currentPage={currentPage} />
         </div>
           {/* Modal */}
           {modalVisible && (

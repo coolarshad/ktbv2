@@ -1123,7 +1123,7 @@ class ExportInventoryExcelView(APIView):
     def get(self, request, *args, **kwargs):
         from trademgt.models import Inventory
         from trademgt.serializers import InventorySerializer
-        objs = Inventory.objects.all()
+        objs = Inventory.objects.exclude(quantity=0)
         serializer = InventorySerializer(objs, many=True)
         data = self.prepare_excel_data(serializer.data)
         df = pd.DataFrame(data)

@@ -2853,7 +2853,7 @@ class PFView(APIView):
             return Response(serializer.data)
 
 class InventoryViewSet(viewsets.ModelViewSet):
-    queryset = Inventory.objects.all()
+    queryset = Inventory.objects.exclude(quantity=0)
     serializer_class = InventorySerializer
 
     def destroy(self, request, *args, **kwargs):

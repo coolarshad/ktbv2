@@ -12,6 +12,11 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const format4Dec = (val) =>
+    val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
+      ? Number(val).toFixed(4)
+      : (val || '-');
+
   const componentRef = useRef();
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
@@ -97,7 +102,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.trd)}</td>
 
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.approval_date)}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade_qty || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format4Dec(row.trade_qty)}</td>
                   {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{trade.productCode}</td> */}
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                     <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={row.trade.reviewed} readOnly />
@@ -374,7 +379,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Total Contract Qty:</span>
-                        <span>{product.total_contract_qty}</span>
+                        <span>{format4Dec(product.total_contract_qty)}</span>
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Total Contract Qty Unit:</span>
@@ -386,7 +391,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Contract Balance Qty:</span>
-                        <span>{product.contract_balance_qty}</span>
+                        <span>{format4Dec(product.contract_balance_qty)}</span>
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Contract Balance Qty Unit:</span>
@@ -394,7 +399,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Trade Qty:</span>
-                        <span>{product.trade_qty}</span>
+                        <span>{format4Dec(product.trade_qty)}</span>
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Trade Qty Unit:</span>

@@ -27,8 +27,12 @@ function SalesPurchases() {
   const [selectedSP, setSP] = useState(null);
   const [notifiedUsers, setNotifiedUsers] = useState([]);
   const [notificationMessage, setNotificationMessage] = useState("");
-
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
+
+  const format4Dec = (val) =>
+    val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
+      ? Number(val).toFixed(4)
+      : (val || '-');
 
   const fetchData = async () => {
     try {
@@ -361,7 +365,7 @@ function SalesPurchases() {
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
                       {/* <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td> */}
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.bl_qty)}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.batch_number}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.production_date}</td>

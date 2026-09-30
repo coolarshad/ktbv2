@@ -28,8 +28,12 @@ function TradeApproval() {
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [notifiedUsers, setNotifiedUsers] = useState([]);
   const [notificationMessage, setNotificationMessage] = useState('');
-
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
+
+  const format4Dec = (val) =>
+    val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
+      ? Number(val).toFixed(4)
+      : (val || '-');
 
   const fetchTradeData = async () => {
     try {
@@ -446,7 +450,7 @@ function TradeApproval() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Total Contract Qty:</span>
-                      <span>{product.total_contract_qty}</span>
+                      <span>{format4Dec(product.total_contract_qty)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Total Contract Qty Unit:</span>
@@ -458,7 +462,7 @@ function TradeApproval() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Contract Balance Qty:</span>
-                      <span>{product.contract_balance_qty}</span>
+                      <span>{format4Dec(product.contract_balance_qty)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Contract Balance Qty Unit:</span>
@@ -466,7 +470,7 @@ function TradeApproval() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Trade Qty:</span>
-                      <span>{product.trade_qty}</span>
+                      <span>{format4Dec(product.trade_qty)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Trade Qty Unit:</span>
