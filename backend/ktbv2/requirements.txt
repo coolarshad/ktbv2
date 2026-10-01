@@ -19,3 +19,4 @@ Pillow
 celery
 redis
 djangorestframework-simplejwt==5.5.1
+xlrd

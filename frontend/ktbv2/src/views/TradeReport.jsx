@@ -150,7 +150,11 @@ const TradeReport = () => {
                             </tr>
                             <tr>
                                 <td className="px-4 py-2 border-b">Advance Value to Receive/Pay</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade.advance_value_to_receive}</td>
+                                <td className="px-4 py-2 border-b">{reportData?.trade?.advance_value_to_receive}</td>
+                            </tr>
+                            <tr>
+                                <td className="px-4 py-2 border-b">Incoterm</td>
+                                <td className="px-4 py-2 border-b">{reportData?.trade?.incoterm || 'N/A'}</td>
                             </tr>
                         </tbody>
                         </table>
