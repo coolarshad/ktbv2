@@ -8,9 +8,11 @@ export const capitalizeKey = (key) => {
 
 export const BASE_URL = import.meta.env.VITE_API_URL !== undefined 
     ? import.meta.env.VITE_API_URL 
-    : (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '5173' 
-        ? 'http://localhost:8000' 
-        : '');
+    : (typeof window !== 'undefined' 
+        ? (window.location.hostname === 'localhost' && window.location.port === '5173' 
+            ? 'http://localhost:8000' 
+            : window.location.origin) 
+        : 'http://localhost:8000');
 
 export const hasPermission = (user, requiredCode) => {
     if (!user) return false;
