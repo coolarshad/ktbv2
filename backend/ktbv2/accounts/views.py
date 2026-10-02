@@ -161,26 +161,33 @@ class DashboardAPIView(APIView):
         )
         insurance_pending_count = auth_trades.filter(insurance_pending_query).count()
 
-        # 2. Account Receivables (Sales Trades)
-        sales_sps = auth_sps.filter(trn__trade_type='Sales')
+        # 2. Account Receivables (Sales Trades) - Optimized with single query annotation
+        from django.db.models import Value, FloatField
+        from django.db.models.functions import Coalesce
+
+        sales_sps = auth_sps.filter(trn__trade_type='Sales').annotate(
+            total_received=Coalesce(Sum('pfs__balance_payment_received'), Value(0.0), output_field=FloatField()) +
+                           Coalesce(Sum('pfs__advance_adjusted'), Value(0.0), output_field=FloatField())
+        ).values('invoice_amount', 'total_received')
+
         total_ar = 0.0
         for sp in sales_sps:
-            pfs = PaymentFinance.objects.filter(sp=sp)
-            pf_agg = pfs.aggregate(recv=Sum('balance_payment_received'), adv=Sum('advance_adjusted'))
-            total_received = (pf_agg['recv'] or 0.0) + (pf_agg['adv'] or 0.0)
-            invoiced_amt = sp.invoice_amount or 0.0
+            invoiced_amt = sp['invoice_amount'] or 0.0
+            total_received = sp['total_received'] or 0.0
             balance_due = max(0.0, round(invoiced_amt - total_received, 2))
             total_ar += balance_due
         account_receivables = round(total_ar, 2)
 
-        # 3. Account Payables (Purchase Trades)
-        purchase_sps = auth_sps.filter(trn__trade_type='Purchase')
+        # 3. Account Payables (Purchase Trades) - Optimized with single query annotation
+        purchase_sps = auth_sps.filter(trn__trade_type='Purchase').annotate(
+            total_paid=Coalesce(Sum('pfs__balance_payment_made'), Value(0.0), output_field=FloatField()) +
+                       Coalesce(Sum('pfs__advance_adjusted'), Value(0.0), output_field=FloatField())
+        ).values('invoice_amount', 'logistic_cost', 'total_paid')
+
         total_ap = 0.0
         for sp in purchase_sps:
-            pfs = PaymentFinance.objects.filter(sp=sp)
-            pf_agg = pfs.aggregate(paid=Sum('balance_payment_made'), adv=Sum('advance_adjusted'))
-            total_paid = (pf_agg['paid'] or 0.0) + (pf_agg['adv'] or 0.0)
-            invoiced_amt = (sp.invoice_amount or 0.0) + (sp.logistic_cost or 0.0)
+            invoiced_amt = (sp['invoice_amount'] or 0.0) + (sp['logistic_cost'] or 0.0)
+            total_paid = sp['total_paid'] or 0.0
             balance_due = max(0.0, round(invoiced_amt - total_paid, 2))
             total_ap += balance_due
         account_payables = round(total_ap, 2)
@@ -278,7 +285,7 @@ class UserProfileAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
 
     def get_object(self):
-        return self.request.user
+        return CustomUser.objects.prefetch_related('organizations', 'permissions').get(pk=self.request.user.pk)
 
 class ChangePasswordAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -313,7 +320,7 @@ class AdminPasswordResetAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ActivityLogListAPIView(generics.ListAPIView):
-    queryset = ActivityLog.objects.all().order_by('-timestamp')
+    queryset = ActivityLog.objects.select_related('actor').all().order_by('-timestamp')
     serializer_class = ActivityLogSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]

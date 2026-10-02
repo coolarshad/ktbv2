@@ -44,17 +44,27 @@ def negate_trade_type(trade_type):
     else:
         return 'Unknown'
     
+from django.core.cache import cache
+
 def get_serializer_context_cache(request):
+    cache_key = "master_serializer_context_data"
+    cached_data = cache.get(cache_key)
+    if not cached_data:
+        cached_data = {
+            'companies': {str(c.id): CompanySerializer(c).data for c in Company.objects.all()},
+            'kycs': {str(k.id): KycSerializer(k).data for k in Kyc.objects.prefetch_related('bank_details', 'notified_users').all()},
+            'banks': {str(b.id): BankSerializer(b).data for b in Bank.objects.all()},
+            'currencies': {str(cu.id): CurrencySerializer(cu).data for cu in Currency.objects.all()},
+            'payment_terms': {str(pt.id): PaymentTermSerializer(pt).data for pt in PaymentTerm.objects.all()},
+            'product_names': {str(pn.id): ProductNameSerializer(pn).data for pn in ProductName.objects.all()},
+            'packings': {str(p.id): PackingSerializer(p).data for p in Packing.objects.all()},
+            'shipment_sizes': {str(ss.id): ShipmentSizeSerializer(ss).data for ss in ShipmentSize.objects.all()},
+        }
+        cache.set(cache_key, cached_data, 30)  # 30-second TTL
+    
     return {
         'request': request,
-        'companies': {str(c.id): CompanySerializer(c).data for c in Company.objects.all()},
-        'kycs': {str(k.id): KycSerializer(k).data for k in Kyc.objects.all()},
-        'banks': {str(b.id): BankSerializer(b).data for b in Bank.objects.all()},
-        'currencies': {str(cu.id): CurrencySerializer(cu).data for cu in Currency.objects.all()},
-        'payment_terms': {str(pt.id): PaymentTermSerializer(pt).data for pt in PaymentTerm.objects.all()},
-        'product_names': {str(pn.id): ProductNameSerializer(pn).data for pn in ProductName.objects.all()},
-        'packings': {str(p.id): PackingSerializer(p).data for p in Packing.objects.all()},
-        'shipment_sizes': {str(ss.id): ShipmentSizeSerializer(ss).data for ss in ShipmentSize.objects.all()},
+        **cached_data
     }
     
 actor = None

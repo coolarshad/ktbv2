@@ -7,7 +7,8 @@ services:
       dockerfile: Dockerfile
     container_name: frontend_container
     ports:
-      - "5173:80"  # Serve frontend on port 80
+      - "80:80"      # Standard HTTP port
+      - "5173:80"    # Compatibility port for existing bookmarks
     restart: unless-stopped
     depends_on:
       - backend
@@ -18,12 +19,22 @@ services:
       dockerfile: Dockerfile
     container_name: backend_container
     ports:
-      - "8000:8000"  # Expose Django on port 8000
+      - "8000:8000"  # Expose Django directly if needed
     volumes:
       - ./backend/ktbv2:/app
+      - media_data:/app/media
     environment:
+      - DB_NAME=${DB_NAME:-ktbv2_db}
+      - DB_USER=${DB_USER:-ktbv2_user}
+      - DB_PASSWORD=${DB_PASSWORD:-admin123}
+      - DB_HOST=${DB_HOST:-host.docker.internal}
+      - DB_PORT=${DB_PORT:-5432}
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDIS_CACHE_URL=redis://redis:6379/1
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     depends_on:
       - redis
@@ -34,21 +45,27 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
-    # Port is not exposed to the host machine for production safety.
-    # It is only accessible to other containers on the internal Docker network.
 
   celery_worker:
     build:
       context: ./backend/ktbv2
       dockerfile: Dockerfile
     container_name: celery_worker_container
-    # Ensure this matches your celery app name ('ktbv2')
-    command: celery -A ktbv2 worker -l info
+    command: celery -A ktbv2 worker -l info --concurrency=4 -O fair
     volumes:
       - ./backend/ktbv2:/app
+      - media_data:/app/media
     environment:
+      - DB_NAME=${DB_NAME:-ktbv2_db}
+      - DB_USER=${DB_USER:-ktbv2_user}
+      - DB_PASSWORD=${DB_PASSWORD:-admin123}
+      - DB_HOST=${DB_HOST:-host.docker.internal}
+      - DB_PORT=${DB_PORT:-5432}
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDIS_CACHE_URL=redis://redis:6379/1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     depends_on:
       - redis
@@ -56,3 +73,4 @@ services:
 
 volumes:
   redis_data:
+  media_data:

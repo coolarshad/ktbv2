@@ -81,6 +81,13 @@ class ActivityLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     details = models.JSONField(null=True, blank=True) # Optional extra metadata
 
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['actor', '-timestamp']),
+        ]
+
     def __str__(self):
         actor_name = self.actor.name if self.actor else "System"
         return f"{actor_name} {self.action} {self.resource} at {self.timestamp}"

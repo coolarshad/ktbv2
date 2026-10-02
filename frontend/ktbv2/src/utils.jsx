@@ -6,7 +6,11 @@ export const capitalizeKey = (key) => {
         .join(' ');
 };
 
-export const BASE_URL = 'http://148.72.247.191:8000'
+export const BASE_URL = import.meta.env.VITE_API_URL !== undefined 
+    ? import.meta.env.VITE_API_URL 
+    : (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '5173' 
+        ? 'http://localhost:8000' 
+        : '');
 
 export const hasPermission = (user, requiredCode) => {
     if (!user) return false;

@@ -69,7 +69,12 @@ class Trade(models.Model):
     class Meta:
         verbose_name = _("Trade")
         verbose_name_plural = _("Trades")
-        ordering = ['-id'] 
+        ordering = ['-id']
+        indexes = [
+            models.Index(fields=['approved', '-id']),
+            models.Index(fields=['trn']),
+            models.Index(fields=['trade_type']),
+        ] 
 
     def __str__(self):
         return self.trn
@@ -287,7 +292,11 @@ class PreSalePurchase(models.Model):
     class Meta:
         verbose_name = _("PreSalePurchase")
         verbose_name_plural = _("PreSalePurchases")
-        ordering = ['-id'] 
+        ordering = ['-id']
+        indexes = [
+            models.Index(fields=['trn', '-id']),
+            models.Index(fields=['approved']),
+        ] 
 
     def __str__(self):
         return self.trn.trn
@@ -379,7 +388,11 @@ class PrePayment(models.Model):
     class Meta:
         verbose_name = _("PrePayment")
         verbose_name_plural = _("PrePayments")
-        ordering = ['-id'] 
+        ordering = ['-id']
+        indexes = [
+            models.Index(fields=['trn', '-id']),
+            models.Index(fields=['reviewed']),
+        ] 
 
     def __str__(self):
         return self.trn
@@ -471,7 +484,11 @@ class SalesPurchase(models.Model):
     class Meta:
         verbose_name = _("SalesPurchase")
         verbose_name_plural = _("SalesPurchases")
-        ordering = ['-id'] 
+        ordering = ['-id']
+        indexes = [
+            models.Index(fields=['trn', '-id']),
+            models.Index(fields=['reviewed']),
+        ] 
 
     def __str__(self):
         return self.invoice_number
@@ -613,7 +630,11 @@ class PaymentFinance(models.Model):
     class Meta:
         verbose_name = _("PaymentFinance")
         verbose_name_plural = _("PaymentFinances")
-        ordering = ['-id'] 
+        ordering = ['-id']
+        indexes = [
+            models.Index(fields=['sp', '-id']),
+            models.Index(fields=['reviewed']),
+        ] 
 
     def __str__(self):
         return self.name
@@ -982,7 +1003,10 @@ class Inventory(models.Model):
     class Meta:
         verbose_name = _("Inventory")
         verbose_name_plural = _("Inventorys")
-        ordering = ['-id'] 
+        ordering = ['-id']
+        indexes = [
+            models.Index(fields=['product_name', '-id']),
+        ] 
 
     def __str__(self):
         return self.name

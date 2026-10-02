@@ -25,6 +25,9 @@ class Notification(models.Model):
         ordering = ['-created_at']
         verbose_name = _('Notification')
         verbose_name_plural = _('Notifications')
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+        ]
 
     def __str__(self):
         return f"{self.recipient} - {self.verb} ({'Read' if self.is_read else 'Unread'})"

@@ -16,7 +16,7 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
             return Notification.objects.none()
         
         # 1. Base queryset: User only sees notifications where they are the recipient
-        queryset = Notification.objects.filter(recipient=user)
+        queryset = Notification.objects.filter(recipient=user).select_related('actor')
 
         # 2. Scope GENERAL notifications for non-managers by organization
         if not (user.is_superuser or user.role == 'Manager2'):

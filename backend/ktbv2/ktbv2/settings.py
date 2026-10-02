@@ -95,11 +95,21 @@ WSGI_APPLICATION = 'ktbv2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ktbv2_db',
-        'USER': 'ktbv2_user',
-        'PASSWORD': 'admin123',
-        'HOST': '148.72.247.191',  # Refers to the PostgreSQL service name in Docker Compose
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'ktbv2_db'),
+        'USER': os.environ.get('DB_USER', 'ktbv2_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'admin123'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+        'CONN_MAX_AGE': 600,  # Persistent connections to reduce TCP handshake overhead
+    }
+}
+
+# Redis Caching Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.environ.get('REDIS_CACHE_URL', os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/1')),
+        'TIMEOUT': 300,
     }
 }
 
