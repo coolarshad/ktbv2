@@ -218,7 +218,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Value of Contract </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn?.contract_value || '-'}</td>
+                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.trn?.contract_value != null && selectedPrePayment.trn?.contract_value !== '' && !isNaN(Number(selectedPrePayment.trn.contract_value)) ? Number(selectedPrePayment.trn.contract_value).toFixed(2) : (selectedPrePayment.trn?.contract_value || '-')}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance to Receive </td>

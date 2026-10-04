@@ -12,15 +12,27 @@ export const addDaysToDate = (date, days) => {
 };
 
 export const advanceToPay = (trade) => {
-  return trade.presp.trade.trade_type === 'Purchase'
-    ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100)
-    : 'NA';
+  const tradeType = trade?.presp?.trade?.trade_type || trade?.trn?.trade_type || trade?.trade_type;
+  const contractValue = trade?.presp?.trade?.contract_value ?? trade?.trn?.contract_value ?? trade?.contract_value;
+  const advancePercentage = trade?.presp?.trade?.paymentTerm?.advance_in_percentage ?? trade?.trn?.paymentTerm?.advance_in_percentage ?? trade?.payment_term?.advance_in_percentage ?? trade?.paymentTerm?.advance_in_percentage;
+
+  if (tradeType === 'Purchase') {
+    const val = Number(contractValue) * (Number(advancePercentage || 0) / 100);
+    return isNaN(val) ? '0.00' : val.toFixed(2);
+  }
+  return 'NA';
 };
 
 export const advanceToReceive = (trade) => {
-  return trade.presp.trade.trade_type === 'Sales'
-    ? trade.presp.trade.contract_value*(trade.presp.trade.paymentTerm.advance_in_percentage/100)
-    : 'NA';
+  const tradeType = trade?.presp?.trade?.trade_type || trade?.trn?.trade_type || trade?.trade_type;
+  const contractValue = trade?.presp?.trade?.contract_value ?? trade?.trn?.contract_value ?? trade?.contract_value;
+  const advancePercentage = trade?.presp?.trade?.paymentTerm?.advance_in_percentage ?? trade?.trn?.paymentTerm?.advance_in_percentage ?? trade?.payment_term?.advance_in_percentage ?? trade?.paymentTerm?.advance_in_percentage;
+
+  if (tradeType === 'Sales') {
+    const val = Number(contractValue) * (Number(advancePercentage || 0) / 100);
+    return isNaN(val) ? '0.00' : val.toFixed(2);
+  }
+  return 'NA';
 };
 
 export const paymentDueDate = (data) => {
