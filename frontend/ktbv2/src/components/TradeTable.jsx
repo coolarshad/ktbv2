@@ -126,7 +126,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       >
                         View
                       </button>
-                      {(!row.trade.approved ? hasPermission(user, `update_${basePerm}`) : canUserUpdateApproved(user, `update_${basePerm}`)) && (
+                      {(hasPermission(user, `update_${basePerm}`) || canUserUpdateApproved(user, `update_${basePerm}`)) && (
                         <button
                           className="bg-yellow-500 text-white px-2 py-1 rounded"
                           onClick={(e) => { e.stopPropagation(); handleEdit(row.trade.id); }}
