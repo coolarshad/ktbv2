@@ -10,7 +10,7 @@ import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
 import ReactToPrint from 'react-to-print';
 import { BASE_URL } from '../utils'; 
-import { dateFormatter, calculatePFCommissionValue } from "../dateUtils";
+import { dateFormatter, calculatePFCommissionValue, format2Dec, format4Dec } from "../dateUtils";
 import Loading from '../components/Loading';
 
 function SalesPurchases() {
@@ -28,11 +28,6 @@ function SalesPurchases() {
   const [notifiedUsers, setNotifiedUsers] = useState([]);
   const [notificationMessage, setNotificationMessage] = useState("");
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
-
-  const format4Dec = (val) =>
-    val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
-      ? Number(val).toFixed(4)
-      : (val || '-');
 
   const fetchData = async () => {
     try {
@@ -242,7 +237,7 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Invoice Amount </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.invoice_amount}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedSP.invoice_amount)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">LC Details </td>
@@ -254,7 +249,7 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
-                      <td className="py-2 px-4 text-gray-800">{calculatePFCommissionValue(selectedSP)}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(calculatePFCommissionValue(selectedSP))}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Number </td>
@@ -262,15 +257,15 @@ function SalesPurchases() {
                     </tr>
                     {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Quantity </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.bl_qty}</td>
+                      <td className="py-2 px-4 text-gray-800">{format4Dec(selectedSP.bl_qty)}</td>
                     </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fees</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.bl_fees}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedSP.bl_fees)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Collection Cost</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.bl_collection_cost}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedSP.bl_collection_cost)}</td>
                     </tr>
 
                     <tr className="border-b border-gray-200">
@@ -279,7 +274,7 @@ function SalesPurchases() {
                     </tr>
                     {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Total Packing Cost </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.total_packing_cost}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedSP.total_packing_cost)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Packaging Supplier</td>
@@ -291,7 +286,7 @@ function SalesPurchases() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedSP.logistic_cost}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedSP.logistic_cost)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Due Date</td>
@@ -369,11 +364,11 @@ function SalesPurchases() {
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.batch_number}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.production_date}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_value.toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.bl_value)}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).markings_in_packaging}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).total_packing_cost}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).supplier.name}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.logistic}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).total_packing_cost)}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{getSPData(selectedSP.trn.trade_products,product.product_code,product.product_name).supplier?.name || '-'}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.logistic)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -392,7 +387,7 @@ function SalesPurchases() {
                     cost.name &&  ( // Check if both fields exist
                       <tr key={index}>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.name}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.charge}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(cost.charge)}</td>
                       </tr>
                     )
                   )}

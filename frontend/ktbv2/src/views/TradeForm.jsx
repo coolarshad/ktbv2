@@ -486,7 +486,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         const trade_qty = parseFloat(updatedProducts[index].trade_qty) || 0;
                         const selected_currency_rate = parseFloat(updatedProducts[index].selected_currency_rate) || 0;
 
-                        updatedProducts[index].rate_in_usd = parseFloat(selected_currency_rate * parseFloat(prevState.exchange_rate)).toFixed(4);
+                        updatedProducts[index].rate_in_usd = parseFloat(selected_currency_rate * parseFloat(prevState.exchange_rate)).toFixed(2);
                         updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
 
                         const commission = parseFloat(updatedProducts[index].commission_rate) || 0;
@@ -507,7 +507,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         const selected_currency_rate = parseFloat(product.selected_currency_rate) || 0;
                         return {
                             ...product,
-                            rate_in_usd: (selected_currency_rate * exchange_rate).toFixed(4),
+                            rate_in_usd: (selected_currency_rate * exchange_rate).toFixed(2),
                         };
                     });
 
@@ -1030,6 +1030,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     <label htmlFor="exchange_rate" className="block text-sm font-medium text-gray-700">Exchange Rate</label>
                     <input
                         type="number"
+                        step="0.01"
                         name="exchange_rate"
                         value={formData.exchange_rate}
                         onChange={handleChange}
@@ -1387,6 +1388,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="total_contract_qty" className="block text-sm font-medium text-gray-700">Total Contract Qty</label>
                                 <input
                                     type="number"
+                                    step="0.0001"
                                     name="total_contract_qty"
                                     value={product.total_contract_qty}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1424,6 +1426,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Tolerance</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="tolerance"
                                     value={product.tolerance}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1440,6 +1443,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Contract Balance Qty</label>
                                 <input
                                     type="number"
+                                    step="0.0001"
                                     name="contract_balance_qty"
                                     value={product.contract_balance_qty}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1477,6 +1481,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="trade_qty" className="block text-sm font-medium text-gray-700">Trade Qty</label>
                                 <input
                                     type="number"
+                                    step="0.0001"
                                     name="trade_qty"
                                     value={product.trade_qty}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1513,6 +1518,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="selected_currency_rate" className="block text-sm font-medium text-gray-700">Rate in Selected Currency</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="selected_currency_rate"
                                     value={product.selected_currency_rate}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1529,6 +1535,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="rate_in_usd" className="block text-sm font-medium text-gray-700">Rate in USD</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="rate_in_usd"
                                     value={product.rate_in_usd}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1545,6 +1552,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="product_value" className="block text-sm font-medium text-gray-700">Product Value</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="product_value"
                                     value={product.product_value}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1578,6 +1586,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="rate_of_each_packing" className="block text-sm font-medium text-gray-700">Rate of Each packing</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="rate_of_each_packing"
                                     value={product.rate_of_each_packing}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1594,6 +1603,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="qty_of_packing" className="block text-sm font-medium text-gray-700">Qty of packing</label>
                                 <input
                                     type="number"
+                                    step="0.0001"
                                     name="qty_of_packing"
                                     value={product.qty_of_packing}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1610,6 +1620,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="total_packing_cost" className="block text-sm font-medium text-gray-700">Total Packing Cost</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="total_packing_cost"
                                     value={product.total_packing_cost}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1659,6 +1670,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="commission_rate" className="block text-sm font-medium text-gray-700">Commission Rate</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="commission_rate"
                                     value={product.commission_rate}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1675,6 +1687,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="total_commission" className="block text-sm font-medium text-gray-700">Total Commission</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="total_commission"
                                     value={product.total_commission}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1708,6 +1721,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="logistic" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="logistic"
                                     value={product.logistic}
                                     onChange={(e) => handleChange(e, index, 'products')}
@@ -1783,6 +1797,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     <label htmlFor="commission_value" className="block text-sm font-medium text-gray-700">Commission Value</label>
                     <input
                         type="number"
+                        step="0.01"
                         name="commission_value"
                         value={formData.commission_value}
                         onChange={handleChange}
@@ -1796,6 +1811,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     <label htmlFor="contract_value" className="block text-sm font-medium text-gray-700">Contract Value</label>
                     <input
                         type="number"
+                        step="0.01"
                         name="contract_value"
                         value={formData.contract_value}
                         onChange={handleChange}
@@ -1822,6 +1838,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     <label htmlFor="advance_value_to_receive" className="block text-sm font-medium text-gray-700">Advance Value to Receive</label>
                     <input
                         type="number"
+                        step="0.01"
                         name="advance_value_to_receive"
                         value={formData.advance_value_to_receive}
                         onChange={handleChange}
@@ -1847,6 +1864,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     <label htmlFor="logistic_provider" className="block text-sm font-medium text-gray-700">Estimated Logistic Cost</label>
                     <input
                         type="number"
+                        step="0.01"
                         name="estimated_logistic_cost"
                         value={formData.estimated_logistic_cost}
                         onChange={handleChange}
@@ -1860,6 +1878,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     <label htmlFor="logistic_cost_tolerence" className="block text-sm font-medium text-gray-700">Logistic Cost Tolerance(%)</label>
                     <input
                         type="number"
+                        step="0.01"
                         name="logistic_cost_tolerence"
                         value={formData.logistic_cost_tolerence}
                         onChange={handleChange}
@@ -1886,6 +1905,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     <label htmlFor="bl_fee" className="block text-sm font-medium text-gray-700">BL Fee</label>
                     <input
                         type="number"
+                        step="0.01"
                         name="bl_fee"
                         value={formData.bl_fee}
                         onChange={handleChange}
@@ -1935,6 +1955,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 <label htmlFor="extra_cost" className="block text-sm font-medium text-gray-700">Extra Cost</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="extra_cost"
                                     value={extraCost.extra_cost}
                                     onChange={(e) => handleChange(e, index, 'extraCosts')}

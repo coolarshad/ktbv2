@@ -1,7 +1,7 @@
 // src/components/TradeTable.js
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dateFormatter } from '../dateUtils';
+import { dateFormatter, format2Dec } from '../dateUtils';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
@@ -47,9 +47,9 @@ const PrePaymentTable = ({ data, onDelete, onView, basePerm }) => {
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trade_type}>{item.trn?.trade_type}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[180px] max-w-[180px] w-[180px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis" title={item.lc_number}>{item.lc_number}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_received}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.advance_received)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_receipt)}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.advance_paid}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.advance_paid)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_payment)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.lc_expiry_date)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.latest_shipment_date_in_lc)}</td>

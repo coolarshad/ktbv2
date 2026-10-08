@@ -1,20 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import { BASE_URL } from '../utils';
+import { format2Dec, format4Dec } from '../dateUtils';
+import ReactToPrint from 'react-to-print';
+import { FaFileExcel, FaPrint, FaSearch } from 'react-icons/fa';
 
 const TradeReport = () => {
-  const { user } = useAuth();
+    const { user } = useAuth();
     const [formData, setFormData] = useState({ trn: '' });
     const [trnOptions, setTrnOptions] = useState([]);
     const [reportData, setReportData] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [selectedTrnLabel, setSelectedTrnLabel] = useState('');
+    const componentRef = useRef();
 
-      const BACKEND_URL = BASE_URL || "http://localhost:8000";
+    const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
     const fetchData = async (url, params = {}, setStateFunction) => {
         try {
-            const response = await axios.get(url, { params }); // Pass params to axios.get
+            const response = await axios.get(url, { params });
             setStateFunction(response.data);
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
@@ -22,82 +28,151 @@ const TradeReport = () => {
     };
 
     useEffect(() => {
-        fetchData('/trademgt/trades', {}, setTrnOptions); // Example with params
+        fetchData('/trademgt/trades', {}, setTrnOptions);
     }, []);
 
     const handleChange = (e) => {
-        const { name, value } = e.target; // Destructure name and value from the event target
+        const { name, value } = e.target;
         setFormData(prevState => ({
             ...prevState,
-            [name]: value, // Use name as the key to update the correct field in formData
+            [name]: value,
         }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-    
-        // Send form data as query parameters in the GET request
+        if (!formData.trn) return;
+
+        const selected = trnOptions.find(opt => String(opt.id) === String(formData.trn));
+        if (selected) {
+            setSelectedTrnLabel(selected.trn);
+        }
+
         axios.get('/trademgt/trade-report/', {
-            params: formData, // Pass formData as query parameters
+            params: formData,
         })
         .then(response => {
-            console.log('Response:', response.data); // Log response for debugging
             setReportData(response.data);
-            // Reset form data or handle success as needed
-            setFormData({ trn: '' });
         })
         .catch(error => {
             console.error('There was an error fetching the trade report!', error);
         });
     };
 
- 
+    const handleExportExcel = async () => {
+        const trnId = formData.trn || reportData?.trade?.id;
+        if (!trnId) return;
+
+        try {
+            setIsExporting(true);
+            const response = await axios.get(`/excel/export/trade-report/?trn=${trnId}`, {
+                responseType: 'blob',
+            });
+            const trnName = selectedTrnLabel || reportData?.trade?.trn || 'Report';
+            const cleanTrn = String(trnName).replace(/[/\\?%*:|"<>]/g, '_');
+            const fileName = `Trade_Report_${cleanTrn}.xlsx`;
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting trade report:', error);
+            alert('Failed to export trade report to Excel.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     return (
-        <div className='h-full overflow-y-scroll'>
-            <form onSubmit={handleSubmit} className="space-y-2 w-full">
-                <h2 className="text-xl font-semibold text-center">Trade Report</h2>
-                <div className="grid grid-cols-1 gap-2 p-2">
-                    <Select
-                        id="trn"
-                        name="trn"
-                        options={trnOptions.map(option => ({ value: option.id, label: option.trn }))}
-                        value={
-                            formData.trn
-                                ? { value: formData.trn, label: trnOptions.find(opt => String(opt.id) === String(formData.trn))?.trn || '' }
-                                : null
-                        }
-                        onChange={(selectedOption) =>
-                            handleChange({ target: { name: 'trn', value: selectedOption ? selectedOption.value : '' } })
-                        }
-                        placeholder="Select TRN"
-                        isSearchable
-                        isClearable
-                        className="w-full col-span-1"
-                    />
+        <div className='h-full overflow-y-scroll p-4'>
+            <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
+                <h2 className="text-xl font-bold text-gray-800 text-center mb-4">Trade Report</h2>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <div className="flex-grow w-full">
+                        <Select
+                            id="trn"
+                            name="trn"
+                            options={trnOptions.map(option => ({ value: option.id, label: option.trn }))}
+                            value={
+                                formData.trn
+                                    ? { value: formData.trn, label: trnOptions.find(opt => String(opt.id) === String(formData.trn))?.trn || '' }
+                                    : null
+                            }
+                            onChange={(selectedOption) =>
+                                handleChange({ target: { name: 'trn', value: selectedOption ? selectedOption.value : '' } })
+                            }
+                            placeholder="Select TRN to view report..."
+                            isSearchable
+                            isClearable
+                            className="w-full text-sm"
+                        />
+                    </div>
                     <button
                         type="submit"
-                        className="bg-blue-500 text-white p-2 rounded"
+                        className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg shadow-sm transition-colors text-sm w-full sm:w-auto"
                     >
-                        Search
+                        <FaSearch size={14} />
+                        <span>Search</span>
                     </button>
                 </div>
             </form>
 
-            <hr className="my-6" />
-        
-            {/* List of Existing Documents */}
-            <div className="space-y-4 w-full">
-                <p>Trade</p>
+            {/* Action Bar when Report is loaded */}
+            {reportData && reportData.trade && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
+                    <div>
+                        <h3 className="text-base font-bold text-gray-800">
+                            TRN: <span className="text-blue-600 font-mono">{reportData.trade.trn}</span>
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                            Company: <span className="font-medium text-gray-700">{reportData.trade.companyName?.name || reportData.trade.company || '-'}</span> | Type: <span className="font-medium text-gray-700">{reportData.trade.trade_type || '-'}</span>
+                        </p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <button
+                            type="button"
+                            onClick={handleExportExcel}
+                            disabled={isExporting}
+                            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors text-sm disabled:opacity-50"
+                        >
+                            <FaFileExcel size={16} />
+                            <span>{isExporting ? 'Exporting...' : 'Download Excel'}</span>
+                        </button>
+
+                        <ReactToPrint
+                            documentTitle={`Trade_Report_${reportData.trade.trn || 'KTB'}`}
+                            trigger={() => (
+                                <button
+                                    type="button"
+                                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors text-sm"
+                                >
+                                    <FaPrint size={16} />
+                                    <span>Print / PDF</span>
+                                </button>
+                            )}
+                            content={() => componentRef.current}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Report Content */}
+            <div ref={componentRef} className="space-y-6 w-full">
                 {reportData && reportData.trade ? (
                     <>
-                        <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="px-4 py-2 border-b text-left">Field Name</th>
-                                    <th className="px-4 py-2 border-b text-left">Value</th>
-                                </tr>
-                            </thead>
+                        <p className="text-lg font-bold text-gray-800 mb-2 border-b pb-1">Trade Overview</p>
+                        <table className="min-w-full bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        <th className="px-4 py-2 border-b text-left text-sm font-semibold text-gray-700">Field Name</th>
+                                        <th className="px-4 py-2 border-b text-left text-sm font-semibold text-gray-700">Value</th>
+                                    </tr>
+                                </thead>
                             <tbody>
                                 <tr>
                                     <td className="px-4 py-2 border-b">Company</td>
@@ -137,7 +212,7 @@ const TradeReport = () => {
                             </tr>
                             <tr>
                                 <td className="px-4 py-2 border-b">Value of Contract</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.contract_value}</td>
+                                <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.contract_value)}</td>
                             </tr>
                             {/* Add other fields in the same manner */}
                             <tr>
@@ -150,7 +225,7 @@ const TradeReport = () => {
                             </tr>
                             <tr>
                                 <td className="px-4 py-2 border-b">Advance Value to Receive/Pay</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.advance_value_to_receive}</td>
+                                <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.advance_value_to_receive)}</td>
                             </tr>
                             <tr>
                                 <td className="px-4 py-2 border-b">Incoterm</td>
@@ -181,7 +256,7 @@ const TradeReport = () => {
                                     reportData.trade.trade_products.map((product, index) => (
                                         <tr key={index}>
                                             <td className="px-4 py-2 border-b">{product.product_code || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{product.productName.name || 'N/A'}</td>
+                                            <td className="px-4 py-2 border-b">{product.productName?.name || product.productName || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.product_name_for_client || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.loi ? <p className='text-sm'><a className="text-blue-800 border px-2 hover:underline" href={product.loi?.startsWith('http') ? product.loi : `${BACKEND_URL}${product.loi?.startsWith('/') ? '' : '/'}${product.loi}`} target="_blank"
                                                 rel="noopener noreferrer">LOI</a></p> : 'N/A'}</td>
@@ -189,12 +264,12 @@ const TradeReport = () => {
                                                 rel="noopener noreferrer">Specs</a></p> : 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.hs_code || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{product.markings_in_packaging || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{product.total_contract_qty || 'N/A'}</td>
+                                            <td className="px-4 py-2 border-b">{format4Dec(product.total_contract_qty)}</td>
                                             <td className="px-4 py-2 border-b">{product.total_contract_qty_unit || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{product.trade_qty || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{product.rate_in_usd || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{product.commission_rate || 'N/A'}</td>
-                                            <td className="px-4 py-2 border-b">{product.shipmentSize.name || 'N/A'}</td>
+                                            <td className="px-4 py-2 border-b">{format4Dec(product.trade_qty)}</td>
+                                            <td className="px-4 py-2 border-b">{format2Dec(product.rate_in_usd)}</td>
+                                            <td className="px-4 py-2 border-b">{format2Dec(product.commission_rate)}</td>
+                                            <td className="px-4 py-2 border-b">{product.shipmentSize?.name || product.shipmentSize || 'N/A'}</td>
                                         </tr>
                                     ))
                                 ) : (
@@ -309,7 +384,7 @@ const TradeReport = () => {
                             <tbody>
                                 <tr>
                                     <td className="px-4 py-2 border-b">ADVANCE RECEIVED</td>
-                                    <td className="px-4 py-2 border-b">{reportData?.pp?.advance_received }</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.pp?.advance_received)}</td>
                                 </tr>
                                 <tr>
                                     <td className="px-4 py-2 border-b">DATE OF RECEIPT</td>
@@ -317,7 +392,7 @@ const TradeReport = () => {
                                 </tr>
                                 <tr>
                                     <td className="px-4 py-2 border-b">ADVANCE PAID</td>
-                                    <td className="px-4 py-2 border-b">{reportData?.pp?.advance_paid }</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.pp?.advance_paid)}</td>
                                 </tr>
                                 <tr>
                                     <td className="px-4 py-2 border-b">DATE OF PAYMENT</td>
@@ -417,7 +492,7 @@ const TradeReport = () => {
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-2 border-b">Invoice Amount</td>
-                                                <td className="px-4 py-2 border-b">{salespurchase.invoice_amount || 'N/A'}</td>
+                                                <td className="px-4 py-2 border-b">{format2Dec(salespurchase.invoice_amount)}</td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-2 border-b">COMMISSION VALUE</td>
@@ -429,11 +504,11 @@ const TradeReport = () => {
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-2 border-b">BL FEES</td>
-                                                <td className="px-4 py-2 border-b">{salespurchase.bl_fees }</td>
+                                                <td className="px-4 py-2 border-b">{format2Dec(salespurchase.bl_fees)}</td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-2 border-b">BL COLLECTION COST</td>
-                                                <td className="px-4 py-2 border-b">{salespurchase.bl_collection_cost }</td>
+                                                <td className="px-4 py-2 border-b">{format2Dec(salespurchase.bl_collection_cost)}</td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-2 border-b">BL Date</td>
@@ -441,7 +516,7 @@ const TradeReport = () => {
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-2 border-b">Logitics Cost</td>
-                                                <td className="px-4 py-2 border-b">{salespurchase.logistic_cost }</td>
+                                                <td className="px-4 py-2 border-b">{format2Dec(salespurchase.logistic_cost)}</td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-2 border-b">LOGISTIC COST DUE DATE</td>
@@ -487,8 +562,8 @@ const TradeReport = () => {
                                                 salespurchase.sp_product.map((product, productIndex) => (
                                                     <tr key={productIndex}>
                                                         <td className="px-4 py-2 border-b">{product.product_code || 'N/A'}</td>
-                                                        <td className="px-4 py-2 border-b">{product.productName?.name || 'N/A'}</td>
-                                                        <td className="px-4 py-2 border-b">{product.bl_qty}</td>
+                                                        <td className="px-4 py-2 border-b">{product.productName?.name || product.productName || 'N/A'}</td>
+                                                        <td className="px-4 py-2 border-b">{format4Dec(product.bl_qty)}</td>
                                                         <td className="px-4 py-2 border-b">{product.batch_number}</td>
                                                         <td className="px-4 py-2 border-b">{product.production_date}</td>
                                                     </tr>
@@ -517,7 +592,7 @@ const TradeReport = () => {
                                                 salespurchase.sp_extra_charges.map((cost, costIndex) => (
                                                     <tr key={costIndex}>
                                                         <td className="px-4 py-2 border-b">{cost.name || 'N/A'}</td>
-                                                        <td className="px-4 py-2 border-b">{cost.charge || 'N/A'}</td>
+                                                        <td className="px-4 py-2 border-b">{format2Dec(cost.charge)}</td>
                                                     </tr>
                                                 ))
                                             ) : (
@@ -565,7 +640,7 @@ const TradeReport = () => {
                                                         <tr>
                                                             <td className="px-4 py-2 border-b">Balance Payment</td>
                                                             <td className="px-4 py-2 border-b">
-                                                                {pnf.balance_payment || 'N/A'}
+                                                                {format2Dec(pnf.balance_payment)}
                                                             </td>
                                                         </tr>
                                                         <tr>
@@ -577,13 +652,13 @@ const TradeReport = () => {
                                                         <tr>
                                                             <td className="px-4 py-2 border-b">Balance Payment Received</td>
                                                             <td className="px-4 py-2 border-b">
-                                                                {pnf.balance_payment_received || 'N/A'}
+                                                                {format2Dec(pnf.balance_payment_received)}
                                                             </td>
                                                         </tr>
                                                         <tr>
                                                             <td className="px-4 py-2 border-b">Balance Payment Made</td>
                                                             <td className="px-4 py-2 border-b">
-                                                                {pnf.balance_payment_made || 'N/A'}
+                                                                {format2Dec(pnf.balance_payment_made)}
                                                             </td>
                                                         </tr>
                                                         <tr>
@@ -595,7 +670,7 @@ const TradeReport = () => {
                                                         <tr>
                                                             <td className="px-4 py-2 border-b">NET DUE IN THIS TRADE</td>
                                                             <td className="px-4 py-2 border-b">
-                                                                {pnf.net_due_in_this_trade || 'N/A'}
+                                                                {format2Dec(pnf.net_due_in_this_trade)}
                                                             </td>
                                                         </tr>
                                                         <tr>

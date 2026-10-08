@@ -6,6 +6,26 @@ import pandas as pd
 from trademgt.models import *
 from trademgt.serializers import *
 from . import helper
+
+
+def fmt_2dec(val):
+    if val is None or val == '' or val == 'N/A':
+        return 'N/A'
+    try:
+        return f"{float(val):.2f}"
+    except (ValueError, TypeError):
+        return str(val)
+
+
+def fmt_4dec(val):
+    if val is None or val == '' or val == 'N/A':
+        return 'N/A'
+    try:
+        return f"{float(val):.4f}"
+    except (ValueError, TypeError):
+        return str(val)
+
+
 class ExportTradeCheckView(APIView):
     def get(self, request, *args, **kwargs):
         # products = TradeProduct.objects.all()
@@ -52,15 +72,15 @@ class ExportTradeExcelView(APIView):
                 'customer company name': trade['trade']['customer']['name'],
                 'Address': trade['trade']['address'],
                 'Currency selection': trade['trade']['currency']['name'],
-                'Exchange rate': trade['trade']['exchange_rate'],
+                'Exchange rate': fmt_2dec(trade['trade']['exchange_rate']),
                 'Commission agent': trade['trade']['commission_agent'],
-                'contract_value': trade['trade']['contract_value'],
+                'contract_value': fmt_2dec(trade['trade']['contract_value']),
                 'payment_term': trade['trade']['paymentTerm']['name'],
-                'advance_value_to_receive': trade['trade']['advance_value_to_receive'],
-                'commission_value': trade['trade']['commission_value'],
+                'advance_value_to_receive': fmt_2dec(trade['trade']['advance_value_to_receive']),
+                'commission_value': fmt_2dec(trade['trade']['commission_value']),
                 'logistic_provider': trade['trade']['logistic_provider'],
-                'estimated_logistic_cost': trade['trade']['estimated_logistic_cost'],
-                'logistic_cost_tolerence': trade['trade']['logistic_cost_tolerence'],
+                'estimated_logistic_cost': fmt_2dec(trade['trade']['estimated_logistic_cost']),
+                'logistic_cost_tolerence': fmt_2dec(trade['trade']['logistic_cost_tolerence']),
                 # 'logistic_cost_remarks': trade['trade']['logistic_cost_remarks'],
                 'bank_name_address': trade['trade']['bank']['name'],
                 'account_number': trade['trade']['account_number'],
@@ -76,7 +96,7 @@ class ExportTradeExcelView(APIView):
                 'shipper_in_bl': trade['trade']['shipper_in_bl'],
                 'consignee_in_bl': trade['trade']['consignee_in_bl'],
                 'notify_party_in_bl': trade['trade']['notify_party_in_bl'],
-                'bl_fee': trade['trade']['bl_fee'],
+                'bl_fee': fmt_2dec(trade['trade']['bl_fee']),
                 'bl_fee_remarks': trade['trade']['bl_fee_remarks'],
                 'approved': trade['trade']['approved'],
                 'reviewed': trade['trade']['reviewed'],
@@ -88,25 +108,25 @@ class ExportTradeExcelView(APIView):
                 'product_name_for_client': trade['product_name_for_client'],
                 'loi': trade['loi'],
                 'hs_code': trade['hs_code'],
-                'total_contract_qty': trade['total_contract_qty'],
+                'total_contract_qty': fmt_4dec(trade['total_contract_qty']),
                 'total_contract_qty_unit': trade['total_contract_qty_unit'],
-                'tolerance': trade['tolerance'],
-                'contract_balance_qty': trade['contract_balance_qty'],
+                'tolerance': fmt_2dec(trade['tolerance']),
+                'contract_balance_qty': fmt_4dec(trade['contract_balance_qty']),
                 'contract_balance_qty_unit': trade['contract_balance_qty_unit'],
-                'trade_qty': trade['trade_qty'],
+                'trade_qty': fmt_4dec(trade['trade_qty']),
                 'trade_qty_unit': trade['trade_qty_unit'],
-                'selected_currency_rate': trade['selected_currency_rate'],
-                'rate_in_usd': trade['rate_in_usd'],
-                'product_value': trade['product_value'],
+                'selected_currency_rate': fmt_2dec(trade['selected_currency_rate']),
+                'rate_in_usd': fmt_2dec(trade['rate_in_usd']),
+                'product_value': fmt_2dec(trade['product_value']),
                 'markings_in_packaging': trade['markings_in_packaging'],
                 'packaging_supplier': trade['supplier']['name'],
                 'mode_of_packing': trade['packing']['name'],
-                'rate_of_each_packing': trade['rate_of_each_packing'],
-                'qty_of_packing': trade['qty_of_packing'],
-                'total_packing_cost': trade['total_packing_cost'],
-                'commission_rate': trade['commission_rate'],
+                'rate_of_each_packing': fmt_2dec(trade['rate_of_each_packing']),
+                'qty_of_packing': fmt_4dec(trade['qty_of_packing']),
+                'total_packing_cost': fmt_2dec(trade['total_packing_cost']),
+                'commission_rate': fmt_2dec(trade['commission_rate']),
 
-                'total_commission': trade['total_commission'],
+                'total_commission': fmt_2dec(trade['total_commission']),
                 # 'ref_type': trade['ref_type'],
                 'ref_product_code': trade['ref_product_code'],
                 'ref_trn': trade['ref_trn'],
@@ -120,7 +140,7 @@ class ExportTradeExcelView(APIView):
             for i in range(max_extras):
                 extra = trade_extra_costs[i]
                 trade_data[f'extra_cost_remarks {i+1}'] = extra.get('extra_cost_remarks', '')
-                trade_data[f'extra_cost {i+1}'] = extra.get('extra_cost', '')
+                trade_data[f'extra_cost {i+1}'] = fmt_2dec(extra.get('extra_cost', ''))
                
             excel_data.append(trade_data)
         
@@ -202,7 +222,7 @@ class ExportPrePayExcelView(APIView):
                 'Trade Type': obj['trn']['trade_type'],
                 'Payment Term': obj['trn']['paymentTerm']['name'],
                 'Customer Company Name': obj['trn']['customer']['name'],
-                'Value of Contract':obj['trn']['contract_value'],
+                'Value of Contract': fmt_2dec(obj['trn']['contract_value']),
                 
                 'Advance to Pay': obj['trn']['companyName']['name'],
                 'Advance to Receive': obj['trn']['country_of_origin'],
@@ -212,9 +232,9 @@ class ExportPrePayExcelView(APIView):
                 
                 'LC Number': obj['lc_number'],
                 'LC Opening Bank': obj['lc_opening_bank'],
-                'Advance Received': obj['advance_received'],
+                'Advance Received': fmt_2dec(obj['advance_received']),
                 'Date of Receipt': obj['date_of_receipt'],
-                'Advance Paid': obj['advance_paid'],
+                'Advance Paid': fmt_2dec(obj['advance_paid']),
                 'Date of Payment': obj['date_of_payment'],
                 'LC Expiry Date': obj['lc_expiry_date'],
                 'Latest Shipment Date in LC': obj['latest_shipment_date_in_lc'],
@@ -255,18 +275,18 @@ class ExportSPExcelView(APIView):
                 
                 'LC Details':obj['sp']['prepayment']['lc_number'],
                 'Commission Agent': obj['sp']['trn']['commission_agent'],
-                'Commission Value': helper.calculate_sp_commission_value(obj,obj['sp']['trn']['trade_products']),
+                'Commission Value': fmt_2dec(helper.calculate_sp_commission_value(obj,obj['sp']['trn']['trade_products'])),
                 'Logistic Provider': obj['sp']['trn']['logistic_provider'],
               
                 
                 'Invoice Date': obj['sp']['invoice_date'],
                 'Invoice Number': obj['sp']['invoice_number'],
-                'Invoice Amount': obj['sp']['invoice_amount'],
+                'Invoice Amount': fmt_2dec(obj['sp']['invoice_amount']),
                 'BL Number': obj['sp']['bl_number'],
-                'BL Fees': obj['sp']['bl_fees'],
-                'BL Collection Cost': obj['sp']['bl_collection_cost'],
+                'BL Fees': fmt_2dec(obj['sp']['bl_fees']),
+                'BL Collection Cost': fmt_2dec(obj['sp']['bl_collection_cost']),
                 'BL Date': obj['sp']['bl_date'],
-                'Logistic Cost': obj['sp']['logistic_cost'],
+                'Logistic Cost': fmt_2dec(obj['sp']['logistic_cost']),
                 'Logistic Cost Due Date': obj['sp']['logistic_cost_due_date'],
                 'Liner': obj['sp']['liner'],
                 'POD': obj['sp']['pod'],
@@ -282,11 +302,11 @@ class ExportSPExcelView(APIView):
                 'HS Code': obj['hs_code'],
                 'Batch Number': obj['batch_number'],
                 'Production Date': obj['production_date'],
-                'BL Quantity': obj['bl_qty'],
+                'BL Quantity': fmt_4dec(obj['bl_qty']),
                 'Trade Qty Unit': obj['trade_qty_unit'],
-                'Selected Currency Rate': obj['selected_currency_rate'],
-                'Rate in USD': obj['rate_in_usd'],
-                'Product Value': obj['bl_value'],
+                'Selected Currency Rate': fmt_2dec(obj['selected_currency_rate']),
+                'Rate in USD': fmt_2dec(obj['rate_in_usd']),
+                'Product Value': fmt_2dec(obj['bl_value']),
 
                 'Reviewed': obj['sp']['reviewed'],
               
@@ -315,6 +335,10 @@ class ExportPaymentFinanceExcelView(APIView):
     def prepare_excel_data(self, serialized_data):
         excel_data = []
         for obj in serialized_data:
+            inv_amt = float(obj.get('sp', {}).get('invoice_amount') or 0.0)
+            adv_rec = float(obj.get('sp', {}).get('prepayment', {}).get('advance_received') or 0.0)
+            adv_paid = float(obj.get('sp', {}).get('prepayment', {}).get('advance_paid') or 0.0)
+            bal_pay = inv_amt - adv_rec - adv_paid
 
             obj_data = {
                 'TRN':obj['sp']['trn']['trn'],
@@ -325,35 +349,35 @@ class ExportPaymentFinanceExcelView(APIView):
                 'Trader Name': obj['sp']['trn']['trader_name'],
                 'Insurance Policy Number': obj['sp']['trn']['insurance_policy_number'],
 
-                'Invoice Amount':obj['sp']['invoice_amount'],
-                'Invoice Number':obj['sp']['invoice_number'],
-                'Invoice Date':obj['sp']['invoice_date'],
-                'BL Number':obj['sp']['bl_number'],
-                'Advance Received':obj['sp']['prepayment']['advance_received'],
-                'Advance Paid':obj['sp']['prepayment']['advance_paid'],
-                'Advance Received Date':obj['sp']['prepayment']['date_of_receipt'],
-                'Advance Paid Date':obj['sp']['prepayment']['date_of_payment'],
-                'Balance Payment':float(obj['sp']['invoice_amount'])-float(obj['sp']['prepayment']['advance_received'])-float(obj['sp']['prepayment']['advance_paid']),
-                'Balance Payment Due Date':obj['sp']['bl_date'],
-                'Logistic Cost':obj['sp']['logistic_cost'],
-                'Logistic Provider':obj['sp']['trn']['logistic_provider'],
-                'Logistic Cost Due Date':obj['sp']['logistic_cost_due_date'],
+                'Invoice Amount': fmt_2dec(obj['sp']['invoice_amount']),
+                'Invoice Number': obj['sp']['invoice_number'],
+                'Invoice Date': obj['sp']['invoice_date'],
+                'BL Number': obj['sp']['bl_number'],
+                'Advance Received': fmt_2dec(obj['sp']['prepayment']['advance_received']),
+                'Advance Paid': fmt_2dec(obj['sp']['prepayment']['advance_paid']),
+                'Advance Received Date': obj['sp']['prepayment']['date_of_receipt'],
+                'Advance Paid Date': obj['sp']['prepayment']['date_of_payment'],
+                'Balance Payment': fmt_2dec(bal_pay),
+                'Balance Payment Due Date': obj['sp']['bl_date'],
+                'Logistic Cost': fmt_2dec(obj['sp']['logistic_cost']),
+                'Logistic Provider': obj['sp']['trn']['logistic_provider'],
+                'Logistic Cost Due Date': obj['sp']['logistic_cost_due_date'],
 
                 
-                'Commission Agent':obj['sp']['trn']['commission_agent'],
-                'Commission Value':helper.calculate_pf_commission_value(obj['sp']['sp_product'],obj['sp']['trn']['trade_products']),
-                'BL Fees': obj['sp']['bl_fees'],
-                'BL Collection Cost': obj['sp']['bl_collection_cost'],
+                'Commission Agent': obj['sp']['trn']['commission_agent'],
+                'Commission Value': fmt_2dec(helper.calculate_pf_commission_value(obj['sp']['sp_product'],obj['sp']['trn']['trade_products'])),
+                'BL Fees': fmt_2dec(obj['sp']['bl_fees']),
+                'BL Collection Cost': fmt_2dec(obj['sp']['bl_collection_cost']),
                 'Shipment Status': obj['sp']['shipment_status'],
                 
                 
                 'Remarks from S&P': obj['sp']['remarks'],
 
-                'Advance Adjusted': obj['advance_adjusted'],
-                'Balance Payment Received': obj['balance_payment_received'],
-                'Balance Payment Made': obj['balance_payment_made'],
+                'Advance Adjusted': fmt_2dec(obj['advance_adjusted']),
+                'Balance Payment Received': fmt_2dec(obj['balance_payment_received']),
+                'Balance Payment Made': fmt_2dec(obj['balance_payment_made']),
                 'Balance Payment Date': obj['balance_payment_date'],
-                'Net Due in This Trade': obj['net_due_in_this_trade'],
+                'Net Due in This Trade': fmt_2dec(obj['net_due_in_this_trade']),
                 'Status of Payment': obj['status_of_payment'],
                 'Release Docs': obj['release_docs'],
                 'Release Docs Date': obj['release_docs_date'],
@@ -398,16 +422,16 @@ class ExportPLExcelView(APIView):
                 'Sales Total Packing cost(Sum)': obj['salesPF']['sp']['id'],
                 'Sales Invoice Date': obj['salesPF']['sp']['invoice_date'],
                 'Sales Invoice Number': obj['salesPF']['sp']['invoice_number'],
-                'Sales Invoice Amount': obj['salesPF']['sp']['invoice_amount'],
+                'Sales Invoice Amount': fmt_2dec(obj['salesPF']['sp']['invoice_amount']),
                 'Sales COMMISSION VALUE': obj['salesPF']['sp']['id'],
                 'Sales BL Number': obj['salesPF']['sp']['bl_number'],
-                'Sales BL FEES': obj['salesPF']['sp']['bl_fees'],
-                'Sales BL COLLECTION COST': obj['salesPF']['sp']['bl_collection_cost'],
+                'Sales BL FEES': fmt_2dec(obj['salesPF']['sp']['bl_fees']),
+                'Sales BL COLLECTION COST': fmt_2dec(obj['salesPF']['sp']['bl_collection_cost']),
                 'Sales OTHER CHARGES': obj['salesPF']['sp']['id'],
                 'Sales BL Date': obj['salesPF']['sp']['bl_date'],
-                'Sales Logitics Cost': obj['salesPF']['sp']['logistic_cost'],
+                'Sales Logitics Cost': fmt_2dec(obj['salesPF']['sp']['logistic_cost']),
                 'Sales CHARGES P & F': obj['salesPF']['sp']['id'],
-                'Sales Total Income': obj['salesPF']['sp']['invoice_amount'],
+                'Sales Total Income': fmt_2dec(obj['salesPF']['sp']['invoice_amount']),
 
                 'Purchase Company': obj['purchasePF']['sp']['trn']['companyName']['name'],
                 'Purchase Trade Reference Date': obj['purchasePF']['sp']['trn']['trd'],
@@ -420,16 +444,16 @@ class ExportPLExcelView(APIView):
                 'Purchase Total Packing cost(Sum)': obj['purchasePF']['sp']['id'],
                 'Purchase Invoice Date': obj['purchasePF']['sp']['invoice_date'],
                 'Purchase Invoice Number': obj['purchasePF']['sp']['invoice_number'],
-                'Purchase Invoice Amount': obj['purchasePF']['sp']['invoice_amount'],
+                'Purchase Invoice Amount': fmt_2dec(obj['purchasePF']['sp']['invoice_amount']),
                 'Purchase COMMISSION VALUE': obj['purchasePF']['sp']['id'],
                 'Purchase BL Number': obj['purchasePF']['sp']['bl_number'],
-                'Purchase BL FEES': obj['purchasePF']['sp']['bl_fees'],
-                'Purchase BL COLLECTION COST': obj['purchasePF']['sp']['bl_collection_cost'],
+                'Purchase BL FEES': fmt_2dec(obj['purchasePF']['sp']['bl_fees']),
+                'Purchase BL COLLECTION COST': fmt_2dec(obj['purchasePF']['sp']['bl_collection_cost']),
                 'Purchase OTHER CHARGES': obj['purchasePF']['sp']['id'],
                 'Purchase BL Date': obj['purchasePF']['sp']['bl_date'],
-                'Purchase Logitics Cost': obj['purchasePF']['sp']['logistic_cost'],
+                'Purchase Logitics Cost': fmt_2dec(obj['purchasePF']['sp']['logistic_cost']),
                 'Purchase CHARGES P & F': obj['purchasePF']['sp']['id'],
-                'Purchase Total Expense': obj['salesPF']['sp']['invoice_amount'],
+                'Purchase Total Expense': fmt_2dec(obj['purchasePF']['sp']['invoice_amount']),
             }
 
                 
@@ -1667,7 +1691,7 @@ class ExportInsurancePendingExcelView(APIView):
                 'Trader Name': trade.trader_name or '',
                 'Insurance Policy Number': trade.insurance_policy_number or 'NA',
                 # 'Approval Status': 'Approved' if trade.approved else 'Pending',
-                'Contract Value': trade.contract_value or 0.0,
+                'Contract Value': fmt_2dec(trade.contract_value),
                 'Currency': currency_map.get(raw_curr, raw_curr),
                 # 'Exchange Rate': trade.exchange_rate or 1.0,
                 # 'Payment Term': payment_map.get(raw_pay, raw_pay),
@@ -1705,6 +1729,214 @@ class ExportInsurancePendingExcelView(APIView):
         response['Content-Disposition'] = 'attachment; filename="Insurance_Pending_Summary.xlsx"'
         df.to_excel(response, index=False)
         return response
+
+
+class ExportTradeReportExcelView(APIView):
+    def get(self, request, *args, **kwargs):
+        trn_id = request.query_params.get('trn')
+        if not trn_id:
+            return Response({'error': 'TRN parameter is required.'}, status=400)
+
+        try:
+            trade = Trade.objects.get(id=trn_id)
+        except (Trade.DoesNotExist, ValueError):
+            return Response({'error': 'Trade record not found'}, status=404)
+
+        serializer = TradeReportSerializer(trade)
+        report_data = serializer.data
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        clean_trn = str(trade.trn).replace('/', '_').replace('\\', '_')
+        response['Content-Disposition'] = f'attachment; filename="Trade_Report_{clean_trn}.xlsx"'
+
+        with pd.ExcelWriter(response, engine='openpyxl') as writer:
+            # 1. Trade Overview Sheet
+            trade_obj = report_data.get('trade') or {}
+            trade_overview = [
+                {'Field': 'Company', 'Value': trade_obj.get('companyName', {}).get('name') if isinstance(trade_obj.get('companyName'), dict) else (trade_obj.get('company') or 'N/A')},
+                {'Field': 'Date (TRD)', 'Value': trade_obj.get('trd') or 'N/A'},
+                {'Field': 'Trade Approved Date', 'Value': trade_obj.get('approval_date') or 'N/A'},
+                {'Field': 'Trade Reference Number (TRN)', 'Value': trade_obj.get('trn') or 'N/A'},
+                {'Field': 'Trade Type', 'Value': trade_obj.get('trade_type') or 'N/A'},
+                {'Field': 'Trade Category', 'Value': trade_obj.get('trade_category') or 'N/A'},
+                {'Field': 'Country of Origin', 'Value': trade_obj.get('country_of_origin') or 'N/A'},
+                {'Field': 'Customer Company Name', 'Value': trade_obj.get('customer', {}).get('name') if isinstance(trade_obj.get('customer'), dict) else (trade_obj.get('customer_company_name') or 'N/A')},
+                {'Field': 'Trader Name', 'Value': trade_obj.get('trader_name') or 'N/A'},
+                {'Field': 'Address', 'Value': trade_obj.get('address') or 'N/A'},
+                {'Field': 'Currency', 'Value': trade_obj.get('currency', {}).get('name') if isinstance(trade_obj.get('currency'), dict) else (trade_obj.get('currency_selection') or 'N/A')},
+                {'Field': 'Exchange Rate', 'Value': fmt_2dec(trade_obj.get('exchange_rate'))},
+                {'Field': 'Commission Agent', 'Value': trade_obj.get('commission_agent') or 'N/A'},
+                {'Field': 'Value of Contract', 'Value': fmt_2dec(trade_obj.get('contract_value'))},
+                {'Field': 'Payment Term', 'Value': trade_obj.get('paymentTerm', {}).get('name') if isinstance(trade_obj.get('paymentTerm'), dict) else (trade_obj.get('payment_term') or 'N/A')},
+                {'Field': 'Advance Value to Receive/Pay', 'Value': fmt_2dec(trade_obj.get('advance_value_to_receive'))},
+                {'Field': 'Commission Value', 'Value': fmt_2dec(trade_obj.get('commission_value'))},
+                {'Field': 'Logistic Provider', 'Value': trade_obj.get('logistic_provider') or 'N/A'},
+                {'Field': 'Estimated Logistic Cost', 'Value': fmt_2dec(trade_obj.get('estimated_logistic_cost'))},
+                {'Field': 'Bank Name & Address', 'Value': f"{trade_obj.get('bank', {}).get('name', '')}, {trade_obj.get('bank', {}).get('address', '')}" if isinstance(trade_obj.get('bank'), dict) else (trade_obj.get('bank_name_address') or 'N/A')},
+                {'Field': 'Account Number', 'Value': trade_obj.get('account_number') or 'N/A'},
+                {'Field': 'SWIFT Code', 'Value': trade_obj.get('swift_code') or 'N/A'},
+                {'Field': 'Incoterm', 'Value': trade_obj.get('incoterm') or 'N/A'},
+                {'Field': 'POL', 'Value': trade_obj.get('pol') or 'N/A'},
+                {'Field': 'POD', 'Value': trade_obj.get('pod') or 'N/A'},
+                {'Field': 'ETD', 'Value': trade_obj.get('etd') or 'N/A'},
+                {'Field': 'ETA', 'Value': trade_obj.get('eta') or 'N/A'},
+                {'Field': 'Insurance Policy Number', 'Value': trade_obj.get('insurance_policy_number') or 'N/A'},
+                {'Field': 'Shipper in BL', 'Value': trade_obj.get('shipper_in_bl') or 'N/A'},
+                {'Field': 'Consignee in BL', 'Value': trade_obj.get('consignee_in_bl') or 'N/A'},
+                {'Field': 'Notify Party in BL', 'Value': trade_obj.get('notify_party_in_bl') or 'N/A'},
+                {'Field': 'BL Fee', 'Value': fmt_2dec(trade_obj.get('bl_fee'))},
+                {'Field': 'BL Fee Remarks', 'Value': trade_obj.get('bl_fee_remarks') or 'N/A'},
+                {'Field': 'Remarks', 'Value': trade_obj.get('remarks') or 'N/A'},
+                {'Field': 'Reviewed', 'Value': 'Yes' if trade_obj.get('reviewed') else 'No'},
+                {'Field': 'Approved', 'Value': 'Yes' if trade_obj.get('approved') else 'No'},
+            ]
+            df_trade = pd.DataFrame(trade_overview)
+            df_trade.to_excel(writer, sheet_name='Trade Overview', index=False)
+
+            # 2. Trade Products Sheet
+            products_list = []
+            for p in trade_obj.get('trade_products', []) or []:
+                p_name = p.get('productName', {}).get('name') if isinstance(p.get('productName'), dict) else (p.get('product_name') or 'N/A')
+                p_supplier = p.get('supplier', {}).get('name') if isinstance(p.get('supplier'), dict) else (p.get('packaging_supplier') or 'N/A')
+                p_packing = p.get('packing', {}).get('name') if isinstance(p.get('packing'), dict) else (p.get('mode_of_packing') or 'N/A')
+                p_size = p.get('shipmentSize', {}).get('name') if isinstance(p.get('shipmentSize'), dict) else (p.get('container_shipment_size') or 'N/A')
+                products_list.append({
+                    'Product Code': p.get('product_code', 'N/A'),
+                    'Product Name': p_name,
+                    'Product Name for Client': p.get('product_name_for_client', 'N/A'),
+                    'HS Code': p.get('hs_code', 'N/A'),
+                    'Total Contract Qty': fmt_4dec(p.get('total_contract_qty')),
+                    'Contract Qty Unit': p.get('total_contract_qty_unit', 'N/A'),
+                    'Tolerance (%)': fmt_2dec(p.get('tolerance')),
+                    'Contract Balance Qty': fmt_4dec(p.get('contract_balance_qty')),
+                    'Contract Balance Unit': p.get('contract_balance_qty_unit', 'N/A'),
+                    'Trade Qty': fmt_4dec(p.get('trade_qty')),
+                    'Trade Qty Unit': p.get('trade_qty_unit', 'N/A'),
+                    'Selected Currency Rate': fmt_2dec(p.get('selected_currency_rate')),
+                    'Rate in USD': fmt_2dec(p.get('rate_in_usd')),
+                    'Product Value': fmt_2dec(p.get('product_value')),
+                    'Mode of Packing': p_packing,
+                    'Rate of Each Packing': fmt_2dec(p.get('rate_of_each_packing')),
+                    'Qty of Packing': fmt_4dec(p.get('qty_of_packing')),
+                    'Total Packing Cost': fmt_2dec(p.get('total_packing_cost')),
+                    'Packaging Supplier': p_supplier,
+                    'Markings in Packaging': p.get('markings_in_packaging', 'N/A'),
+                    'Commission Rate': fmt_2dec(p.get('commission_rate')),
+                    'Total Commission': fmt_2dec(p.get('total_commission')),
+                    'Container Shipment Size': p_size,
+                    'Logistic Cost': fmt_2dec(p.get('logistic')),
+                    'Logistic Remark': p.get('logistic_remark', 'N/A'),
+                    'Reference TRN': p.get('ref_trn', 'N/A'),
+                    'Reference Product Code': p.get('ref_product_code', 'N/A'),
+                })
+            df_products = pd.DataFrame(products_list) if products_list else pd.DataFrame(columns=['Product Code', 'Product Name', 'Trade Qty', 'Rate in USD', 'Product Value'])
+            df_products.to_excel(writer, sheet_name='Trade Products', index=False)
+
+            # 3. Pre Sales & Purchase Sheet
+            presp_obj = report_data.get('presp') or {}
+            presp_summary = []
+            if presp_obj:
+                presp_summary.append({'Field': 'PO / PI Issuance Date', 'Value': presp_obj.get('doc_issuance_date', 'N/A')})
+                presp_summary.append({'Field': 'Advance / LC Due Date', 'Value': presp_obj.get('doc_issuance_date', 'N/A')})
+                
+                docs = [d.get('doc', {}).get('name') if isinstance(d.get('doc'), dict) else d.get('name', '') for d in (presp_obj.get('documentRequired') or []) if d]
+                presp_summary.append({'Field': 'Documents Required', 'Value': ', '.join(filter(None, docs)) or 'None'})
+                
+                ack_pis = [p.get('ackn_pi_name') or 'PI File' for p in (presp_obj.get('acknowledgedPI') or []) if p]
+                presp_summary.append({'Field': 'Acknowledged PI', 'Value': ', '.join(ack_pis) or 'None'})
+
+                ack_pos = [p.get('ackn_po_name') or 'PO File' for p in (presp_obj.get('acknowledgedPO') or []) if p]
+                presp_summary.append({'Field': 'Acknowledged PO', 'Value': ', '.join(ack_pos) or 'None'})
+            df_presp = pd.DataFrame(presp_summary) if presp_summary else pd.DataFrame([{'Field': 'Status', 'Value': 'No Pre Sales/Purchase data available'}])
+            df_presp.to_excel(writer, sheet_name='Pre Sales & Purchase', index=False)
+
+            # 4. Prepayment Sheet
+            pp_obj = report_data.get('pp') or {}
+            pp_summary = []
+            if pp_obj:
+                pp_summary.append({'Field': 'Advance Received', 'Value': fmt_2dec(pp_obj.get('advance_received'))})
+                pp_summary.append({'Field': 'Date of Receipt', 'Value': pp_obj.get('date_of_receipt', 'N/A')})
+                pp_summary.append({'Field': 'Advance Paid', 'Value': fmt_2dec(pp_obj.get('advance_paid'))})
+                pp_summary.append({'Field': 'Date of Payment', 'Value': pp_obj.get('date_of_payment', 'N/A')})
+                pp_summary.append({'Field': 'LC Number', 'Value': pp_obj.get('lc_number', 'N/A')})
+                pp_summary.append({'Field': 'LC Opening Bank', 'Value': pp_obj.get('lc_opening_bank', 'N/A')})
+                pp_summary.append({'Field': 'LC Expiry Date', 'Value': pp_obj.get('lc_expiry_date', 'N/A')})
+                pp_summary.append({'Field': 'Latest Shipment Date in LC', 'Value': pp_obj.get('latest_shipment_date_in_lc', 'N/A')})
+                
+                lc_copies = [c.get('name', 'LC Copy') for c in (pp_obj.get('lcCopy') or []) if c]
+                pp_summary.append({'Field': 'LC Copies', 'Value': ', '.join(lc_copies) or 'None'})
+                
+                lc_amends = [c.get('name', 'Amendment') for c in (pp_obj.get('lcAmmendment') or []) if c]
+                pp_summary.append({'Field': 'LC Amendments', 'Value': ', '.join(lc_amends) or 'None'})
+
+                tt_copies = [c.get('name', 'TT Copy') for c in (pp_obj.get('advanceTTCopy') or []) if c]
+                pp_summary.append({'Field': 'Advance TT Copies', 'Value': ', '.join(tt_copies) or 'None'})
+            df_pp = pd.DataFrame(pp_summary) if pp_summary else pd.DataFrame([{'Field': 'Status', 'Value': 'No Prepayment data available'}])
+            df_pp.to_excel(writer, sheet_name='Prepayment', index=False)
+
+            # 5. Sales & Purchases Sheet
+            sp_list = report_data.get('sp') or []
+            sp_rows = []
+            sp_prods_rows = []
+            pf_rows = []
+
+            for sp in sp_list:
+                sp_id = sp.get('id', 'N/A')
+                sp_rows.append({
+                    'S&P ID': sp_id,
+                    'Invoice Date': sp.get('invoice_date', 'N/A'),
+                    'Invoice Number': sp.get('invoice_number', 'N/A'),
+                    'Invoice Amount': fmt_2dec(sp.get('invoice_amount')),
+                    'BL Number': sp.get('bl_number', 'N/A'),
+                    'BL Fees': fmt_2dec(sp.get('bl_fees')),
+                    'BL Collection Cost': fmt_2dec(sp.get('bl_collection_cost')),
+                    'BL Date': sp.get('bl_date', 'N/A'),
+                    'Logistic Cost': fmt_2dec(sp.get('logistic_cost')),
+                    'Logistic Cost Due Date': sp.get('logistic_cost_due_date', 'N/A'),
+                    'Liner': sp.get('liner', 'N/A'),
+                    'POD': sp.get('pod', 'N/A'),
+                    'POL': sp.get('pol', 'N/A'),
+                    'ETD': sp.get('etd', 'N/A'),
+                    'ETA': sp.get('eta', 'N/A'),
+                })
+
+                for prod in sp.get('sp_product', []) or []:
+                    p_name = prod.get('productName', {}).get('name') if isinstance(prod.get('productName'), dict) else (prod.get('product_name') or 'N/A')
+                    sp_prods_rows.append({
+                        'S&P ID': sp_id,
+                        'Product Code': prod.get('product_code', 'N/A'),
+                        'Product Name': p_name,
+                        'BL Qty': fmt_4dec(prod.get('bl_qty')),
+                        'Batch Number': prod.get('batch_number', 'N/A'),
+                        'Production Date': prod.get('production_date', 'N/A'),
+                    })
+
+                for pf in sp.get('pf', []) or []:
+                    pf_rows.append({
+                        'S&P ID': sp_id,
+                        'Balance Payment': fmt_2dec(pf.get('balance_payment')),
+                        'Bal Payment Due Date': pf.get('balance_payment_due_date', 'N/A'),
+                        'Balance Payment Received': fmt_2dec(pf.get('balance_payment_received')),
+                        'Balance Payment Made': fmt_2dec(pf.get('balance_payment_made')),
+                        'Balance Payment Date': pf.get('balance_payment_date', 'N/A'),
+                        'Net Due in This Trade': fmt_2dec(pf.get('net_due_in_this_trade')),
+                        'Document Released Date': pf.get('release_docs_date', 'N/A'),
+                        'Document Released By': pf.get('released_by', 'N/A'),
+                    })
+
+            df_sp = pd.DataFrame(sp_rows) if sp_rows else pd.DataFrame([{'Status': 'No S&P data available'}])
+            df_sp.to_excel(writer, sheet_name='Sales & Purchases', index=False)
+
+            if sp_prods_rows:
+                df_sp_prods = pd.DataFrame(sp_prods_rows)
+                df_sp_prods.to_excel(writer, sheet_name='S&P Products', index=False)
+
+            if pf_rows:
+                df_pf = pd.DataFrame(pf_rows)
+                df_pf.to_excel(writer, sheet_name='Payment & Finance', index=False)
+
+        return response
+
 
 
 

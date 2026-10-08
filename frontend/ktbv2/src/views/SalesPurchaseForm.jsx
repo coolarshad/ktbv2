@@ -8,6 +8,7 @@ import debounce from 'lodash.debounce';
 import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 import Select from 'react-select';
+import { format2Dec, format4Dec } from '../dateUtils';
 
 const SalesPurchaseForm = ({ mode = 'add' }) => {
     const { user } = useAuth();
@@ -705,17 +706,17 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_code}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.total_contract_qty)}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.tolerance)}</td>
 
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.trade_qty)}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.rate_in_usd}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.selected_currency_rate)}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.rate_in_usd)}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_packing_cost}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier.name}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.total_packing_cost)}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier?.name || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -768,6 +769,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         id="invoice_amount"
                         name="invoice_amount"
                         type="number"
+                        step="0.01"
                         value={formData.invoice_amount}
                         onChange={(e) => setFormData({ ...formData, invoice_amount: e.target.value })}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -831,6 +833,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         id="bl_fees"
                         name="bl_fees"
                         type="number"
+                        step="0.01"
                         value={formData.bl_fees}
                         onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -844,6 +847,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         id="bl_collection_cost"
                         name="bl_collection_cost"
                         type="number"
+                        step="0.01"
                         value={formData.bl_collection_cost}
                         onChange={(e) => setFormData({ ...formData, bl_collection_cost: e.target.value })}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -903,6 +907,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         id="logistic_cost"
                         name="logistic_cost"
                         type="number"
+                        step="0.01"
                         value={formData.logistic_cost}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -1167,6 +1172,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 <label htmlFor="bl_qty" className="block text-sm font-medium text-gray-700">BL Quantity</label>
                                 <input
                                     type="number"
+                                    step="0.0001"
                                     name="bl_qty"
                                     value={product.bl_qty}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
@@ -1239,6 +1245,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 <label htmlFor="bl_value" className="block text-sm font-medium text-gray-700">Product Value</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="bl_value"
                                     value={product.bl_value}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
@@ -1257,6 +1264,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 <label htmlFor="bl_value" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
                                 <input
                                     type="number"
+                                    step="0.01"
                                     name="logistic"
                                     value={product.logistic}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
@@ -1325,6 +1333,7 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 id={`extra_charge_${index}`}
                                 name="charge"
                                 type="number"
+                                step="0.01"
                                 value={extraCharge.charge}
                                 onChange={(e) => handleChange(e, 'extraCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"

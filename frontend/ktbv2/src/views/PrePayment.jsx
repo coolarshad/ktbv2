@@ -8,7 +8,7 @@ import PrePaymentTable from "../components/PrePaymentTable"
 import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
-import { today, addDaysToDate,advanceToPay,advanceToReceive,dateFormatter } from '../dateUtils';
+import { today, addDaysToDate,advanceToPay,advanceToReceive,dateFormatter, format2Dec } from '../dateUtils';
 import { BASE_URL } from '../utils';
 import ReactToPrint from 'react-to-print';
 import Loading from '../components/Loading';
@@ -246,7 +246,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Received </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_received}</td>
+                    <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPrePayment.advance_received)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Receipt </td>
@@ -254,7 +254,7 @@ function PrePayment() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Paid </td>
-                    <td className="py-2 px-4 text-gray-800">{selectedPrePayment.advance_paid}</td>
+                    <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPrePayment.advance_paid)}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Date of Payment </td>

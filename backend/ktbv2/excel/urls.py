@@ -35,4 +35,5 @@ urlpatterns = [
     path('export/account-receivables/', ExportAccountReceivablesExcelView.as_view(), name='export_account_receivables'),
     path('export/account-payables/', ExportAccountPayablesExcelView.as_view(), name='export_account_payables'),
     path('export/insurance-pending/', ExportInsurancePendingExcelView.as_view(), name='export_insurance_pending'),
+    path('export/trade-report/', ExportTradeReportExcelView.as_view(), name='export_trade_report'),
 ]

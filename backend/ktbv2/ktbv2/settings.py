@@ -171,8 +171,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'ktbv2sender@gmail.com'   # Your email
-EMAIL_HOST_PASSWORD = 'bevp opwx toxl rhei'  # App-specific password (not your Gmail password)
+EMAIL_HOST_USER = 'ktbsender@gmail.com'   # Your email
+EMAIL_HOST_PASSWORD = 'vsto bsqa mdcy kbxi'  # App-specific password (not your Gmail password)
 
 # Celery Configuration
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')

@@ -9,7 +9,7 @@ import axios from '../axiosConfig';
 import Modal from '../components/Modal';
 import FilterComponent from "../components/FilterComponent";
 import { BASE_URL } from "../utils";
-import { dateFormatter } from "../dateUtils";
+import { dateFormatter, format2Dec, format4Dec } from "../dateUtils";
 import Loading from "../components/Loading";
 
 function TradeApproved() {
@@ -27,11 +27,6 @@ function TradeApproved() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
-
-  const format4Dec = (val) =>
-    val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
-      ? Number(val).toFixed(4)
-      : (val || '-');
 
   const fetchTradeData = async () => {
     try {
@@ -197,7 +192,7 @@ function TradeApproved() {
 
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Exchange Rate </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.exchange_rate}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.exchange_rate)}</td>
                     </tr>
 
                     <tr className="border-b border-gray-200">
@@ -206,7 +201,7 @@ function TradeApproved() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Contract Value</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.contract_value}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.contract_value)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Term</td>
@@ -214,12 +209,12 @@ function TradeApproved() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Value to Receive</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.advance_value_to_receive}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.advance_value_to_receive)}</td>
                     </tr>
 
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Value</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.commission_value}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.commission_value)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
@@ -227,11 +222,11 @@ function TradeApproved() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Estimated Logistic Cost</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.estimated_logistic_cost}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.estimated_logistic_cost)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Tolerance</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.logistic_cost_tolerence}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.logistic_cost_tolerence)}</td>
                     </tr>
                     {/* <tr className="border-b border-gray-200">
                     <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost Remarks</td>
@@ -303,7 +298,7 @@ function TradeApproved() {
                   </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fee</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedTrade.bl_fee}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.bl_fee)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fee Remarks</td>
@@ -383,7 +378,7 @@ function TradeApproved() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Tolerance(%):</span>
-                      <span>{product.tolerance}</span>
+                      <span>{format2Dec(product.tolerance)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Contract Balance Qty:</span>
@@ -403,15 +398,15 @@ function TradeApproved() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Selected Currency Rate:</span>
-                      <span>{product.selected_currency_rate}</span>
+                      <span>{format2Dec(product.selected_currency_rate)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Rate in USD:</span>
-                      <span>{product.rate_in_usd}</span>
+                      <span>{format2Dec(product.rate_in_usd)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Product Value:</span>
-                      <span>{product.product_value}</span>
+                      <span>{format2Dec(product.product_value)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Mode of Packing:</span>
@@ -419,15 +414,15 @@ function TradeApproved() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Rate of Each Packing:</span>
-                      <span>{product.rate_of_each_packing}</span>
+                      <span>{format2Dec(product.rate_of_each_packing)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Qty of Packing:</span>
-                      <span>{product.qty_of_packing}</span>
+                      <span>{format4Dec(product.qty_of_packing)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Total Packing Cost:</span>
-                      <span>{product.total_packing_cost}</span>
+                      <span>{format2Dec(product.total_packing_cost)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Packaging Supplier:</span>
@@ -439,11 +434,11 @@ function TradeApproved() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Commission Rate:</span>
-                      <span>{product.commission_rate}</span>
+                      <span>{format2Dec(product.commission_rate)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Total Commission:</span>
-                      <span>{product.total_commission}</span>
+                      <span>{format2Dec(product.total_commission)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Reference Product Code:</span>
@@ -459,7 +454,7 @@ function TradeApproved() {
                     </tr>
                     <tr className="flex flex-col">
                       <td className="font-medium">Logistic Cost</td>
-                      <span>{product.logistic}</span>
+                      <span>{format2Dec(product.logistic)}</span>
                     </tr>
                     <tr className="flex flex-col">
                       <td className="font-medium">Logistic Remark</td>
@@ -482,7 +477,7 @@ function TradeApproved() {
                 <tbody>
                   {selectedTrade.trade_extra_costs.map(cost => (
                     <tr key={cost.id}>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.extra_cost}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(cost.extra_cost)}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.extra_cost_remarks}</td>
                     </tr>
                   ))}

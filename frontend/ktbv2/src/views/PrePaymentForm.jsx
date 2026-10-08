@@ -432,6 +432,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         id="advance_received"
                         name="advance_received"
                         type="number"
+                        step="0.01"
                         value={formData.advance_received}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -467,6 +468,7 @@ const PrePaymentForm = ({ mode = 'add' }) => {
                         id="advance_paid"
                         name="advance_paid"
                         type="number"
+                        step="0.01"
                         value={formData.advance_paid}
                         onChange={handleChange}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"

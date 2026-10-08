@@ -66,3 +66,15 @@ export const canUserUpdateApproved = (user, permCode) => {
 export const canUserDeleteSystemRecord = (user, permCode) => {
     return canUserDeleteApproved(user, permCode);
 };
+
+export const format2Dec = (val) => {
+    if (val === undefined || val === null || val === '') return '-';
+    const num = Number(val);
+    return isNaN(num) ? String(val) : num.toFixed(2);
+};
+
+export const format4Dec = (val) => {
+    if (val === undefined || val === null || val === '') return '-';
+    const num = Number(val);
+    return isNaN(num) ? String(val) : num.toFixed(4);
+};

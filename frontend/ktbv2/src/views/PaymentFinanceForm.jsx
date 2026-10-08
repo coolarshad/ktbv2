@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
-import { paymentDueDate, calculatePFCommissionValue } from '../dateUtils';
+import { paymentDueDate, calculatePFCommissionValue, format2Dec, format4Dec } from '../dateUtils';
 import { capitalizeKey } from '../utils';
 import debounce from 'lodash/debounce';
 import DateInputWithIcon from '../components/DateInputWithIcon';
@@ -408,30 +408,30 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         ? [
             { label: 'Trade Type', text: data.trn.trade_type || '' },
             { label: 'Buyer/Seller Name', text: data.prepayment.kyc.name || '' },
-            { label: 'Invoice Amount', text: data.invoice_amount || '' },
+            { label: 'Invoice Amount', text: format2Dec(data.invoice_amount) },
             { label: 'Invoice Number', text: data.invoice_number || '' },
             { label: 'Invoice Date', text: data.invoice_date || '' },
             { label: 'BL Number', text: data.bl_number || '' },
 
-            { label: 'Advance Received', text: data.prepayment.advance_received || '0' },
-            { label: 'Advance Paid', text: data.prepayment.advance_paid || '0' },
-            { label: 'Advance For Adjustment', text: data.prepayment.advance_amount || '0' },
+            { label: 'Advance Received', text: format2Dec(data.prepayment.advance_received) },
+            { label: 'Advance Paid', text: format2Dec(data.prepayment.advance_paid) },
+            { label: 'Advance For Adjustment', text: format2Dec(data.prepayment.advance_amount) },
             { label: 'Advance Received Date', text: data.prepayment.date_of_receipt || '' },
             { label: 'Advance Paid Date', text: data.prepayment.date_of_payment || '' },
             {
                 label: 'Balance Payment',
-                text: calculateRemainingContractValue(data)
+                text: format2Dec(calculateRemainingContractValue(data))
             },
             { label: 'Balance Payment Due Date', text: data.trn.paymentTerm.payment_within == 'NA' ? 'NA' : paymentDueDate(data) },
 
-            { label: 'Logistic Cost', text: data.trn.estimated_logistic_cost || '0' },
+            { label: 'Logistic Cost', text: format2Dec(data.trn.estimated_logistic_cost) },
             { label: 'Logistic Provider', text: data.trn.logistic_provider || '' },
             { label: 'Logistic Cost Due Date', text: data.logistic_cost_due_date || '' },
             { label: 'Commission Agent', text: data.trn.commission_agent },
-            { label: 'BL Fees', text: data.bl_fee || '0' },
-            { label: 'BL Collection Cost', text: data.bl_collection_cost || '0' },
+            { label: 'BL Fees', text: format2Dec(data.bl_fee) },
+            { label: 'BL Collection Cost', text: format2Dec(data.bl_collection_cost) },
             { label: 'Shipment Status', text: data.shipment_status || '' },
-            { label: 'Commission Value', text: calculatePFCommissionValue(data) || '0' },
+            { label: 'Commission Value', text: format2Dec(calculatePFCommissionValue(data)) },
             { label: 'Remarks from S&P', text: data.remarks || '' },
             { label: 'Trader Name', text: data.trn.trader_name || '' },
             { label: 'Insurance Policy Number', text: data.trn.insurance_policy_number || '' },
@@ -477,7 +477,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 <tr key={product.id}>
 
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.bl_qty}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.bl_qty)}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.batch_number}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.production_date}</td>
@@ -498,7 +498,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 <tr key={product.id}>
 
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.name}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.charge}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.charge)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -554,6 +554,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         id="balance_payment_received"
                         name="balance_payment_received"
                         type="number"
+                        step="0.01"
                         value={formData.balance_payment_received}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -567,6 +568,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         id="balance_payment_made"
                         name="balance_payment_made"
                         type="number"
+                        step="0.01"
                         value={formData.balance_payment_made}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -601,6 +603,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         id="net_due_in_this_trade"
                         name="net_due_in_this_trade"
                         type="number"
+                        step="0.01"
                         value={formData.net_due_in_this_trade}
                         onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
@@ -712,6 +715,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                                 id={`pfcharge_name_${index}`}
                                 name="charge"
                                 type="number"
+                                step="0.01"
                                 value={charge.charge}
                                 onChange={(e) => handleChange(e, 'pfCharges', index)}
                                 className="border border-gray-300 p-2 rounded w-full col-span-1"

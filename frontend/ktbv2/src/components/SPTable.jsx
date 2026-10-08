@@ -1,7 +1,7 @@
 // src/components/TradeTable.js
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dateFormatter } from '../dateUtils';
+import { dateFormatter, format2Dec } from '../dateUtils';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
@@ -44,7 +44,7 @@ const SPTable = ({ data, onDelete, onView, basePerm }) => {
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trade_type}>{item.trn?.trade_type}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[140px] max-w-[140px] w-[140px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">{dateFormatter(item.invoice_date)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_number}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.invoice_amount}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.invoice_amount)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.bl_number}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.bl_date)}</td> 
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">

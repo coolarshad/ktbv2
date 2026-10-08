@@ -96,4 +96,17 @@ export const dateFormatter = (dateString) =>{
   return `${day}/${month}/${year}`;
 }
 
+export const format2Dec = (val) => {
+  if (val === undefined || val === null || val === '') return '-';
+  const num = Number(val);
+  return isNaN(num) ? String(val) : num.toFixed(2);
+};
+
+export const format4Dec = (val) => {
+  if (val === undefined || val === null || val === '') return '-';
+  const num = Number(val);
+  return isNaN(num) ? String(val) : num.toFixed(4);
+};
+
+
 

@@ -9,7 +9,7 @@ import PrintModal from './PrintModal';
 import MultiUserSelector from './MultiUserSelector';
 import axios from '../axiosConfig';
 import { toWords } from 'number-to-words';
-import { today, addDaysToDate, dateFormatter } from '../dateUtils';
+import { today, addDaysToDate, dateFormatter, format2Dec, format4Dec } from '../dateUtils';
 import { BASE_URL } from '../utils';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
@@ -303,12 +303,12 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                                 {product.product_name_for_client && product.product_name_for_client.toLowerCase() !== "na" ? product.product_name_for_client : product.productName.name}
                               </td>
                               <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.hs_code}</td>
-                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{format4Dec(product.trade_qty)}</td>
                               <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty_unit}</td>
-                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.selected_currency_rate.toFixed(2)}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{format2Dec(product.selected_currency_rate)}</td>
                               <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.packing?.name || product.packing || ''}</td>
-                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.tolerance}</td>
-                              <td className="border-l border-r border-black px-1.5 py-1 text-xs text-right break-words [overflow-wrap:anywhere]">{parseFloat(product.selected_currency_rate * product.trade_qty).toFixed(2)}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{format2Dec(product.tolerance)}</td>
+                              <td className="border-l border-r border-black px-1.5 py-1 text-xs text-right break-words [overflow-wrap:anywhere]">{format2Dec(parseFloat(product.selected_currency_rate * product.trade_qty))}</td>
                             </tr>
                           ))}
                           {Array.from({ length: Math.max(0, Math.min(3, 4 - selectedTrade.tradeProducts.length)) }, (_, index) => (
@@ -328,12 +328,12 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1.5 py-1"></td>
                             <td className="border border-black px-1 py-1 text-xs text-center font-bold">Total</td>
-                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">{totalTradeQuantity}</td>
+                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">{format4Dec(totalTradeQuantity)}</td>
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1 py-1"></td>
-                            <td className="border border-black px-1.5 py-1 text-right text-xs font-bold">{totalAmount.toFixed(2)}</td>
+                            <td className="border border-black px-1.5 py-1 text-right text-xs font-bold">{format2Dec(totalAmount)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -519,13 +519,13 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                                 {product.product_name_for_client && product.product_name_for_client.toLowerCase() !== "na" ? product.product_name_for_client : product.productName.name}
                               </td>
                               <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.hs_code}</td>
-                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{format4Dec(product.trade_qty)}</td>
                               <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.trade_qty_unit}</td>
-                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.selected_currency_rate.toFixed(2)}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{format2Dec(product.selected_currency_rate)}</td>
                               <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.packing?.name || product.packing || ''}</td>
-                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{product.tolerance}</td>
+                              <td className="border-l border-r border-black px-1 py-1 text-xs text-center break-words [overflow-wrap:anywhere]">{format2Dec(product.tolerance)}</td>
                               <td className="border-l border-r border-black px-1.5 py-1 text-xs text-right break-words [overflow-wrap:anywhere]">
-                                {parseFloat(product.selected_currency_rate * product.trade_qty).toFixed(2)}
+                                {format2Dec(parseFloat(product.selected_currency_rate * product.trade_qty))}
                               </td>
                             </tr>
                           ))}
@@ -546,12 +546,12 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1.5 py-1"></td>
                             <td className="border border-black px-1 py-1 text-xs text-center font-bold">Total</td>
-                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">{totalTradeQuantity}</td>
+                            <td className="border border-black px-1 py-1 text-xs text-center font-bold">{format4Dec(totalTradeQuantity)}</td>
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1 py-1"></td>
                             <td className="border border-black px-1 py-1"></td>
-                            <td className="border border-black px-1.5 py-1 text-right text-xs font-bold">{totalAmount.toFixed(2)}</td>
+                            <td className="border border-black px-1.5 py-1 text-right text-xs font-bold">{format2Dec(totalAmount)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -775,16 +775,16 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.product_name_for_client}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm"><a href={product.loi} target="_blank" rel="noopener noreferrer">View LOI</a></td> */}
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.total_contract_qty)}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.contract_balance_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.tolerance)}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.contract_balance_qty)}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.contract_balance_qty_unit}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.trade_qty)}</td>
                       <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packing.name}</td>
-                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.shipmentSize.name}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.selected_currency_rate)}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.packing?.name || product.packing || '-'}</td>
+                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.shipmentSize?.name || product.shipmentSize || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -1,7 +1,7 @@
 // src/components/TradeTable.js
 import React,{useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { calculateRemainingContractValue, dateFormatter } from '../dateUtils';
+import { calculateRemainingContractValue, dateFormatter, format2Dec } from '../dateUtils';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../utils';
 
@@ -47,9 +47,9 @@ const PFTable = ({ data, onDelete, onView, basePerm }) => {
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.sp.trn.paymentTerm.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.status_of_payment}</td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.shipment_status}</td> */}
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{calculateRemainingContractValue(item.sp)}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_payment_made}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.net_due_in_this_trade}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(calculateRemainingContractValue(item.sp))}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.balance_payment_made)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.net_due_in_this_trade)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.reviewed} onChange={() => {}} />
                 </td>

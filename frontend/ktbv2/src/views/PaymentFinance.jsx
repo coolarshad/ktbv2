@@ -9,7 +9,7 @@ import FilterComponent from "../components/FilterComponent";
 import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
 import { BASE_URL } from '../utils';
-import { paymentDueDate,calculateRemainingContractValue, calculatePFCommissionValue,dateFormatter } from '../dateUtils';
+import { paymentDueDate, calculateRemainingContractValue, calculatePFCommissionValue, dateFormatter, format2Dec, format4Dec } from '../dateUtils';
 import ReactToPrint from 'react-to-print';
 import Loading from '../components/Loading';
 
@@ -29,11 +29,6 @@ function PaymentFinance() {
   const [notificationMessage, setNotificationMessage] = useState("");
 
   const BACKEND_URL = BASE_URL || "http://localhost:8000";
-
-  const format4Dec = (val) =>
-    val !== undefined && val !== null && val !== '' && !isNaN(Number(val))
-      ? Number(val).toFixed(4)
-      : (val || '-');
 
   const fetchData = async () => {
     try {
@@ -224,7 +219,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Invoice Amount </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.invoice_amount}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.sp.invoice_amount)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Invoice Number </td>
@@ -241,11 +236,11 @@ function PaymentFinance() {
 
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Recived</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.prepayment.advance_received}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.sp.prepayment.advance_received)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Paid</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.prepayment.advance_paid}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.sp.prepayment.advance_paid)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Recived/Paid Date </td>
@@ -253,7 +248,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment </td>
-                      <td className="py-2 px-4 text-gray-800">{calculateRemainingContractValue(selectedPF.sp)}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(calculateRemainingContractValue(selectedPF.sp))}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Due Date </td>
@@ -261,11 +256,11 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Received </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.balance_payment_received}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.balance_payment_received)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Made </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.balance_payment_made}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.balance_payment_made)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Balance Payment Date </td>
@@ -273,11 +268,11 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Advance Adjusted </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.advance_adjusted}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.advance_adjusted)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Net Due In This Trade </td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.net_due_in_this_trade}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.net_due_in_this_trade)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Payment Mode </td>
@@ -289,7 +284,7 @@ function PaymentFinance() {
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Cost</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedPF.sp.logistic_cost}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedPF.sp.logistic_cost)}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Logistic Provider</td>
@@ -306,7 +301,7 @@ function PaymentFinance() {
 
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Commission Agent Value </td>
-                      <td className="py-2 px-4 text-gray-800">{calculatePFCommissionValue(selectedPF)}</td>
+                      <td className="py-2 px-4 text-gray-800">{format2Dec(calculatePFCommissionValue(selectedPF))}</td>
                     </tr>
                     {/* <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">BL Fees</td>
@@ -391,7 +386,7 @@ function PaymentFinance() {
                       <tr key={product.id}>
 
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.name}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.charge}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.charge)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -409,7 +404,7 @@ function PaymentFinance() {
                     {selectedPF.pfCharges.map(cost => (
                       <tr key={cost.id}>
                         <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.name}</td>
-                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{cost.charge}</td>
+                        <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(cost.charge)}</td>
                       </tr>
                     ))}
                   </tbody>
