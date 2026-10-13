@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import debounce from 'lodash.debounce';
 import { capitalizeKey, BASE_URL } from '../utils';
+import { format2Dec, format4Dec } from '../dateUtils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
 import MultiUserSelector from '../components/MultiUserSelector';
 
@@ -225,10 +226,37 @@ const TradeForm = ({ mode = 'add' }) => {
                         return { ...product, ref_balance: '' };
                     }));
 
+                    const to4Dec = (val) => (val !== undefined && val !== null && val !== '' && !isNaN(Number(val))) ? Number(val).toFixed(4) : (val ?? '');
+                    const to2Dec = (val) => (val !== undefined && val !== null && val !== '' && !isNaN(Number(val))) ? Number(val).toFixed(2) : (val ?? '');
+
+                    const formattedProducts = (updatedProducts || []).map(product => ({
+                        ...product,
+                        total_contract_qty: to4Dec(product.total_contract_qty),
+                        contract_balance_qty: to4Dec(product.contract_balance_qty),
+                        trade_qty: to4Dec(product.trade_qty),
+                        qty_of_packing: to4Dec(product.qty_of_packing),
+                        selected_currency_rate: to4Dec(product.selected_currency_rate),
+                        rate_in_usd: to4Dec(product.rate_in_usd),
+                        rate_of_each_packing: to4Dec(product.rate_of_each_packing),
+                        commission_rate: to4Dec(product.commission_rate),
+                        tolerance: to2Dec(product.tolerance),
+                        product_value: to2Dec(product.product_value),
+                        total_packing_cost: to2Dec(product.total_packing_cost),
+                        total_commission: to2Dec(product.total_commission),
+                        logistic: to2Dec(product.logistic),
+                    }));
+
                     setFormData(prevData => ({
                         ...prevData,
                         ...data,
-                        tradeProducts: updatedProducts,
+                        exchange_rate: to4Dec(data.exchange_rate),
+                        contract_value: to2Dec(data.contract_value),
+                        advance_value_to_receive: to2Dec(data.advance_value_to_receive),
+                        commission_value: to2Dec(data.commission_value),
+                        estimated_logistic_cost: to2Dec(data.estimated_logistic_cost),
+                        logistic_cost_tolerence: to2Dec(data.logistic_cost_tolerence),
+                        bl_fee: to2Dec(data.bl_fee),
+                        tradeProducts: formattedProducts,
                     }));
                 })
                 .catch(error => {
@@ -241,17 +269,21 @@ const TradeForm = ({ mode = 'add' }) => {
     useEffect(() => {
         // Calculate contract value and product value whenever exchange_rate changes
         if (formData.exchange_rate) {
-            const updatedTradeProducts = formData.tradeProducts.map(product => ({
-                ...product,
-                product_value: product.trade_qty * product.rate_in_usd
-            }));
+            const updatedTradeProducts = formData.tradeProducts.map(product => {
+                const qty = parseFloat(product.trade_qty) || 0;
+                const rate = parseFloat(product.rate_in_usd) || 0;
+                return {
+                    ...product,
+                    product_value: (qty * rate).toFixed(2)
+                };
+            });
             const selectedTerm = paymentTermOptions?.find((term) => term.id == formData.payment_term);
             const updatedContractValue = updatedTradeProducts.reduce((acc, product) => acc + (parseFloat(product.product_value) || 0), 0);
             const commissionValue = updatedTradeProducts.reduce((acc, product) => acc + (parseFloat(product.total_commission) || 0), 0);
             setFormData(prevState => ({
                 ...prevState,
-                contract_value: updatedContractValue,
-                commission_value: commissionValue,
+                contract_value: updatedContractValue.toFixed(2),
+                commission_value: commissionValue.toFixed(2),
                 tradeProducts: updatedTradeProducts,
                 advance_value_to_receive: ((selectedTerm?.advance_in_percentage / 100) * updatedContractValue).toFixed(2) || 0
             }));
@@ -486,8 +518,8 @@ const TradeForm = ({ mode = 'add' }) => {
                         const trade_qty = parseFloat(updatedProducts[index].trade_qty) || 0;
                         const selected_currency_rate = parseFloat(updatedProducts[index].selected_currency_rate) || 0;
 
-                        updatedProducts[index].rate_in_usd = parseFloat(selected_currency_rate * parseFloat(prevState.exchange_rate)).toFixed(2);
-                        updatedProducts[index].product_value = (updatedProducts[index].rate_in_usd * trade_qty).toFixed(2);
+                        updatedProducts[index].rate_in_usd = (selected_currency_rate * parseFloat(prevState.exchange_rate || 1)).toFixed(4);
+                        updatedProducts[index].product_value = (parseFloat(updatedProducts[index].rate_in_usd) * trade_qty).toFixed(2);
 
                         const commission = parseFloat(updatedProducts[index].commission_rate) || 0;
                         updatedProducts[index].total_commission = (commission * trade_qty).toFixed(2);
@@ -505,9 +537,12 @@ const TradeForm = ({ mode = 'add' }) => {
                     const exchange_rate = parseFloat(value) || 1;
                     const updatedProducts = prevState.tradeProducts.map((product) => {
                         const selected_currency_rate = parseFloat(product.selected_currency_rate) || 0;
+                        const rate_in_usd = (selected_currency_rate * exchange_rate).toFixed(4);
+                        const trade_qty = parseFloat(product.trade_qty) || 0;
                         return {
                             ...product,
-                            rate_in_usd: (selected_currency_rate * exchange_rate).toFixed(2),
+                            rate_in_usd: rate_in_usd,
+                            product_value: (parseFloat(rate_in_usd) * trade_qty).toFixed(2),
                         };
                     });
 
@@ -1340,6 +1375,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                         ...((product.ref_product_code && product.ref_product_code !== 'NA')
                                             ? tradesList
                                                 .filter(trade =>
+                                                    (formData.trade_type ? trade.trade_type !== formData.trade_type : true) &&
                                                     trade.trade_products &&
                                                     trade.trade_products.some(p => p.product_code === product.ref_product_code)
                                                 )
@@ -1347,7 +1383,14 @@ const TradeForm = ({ mode = 'add' }) => {
                                                     value: trade.trn,
                                                     label: trade.trn,
                                                 }))
-                                            : tradeOptions)
+                                            : (formData.trade_type
+                                                ? tradesList
+                                                    .filter(trade => trade.trade_type !== formData.trade_type)
+                                                    .map(trade => ({
+                                                        value: trade.trn,
+                                                        label: trade.trn,
+                                                    }))
+                                                : tradeOptions))
                                     ]}
                                     value={product.ref_trn ? { value: product.ref_trn, label: product.ref_trn } : null}
                                     onChange={(selectedOption) => handleChange({ target: { name: 'ref_trn', value: selectedOption ? selectedOption.value : '' } }, index, 'products')}
@@ -1363,7 +1406,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 )}
                                 {product.ref_trn && product.ref_trn !== 'NA' && product.ref_balance !== '' && product.ref_balance !== undefined && product.ref_balance !== null ? (
                                     <p className={`text-sm font-medium ${product.ref_balance === 'NA' ? 'text-red-500' : 'text-green-500'}`}>
-                                        Reference Balance: {product.ref_balance}
+                                        Reference Balance: {product.ref_balance === 'NA' ? 'NA' : format4Dec(product.ref_balance)}
                                     </p>
                                 ) : ''}
                             </div>

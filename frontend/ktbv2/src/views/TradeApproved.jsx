@@ -192,7 +192,7 @@ function TradeApproved() {
 
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Exchange Rate </td>
-                      <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.exchange_rate)}</td>
+                      <td className="py-2 px-4 text-gray-800">{format4Dec(selectedTrade.exchange_rate)}</td>
                     </tr>
 
                     <tr className="border-b border-gray-200">
@@ -398,11 +398,11 @@ function TradeApproved() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Selected Currency Rate:</span>
-                      <span>{format2Dec(product.selected_currency_rate)}</span>
+                      <span>{format4Dec(product.selected_currency_rate)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Rate in USD:</span>
-                      <span>{format2Dec(product.rate_in_usd)}</span>
+                      <span>{format4Dec(product.rate_in_usd)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Product Value:</span>
@@ -414,7 +414,7 @@ function TradeApproved() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Rate of Each Packing:</span>
-                      <span>{format2Dec(product.rate_of_each_packing)}</span>
+                      <span>{format4Dec(product.rate_of_each_packing)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Qty of Packing:</span>
@@ -434,7 +434,7 @@ function TradeApproved() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Commission Rate:</span>
-                      <span>{format2Dec(product.commission_rate)}</span>
+                      <span>{format4Dec(product.commission_rate)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium">Total Commission:</span>

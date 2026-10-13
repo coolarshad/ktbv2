@@ -56,9 +56,9 @@ const SalesPendingTable = ({ data , onDelete, onView }) => { // Default value fo
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.contract_qty_unit}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format4Dec(item.balance_qty)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.balance_qty_unit}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.tolerance}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.selected_currency_rate)}</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.rate_in_usd)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.tolerance)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format4Dec(item.selected_currency_rate)}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format4Dec(item.rate_in_usd)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.logistic)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
                   <div className="space-x-2">

@@ -64,11 +64,10 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
           <thead>
             <tr>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
-
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-30 bg-gray-100 min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">Company</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
+              <th className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[95px] max-w-[95px] w-[95px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
+              <th className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[155px] z-30 bg-gray-100 min-w-[115px] max-w-[115px] w-[115px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[270px] z-30 bg-gray-100 min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">Company</th>
+              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium min-w-[220px] whitespace-nowrap">Buyer/Seller Name</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
               <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
@@ -86,14 +85,13 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
               flattenedData.map((row, index) => (
                 <tr key={index} onClick={() => onRowClick(row.trade.id)}>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">{row.trade.id}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trade_type}>{row.trade.trade_type}</td>
-
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trn}>{row.trade.trn}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">{row.trade.companyName?.name || '-'}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.trade.customer?.name || '-'}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[95px] max-w-[95px] w-[95px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trade_type}>{row.trade.trade_type}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[155px] z-10 bg-white min-w-[115px] max-w-[115px] w-[115px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trn}>{row.trade.trn}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[270px] z-10 bg-white min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">{row.trade.companyName?.name || '-'}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium min-w-[220px] whitespace-normal break-words">{row.trade.customer?.name || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.productName?.name || row.product_name || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.product_code || '-'}</td>
-                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(row.rate_in_usd)}</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format4Dec(row.rate_in_usd)}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.trd)}</td>
 
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(row.trade.approval_date)}</td>
@@ -222,7 +220,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
 
                       <tr className="border-b border-gray-200">
                         <td className="py-2 px-4 text-gray-600 font-medium capitalize">Exchange Rate </td>
-                        <td className="py-2 px-4 text-gray-800">{format2Dec(selectedTrade.exchange_rate)}</td>
+                        <td className="py-2 px-4 text-gray-800">{format4Dec(selectedTrade.exchange_rate)}</td>
                       </tr>
 
                       <tr className="border-b border-gray-200">
@@ -402,11 +400,11 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Selected Currency Rate:</span>
-                        <span>{format2Dec(product.selected_currency_rate)}</span>
+                        <span>{format4Dec(product.selected_currency_rate)}</span>
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Rate in USD:</span>
-                        <span>{format2Dec(product.rate_in_usd)}</span>
+                        <span>{format4Dec(product.rate_in_usd)}</span>
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Product Value:</span>
@@ -418,7 +416,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Rate of Each Packing:</span>
-                        <span>{format2Dec(product.rate_of_each_packing)}</span>
+                        <span>{format4Dec(product.rate_of_each_packing)}</span>
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Qty of Packing:</span>
@@ -438,7 +436,7 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Commission Rate:</span>
-                        <span>{format2Dec(product.commission_rate)}</span>
+                        <span>{format4Dec(product.commission_rate)}</span>
                       </div>
                       <div className="flex flex-col border-b border-gray-200">
                         <span className="font-medium">Total Commission:</span>

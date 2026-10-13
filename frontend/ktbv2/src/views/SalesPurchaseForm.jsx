@@ -712,8 +712,8 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.trade_qty)}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.selected_currency_rate)}</td>
-                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.rate_in_usd)}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.selected_currency_rate)}</td>
+                                    <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.rate_in_usd)}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.markings_in_packaging}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.total_packing_cost)}</td>
                                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.supplier?.name || '-'}</td>

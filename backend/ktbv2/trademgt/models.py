@@ -148,6 +148,7 @@ class TradeProduct(models.Model):
                 # For new records: just subtract the new quantity
                 trace.contract_balance_qty -= float(self.trade_qty)
             
+            trace.contract_balance_qty = round(trace.contract_balance_qty, 4)
             trace.save()
             
         except TradeProductTrace.DoesNotExist:
@@ -155,8 +156,8 @@ class TradeProduct(models.Model):
             TradeProductTrace.objects.create(
                 product_code=self.product_code,
                 trade_type=self.trade.trade_type,
-                total_contract_qty=float(self.total_contract_qty),
-                contract_balance_qty=float(self.total_contract_qty) - float(self.trade_qty)
+                total_contract_qty=round(float(self.total_contract_qty), 4),
+                contract_balance_qty=round(float(self.total_contract_qty) - float(self.trade_qty), 4)
             )
         
     def update_product_ref(self):
@@ -177,7 +178,7 @@ class TradeProduct(models.Model):
 
             base_qty = float(self.trade_qty)
             tolerance = float(self.tolerance)
-            adjusted_balance_qty = base_qty + (tolerance / 100) * base_qty
+            adjusted_balance_qty = round(base_qty + (tolerance / 100) * base_qty, 4)
 
             if pending:
                 # Synchronize all fields on update
@@ -201,6 +202,7 @@ class TradeProduct(models.Model):
                     # No previous qty provided — set to adjusted balance qty
                     pending.balance_qty = adjusted_balance_qty
 
+                pending.balance_qty = round(pending.balance_qty, 4)
                 pending.save()
             else:
                 # Always create fresh with trade_qty + tolerance
@@ -1098,29 +1100,55 @@ def recalculate_trade_product_ref(product_code):
     if not product_code or product_code == 'NA':
         return
         
+    # 1. Purchase Trade Reference (referenced by Sales trades)
     total_purchase_qty = TradeProduct.objects.filter(
         product_code=product_code, 
         trade__trade_type='Purchase'
     ).aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
     
-    total_sales_qty = TradeProduct.objects.filter(
+    total_sales_consuming_purchase = TradeProduct.objects.filter(
         ref_product_code=product_code, 
         trade__trade_type='Sales'
     ).aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
     
-    ref_balance = total_purchase_qty - total_sales_qty
+    purchase_ref_balance = round(float(total_purchase_qty) - float(total_sales_consuming_purchase), 4)
     
     if total_purchase_qty > 0:
         TradeProductRef.objects.update_or_create(
             product_code=product_code,
             trade_type='Purchase',
             defaults={
-                'total_contract_qty': total_purchase_qty,
-                'ref_balance_qty': ref_balance
+                'total_contract_qty': round(float(total_purchase_qty), 4),
+                'ref_balance_qty': purchase_ref_balance
             }
         )
     else:
         TradeProductRef.objects.filter(product_code=product_code, trade_type='Purchase').delete()
+
+    # 2. Sales Trade Reference (referenced by Purchase trades)
+    total_sales_qty = TradeProduct.objects.filter(
+        product_code=product_code, 
+        trade__trade_type='Sales'
+    ).aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
+    
+    total_purchase_consuming_sales = TradeProduct.objects.filter(
+        ref_product_code=product_code, 
+        trade__trade_type='Purchase'
+    ).aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
+    
+    sales_ref_balance = round(float(total_sales_qty) - float(total_purchase_consuming_sales), 4)
+    
+    if total_sales_qty > 0:
+        TradeProductRef.objects.update_or_create(
+            product_code=product_code,
+            trade_type='Sales',
+            defaults={
+                'total_contract_qty': round(float(total_sales_qty), 4),
+                'ref_balance_qty': sales_ref_balance
+            }
+        )
+    else:
+        TradeProductRef.objects.filter(product_code=product_code, trade_type='Sales').delete()
 
 @receiver(post_save, sender=TradeProduct)
 def on_trade_product_save(sender, instance, **kwargs):

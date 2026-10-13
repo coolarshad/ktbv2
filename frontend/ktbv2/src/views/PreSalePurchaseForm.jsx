@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { capitalizeKey } from '../utils';
+import { format2Dec, format4Dec } from '../dateUtils';
 import MultiUserSelector from '../components/MultiUserSelector';
 import Select from 'react-select';
 
@@ -360,13 +361,13 @@ const PreSalePurchaseForm = ({ mode = 'add' }) => {
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.productName.name}</td>
                     
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.hs_code}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.total_contract_qty)}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.total_contract_qty_unit}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.tolerance}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{format2Dec(product.tolerance)}</td>
                      
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.trade_qty)}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.trade_qty_unit}</td>
-                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.selected_currency_rate}</td>
+                     <td className="py-2 px-4 border-b border-gray-200 text-sm">{format4Dec(product.selected_currency_rate)}</td>
                      <td className="py-2 px-4 border-b border-gray-200 text-sm">{product.shipmentSize.name}</td>
                    </tr>
                  ))}

@@ -267,8 +267,8 @@ const TradeReport = () => {
                                             <td className="px-4 py-2 border-b">{format4Dec(product.total_contract_qty)}</td>
                                             <td className="px-4 py-2 border-b">{product.total_contract_qty_unit || 'N/A'}</td>
                                             <td className="px-4 py-2 border-b">{format4Dec(product.trade_qty)}</td>
-                                            <td className="px-4 py-2 border-b">{format2Dec(product.rate_in_usd)}</td>
-                                            <td className="px-4 py-2 border-b">{format2Dec(product.commission_rate)}</td>
+                                            <td className="px-4 py-2 border-b">{format4Dec(product.rate_in_usd)}</td>
+                                            <td className="px-4 py-2 border-b">{format4Dec(product.commission_rate)}</td>
                                             <td className="px-4 py-2 border-b">{product.shipmentSize?.name || product.shipmentSize || 'N/A'}</td>
                                         </tr>
                                     ))

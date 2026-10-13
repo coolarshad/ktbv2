@@ -2956,7 +2956,7 @@ class RefBalanceView(APIView):
                     consumed_query = consumed_query.exclude(trade_id=current_trade_id)
                     
                 consumed_qty = consumed_query.aggregate(total=models.Sum('trade_qty'))['total'] or 0.0
-                balance = parent_product.trade_qty - consumed_qty
+                balance = round(float(parent_product.trade_qty) - float(consumed_qty), 4)
                     
         except Exception as e:
             return Response({'ref_balance': 'NA'})
