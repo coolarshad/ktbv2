@@ -374,18 +374,19 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                           <p className='mb-3 font-bold text-sm'>Acknowledged By</p>
                           {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-12 h-12 mx-auto" /> */}
                           <div className="w-12 h-12 mx-auto"></div>
-                          <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
+                          {/* <p className='font-bold text-sm'>Authorized Signatory with Seal</p> */}
                         </div>
-                        <div className="border-t border-l border-black p-2">
+                        {/* <div className="border-t border-l border-black p-2"> */}
+                        <div className="p-2">
                           <p className='mb-3 font-bold text-sm'>for {selectedTrade.company.name}</p>
                           <div className="w-12 h-12 mx-auto"></div>
                           {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-12 h-12 mx-auto" /> */}
-                          <p className='text-right text-sm'>Authorized Signatory</p>
+                          {/* <p className='text-right text-sm'>Authorized Signatory</p> */}
                         </div>
                       </div>
                     </div>
                     <div className="text-center pb-1 mt-1">
-                      <h1 className="text-xs font-medium text-gray-700">This is a computer generated invoice</h1>
+                      <h1 className="text-xs font-medium text-gray-700">This is a computer generated invoice and no signature is required.</h1>
                     </div>
                   </div>
                 </div>
@@ -583,18 +584,19 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                           <p className='mb-3 font-bold text-sm'>Acknowledged By</p>
                           <div className="w-12 h-12 mx-auto"></div>
                           {/* <img src={`${BACKEND_URL}${selectedTrade.company.seal_image}`} alt="Seal" className="w-12 h-12 mx-auto" /> */}
-                          <p className='font-bold text-sm'>Authorized Signatory with Seal</p>
+                          {/* <p className='font-bold text-sm'>Authorized Signatory with Seal</p> */}
                         </div>
-                        <div className="border-t border-l border-black p-2">
+                        {/* <div className="border-t border-l border-black p-2"> */}
+                        <div className=" p-2">
                           <p className='mb-3 font-bold text-sm'>for {selectedTrade.company.name}</p>
                           <div className="w-12 h-12 mx-auto"></div>
                           {/* <img src={`${BACKEND_URL}${selectedTrade.company.signature_image}`} alt="Signature" className="w-12 h-12 mx-auto" /> */}
-                          <p className='text-right text-sm'>Authorized Signatory</p>
+                          {/* <p className='text-right text-sm'>Authorized Signatory</p> */}
                         </div>
                       </div>
                     </div>
                     <div className="text-center pb-1 mt-1">
-                      <h1 className="text-xs font-medium text-gray-700">This is a computer generated invoice</h1>
+                      <h1 className="text-xs font-medium text-gray-700">This is a computer generated invoice and no signature is required.</h1>
                     </div>
                   </div>
                 </div>
