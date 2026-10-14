@@ -95,6 +95,7 @@ const TradeForm = ({ mode = 'add' }) => {
                 container_shipment_size: '',
                 logistic: '',
                 logistic_remark: '',
+                isContractReadOnly: false,
             }
         ],
         tradeExtraCosts: [
@@ -231,6 +232,7 @@ const TradeForm = ({ mode = 'add' }) => {
 
                     const formattedProducts = (updatedProducts || []).map(product => ({
                         ...product,
+                        isContractReadOnly: true,
                         total_contract_qty: to4Dec(product.total_contract_qty),
                         contract_balance_qty: to4Dec(product.contract_balance_qty),
                         trade_qty: to4Dec(product.trade_qty),
@@ -245,6 +247,8 @@ const TradeForm = ({ mode = 'add' }) => {
                         total_commission: to2Dec(product.total_commission),
                         logistic: to2Dec(product.logistic),
                     }));
+
+                    setIsContractBalanceQtyReadOnly(true);
 
                     setFormData(prevData => ({
                         ...prevData,
@@ -312,14 +316,33 @@ const TradeForm = ({ mode = 'add' }) => {
                     if (Array.isArray(data) && data.length > 0) {
                         setFormData((prevState) => {
                             const updatedProducts = [...prevState.tradeProducts];
-                            updatedProducts[index].total_contract_qty = data[0]?.total_contract_qty; // Example field
-                            updatedProducts[index].contract_balance_qty = data[0]?.contract_balance_qty; // Example field
+                            if (updatedProducts[index]) {
+                                updatedProducts[index].total_contract_qty = data[0]?.total_contract_qty; // Example field
+                                updatedProducts[index].contract_balance_qty = data[0]?.contract_balance_qty; // Example field
+                                updatedProducts[index].isContractReadOnly = true;
+                            }
                             setIsContractBalanceQtyReadOnly(true);
                             return { ...prevState, tradeProducts: updatedProducts };
                         });
+                    } else {
+                        setFormData((prevState) => {
+                            const updatedProducts = [...prevState.tradeProducts];
+                            if (updatedProducts[index]) {
+                                updatedProducts[index].isContractReadOnly = false;
+                            }
+                            return { ...prevState, tradeProducts: updatedProducts };
+                        });
+                        setIsContractBalanceQtyReadOnly(false);
                     }
 
                 } else {
+                    setFormData((prevState) => {
+                        const updatedProducts = [...prevState.tradeProducts];
+                        if (updatedProducts[index]) {
+                            updatedProducts[index].isContractReadOnly = false;
+                        }
+                        return { ...prevState, tradeProducts: updatedProducts };
+                    });
                     setIsContractBalanceQtyReadOnly(false);
                     console.error('Error fetching product details:', response.statusText);
                 }
@@ -484,10 +507,13 @@ const TradeForm = ({ mode = 'add' }) => {
                     }
 
 
-                    if (name === 'product_code' && value) {
-                        setIsContractBalanceQtyReadOnly(false);
-                        // fetchProductDetails(index,updatedProducts[index].product_code_ref, value); // Fetch product details
-                        fetchProductDetails(index, value);
+                    if (name === 'product_code') {
+                        if (value) {
+                            fetchProductDetails(index, value);
+                        } else {
+                            updatedProducts[index].isContractReadOnly = false;
+                            setIsContractBalanceQtyReadOnly(false);
+                        }
                     }
                     if (name === 'total_contract_qty') {
                         updatedProducts[index].contract_balance_qty = value;
@@ -602,6 +628,7 @@ const TradeForm = ({ mode = 'add' }) => {
                     container_shipment_size: '',
                     logistic: '',
                     logistic_remark: '',
+                    isContractReadOnly: false,
                 }
             ]
         }));
@@ -1437,7 +1464,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     placeholder="Total Contract Qty"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].total_contract_qty`)}`}
-                                    readOnly={isContractBalanceQtyReadOnly}
+                                    readOnly={mode === 'update' || (product.isContractReadOnly !== undefined ? Boolean(product.isContractReadOnly) : Boolean(isContractBalanceQtyReadOnly))}
                                 />
                                 {validationErrors[`tradeProducts[${index}].total_contract_qty`] && (
                                     <p className="text-red-500">
@@ -1483,7 +1510,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 )}
                             </div>
                             <div>
-                                <label htmlFor="tolerance" className="block text-sm font-medium text-gray-700">Contract Balance Qty</label>
+                                <label htmlFor="contract_balance_qty" className="block text-sm font-medium text-gray-700">Contract Balance Qty</label>
                                 <input
                                     type="number"
                                     step="0.0001"
@@ -1492,7 +1519,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     placeholder="Contract Balance Qty"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].contract_balance_qty`)}`}
-                                    readOnly={isContractBalanceQtyReadOnly}
+                                    readOnly={mode === 'update' || (product.isContractReadOnly !== undefined ? Boolean(product.isContractReadOnly) : Boolean(isContractBalanceQtyReadOnly))}
                                 />
                                 {validationErrors[`tradeProducts[${index}].contract_balance_qty`] && (
                                     <p className="text-red-500">
@@ -1913,7 +1940,8 @@ const TradeForm = ({ mode = 'add' }) => {
                         onChange={handleChange}
                         placeholder="Estimated Logistic Cost"
                         className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass('estimated_logistic_cost')}`}
-                        readOnly={formData.logistic_provider.toLocaleLowerCase() == 'na' ? true : false}
+                        // readOnly={formData.logistic_provider.toLocaleLowerCase() == 'na' ? true : false}
+                        readOnly={true}
                     />
                     {validationErrors.estimated_logistic_cost && <p className="text-red-500">{validationErrors.estimated_logistic_cost}</p>}
                 </div>
