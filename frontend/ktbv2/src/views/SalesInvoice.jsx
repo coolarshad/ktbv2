@@ -5,7 +5,7 @@ const SalesInvoice = () => {
   const { user } = useAuth();
   return (
     <div className="p-4 max-w-6xl mx-auto print-page-a4">
-      
+
       {/* Header Section */}
       <div className="text-center pb-2">
         <h1 className="text-xl font-bold">PROFORMA INVOICE</h1>
@@ -18,11 +18,11 @@ const SalesInvoice = () => {
           <div className="border-b border-black px-2 py-3">
             <p className='font-bold'>KISMAT PETROLEUM TRADING PTE LTD</p>
             <p>
-            50 RAFFLES PLACE,
-            SINGAPORE LAND TOWER, LEVEL # 19-00, SINGAPORE 048623
+              50 RAFFLES PLACE,
+              SINGAPORE LAND TOWER, LEVEL # 19-00, SINGAPORE 048623
             </p>
             <p>
-            Cmp Regn No. : <span className='font-bold'>201726590K</span>
+              Cmp Regn No. : <span className='font-bold'>201726590K</span>
             </p>
           </div>
           <div className="border-b border-black px-2 py-3">
@@ -65,7 +65,7 @@ const SalesInvoice = () => {
             </div>
             <div className="p-2">
               <p className='font-bold'>
-              ESTIMATED TIME OF DEPARTURE
+                ESTIMATED TIME OF DEPARTURE
               </p>
               <p>XXXXXXXXXXXX</p>
             </div>
@@ -76,7 +76,7 @@ const SalesInvoice = () => {
             <div className="border-b border-black p-2">
               <p className='font-bold'>Dated</p>
               <p>XX-XXX-XXXX</p>
-              
+
             </div>
             <div className="border-b border-black p-2">
               <p className='font-bold'>Terms of Payment</p>
@@ -114,7 +114,7 @@ const SalesInvoice = () => {
               <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">UNIT</th>
               <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
               <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
-              <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">TOLERANCE</th>
+              <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance(%)</th>
               <th className="border border-black px-1.5 py-1.5 w-[15%] text-right text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
             </tr>
           </thead>

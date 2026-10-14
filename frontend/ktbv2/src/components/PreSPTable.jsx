@@ -8,11 +8,9 @@ import Modal from './Modal';
 import PrintModal from './PrintModal';
 import MultiUserSelector from './MultiUserSelector';
 import axios from '../axiosConfig';
-import { toWords } from 'number-to-words';
 import { today, addDaysToDate, dateFormatter, format2Dec, format4Dec } from '../dateUtils';
-import { BASE_URL } from '../utils';
+import { BASE_URL, hasPermission, amountToWords } from '../utils';
 import { useAuth } from '../context/AuthContext';
-import { hasPermission } from '../utils';
 
 const PreSPTable = ({ data, onDelete, basePerm }) => {
   const navigate = useNavigate();
@@ -291,7 +289,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Unit</th>
                             <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
                             <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
-                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance</th>
+                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance(%)</th>
                             <th className="border border-black px-1.5 py-1.5 w-[15%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
                           </tr>
                         </thead>
@@ -344,7 +342,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* Row 1 */}
                       <div className=" p-1">
                         <p className='text-xs'>Amount Chargeable (in words)</p>
-                        <p className='font-bold mb-1 text-xs uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
+                        <p className='font-bold mb-1 text-xs uppercase'>{amountToWords(totalAmount, selectedTrade.currency?.name || selectedTrade.currency)}</p>
                         <p className='text-[10px] my-1 font-semibold'>Remark: {selectedPresp.remarks}</p>
                         <p className='text-xs font-semibold'>DOCUMENTS REQUIRED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (
@@ -507,7 +505,7 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                             <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Unit</th>
                             <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
                             <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
-                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance</th>
+                            <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance(%)</th>
                             <th className="border border-black px-1.5 py-1.5 w-[15%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
                           </tr>
                         </thead>
@@ -562,8 +560,8 @@ const PreSPTable = ({ data, onDelete, basePerm }) => {
                       {/* Row 1 */}
                       <div className=" px-1 py-1">
                         <p className='text-xs'>Amount Chargeable (in words)</p>
-                        <p className='text-xs font-bold uppercase'>{selectedTrade.currency.name} {toWords(totalAmount).replace(/,/g, '')} Only</p>
-                        <p className='text-[10px] my-1 font-semibold'>Note: Outstanding payments must be paid within 15 days from the date of submission maturity of original copy documents by mail. Non settlement shall incur 12% interest per annum.</p>
+                        <p className='text-xs font-bold uppercase'>{amountToWords(totalAmount, selectedTrade.currency?.name || selectedTrade.currency)}</p>
+                        <p className='text-[10px] my-1 font-semibold'>Note: Outstanding payments must be paid within 15 days from the date of maturity of original copy documents by mail. Non settlement shall incur 12% interest per annum.</p>
                         <p className='text-[10px] my-1 font-semibold'>Remark: {selectedPresp.remarks}</p>
                         <p className='text-xs font-semibold'>DOCUMENTS PROVIDED AGAINST SHIPMENT</p>
                         {selectedPresp.documentRequired && selectedPresp.documentRequired.length > 0 ? (

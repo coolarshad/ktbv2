@@ -103,7 +103,7 @@ const PurchaseInvoice = () => {
               <th className="border border-black px-1 py-1.5 w-[6%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">UNIT</th>
               <th className="border border-black px-1 py-1.5 w-[9%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Rate</th>
               <th className="border border-black px-1 py-1.5 w-[11%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Packing</th>
-              <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">TOLERANCE</th>
+              <th className="border border-black px-1 py-1.5 w-[10%] text-center text-xs font-bold break-words [overflow-wrap:anywhere]">Tolerance(%)</th>
               <th className="border border-black px-1.5 py-1.5 w-[15%] text-right text-xs font-bold break-words [overflow-wrap:anywhere]">Amount</th>
             </tr>
           </thead>
