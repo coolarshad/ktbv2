@@ -5,6 +5,10 @@ node_modules/
 frontend/node_modules/
 
 .env
+service_account.json
+backend/ktbv2/service_account.json
+*ktb2-*.json
+*.json.key
 
 
 # Django specific
