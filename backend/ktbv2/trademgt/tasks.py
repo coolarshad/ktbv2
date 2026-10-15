@@ -34,3 +34,21 @@ def backup_file_to_gdrive_task(self, relative_file_path, subfolder_name=None, de
     except Exception as exc:
         logger.error(f"[GDrive Task] Error uploading {local_file_path}: {exc}")
         raise self.retry(exc=exc)
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=120)
+def backup_db_to_gdrive_task(self):
+    """
+    Celery task to run a PostgreSQL backup and upload to Google Drive.
+    Can be scheduled via Celery Beat or cron.
+    """
+    if not getattr(settings, 'GOOGLE_DRIVE_AUTO_BACKUP', True):
+        logger.info("[GDrive DB Task] Auto-backup is disabled in settings.")
+        return None
+
+    from django.core.management import call_command
+    try:
+        call_command('backup_db_to_gdrive')
+        return "Database backup to Google Drive completed."
+    except Exception as exc:
+        logger.error(f"[GDrive DB Task] Database backup failed: {exc}")
+        raise self.retry(exc=exc)
