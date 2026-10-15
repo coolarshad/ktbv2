@@ -197,3 +197,12 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+# Google Drive Backup Configuration (Disabled by default on local dev; enable in prod via env)
+GOOGLE_DRIVE_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '1K3jSGbywiIp6qDcUZ-9TFvDGhMZCNDOY')
+GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE = os.environ.get(
+    'GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE',
+    os.path.join(BASE_DIR, 'service_account.json')
+)
+GOOGLE_DRIVE_AUTO_BACKUP = os.environ.get('GOOGLE_DRIVE_AUTO_BACKUP', 'False').lower() == 'true'
+
