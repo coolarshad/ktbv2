@@ -47,7 +47,9 @@ def get_or_create_folder(service, folder_name, parent_id):
         q=query,
         spaces='drive',
         fields='files(id, name)',
-        pageSize=1
+        pageSize=1,
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True
     ).execute()
 
     files = results.get('files', [])
@@ -59,7 +61,11 @@ def get_or_create_folder(service, folder_name, parent_id):
             'mimeType': 'application/vnd.google-apps.folder',
             'parents': [parent_id]
         }
-        folder = service.files().create(body=folder_metadata, fields='id').execute()
+        folder = service.files().create(
+            body=folder_metadata,
+            fields='id',
+            supportsAllDrives=True
+        ).execute()
         folder_id = folder.get('id')
         logger.info(f"Created Google Drive folder '{folder_name}' (ID: {folder_id})")
 
@@ -121,7 +127,8 @@ def upload_file_to_drive(local_file_path, destination_filename=None, subfolder_n
         uploaded_file = service.files().create(
             body=file_metadata,
             media_body=media,
-            fields='id, name, webViewLink'
+            fields='id, name, webViewLink',
+            supportsAllDrives=True
         ).execute()
 
         logger.info(f"[GDrive] Successfully uploaded '{filename}' to Google Drive (ID: {uploaded_file.get('id')})")

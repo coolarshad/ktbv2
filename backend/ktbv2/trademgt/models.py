@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from django.conf import settings
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -940,24 +941,78 @@ class Company(models.Model):
         return reverse("Company_detail", kwargs={"pk": self.pk})
 
     def get_next_counter(self):
-        """Returns the next counter value in the proper format without saving."""
-        next_counter = self.counter + 1
-        return f"{self.initial}-{next_counter:07d}"
+        """
+        Returns the next counter value in the proper format without saving,
+        dynamically ensuring it is strictly higher than any existing Trade TRN in the database.
+        """
+        clean_initial = (self.initial or '').strip()
+        max_counter = self.counter or 0
+
+        if clean_initial:
+            prefix = f"{clean_initial}-"
+            # Query all existing trades matching this initial prefix or company ID
+            existing_trns = set(
+                Trade.objects.filter(
+                    models.Q(trn__istartswith=prefix) | models.Q(company=str(self.id))
+                ).values_list('trn', flat=True)
+            )
+
+            pattern = re.compile(rf"^{re.escape(clean_initial)}-(\d+)$", re.IGNORECASE)
+
+            for trn_str in existing_trns:
+                if not trn_str:
+                    continue
+                trn_clean = str(trn_str).strip()
+                match = pattern.match(trn_clean)
+                if match:
+                    try:
+                        num = int(match.group(1))
+                        if num > max_counter:
+                            max_counter = num
+                    except ValueError:
+                        pass
+                else:
+                    parts = trn_clean.split('-')
+                    if len(parts) >= 2 and parts[-1].isdigit():
+                        try:
+                            num = int(parts[-1])
+                            if num > max_counter:
+                                max_counter = num
+                        except ValueError:
+                            pass
+
+        next_counter = max_counter + 1
+        candidate_trn = f"{clean_initial}-{next_counter:07d}"
+
+        # Safety loop: ensure the candidate TRN definitely does not exist in Trade
+        while Trade.objects.filter(trn__iexact=candidate_trn).exists():
+            next_counter += 1
+            candidate_trn = f"{clean_initial}-{next_counter:07d}"
+
+        # Synchronize self.counter if existing trades were ahead of the company counter
+        if max_counter > self.counter:
+            self.counter = max_counter
+            self.save(update_fields=['counter'])
+
+        return candidate_trn
 
     def save_counter(self, formatted_string):
         """Saves the counter based on the formatted string provided."""
-        # Extract the counter from the formatted string
+        if not formatted_string:
+            return
         try:
-            prefix, counter_str = formatted_string.split('-')
-            if prefix == self.initial:
-                # Convert counter string to integer
-                counter_value = int(counter_str)
-                # Update the counter only if the provided counter is greater than the current one
-                if counter_value > self.counter:
-                    self.counter = counter_value
-                    self.save()
+            parts = str(formatted_string).strip().split('-')
+            clean_initial = (self.initial or '').strip().upper()
+            if len(parts) >= 2:
+                prefix = parts[0].strip().upper()
+                counter_str = parts[-1].strip()
+                if prefix == clean_initial and counter_str.isdigit():
+                    counter_value = int(counter_str)
+                    if counter_value > self.counter:
+                        self.counter = counter_value
+                        self.save(update_fields=['counter'])
             else:
-                raise ValueError("Initials do not match.")
+                raise ValueError("Initials do not match or counter is not numeric.")
         except ValueError as e:
             raise ValueError(f"Invalid formatted string: {e}")
 

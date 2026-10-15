@@ -1,6 +1,6 @@
 from django.test import TestCase
 from datetime import date
-from trademgt.models import Trade, TradeProduct, TradePending
+from trademgt.models import Trade, TradeProduct, TradePending, Company
 from accounts.models import CustomUser, Permission
 from accounts.permissions import can_user_update_approved, can_user_delete_approved
 
@@ -140,4 +140,98 @@ class TradePendingSyncTests(TestCase):
         # Should be authorized for update_trade_approval via base matching
         self.assertTrue(can_user_update_approved(manager2, ['update_trade_approval']))
         self.assertTrue(can_user_update_approved(manager2, ['update_trade_approved']))
+
+class CompanyDynamicNextCounterTests(TestCase):
+    def setUp(self):
+        self.company = Company.objects.create(
+            name="Alpha Trading Ltd",
+            initial="AT",
+            counter=10,
+            registration_number="REG-100",
+            address="123 Alpha Way"
+        )
+
+    def test_next_counter_standard_increment(self):
+        self.assertEqual(self.company.get_next_counter(), "AT-0000011")
+
+    def test_next_counter_detects_existing_trades_and_skips(self):
+        # Create a trade with AT-0000011 and AT-0000012
+        Trade.objects.create(
+            company=str(self.company.id),
+            trd=date(2026, 1, 1),
+            trn="AT-0000011",
+            trade_type="Sales",
+            trade_category="Sales",
+            country_of_origin="Country",
+            customer_company_name="1",
+            address="Address",
+            currency_selection="USD",
+            exchange_rate=1.0,
+            commission_agent="Agent",
+            contract_value=100.0,
+            payment_term="1",
+            advance_value_to_receive=0.0,
+            commission_value=0.0,
+            logistic_provider="NA",
+            estimated_logistic_cost=0.0,
+            logistic_cost_tolerence=0.0,
+            bank_name_address="1",
+            account_number="123",
+            swift_code="SWIFT",
+            incoterm="FOB",
+            pod="POD",
+            pol="POL",
+            eta="2026-02-01",
+            etd="2026-01-15",
+            remarks="None",
+            trader_name="Trader",
+            insurance_policy_number="NA",
+            shipper_in_bl="Shipper",
+            consignee_in_bl="Consignee",
+            notify_party_in_bl="Notify",
+            bl_fee=0.0,
+            bl_fee_remarks="None"
+        )
+        Trade.objects.create(
+            company=str(self.company.id),
+            trd=date(2026, 1, 1),
+            trn="AT-0000012",
+            trade_type="Sales",
+            trade_category="Sales",
+            country_of_origin="Country",
+            customer_company_name="1",
+            address="Address",
+            currency_selection="USD",
+            exchange_rate=1.0,
+            commission_agent="Agent",
+            contract_value=100.0,
+            payment_term="1",
+            advance_value_to_receive=0.0,
+            commission_value=0.0,
+            logistic_provider="NA",
+            estimated_logistic_cost=0.0,
+            logistic_cost_tolerence=0.0,
+            bank_name_address="1",
+            account_number="123",
+            swift_code="SWIFT",
+            incoterm="FOB",
+            pod="POD",
+            pol="POL",
+            eta="2026-02-01",
+            etd="2026-01-15",
+            remarks="None",
+            trader_name="Trader",
+            insurance_policy_number="NA",
+            shipper_in_bl="Shipper",
+            consignee_in_bl="Consignee",
+            notify_party_in_bl="Notify",
+            bl_fee=0.0,
+            bl_fee_remarks="None"
+        )
+
+        # Counter is still 10, but existing trades are up to 12. Next must be AT-0000013.
+        self.assertEqual(self.company.get_next_counter(), "AT-0000013")
+        self.company.refresh_from_db()
+        self.assertEqual(self.company.counter, 12)
+
 

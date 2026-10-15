@@ -303,6 +303,16 @@ class TradeView(APIView):
                 return supplier_res
 
         with transaction.atomic():
+            # If TRN is missing or already exists (e.g. concurrent creation or stale submission),
+            # dynamically allocate the next available unique TRN for this company
+            submitted_trn = trade_data.get('trn')
+            if not submitted_trn or Trade.objects.filter(trn__iexact=submitted_trn).exists():
+                try:
+                    company_obj = Company.objects.select_for_update().get(id=data.get('company'))
+                    trade_data['trn'] = company_obj.get_next_counter()
+                except (Company.DoesNotExist, ValueError):
+                    pass
+
             trade_serializer = TradeSerializer(data=trade_data)
             if trade_serializer.is_valid():
                 trade = trade_serializer.save(created_by=request.user)
@@ -344,7 +354,7 @@ class TradeView(APIView):
             
             try:
                 company = Company.objects.get(id=data.get('company'))
-                company.save_counter(data.get('trn'))
+                company.save_counter(trade.trn)
                 
                 
                 # Notify explicitly assigned users
