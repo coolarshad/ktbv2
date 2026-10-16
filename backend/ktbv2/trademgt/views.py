@@ -583,32 +583,30 @@ class TradeView(APIView):
                 return Response(trade_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
             if trade_products_data:
-                # Store existing quantities before deletion
-                # existing_quantities = {
-                #     tp.product_code: float(tp.trade_qty) 
-                #     for tp in TradeProduct.objects.filter(trade=trade)
-                # }
                 existing_values = {
                     tp.product_code: {
                         "trade_qty": float(tp.trade_qty),
-                        "tolerance": float(tp.tolerance)
+                        "tolerance": float(tp.tolerance),
+                        "total_contract_qty": float(tp.total_contract_qty)
                     }
                     for tp in TradeProduct.objects.filter(trade=trade)
                 }
 
-                pass
-
-                
                 # Delete existing trade products
                 TradeProduct.objects.filter(trade=trade).delete()
                 
                 # Create new trade products with previous quantities
                 created_products = []
                 for item in trade_products_data:
+                    previous = existing_values.get(item.get('product_code'), {})
+                    # If trade is already approved, total_contract_qty cannot be changed
+                    if trade.approved and 'total_contract_qty' in previous:
+                        item['total_contract_qty'] = previous['total_contract_qty']
+
                     trade_product = TradeProduct(**item, trade=trade)
                     # Set previous quantity and calculate old adjusted balance value if it existed
-                    previous = existing_values.get(trade_product.product_code, {})
                     trade_product.previous_trade_qty = previous.get("trade_qty", 0)
+                    trade_product.previous_total_contract_qty = previous.get("total_contract_qty", trade_product.total_contract_qty)
 
                     if "trade_qty" in previous:
                         prev_base_qty = float(previous.get("trade_qty", 0))

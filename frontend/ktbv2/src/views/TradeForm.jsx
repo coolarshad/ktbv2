@@ -230,9 +230,11 @@ const TradeForm = ({ mode = 'add' }) => {
                     const to4Dec = (val) => (val !== undefined && val !== null && val !== '' && !isNaN(Number(val))) ? Number(val).toFixed(4) : (val ?? '');
                     const to2Dec = (val) => (val !== undefined && val !== null && val !== '' && !isNaN(Number(val))) ? Number(val).toFixed(2) : (val ?? '');
 
+                    const isTradeApproved = Boolean(data.approved);
+
                     const formattedProducts = (updatedProducts || []).map(product => ({
                         ...product,
-                        isContractReadOnly: true,
+                        isContractReadOnly: isTradeApproved,
                         total_contract_qty: to4Dec(product.total_contract_qty),
                         contract_balance_qty: to4Dec(product.contract_balance_qty),
                         trade_qty: to4Dec(product.trade_qty),
@@ -248,7 +250,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         logistic: to2Dec(product.logistic),
                     }));
 
-                    setIsContractBalanceQtyReadOnly(true);
+                    setIsContractBalanceQtyReadOnly(isTradeApproved);
 
                     setFormData(prevData => ({
                         ...prevData,
@@ -1464,7 +1466,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     placeholder="Total Contract Qty"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].total_contract_qty`)}`}
-                                    readOnly={mode === 'update' || (product.isContractReadOnly !== undefined ? Boolean(product.isContractReadOnly) : Boolean(isContractBalanceQtyReadOnly))}
+                                    readOnly={Boolean(formData.approved) || (product.isContractReadOnly !== undefined ? Boolean(product.isContractReadOnly) : Boolean(isContractBalanceQtyReadOnly))}
                                 />
                                 {validationErrors[`tradeProducts[${index}].total_contract_qty`] && (
                                     <p className="text-red-500">
@@ -1519,7 +1521,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     placeholder="Contract Balance Qty"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].contract_balance_qty`)}`}
-                                    readOnly={mode === 'update' || (product.isContractReadOnly !== undefined ? Boolean(product.isContractReadOnly) : Boolean(isContractBalanceQtyReadOnly))}
+                                    readOnly={true}
                                 />
                                 {validationErrors[`tradeProducts[${index}].contract_balance_qty`] && (
                                     <p className="text-red-500">

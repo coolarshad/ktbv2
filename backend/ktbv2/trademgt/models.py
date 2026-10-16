@@ -141,6 +141,17 @@ class TradeProduct(models.Model):
                 trade_type=self.trade.trade_type
             )
 
+            # Update trace total_contract_qty and adjust balance if total_contract_qty was edited
+            new_total = round(float(self.total_contract_qty), 4)
+            if hasattr(self, 'previous_total_contract_qty') and self.previous_total_contract_qty is not None:
+                prev_total = round(float(self.previous_total_contract_qty), 4)
+            else:
+                prev_total = round(float(trace.total_contract_qty), 4)
+            total_diff = new_total - prev_total
+
+            trace.total_contract_qty = new_total
+            trace.contract_balance_qty += total_diff
+
             if hasattr(self, 'previous_trade_qty'):
                 # For updates: add back the previous quantity and subtract the new quantity
                 trace.contract_balance_qty += float(self.previous_trade_qty)
