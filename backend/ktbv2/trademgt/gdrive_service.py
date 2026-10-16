@@ -46,6 +46,7 @@ def get_or_create_folder(service, folder_name, parent_id):
     results = service.files().list(
         q=query,
         spaces='drive',
+        corpora='allDrives',
         fields='files(id, name)',
         pageSize=1,
         supportsAllDrives=True,

@@ -199,7 +199,7 @@ SIMPLE_JWT = {
 }
 
 # Google Drive Backup Configuration (Disabled by default on local dev; enable in prod via env)
-GOOGLE_DRIVE_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '1K3jSGbywiIp6qDcUZ-9TFvDGhMZCNDOY')
+GOOGLE_DRIVE_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '0AAIOkcItX-roUk9PVA')
 GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE = os.environ.get(
     'GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE',
     os.path.join(BASE_DIR, 'service_account.json')
