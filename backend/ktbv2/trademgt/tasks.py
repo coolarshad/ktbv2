@@ -52,3 +52,22 @@ def backup_db_to_gdrive_task(self):
     except Exception as exc:
         logger.error(f"[GDrive DB Task] Database backup failed: {exc}")
         raise self.retry(exc=exc)
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=120)
+def backup_media_to_gdrive_task(self):
+    """
+    Celery task to run a complete sweep of all media files and upload to Google Drive.
+    Can be scheduled via Celery Beat or cron.
+    """
+    if not getattr(settings, 'GOOGLE_DRIVE_AUTO_BACKUP', True):
+        logger.info("[GDrive Media Task] Auto-backup is disabled in settings.")
+        return None
+
+    from django.core.management import call_command
+    try:
+        call_command('backup_media_to_gdrive')
+        return "Media files backup to Google Drive completed."
+    except Exception as exc:
+        logger.error(f"[GDrive Media Task] Media files backup failed: {exc}")
+        raise self.retry(exc=exc)
+
