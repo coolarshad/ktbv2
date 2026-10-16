@@ -34,7 +34,7 @@ services:
       - REDIS_CACHE_URL=redis://redis:6379/1
       - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
       - GOOGLE_DRIVE_AUTO_BACKUP=True
-      - GOOGLE_DRIVE_FOLDER_ID=1K3jSGbywiIp6qDcUZ-9TFvDGhMZCNDOY
+      - GOOGLE_DRIVE_FOLDER_ID=0AAIOkcItX-roUk9PVA
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -67,7 +67,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - REDIS_CACHE_URL=redis://redis:6379/1
       - GOOGLE_DRIVE_AUTO_BACKUP=True
-      - GOOGLE_DRIVE_FOLDER_ID=1K3jSGbywiIp6qDcUZ-9TFvDGhMZCNDOY
+      - GOOGLE_DRIVE_FOLDER_ID=0AAIOkcItX-roUk9PVA
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
