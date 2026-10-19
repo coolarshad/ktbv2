@@ -179,7 +179,19 @@ const TradeReport = () => {
                                     <td className="px-4 py-2 border-b">{reportData?.trade?.companyName?.name || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td className="px-4 py-2 border-b">Date</td>
+                                    <td className="px-4 py-2 border-b">Trade Type</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.trade_type || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Trade Category</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.trade_category || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Trade Reference Number (TRN)</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.trn || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Date (TRD)</td>
                                     <td className="px-4 py-2 border-b">{reportData?.trade?.trd || 'N/A'}</td>
                                 </tr>
                                 <tr>
@@ -187,51 +199,143 @@ const TradeReport = () => {
                                     <td className="px-4 py-2 border-b">{reportData?.trade?.approval_date || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td className="px-4 py-2 border-b">Trade Reference Number</td>
-                                    <td className="px-4 py-2 border-b">{reportData?.trade?.trn || 'N/A'}</td>
+                                    <td className="px-4 py-2 border-b">Country of Origin</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.country_of_origin || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Customer Company Name</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.customer?.name || reportData?.trade?.customer_company_name || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Address</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.address || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Currency Selection</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.currency?.name || reportData?.trade?.currency_selection || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Exchange Rate</td>
+                                    <td className="px-4 py-2 border-b">{format4Dec(reportData?.trade?.exchange_rate)}</td>
                                 </tr>
                                 <tr>
                                     <td className="px-4 py-2 border-b">Trader Name</td>
                                     <td className="px-4 py-2 border-b">{reportData?.trade?.trader_name || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td className="px-4 py-2 border-b">Insurance Policy Number</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.insurance_policy_number}</td>
-                            </tr>
-                            {/* <tr>
-                                <td className="px-4 py-2 border-b">Container Shipment Size</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.shipmentSize.name}</td>
-                            </tr> */}
-                            <tr>
-                                <td className="px-4 py-2 border-b">Customer Company Name</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.customer.name}</td> {/* Accessing customer name */}
-                            </tr>
-                            <tr>
-                                <td className="px-4 py-2 border-b">Commission Agent</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.commission_agent}</td>
-                            </tr>
-                            <tr>
-                                <td className="px-4 py-2 border-b">Value of Contract</td>
-                                <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.contract_value)}</td>
-                            </tr>
-                            {/* Add other fields in the same manner */}
-                            <tr>
-                                <td className="px-4 py-2 border-b">Logistic Provider</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.logistic_provider}</td>
-                            </tr>
-                            <tr>
-                                <td className="px-4 py-2 border-b">Payment Term</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.paymentTerm?.name}</td> {/* Accessing payment term */}
-                            </tr>
-                            <tr>
-                                <td className="px-4 py-2 border-b">Advance Value to Receive/Pay</td>
-                                <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.advance_value_to_receive)}</td>
-                            </tr>
-                            <tr>
-                                <td className="px-4 py-2 border-b">Incoterm</td>
-                                <td className="px-4 py-2 border-b">{reportData?.trade?.incoterm || 'N/A'}</td>
-                            </tr>
-                        </tbody>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Insurance Policy Number</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.insurance_policy_number || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Commission Agent</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.commission_agent || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Commission Value</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.commission_value)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Value of Contract</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.contract_value)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Payment Term</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.paymentTerm?.name || reportData?.trade?.payment_term || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Advance Value to Receive/Pay</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.advance_value_to_receive)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Logistic Provider</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.logistic_provider || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Estimated Logistic Cost</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.estimated_logistic_cost)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Logistic Cost Tolerance (%)</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.logistic_cost_tolerence)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Bank Name & Address</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.bank ? `${reportData.trade.bank.name || ''}${reportData.trade.bank.address ? ', ' + reportData.trade.bank.address : ''}` : (reportData?.trade?.bank_name_address || 'N/A')}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Account Number</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.account_number || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">SWIFT Code</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.swift_code || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Incoterm</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.incoterm || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Port of Loading (POL)</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.pol || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Port of Discharge (POD)</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.pod || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Estimated Departure Date (ETD)</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.etd || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Estimated Arrival Date (ETA)</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.eta || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Shipper in BL</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.shipper_in_bl || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Consignee in BL</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.consignee_in_bl || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Notify Party in BL</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.notify_party_in_bl || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">BL Fee</td>
+                                    <td className="px-4 py-2 border-b">{format2Dec(reportData?.trade?.bl_fee)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">BL Fee Remarks</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.bl_fee_remarks || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Remarks</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.remarks || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Reviewed</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.reviewed ? `Yes${reportData?.trade?.reviewed_by ? ` (by ${reportData.trade.reviewed_by})` : ''}` : 'No'}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 border-b">Approved</td>
+                                    <td className="px-4 py-2 border-b">{reportData?.trade?.approved ? `Yes${reportData?.trade?.approved_by ? ` (by ${reportData.trade.approved_by})` : ''}` : 'No'}</td>
+                                </tr>
+                                {reportData?.trade?.trade_extra_costs?.length > 0 && (
+                                    <tr>
+                                        <td className="px-4 py-2 border-b font-medium">Trade Extra Costs</td>
+                                        <td className="px-4 py-2 border-b">
+                                            {reportData.trade.trade_extra_costs.map((ec, idx) => (
+                                                <div key={idx} className="text-sm">
+                                                    <span>Cost: {format2Dec(ec.extra_cost)}</span>
+                                                    {ec.remarks && <span className="ml-2 text-gray-600">({ec.remarks})</span>}
+                                                </div>
+                                            ))}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
                         </table>
                         <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
                             <thead className="bg-gray-100">
@@ -249,6 +353,8 @@ const TradeReport = () => {
                                     <th className="px-4 py-2 border-b text-left">Rate in USD</th>
                                     <th className="px-4 py-2 border-b text-left">Commission Rate</th>
                                     <th className="px-4 py-2 border-b text-left">Container Shipment Size</th>
+                                    <th className="px-4 py-2 border-b text-left">Logistic Cost</th>
+                                    <th className="px-4 py-2 border-b text-left">Logistic Remark</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -270,11 +376,13 @@ const TradeReport = () => {
                                             <td className="px-4 py-2 border-b">{format4Dec(product.rate_in_usd)}</td>
                                             <td className="px-4 py-2 border-b">{format4Dec(product.commission_rate)}</td>
                                             <td className="px-4 py-2 border-b">{product.shipmentSize?.name || product.shipmentSize || 'N/A'}</td>
+                                            <td className="px-4 py-2 border-b">{format2Dec(product.logistic)}</td>
+                                            <td className="px-4 py-2 border-b">{product.logistic_remark || 'N/A'}</td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td className="px-4 py-2 border-b text-center" colSpan={13}>
+                                        <td className="px-4 py-2 border-b text-center" colSpan={15}>
                                             No trade products available.
                                         </td>
                                     </tr>
