@@ -71,28 +71,37 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.address}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.swiftCode}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.accountNumber}</td> */}
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve1} onChange={() => {}} />
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium text-center">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600 cursor-default" checked={Boolean(item.approve1)} readOnly />
                 </td>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" checked={item.approve2} onChange={() => {}} />
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium text-center">
+                  <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600 cursor-default" checked={Boolean(item.approve2)} readOnly />
                 </td>
                
                
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">
-                  <div className="space-x-2">
+                  <div className="space-x-2 flex items-center">
                    
                     <button
-                      className="bg-green-500 text-white px-2 py-1 rounded"
+                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
                       onClick={(e) => { e.stopPropagation(); onView(item.id); }}
                     >
                       View
                     </button>
+                    {hasPermission(user, ['approve_kyc', 'aprove_kyc']) && (!item.approve1 || !item.approve2) && (
+                      <button
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                        onClick={(e) => { e.stopPropagation(); onView(item.id); }}
+                        title="Open to approve"
+                      >
+                        Approve
+                      </button>
+                    )}
                     {hasPermission(user, 'update_kyc') && (
-                      <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
+                      <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}
                     {hasPermission(user, 'delete_kyc') && (
-                      <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
+                      <button className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded" onClick={() => onDelete(item.id)}>Delete</button>
                     )}
                   </div>
                 </td>

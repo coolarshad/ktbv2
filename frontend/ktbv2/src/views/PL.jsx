@@ -390,6 +390,12 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.logistic_provider}</td>
                       </tr>
                       <tr>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.logistic_cost}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.logistic_cost}</td>
+                      </tr>
+                      <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Packing cost(Sum)</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{sumPackingCost(selectedPL.salesPF?.sp)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Packing cost(Sum)</td>

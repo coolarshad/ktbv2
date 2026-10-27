@@ -304,7 +304,7 @@ const Kyc = () => {
                   )}
                 </div>
 
-                {(!selectedKyc.approve1 || !selectedKyc.approve2) && (
+                {(!selectedKyc.approve1 || !selectedKyc.approve2) && hasPermission(user, ['approve_kyc', 'aprove_kyc']) && (
                   <div className="mt-6 border-t pt-4">
                     <MultiUserSelector
                       selectedUsers={notifiedUsers}
@@ -315,16 +315,26 @@ const Kyc = () => {
                   </div>
                 )}
 
-                {selectedKyc.approve1 || !hasPermission(user, 'approve_kyc') ? '' :
+                {hasPermission(user, ['approve_kyc', 'aprove_kyc']) && !selectedKyc.approve1 && (
                   <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                    <button onClick={approveKycOne} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 1</button>
+                    <button onClick={approveKycOne} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded col-span-3 font-semibold transition">
+                      Approve 1
+                    </button>
                   </div>
-                }
-                {selectedKyc.approve2 || !hasPermission(user, 'approve_kyc') ? '' :
+                )}
+                {hasPermission(user, ['approve_kyc', 'aprove_kyc']) && !selectedKyc.approve2 && (
                   <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                    <button onClick={approveKycTwo} className="bg-blue-500 text-white p-2 rounded col-span-3">Approve 2</button>
+                    <button onClick={approveKycTwo} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded col-span-3 font-semibold transition">
+                      Approve 2
+                    </button>
                   </div>
-                }
+                )}
+
+                {selectedKyc.approve1 && selectedKyc.approve2 && (
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded text-center font-medium">
+                    Fully Approved (Approve 1 & Approve 2)
+                  </div>
+                )}
 
 
 

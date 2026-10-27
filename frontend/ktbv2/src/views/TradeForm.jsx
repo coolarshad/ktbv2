@@ -166,7 +166,7 @@ const TradeForm = ({ mode = 'add' }) => {
     const [tradesList, setTradesList] = useState([]);
     useEffect(() => {
         // Fetch all trades to populate the relatedTrades options
-        axios.get('/trademgt/trades?approved=true&reviewed=true')
+        axios.get('/trademgt/trades?reviewed=true')
             .then(response => {
                 setTradesList(response.data);
                 const options = response.data.map(trade => ({

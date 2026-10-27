@@ -88,13 +88,22 @@ export const calculatePFCommissionValue = (data) => {
 };
 
 
-export const dateFormatter = (dateString) =>{
+export const dateFormatter = (dateString) => {
   if (!dateString) return '';
+  if (typeof dateString !== 'string') return dateString;
   if (dateString.toLowerCase() === 'na') return dateString;
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return dateString;
-  const [year, month, day] = dateString.split('-');
-  return `${day}/${month}/${year}`;
-}
+
+  const parts = dateString.split('-');
+  if (parts.length === 3 && parts[0].length === 4 && parts[1].length === 2) {
+    const year = parts[0];
+    const month = parts[1];
+    const day = parts[2].substring(0, 2);
+    return `${day}/${month}/${year}`;
+  }
+
+  return dateString;
+};
 
 export const format2Dec = (val) => {
   if (val === undefined || val === null || val === '') return '-';
