@@ -182,6 +182,22 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
+from celery.schedules import crontab
+
+# Celery Beat Periodic Schedule (Internal Docker Cron)
+CELERY_BEAT_SCHEDULE = {
+    # Run Database backup every day at 2:00 AM local time (UTC+5:45 = 20:15 UTC)
+    'nightly-db-backup-to-gdrive': {
+        'task': 'trademgt.tasks.backup_db_to_gdrive_task',
+        'schedule': crontab(hour=20, minute=15),
+    },
+    # Run Media files sweep every day at 2:30 AM local time (UTC+5:45 = 20:45 UTC)
+    'nightly-media-backup-to-gdrive': {
+        'task': 'trademgt.tasks.backup_media_to_gdrive_task',
+        'schedule': crontab(hour=20, minute=45),
+    },
+}
+
 from datetime import timedelta
 
 REST_FRAMEWORK = {
@@ -198,11 +214,11 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# Google Drive Backup Configuration (Disabled by default on local dev; enable in prod via env)
+# Google Drive Backup Configuration
 GOOGLE_DRIVE_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '0AAIOkcItX-roUk9PVA')
 GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE = os.environ.get(
     'GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE',
     os.path.join(BASE_DIR, 'service_account.json')
 )
-GOOGLE_DRIVE_AUTO_BACKUP = os.environ.get('GOOGLE_DRIVE_AUTO_BACKUP', 'False').lower() == 'true'
+GOOGLE_DRIVE_AUTO_BACKUP = os.environ.get('GOOGLE_DRIVE_AUTO_BACKUP', 'True').lower() == 'true'
 

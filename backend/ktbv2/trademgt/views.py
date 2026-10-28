@@ -1787,10 +1787,11 @@ class SalesPurchaseView(APIView):
                     trade_type=sp.trn.trade_type
                 )
                 pending_map = {
-                    p.product_code: p for p in pending_products_qs
+                    (p.product_code or '').replace('\xa0', ' ').strip().lower(): p for p in pending_products_qs
                 }
                 for product in sp_products:
-                    pending_product = pending_map.get(product.product_code)
+                    prod_code_key = (product.product_code or '').replace('\xa0', ' ').strip().lower()
+                    pending_product = pending_map.get(prod_code_key)
                     if pending_product:
                         pending_product.balance_qty = float(pending_product.balance_qty) - float(product.bl_qty)
                         pending_product.save()
@@ -1918,11 +1919,12 @@ class SalesPurchaseView(APIView):
 
             if sp.trn.trade_type.lower() in ["sales", "purchase"]:
                 pending_qs = TradePending.objects.filter(trn=sp.trn.id, trade_type=sp.trn.trade_type)
-                pending_map = {p.product_code: p for p in pending_qs}
+                pending_map = {(p.product_code or '').replace('\xa0', ' ').strip().lower(): p for p in pending_qs}
                 
                 for product in spProducts:
                     try:
-                        existing_pending = pending_map.get(product.product_code)
+                        prod_code_key = (product.product_code or '').replace('\xa0', ' ').strip().lower()
+                        existing_pending = pending_map.get(prod_code_key)
                         if existing_pending:
                             existing_pending.balance_qty = float(existing_pending.balance_qty) + float(product.bl_qty)
                             existing_pending.save()
@@ -2068,8 +2070,14 @@ class SalesPurchaseView(APIView):
            
             for product in salesPurchaseProducts:
                 try:
-                    # Check if a SalesProductTrace with the given product_code exists
-                    existing_pending = TradePending.objects.filter(trn=sp.trn.id, product_code=product.product_code, trade_type=sp.trn.trade_type).first()
+                    # Check if a TradePending with the given product_code exists (with whitespace normalization)
+                    clean_prod_code = (product.product_code or '').replace('\xa0', ' ').strip()
+                    existing_pending = TradePending.objects.filter(trn=sp.trn.id, product_code=clean_prod_code, trade_type=sp.trn.trade_type).first()
+                    if not existing_pending and clean_prod_code:
+                        for cand in TradePending.objects.filter(trn=sp.trn.id, trade_type=sp.trn.trade_type):
+                            if (cand.product_code or '').replace('\xa0', ' ').strip().lower() == clean_prod_code.lower():
+                                existing_pending = cand
+                                break
                     if existing_pending:
                         existing_pending.balance_qty = float(existing_pending.balance_qty) + float(product.bl_qty)
                         existing_pending.save()
@@ -2583,6 +2591,54 @@ class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = KycFilter
 
+    def _extract_notified_user_ids(self, request):
+        notified_users = request.data.getlist('notifiedUsers[]') if hasattr(request.data, 'getlist') else request.data.get('notifiedUsers[]', [])
+        if not notified_users:
+            notified_users = request.data.get('notifiedUsers', [])
+        if not notified_users:
+            notified_users = request.data.get('notified_users', [])
+        return [int(x) for x in notified_users if str(x).strip().isdigit()]
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        kyc = serializer.instance
+        notified_user_ids = self._extract_notified_user_ids(self.request)
+        if notified_user_ids:
+            kyc.notified_users.set(notified_user_ids)
+            actor = self.request.user if hasattr(self.request, 'user') and self.request.user.is_authenticated else None
+            user_name = actor.name if actor and hasattr(actor, 'name') else 'System'
+            custom_msg = self.request.data.get('notification_message')
+            NotificationService.notify_users_explicit(
+                actor=actor,
+                notified_user_ids=notified_user_ids,
+                verb="New KYC Created",
+                message=custom_msg if custom_msg else f"KYC for {kyc.name} has been created by {user_name}.",
+                target_url="/kyc"
+            )
+            NotificationService.notify_all_general(
+                actor=actor,
+                verb="New KYC Created",
+                message=f"KYC for {kyc.name} was created.",
+                target_url="/kyc"
+            )
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        kyc = serializer.instance
+        notified_user_ids = self._extract_notified_user_ids(self.request)
+        if notified_user_ids:
+            kyc.notified_users.set(notified_user_ids)
+            actor = self.request.user if hasattr(self.request, 'user') and self.request.user.is_authenticated else None
+            user_name = actor.name if actor and hasattr(actor, 'name') else 'System'
+            custom_msg = self.request.data.get('notification_message')
+            NotificationService.notify_users_explicit(
+                actor=actor,
+                notified_user_ids=notified_user_ids,
+                verb="KYC Updated",
+                message=custom_msg if custom_msg else f"KYC for {kyc.name} has been updated by {user_name}.",
+                target_url="/kyc"
+            )
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if Trade.objects.filter(customer_company_name=str(instance.id)).exists() or TradeProduct.objects.filter(packaging_supplier=str(instance.id)).exists():
@@ -3034,14 +3090,31 @@ class PendingBalanceView(APIView):
             if not trade:
                 return Response({'error': 'Trade not found'}, status=404)
             
-            if trade.trade_type == 'Purchase':
-                product = TradePending.objects.filter(
-                    trn=trade,
-                    product_code=product_code,
-                    product_name=product_name,
-                    trade_type=trade.trade_type
-                    # hs_code=hs_code
+            clean_code = (product_code or '').replace('\xa0', ' ').strip()
+
+            def find_pending_product(trade_obj, p_code, p_name):
+                # 1. Exact match with cleaned code
+                prod = TradePending.objects.filter(
+                    trn=trade_obj,
+                    product_code=p_code,
+                    product_name=p_name,
+                    trade_type=trade_obj.trade_type
                 ).first()
+                if not prod and p_code:
+                    # 2. Check candidates for this trade & product_name with whitespace / \xa0 normalization
+                    candidates = TradePending.objects.filter(
+                        trn=trade_obj,
+                        product_name=p_name,
+                        trade_type=trade_obj.trade_type
+                    )
+                    for cand in candidates:
+                        cand_code_clean = (cand.product_code or '').replace('\xa0', ' ').strip()
+                        if cand_code_clean.lower() == p_code.lower():
+                            return cand
+                return prod
+
+            if trade.trade_type == 'Purchase':
+                product = find_pending_product(trade, clean_code, product_name)
                
                 if product:
                     # Serialize and return the product data
@@ -3051,21 +3124,19 @@ class PendingBalanceView(APIView):
                     return Response({'pending_balance': 0})
             
             else:  # Sales trade type
-                product = TradePending.objects.filter(
-                    trn=trade,
-                    product_code=product_code,
-                    product_name=product_name,
-                    trade_type=trade.trade_type
-                    # hs_code=hs_code
-                ).first()
+                product = find_pending_product(trade, clean_code, product_name)
                
                 if product:
-                    sp_product=SalesPurchaseProduct.objects.filter(sp__bl_number=purchase_bl_number,sp__trn__trade_type='Purchase',product_name=product_name).first()
+                    sp_product = SalesPurchaseProduct.objects.filter(
+                        sp__bl_number=purchase_bl_number,
+                        sp__trn__trade_type='Purchase',
+                        product_name=product_name
+                    ).first()
                    
                     # Serialize and return the product data
                     serialized_product = SalesPendingSerializer(product)
                     sp_serialized = SalesPurchaseProductSerializer(sp_product)
-                    return Response({'pending_balance': serialized_product.data,'sp_product':sp_serialized.data})
+                    return Response({'pending_balance': serialized_product.data, 'sp_product': sp_serialized.data})
                 else:
                     return Response({'pending_balance': 0})
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
+import MultiUserSelector from '../components/MultiUserSelector';
 
 const KycForm = ({ mode = 'add' }) => {
   const { user } = useAuth();
@@ -32,7 +33,9 @@ const KycForm = ({ mode = 'add' }) => {
         // accountNumber: '',
         bank_details: [
             { banker: '', address: '', swiftCode: '', accountNumber: '' }
-        ]
+        ],
+        notifiedUsers: [],
+        notification_message: ''
     });
     const [errors, setErrors] = useState({});
 
@@ -59,7 +62,9 @@ const KycForm = ({ mode = 'add' }) => {
                         email2: data.email2 || '',
                         bank_details: Array.isArray(data.bank_details) && data.bank_details.length > 0
                             ? data.bank_details
-                            : [{ banker: '', address: '', swiftCode: '', accountNumber: '' }]
+                            : [{ banker: '', address: '', swiftCode: '', accountNumber: '' }],
+                        notifiedUsers: Array.isArray(data.notified_users) ? data.notified_users : [],
+                        notification_message: ''
                     });
                 })
                 .catch(error => {
@@ -96,6 +101,7 @@ const KycForm = ({ mode = 'add' }) => {
     const newErrors = {};
 
     for (const [key, value] of Object.entries(formData)) {
+        if (key === 'notification_message') continue;
         if (typeof value === 'string') {
             if (!value.trim()) {
                 newErrors[key] = 'This field is required';
@@ -137,15 +143,21 @@ const KycForm = ({ mode = 'add' }) => {
           }
        
       
+        const payload = {
+            ...formData,
+            notified_users: formData.notifiedUsers,
+            notifiedUsers: formData.notifiedUsers,
+        };
+
         if (mode === 'add') {
-            axios.post('/trademgt/kyc/', formData)
+            axios.post('/trademgt/kyc/', payload)
                 .then(res => {
                     console.log('KYC added!', res.data);
                     navigate('/kyc');
                 })
                 .catch(err => console.error(err));
         } else {
-            axios.put(`/trademgt/kyc/${id}/`, formData)
+            axios.put(`/trademgt/kyc/${id}/`, payload)
                 .then(res => {
                     console.log('KYC updated!', res.data);
                     navigate('/kyc');
@@ -426,6 +438,16 @@ const KycForm = ({ mode = 'add' }) => {
                 >
                     Add Bank
                 </button>
+            </div>
+
+            <div className="col-span-3 p-4 bg-gray-50 border border-gray-200 rounded-lg mb-4">
+                <h3 className="text-md font-semibold text-gray-800 mb-2">Notify Users</h3>
+                <MultiUserSelector
+                    selectedUsers={formData.notifiedUsers}
+                    onChange={(users) => setFormData(prev => ({ ...prev, notifiedUsers: users }))}
+                    message={formData.notification_message}
+                    onMessageChange={(val) => setFormData(prev => ({ ...prev, notification_message: val }))}
+                />
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">

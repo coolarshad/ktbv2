@@ -75,6 +75,33 @@ services:
       - redis
       - backend
 
+  celery_beat:
+    build:
+      context: ./backend/ktbv2
+      dockerfile: Dockerfile
+    container_name: celery_beat_container
+    command: celery -A ktbv2 beat -l info --schedule=/tmp/celerybeat-schedule
+    volumes:
+      - ./backend/ktbv2:/app
+    environment:
+      - DB_NAME=${DB_NAME:-ktbv2_db}
+      - DB_USER=${DB_USER:-ktbv2_user}
+      - DB_PASSWORD=${DB_PASSWORD:-admin123}
+      - DB_HOST=${DB_HOST:-host.docker.internal}
+      - DB_PORT=${DB_PORT:-5432}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDIS_CACHE_URL=redis://redis:6379/1
+      - GOOGLE_DRIVE_AUTO_BACKUP=True
+      - GOOGLE_DRIVE_FOLDER_ID=0AAIOkcItX-roUk9PVA
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - backend
+      - celery_worker
+
 volumes:
   redis_data:
   media_data:

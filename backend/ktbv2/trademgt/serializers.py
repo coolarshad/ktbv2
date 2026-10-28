@@ -45,17 +45,24 @@ class KycSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         bank_details_data = validated_data.pop('bank_details', [])
+        notified_users = validated_data.pop('notified_users', [])
         kyc = Kyc.objects.create(**validated_data)
+        if notified_users:
+            kyc.notified_users.set(notified_users)
         for bank_detail in bank_details_data:
             KycBankDetail.objects.create(kyc=kyc, **bank_detail)
         return kyc
 
     def update(self, instance, validated_data):
         bank_details_data = validated_data.pop('bank_details', [])
+        notified_users = validated_data.pop('notified_users', None)
         # update KYC fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+
+        if notified_users is not None:
+            instance.notified_users.set(notified_users)
 
         # Optionally clear old bank details
         instance.bank_details.all().delete()

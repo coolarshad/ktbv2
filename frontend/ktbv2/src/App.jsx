@@ -1,6 +1,7 @@
 
 import './App.css'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import PageTitleUpdater from './components/PageTitleUpdater';
 import TradeApproval from './views/TradeApproval'
 import TradeApproved from './views/TradeApproved'
 import PreSalePurchase from './views/PreSalePurchase'
@@ -210,6 +211,7 @@ const ProtectedRoutes = () => {
 function App() {
   return (
     <Router>
+      <PageTitleUpdater />
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />

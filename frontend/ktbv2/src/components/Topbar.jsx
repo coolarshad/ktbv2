@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FaUser, FaCaretDown, FaBars } from 'react-icons/fa';
 import NotificationBell from './NotificationBell';
 import { useAuth } from '../context/AuthContext';
+import { getTitleForPath } from './PageTitleUpdater';
 
 export default function Topbar({ onToggleSidebar }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { logout, user } = useAuth();
+  const location = useLocation();
+  const pageTitle = getTitleForPath(location.pathname);
 
   return (
     <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10 sticky top-0 shadow-sm flex-shrink-0">
@@ -15,8 +18,7 @@ export default function Topbar({ onToggleSidebar }) {
         <button className="lg:hidden mr-4 text-gray-500 hover:text-gray-700" onClick={onToggleSidebar}>
           <FaBars size={20} />
         </button>
-        {/* Placeholder for Breadcrumbs or Page Title */}
-        <span className="text-gray-500 font-medium text-sm hidden md:block">Welcome to KTB V2 Enterprise Dashboard</span>
+        <span className="text-gray-800 font-semibold text-base hidden md:block">{pageTitle}</span>
       </div>
 
       <div className="flex items-center space-x-6">

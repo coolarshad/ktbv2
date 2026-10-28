@@ -120,6 +120,11 @@ class TradeProduct(models.Model):
 
     def save(self, *args, **kwargs):
         """Override save to handle trade quantity updates"""
+        if self.product_code:
+            self.product_code = self.product_code.replace('\xa0', ' ').strip()
+        if self.ref_product_code:
+            self.ref_product_code = self.ref_product_code.replace('\xa0', ' ').strip()
+
         # previous_trade_qty is now set by the view before calling save
         if not hasattr(self, 'previous_trade_qty'):
             self.previous_trade_qty = 0
@@ -180,13 +185,28 @@ class TradeProduct(models.Model):
     def create_trade_pending(self, old_value=None):
         """Create or update TradePending entry for this product"""
         try:
+            clean_product_code = (self.product_code or '').replace('\xa0', ' ').strip()
+            self.product_code = clean_product_code
+
             # Try to find an existing TradePending record
             pending = TradePending.objects.filter(
                 trn=self.trade,
-                product_code=self.product_code,
+                product_code=clean_product_code,
                 product_name=self.product_name,
                 trade_type=self.trade.trade_type
             ).first()
+
+            if not pending and clean_product_code:
+                # Fallback: check candidates for this trade & product_name with normalized whitespace
+                candidates = TradePending.objects.filter(
+                    trn=self.trade,
+                    product_name=self.product_name,
+                    trade_type=self.trade.trade_type
+                )
+                for cand in candidates:
+                    if (cand.product_code or '').replace('\xa0', ' ').strip().lower() == clean_product_code.lower():
+                        pending = cand
+                        break
 
             base_qty = float(self.trade_qty)
             tolerance = float(self.tolerance)
@@ -194,6 +214,7 @@ class TradeProduct(models.Model):
 
             if pending:
                 # Synchronize all fields on update
+                pending.product_code = clean_product_code
                 pending.trd = self.trade.trd
                 pending.company = self.trade.company
                 pending.payment_term = self.trade.payment_term
@@ -225,7 +246,7 @@ class TradeProduct(models.Model):
                     trd=self.trade.trd,
                     company=self.trade.company,
                     payment_term=self.trade.payment_term,
-                    product_code=self.product_code,
+                    product_code=clean_product_code,
                     product_name=self.product_name,
                     hs_code=self.hs_code,
                     contract_qty=self.trade_qty,
@@ -533,6 +554,11 @@ class SalesPurchaseProduct(models.Model):
         verbose_name = _("SalesPurchaseProduct")
         verbose_name_plural = _("SalesPurchaseProducts")
 
+    def save(self, *args, **kwargs):
+        if self.product_code:
+            self.product_code = self.product_code.replace('\xa0', ' ').strip()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.product_code
 
@@ -832,6 +858,11 @@ class TradePending(models.Model):
         verbose_name = _("TradePending")
         verbose_name_plural = _("TradePendings")
         ordering = ['-id'] 
+
+    def save(self, *args, **kwargs):
+        if self.product_code:
+            self.product_code = self.product_code.replace('\xa0', ' ').strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.trade_type} - {self.product_code}"

@@ -371,7 +371,9 @@ const TradeForm = ({ mode = 'add' }) => {
     }, [formData.contract_value]);
 
     const handleChange = async (e, index, section) => {
-        const { name, value, type, files } = e.target;
+        const rawValue = e.target.value;
+        const value = typeof rawValue === 'string' ? rawValue.replace(/\u00a0/g, ' ') : rawValue;
+        const { name, type, files } = e.target;
 
         if (type === 'file') {
             setFormData((prevState) => {
@@ -1284,6 +1286,14 @@ const TradeForm = ({ mode = 'add' }) => {
                                     name="product_code"
                                     value={product.product_code}
                                     onChange={(e) => handleChange(e, index, 'products')}
+                                    onPaste={(e) => {
+                                        const text = e.clipboardData?.getData('text');
+                                        if (text && /\u00a0/.test(text)) {
+                                            e.preventDefault();
+                                            const cleanText = text.replace(/\u00a0/g, ' ');
+                                            document.execCommand('insertText', false, cleanText);
+                                        }
+                                    }}
                                     placeholder="Product Code"
                                     className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].product_code`)}`}
                                 />

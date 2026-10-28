@@ -185,6 +185,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                         salesPurchaseProducts: data.salesPurchaseProducts
                             ? data.salesPurchaseProducts.map(product => ({
                                 ...product,
+                                pending_qty: product.pending_qty !== undefined && product.pending_qty !== null && product.pending_qty !== '' && !isNaN(Number(product.pending_qty))
+                                    ? Number(product.pending_qty).toFixed(4)
+                                    : (product.pending_qty ?? ''),
                                 max_logistic: product.logistic || '', // Use logistic as the max_logistic if available
                             }))
                             : [
@@ -261,10 +264,11 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
     const debouncedApiCall = useCallback(
         debounce(async (trn, product_code, product_name, purchase_bl_number, index, arrayName) => {
             try {
+                const clean_product_code = typeof product_code === 'string' ? product_code.replace(/\u00a0/g, ' ').trim() : product_code;
                 const response = await axios.get('/trademgt/pending-balance', {
                     params: {
                         trn,
-                        product_code,
+                        product_code: clean_product_code,
                         product_name,
                         // hs_code,
                         purchase_bl_number
@@ -274,7 +278,10 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 // if (pending_balance !== undefined) {
                 setFormData((prev) => {
                     const updatedArray = [...prev[arrayName]];
-                    updatedArray[index].pending_qty = result.pending_balance.balance_qty;
+                    const rawBalanceQty = result.pending_balance?.balance_qty;
+                    updatedArray[index].pending_qty = rawBalanceQty !== undefined && rawBalanceQty !== null && rawBalanceQty !== '' && !isNaN(Number(rawBalanceQty))
+                        ? Number(rawBalanceQty).toFixed(4)
+                        : (rawBalanceQty ?? '');
                     updatedArray[index].selected_currency_rate = result.pending_balance.selected_currency_rate;
                     updatedArray[index].rate_in_usd = result.pending_balance.rate_in_usd;
                     updatedArray[index].trade_qty_unit = result.pending_balance.balance_qty_unit;
@@ -320,7 +327,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
 
     const handleChange = async (e, arrayName = null, index = null) => {
-        const { name, value, type, files } = e.target;
+        const rawValue = e.target.value;
+        const value = typeof rawValue === 'string' ? rawValue.replace(/\u00a0/g, ' ') : rawValue;
+        const { name, type, files } = e.target;
 
         setFormData((prev) => {
             let updatedFormData;
@@ -545,15 +554,13 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
                 // Validation specific to `bl_qty`
                 if (key === 'bl_qty') {
+                    const maxAllowedQty = parseFloat(product.pending_qty) || 0;
+                    const blVal = parseFloat(value) || 0;
 
-                    // const maxAllowedQty = calculateTotalWithTolerance(product.pending_qty, product.tolerance);
-                    const maxAllowedQty = product.pending_qty;
-
-                    if (value > maxAllowedQty || value <= 0) {
+                    if (blVal > maxAllowedQty || blVal <= 0) {
                         alert(`BL Quantity exceeds tolerance for ${product.product_code || 'this product'}`);
                         errors[`salesPurchaseProducts[${index}].${key}`] = `${capitalizeKey(key)} exceeds trade quantity!`;
                     }
-
                 }
 
                 if (key === 'logistic') {
@@ -1039,6 +1046,14 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                     name="product_code"
                                     value={product.product_code}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
+                                    onPaste={(e) => {
+                                        const text = e.clipboardData?.getData('text');
+                                        if (text && /\u00a0/.test(text)) {
+                                            e.preventDefault();
+                                            const cleanText = text.replace(/\u00a0/g, ' ');
+                                            document.execCommand('insertText', false, cleanText);
+                                        }
+                                    }}
                                     placeholder="Product Code"
                                     className="border border-gray-300 p-2 rounded w-full"
                                 />
@@ -1155,7 +1170,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                                 <input
                                     type="text"
                                     name="pending_qty"
-                                    value={product.pending_qty}
+                                    value={product.pending_qty !== '' && product.pending_qty !== undefined && product.pending_qty !== null && !isNaN(Number(product.pending_qty))
+                                        ? Number(product.pending_qty).toFixed(4)
+                                        : (product.pending_qty ?? '')}
                                     onChange={(e) => handleChange(e, 'salesPurchaseProducts', index)}
                                     placeholder="Pending Quantity"
                                     className="border border-gray-300 p-2 rounded w-full"
