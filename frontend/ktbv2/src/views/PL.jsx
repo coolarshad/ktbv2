@@ -251,8 +251,7 @@ function PL() {
       (parseFloat(pf.sp.bl_collection_cost) || 0) +
       (sumOtherCharges(pf.sp) || 0) +
       (parseFloat(pf.sp.logistic_cost) || 0) +
-      (sumPFCharges(pf) || 0) +
-      (sumLogistic(pf.sp) || 0)
+      (sumPFCharges(pf) || 0)
     );
   };
 
@@ -395,9 +394,9 @@ function PL() {
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.salesPF?.sp)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.salesPF?.sp).toFixed(2)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.purchasePF?.sp)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.purchasePF?.sp).toFixed(2)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Packing cost(Sum)</td>
@@ -477,7 +476,7 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.invoice_amount}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Expense</td>
                         {/* <td className="py-2 px-4 border-t text-sm border-gray-200">{sumTotal(sumPackingCost(selectedPL.purchasePF.sp),sumPackingCost(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.invoice_amount,calculateTotalCommission(selectedPL.purchasePF.sp.sp_product, selectedPL.purchasePF.sp, findTrade),calculateTotalCommission(selectedPL.salesPF.sp.sp_product, selectedPL.salesPF.sp, findTrade),0,selectedPL.purchasePF.sp.bl_fees,selectedPL.salesPF.sp.bl_fees,selectedPL.purchasePF.sp.bl_collection_cost,selectedPL.salesPF.sp.bl_collection_cost,sumOtherCharges(selectedPL.purchasePF.sp),sumOtherCharges(selectedPL.salesPF.sp),selectedPL.purchasePF.sp.logistic_cost,selectedPL.salesPF.sp.logistic_cost,sumPFCharges(selectedPL.purchasePF),sumPFCharges(selectedPL.salesPF))}</td> */}
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">
+                        {/* <td className="py-2 px-4 border-t text-sm border-gray-200">
                           {sumTotal(
                             selectedPL.purchasePF?.sp?.invoice_amount,
                             calculateTotalCommission(selectedPL.purchasePF?.sp?.sp_product, selectedPL.purchasePF?.sp, findTrade),
@@ -496,6 +495,13 @@ function PL() {
                             sumPackingCost(selectedPL.purchasePF?.sp),
 
                           )}
+                        </td> */}
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">
+                          {(
+                            (parseFloat(selectedPL.purchasePF?.sp?.invoice_amount) || 0) +
+                            calculateSPTotal(selectedPL.purchasePF) +
+                            calculateSPTotal(selectedPL.salesPF)
+                          ).toFixed(2)}
                         </td>
 
                       </tr>
