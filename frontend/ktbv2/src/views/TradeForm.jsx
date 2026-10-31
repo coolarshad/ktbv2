@@ -197,6 +197,29 @@ const TradeForm = ({ mode = 'add' }) => {
     }, [formData.trade_type]);
 
     useEffect(() => {
+        if (formData.trade_type === 'Purchase' && bankNameOptions.length > 0) {
+            const naBank = bankNameOptions.find((bank) => bank.name?.trim().toUpperCase() === 'NA');
+            if (naBank) {
+                if (mode === 'add' && (!formData.bank_name_address || formData.bank_name_address === '')) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        bank_name_address: naBank.id,
+                        swift_code: naBank.swift_code || 'NA',
+                        account_number: naBank.account_number || 'NA',
+                    }));
+                    setValidationErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.bank_name_address;
+                        delete next.swift_code;
+                        delete next.account_number;
+                        return next;
+                    });
+                }
+            }
+        }
+    }, [formData.trade_type, bankNameOptions, mode]);
+
+    useEffect(() => {
         if (mode === 'update' && id) {
             // Fetch existing trade data for update
             axios.get(`/trademgt/trades/${id}`)
@@ -487,6 +510,47 @@ const TradeForm = ({ mode = 'add' }) => {
                     }));
                 }
 
+            } else if (name === 'trade_type') {
+                const isPurchase = value === 'Purchase';
+                const naBank = isPurchase
+                    ? bankNameOptions.find((bank) => bank.name?.trim().toUpperCase() === 'NA')
+                    : null;
+
+                setFormData((prevState) => {
+                    const currentIsNaBank = prevState.bank_name_address &&
+                        bankNameOptions.find((b) => b.id == prevState.bank_name_address)?.name?.trim().toUpperCase() === 'NA';
+
+                    let updatedBankFields = {};
+                    if (isPurchase && naBank) {
+                        updatedBankFields = {
+                            bank_name_address: naBank.id,
+                            swift_code: naBank.swift_code || 'NA',
+                            account_number: naBank.account_number || 'NA',
+                        };
+                    } else if (!isPurchase && currentIsNaBank) {
+                        updatedBankFields = {
+                            bank_name_address: '',
+                            swift_code: '',
+                            account_number: '',
+                        };
+                    }
+
+                    return {
+                        ...prevState,
+                        [name]: value,
+                        ...updatedBankFields,
+                    };
+                });
+
+                if (isPurchase && naBank) {
+                    setValidationErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.bank_name_address;
+                        delete next.swift_code;
+                        delete next.account_number;
+                        return next;
+                    });
+                }
             } else if (name === 'bank_name_address') {
                 const selectedBank = bankNameOptions.find((bank) => bank.id == value);
 

@@ -144,6 +144,9 @@ function PL() {
     return sp?.trn?.trade_products?.find((trade) => trade.product_code == row.product_code && trade.product_name == row.product_name && trade.hs_code == row.hs_code)
   }
 
+  const sumLogistic = (sp) =>
+    sp?.sp_product?.reduce((acc, row) => acc + (parseFloat(row.logistic) || 0), 0) || 0;
+
   const MiniTable = ({ data }) => (
     <>
       {data?.sp?.sp_product?.map((row, index) => (
@@ -248,7 +251,8 @@ function PL() {
       (parseFloat(pf.sp.bl_collection_cost) || 0) +
       (sumOtherCharges(pf.sp) || 0) +
       (parseFloat(pf.sp.logistic_cost) || 0) +
-      (sumPFCharges(pf) || 0)
+      (sumPFCharges(pf) || 0) +
+      (sumLogistic(pf.sp) || 0)
     );
   };
 
@@ -391,9 +395,9 @@ function PL() {
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp?.trn?.logistic_cost}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.salesPF?.sp)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
-                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.logistic_cost}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.purchasePF?.sp)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Packing cost(Sum)</td>
@@ -478,7 +482,6 @@ function PL() {
                             selectedPL.purchasePF?.sp?.invoice_amount,
                             calculateTotalCommission(selectedPL.purchasePF?.sp?.sp_product, selectedPL.purchasePF?.sp, findTrade),
                             calculateTotalCommission(selectedPL.salesPF?.sp?.sp_product, selectedPL.salesPF?.sp, findTrade),
-                            0,
                             selectedPL.purchasePF?.sp?.bl_fees,
                             selectedPL.salesPF?.sp?.bl_fees,
                             selectedPL.purchasePF?.sp?.bl_collection_cost,
@@ -486,7 +489,12 @@ function PL() {
                             sumOtherCharges(selectedPL.purchasePF?.sp),
                             sumOtherCharges(selectedPL.salesPF?.sp),
                             sumPFCharges(selectedPL.purchasePF),
-                            sumPFCharges(selectedPL.salesPF)
+                            sumPFCharges(selectedPL.salesPF),
+                            sumLogistic(selectedPL.salesPF?.sp),
+                            sumLogistic(selectedPL.purchasePF?.sp),
+                            sumPackingCost(selectedPL.salesPF?.sp),
+                            sumPackingCost(selectedPL.purchasePF?.sp),
+
                           )}
                         </td>
 

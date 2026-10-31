@@ -391,6 +391,66 @@ class ExportPaymentFinanceExcelView(APIView):
         
         return excel_data
     
+# ---------- helpers (module level) ----------
+def num(v):
+    try:
+        return float(v or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def trade_products_of(sp):
+    return (sp.get('trn') or {}).get('trade_products', []) or []
+
+
+def find_trade(sp, row):
+    for t in trade_products_of(sp):
+        if (t.get('product_code') == row.get('product_code')
+                and t.get('product_name') == row.get('product_name')
+                and t.get('hs_code') == row.get('hs_code')):
+            return t
+    return None
+
+
+def sum_packing(sp):
+    return sum(num(t.get('total_packing_cost')) for t in trade_products_of(sp))
+
+
+def sum_commission(sp):
+    return sum(
+        num(r.get('bl_qty')) * num((find_trade(sp, r) or {}).get('commission_rate'))
+        for r in sp.get('sp_product', []) or []
+    )
+
+
+def sum_other_charges(sp):
+    return sum(num(c.get('charge')) for c in sp.get('sp_extra_charges', []) or [])
+
+
+def sum_pf_charges(pf):
+    return sum(num(c.get('charge')) for c in pf.get('pf_charges', []) or [])
+
+
+def sum_logistic(sp):
+    return sum(num(r.get('logistic')) for r in sp.get('sp_product', []) or [])
+
+
+def sum_bl_qty(sp):
+    return sum(num(r.get('bl_qty')) for r in sp.get('sp_product', []) or [])
+
+
+def sp_total(pf):
+    """Same as calculateSPTotal in React."""
+    sp = pf['sp']
+    return (
+        sum_packing(sp)
+        + sum_commission(sp)
+        + num(sp.get('bl_fees'))
+        + num(sp.get('bl_collection_cost'))
+        + sum_other_charges(sp)
+        + num(sp.get('logistic_cost'))
+        + sum_pf_charges(pf)
+    )
 
 
 class ExportPLExcelView(APIView):
@@ -398,67 +458,79 @@ class ExportPLExcelView(APIView):
         objs = PL.objects.all()
         serializer = ProfitLossSerializer(objs, many=True)
         data = self.prepare_excel_data(serializer.data)
-       
+
         df = pd.DataFrame(data)
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
         response['Content-Disposition'] = 'attachment; filename="profit_loss.xlsx"'
         df.to_excel(response, index=False)
-
         return response
 
     def prepare_excel_data(self, serialized_data):
         excel_data = []
         for obj in serialized_data:
+            spf, ppf = obj.get('salesPF'), obj.get('purchasePF')
+            if not spf or not ppf:
+                continue  # skip incomplete P&L records
 
-            obj_data = {
-                'Sales Company': obj['salesPF']['sp']['trn']['companyName']['name'],
-                'Sales Trade Reference Date': obj['salesPF']['sp']['trn']['trd'],
-                'Sales Trade Reference Number': obj['salesPF']['sp']['trn']['trn'],
-                'Sales Trader Name': obj['salesPF']['sp']['trn']['trader_name'],
-                'Sales Insurrance policy number': obj['salesPF']['sp']['trn']['insurance_policy_number'],
-                'Sales Customer Company Name in Full Detail': obj['salesPF']['sp']['trn']['customer']['name'],
-                'Sales Commission Agent': obj['salesPF']['sp']['trn']['commission_agent'],
-                'Sales Logistic Provider': obj['salesPF']['sp']['trn']['logistic_provider'],
-                'Sales Total Packing cost(Sum)': obj['salesPF']['sp']['id'],
-                'Sales Invoice Date': obj['salesPF']['sp']['invoice_date'],
-                'Sales Invoice Number': obj['salesPF']['sp']['invoice_number'],
-                'Sales Invoice Amount': fmt_2dec(obj['salesPF']['sp']['invoice_amount']),
-                'Sales COMMISSION VALUE': obj['salesPF']['sp']['id'],
-                'Sales BL Number': obj['salesPF']['sp']['bl_number'],
-                'Sales BL FEES': fmt_2dec(obj['salesPF']['sp']['bl_fees']),
-                'Sales BL COLLECTION COST': fmt_2dec(obj['salesPF']['sp']['bl_collection_cost']),
-                'Sales OTHER CHARGES': obj['salesPF']['sp']['id'],
-                'Sales BL Date': obj['salesPF']['sp']['bl_date'],
-                'Sales Logitics Cost': fmt_2dec(obj['salesPF']['sp']['logistic_cost']),
-                'Sales CHARGES P & F': obj['salesPF']['sp']['id'],
-                'Sales Total Income': fmt_2dec(obj['salesPF']['sp']['invoice_amount']),
+            s, p = spf['sp'], ppf['sp']
 
-                'Purchase Company': obj['purchasePF']['sp']['trn']['companyName']['name'],
-                'Purchase Trade Reference Date': obj['purchasePF']['sp']['trn']['trd'],
-                'Purchase Trade Reference Number': obj['purchasePF']['sp']['trn']['trn'],
-                'Purchase Trader Name': obj['purchasePF']['sp']['trn']['trader_name'],
-                'Purchase Insurrance policy number': obj['purchasePF']['sp']['trn']['insurance_policy_number'],
-                'Purchase Customer Company Name in Full Detail': obj['purchasePF']['sp']['trn']['customer']['name'],
-                'Purchase Commission Agent': obj['purchasePF']['sp']['trn']['commission_agent'],
-                'Purchase Logistic Provider': obj['purchasePF']['sp']['trn']['logistic_provider'],
-                'Purchase Total Packing cost(Sum)': obj['purchasePF']['sp']['id'],
-                'Purchase Invoice Date': obj['purchasePF']['sp']['invoice_date'],
-                'Purchase Invoice Number': obj['purchasePF']['sp']['invoice_number'],
-                'Purchase Invoice Amount': fmt_2dec(obj['purchasePF']['sp']['invoice_amount']),
-                'Purchase COMMISSION VALUE': obj['purchasePF']['sp']['id'],
-                'Purchase BL Number': obj['purchasePF']['sp']['bl_number'],
-                'Purchase BL FEES': fmt_2dec(obj['purchasePF']['sp']['bl_fees']),
-                'Purchase BL COLLECTION COST': fmt_2dec(obj['purchasePF']['sp']['bl_collection_cost']),
-                'Purchase OTHER CHARGES': obj['purchasePF']['sp']['id'],
-                'Purchase BL Date': obj['purchasePF']['sp']['bl_date'],
-                'Purchase Logitics Cost': fmt_2dec(obj['purchasePF']['sp']['logistic_cost']),
-                'Purchase CHARGES P & F': obj['purchasePF']['sp']['id'],
-                'Purchase Total Expense': fmt_2dec(obj['purchasePF']['sp']['invoice_amount']),
-            }
+            sales_income = num(s.get('invoice_amount'))
+            purchase_cost = num(p.get('invoice_amount'))
+            total_expense = purchase_cost + sp_total(ppf) + sp_total(spf)
+            profit = sales_income - total_expense
+            bl_qty = sum_bl_qty(s)
 
-                
-            excel_data.append(obj_data)
-        
+            excel_data.append({
+                'Sales Company': s['trn']['companyName']['name'],
+                'Sales Trade Reference Date': s['trn']['trd'],
+                'Sales Trade Reference Number': s['trn']['trn'],
+                'Sales Trader Name': s['trn']['trader_name'],
+                'Sales Insurance Policy Number': s['trn']['insurance_policy_number'],
+                'Sales Customer Company Name': s['trn']['customer']['name'],
+                'Sales Commission Agent': s['trn']['commission_agent'],
+                'Sales Logistic Provider': s['trn']['logistic_provider'],
+                'Sales Total Packing Cost (Sum)': fmt_2dec(sum_packing(s)),
+                'Sales Invoice Date': s['invoice_date'],
+                'Sales Invoice Number': s['invoice_number'],
+                'Sales Invoice Amount': fmt_2dec(s['invoice_amount']),
+                'Sales Commission Value': fmt_2dec(sum_commission(s)),
+                'Sales BL Number': s['bl_number'],
+                'Sales BL Fees': fmt_2dec(s['bl_fees']),
+                'Sales BL Collection Cost': fmt_2dec(s['bl_collection_cost']),
+                'Sales Other Charges': fmt_2dec(sum_other_charges(s)),
+                'Sales BL Date': s['bl_date'],
+                'Sales Logistic Cost': fmt_2dec(sum_logistic(s)),
+                'Sales Charges P & F': fmt_2dec(sum_pf_charges(spf)),
+                'Sales Total Income': fmt_2dec(sales_income),
+
+                'Purchase Company': p['trn']['companyName']['name'],
+                'Purchase Trade Reference Date': p['trn']['trd'],
+                'Purchase Trade Reference Number': p['trn']['trn'],
+                'Purchase Trader Name': p['trn']['trader_name'],
+                'Purchase Insurance Policy Number': p['trn']['insurance_policy_number'],
+                'Purchase Customer Company Name': p['trn']['customer']['name'],
+                'Purchase Commission Agent': p['trn']['commission_agent'],
+                'Purchase Logistic Provider': p['trn']['logistic_provider'],
+                'Purchase Total Packing Cost (Sum)': fmt_2dec(sum_packing(p)),
+                'Purchase Invoice Date': p['invoice_date'],
+                'Purchase Invoice Number': p['invoice_number'],
+                'Purchase Invoice Amount': fmt_2dec(p['invoice_amount']),
+                'Purchase Commission Value': fmt_2dec(sum_commission(p)),
+                'Purchase BL Number': p['bl_number'],
+                'Purchase BL Fees': fmt_2dec(p['bl_fees']),
+                'Purchase BL Collection Cost': fmt_2dec(p['bl_collection_cost']),
+                'Purchase Other Charges': fmt_2dec(sum_other_charges(p)),
+                'Purchase BL Date': p['bl_date'],
+                'Purchase Logistic Cost': fmt_2dec(sum_logistic(p)),
+                'Purchase Charges P & F': fmt_2dec(sum_pf_charges(ppf)),
+
+                'Total Expense': fmt_2dec(total_expense),
+                'Profit': fmt_2dec(profit),
+                'Profit per MT': fmt_2dec(profit / bl_qty if bl_qty else 0),
+            })
+
         return excel_data
     
 

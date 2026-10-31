@@ -20,6 +20,7 @@ const PLForm = ({ mode = 'add' }) => {
     const [purchaseData, setPurchaseData] = useState(null);
     const [salesTrnOptions, setSalesTrnOptions] = useState([]);
     const [purchaseTrnOptions, setPurchaseTrnOptions] = useState([]);
+    const [autoLinkStatus, setAutoLinkStatus] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const fetchData = async (url, params = {}, setStateFunction) => {
@@ -65,28 +66,160 @@ const PLForm = ({ mode = 'add' }) => {
         return purchaseTrnOptions.filter(option => !usedPurchaseIds.has(Number(option.id)));
     }, [purchaseTrnOptions, existingPlList, mode, id]);
 
+    const formatOptionLabel = (option) => {
+        if (!option) return '';
+        const trnCode = option.trn?.trn || option.trn || 'Unknown TRN';
+        const blText = option.bl_number ? `BL: ${option.bl_number}` : 'No BL';
+        return `${trnCode} (${option.id}) - ${blText}`;
+    };
+
     useEffect(() => {
         if (mode === 'update' && id) {
             axios
                 .get(`/trademgt/profitloss/${id}`)
                 .then(response => {
                     const data = response.data;
+                    const salesId = typeof data.sales_trn === 'object' ? data.sales_trn?.id : data.sales_trn;
+                    const purchaseId = typeof data.purchase_trn === 'object' ? data.purchase_trn?.id : data.purchase_trn;
                     setFormData(prevState => ({
                         ...prevState,
-                        sales_trn: data.sales_trn,
-                        purchase_trn: data.purchase_trn,
-                        remarks: data.remarks,
+                        sales_trn: salesId || '',
+                        purchase_trn: purchaseId || '',
+                        remarks: data.remarks || '',
                     }));
-                    return axios.get(`/trademgt/pl/${data.trn}`);
-                })
-                .then(response => {
-                    setData(response.data);
+                    if (salesId) {
+                        axios.get(`/trademgt/pl/${salesId}/`)
+                            .then(res => setSalesData(res.data))
+                            .catch(err => console.error('Error fetching sales data:', err));
+                    }
+                    if (purchaseId) {
+                        axios.get(`/trademgt/pl/${purchaseId}/`)
+                            .then(res => setPurchaseData(res.data))
+                            .catch(err => console.error('Error fetching purchase data:', err));
+                    }
                 })
                 .catch(error => {
                     console.error('There was an error fetching the data!', error);
                 });
         }
     }, [mode, id]);
+
+    const handleSalesChange = (selectedOption) => {
+        const salesId = selectedOption ? selectedOption.value : '';
+
+        if (!salesId) {
+            setFormData(prev => ({
+                ...prev,
+                sales_trn: '',
+                purchase_trn: '',
+            }));
+            setSalesData(null);
+            setPurchaseData(null);
+            setAutoLinkStatus(null);
+            return;
+        }
+
+        const selectedSales = salesTrnOptions.find(opt => String(opt.id) === String(salesId));
+        const salesBl = selectedSales?.bl_number ? String(selectedSales.bl_number).trim() : '';
+
+        let matchedPurchase = null;
+        let usedPurchase = null;
+
+        if (salesBl) {
+            matchedPurchase = filteredPurchaseOptions.find(
+                opt => opt.bl_number && String(opt.bl_number).trim().toLowerCase() === salesBl.toLowerCase()
+            );
+            if (!matchedPurchase) {
+                usedPurchase = purchaseTrnOptions.find(
+                    opt => opt.bl_number && String(opt.bl_number).trim().toLowerCase() === salesBl.toLowerCase()
+                );
+            }
+        }
+
+        setFormData(prev => ({
+            ...prev,
+            sales_trn: salesId,
+            purchase_trn: matchedPurchase ? matchedPurchase.id : '',
+        }));
+
+        setValidationErrors(prev => {
+            const next = { ...prev };
+            delete next.sales_trn;
+            if (matchedPurchase) delete next.purchase_trn;
+            return next;
+        });
+
+        if (matchedPurchase) {
+            setAutoLinkStatus({
+                type: 'success',
+                message: `Automatically linked Purchase (TRN: ${matchedPurchase.trn?.trn || matchedPurchase.id}) via BL: ${salesBl}`
+            });
+            axios.get(`/trademgt/pl/${matchedPurchase.id}/`)
+                .then(res => setPurchaseData(res.data))
+                .catch(err => console.error('Error fetching purchase data:', err));
+        } else if (usedPurchase) {
+            setAutoLinkStatus({
+                type: 'warning',
+                message: `Purchase with BL "${salesBl}" (TRN: ${usedPurchase.trn?.trn || usedPurchase.id}) is already linked in another P&L. Please select manually.`
+            });
+            setPurchaseData(null);
+        } else if (salesBl) {
+            setAutoLinkStatus({
+                type: 'info',
+                message: `No available purchase found matching BL "${salesBl}". Please select manually.`
+            });
+            setPurchaseData(null);
+        } else {
+            setAutoLinkStatus(null);
+            setPurchaseData(null);
+        }
+
+        axios.get(`/trademgt/pl/${salesId}/`)
+            .then(res => setSalesData(res.data))
+            .catch(err => console.error('Error fetching sales data:', err));
+    };
+
+    const handlePurchaseChange = (selectedOption) => {
+        const purchaseId = selectedOption ? selectedOption.value : '';
+
+        setFormData(prev => ({
+            ...prev,
+            purchase_trn: purchaseId,
+        }));
+
+        setValidationErrors(prev => {
+            const next = { ...prev };
+            delete next.purchase_trn;
+            return next;
+        });
+
+        if (purchaseId) {
+            axios.get(`/trademgt/pl/${purchaseId}/`)
+                .then(res => setPurchaseData(res.data))
+                .catch(err => console.error('Error fetching purchase data:', err));
+
+            const selectedSales = salesTrnOptions.find(opt => String(opt.id) === String(formData.sales_trn));
+            const selectedPurch = purchaseTrnOptions.find(opt => String(opt.id) === String(purchaseId));
+
+            const salesBl = selectedSales?.bl_number ? String(selectedSales.bl_number).trim().toLowerCase() : null;
+            const purchBl = selectedPurch?.bl_number ? String(selectedPurch.bl_number).trim().toLowerCase() : null;
+
+            if (salesBl && purchBl && salesBl === purchBl) {
+                setAutoLinkStatus({
+                    type: 'success',
+                    message: `Linked via BL: ${selectedPurch.bl_number}`
+                });
+            } else if (formData.sales_trn) {
+                setAutoLinkStatus({
+                    type: 'manual',
+                    message: `Manually selected Purchase (BL: ${selectedPurch?.bl_number || 'No BL'})`
+                });
+            }
+        } else {
+            setPurchaseData(null);
+            setAutoLinkStatus(null);
+        }
+    };
 
     const handleChange = async (e) => {
         const { name, value } = e.target;
@@ -105,8 +238,7 @@ const PLForm = ({ mode = 'add' }) => {
                     if(name === "sales_trn"){setSalesData(result.data)}
                     else {setPurchaseData(result.data)}
                 })
-                .catch((error)=>console.error(`Error fetching data for ${name}:`, error));// Adjust endpoint based on your API
-               
+                .catch((error)=>console.error(`Error fetching data for ${name}:`, error));
             } catch (error) {
                 console.error(`Error fetching data for ${name}:`, error);
             }
@@ -205,63 +337,75 @@ const PLForm = ({ mode = 'add' }) => {
           <hr />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 <div>
-                    <label htmlFor="trn" className="block text-sm font-medium text-gray-700">Sales TRN & ID</label>
+                    <label htmlFor="sales_trn" className="block text-sm font-medium text-gray-700 mb-1">Sales TRN & ID</label>
                     <Select
                         id="sales_trn"
                         name="sales_trn"
                         options={filteredSalesOptions.map(option => ({
                             value: option.id,
-                            label: `${option.trn.trn} (${option.id})`
+                            label: formatOptionLabel(option)
                         }))}
                         value={
                             formData.sales_trn
                                 ? {
                                     value: formData.sales_trn,
-                                    label: salesTrnOptions.find(opt => String(opt.id) === String(formData.sales_trn))
-                                        ? `${salesTrnOptions.find(opt => String(opt.id) === String(formData.sales_trn)).trn.trn} (${formData.sales_trn})`
-                                        : String(formData.sales_trn)
+                                    label: (() => {
+                                        const opt = salesTrnOptions.find(o => String(o.id) === String(formData.sales_trn));
+                                        return opt ? formatOptionLabel(opt) : String(formData.sales_trn);
+                                    })()
                                 }
                                 : null
                         }
-                        onChange={(selectedOption) =>
-                            handleChange({ target: { name: 'sales_trn', value: selectedOption ? selectedOption.value : '' } })
-                        }
+                        onChange={handleSalesChange}
                         placeholder="Select Sales TRN"
                         isSearchable
                         isClearable
                         className={`w-full col-span-1 ${getFieldErrorClass('sales_trn')}`}
                     />
-                    {validationErrors.sales_trn && <p className="text-red-500">{validationErrors.sales_trn}</p>}
+                    {validationErrors.sales_trn && <p className="text-red-500 text-xs mt-1">{validationErrors.sales_trn}</p>}
                 </div>
 
                 <div>
-                    <label htmlFor="purchase_trn" className="block text-sm font-medium text-gray-700">Purchase TRN & ID</label>
+                    <label htmlFor="purchase_trn" className="block text-sm font-medium text-gray-700 mb-1">Purchase TRN & ID</label>
                     <Select
                         id="purchase_trn"
                         name="purchase_trn"
                         options={filteredPurchaseOptions.map(option => ({
                             value: option.id,
-                            label: `${option.trn.trn} (${option.id})`
+                            label: formatOptionLabel(option)
                         }))}
                         value={
                             formData.purchase_trn
                                 ? {
                                     value: formData.purchase_trn,
-                                    label: purchaseTrnOptions.find(opt => String(opt.id) === String(formData.purchase_trn))
-                                        ? `${purchaseTrnOptions.find(opt => String(opt.id) === String(formData.purchase_trn)).trn.trn} (${formData.purchase_trn})`
-                                        : String(formData.purchase_trn)
+                                    label: (() => {
+                                        const opt = purchaseTrnOptions.find(o => String(o.id) === String(formData.purchase_trn));
+                                        return opt ? formatOptionLabel(opt) : String(formData.purchase_trn);
+                                    })()
                                 }
                                 : null
                         }
-                        onChange={(selectedOption) =>
-                            handleChange({ target: { name: 'purchase_trn', value: selectedOption ? selectedOption.value : '' } })
-                        }
+                        onChange={handlePurchaseChange}
                         placeholder="Select Purchase TRN"
                         isSearchable
                         isClearable
                         className={`w-full col-span-1 ${getFieldErrorClass('purchase_trn')}`}
                     />
-                    {validationErrors.purchase_trn && <p className="text-red-500">{validationErrors.purchase_trn}</p>}
+                    {validationErrors.purchase_trn && <p className="text-red-500 text-xs mt-1">{validationErrors.purchase_trn}</p>}
+                    {autoLinkStatus && (
+                        <div className={`mt-2 rounded px-2.5 py-1.5 text-xs font-medium flex items-center gap-1.5 ${
+                            autoLinkStatus.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+                            autoLinkStatus.type === 'warning' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                            autoLinkStatus.type === 'manual' ? 'bg-gray-50 text-gray-700 border border-gray-200' :
+                            'bg-blue-50 text-blue-700 border border-blue-200'
+                        }`}>
+                            {autoLinkStatus.type === 'success' && <span>✓</span>}
+                            {autoLinkStatus.type === 'warning' && <span>⚠</span>}
+                            {autoLinkStatus.type === 'info' && <span>ℹ</span>}
+                            {autoLinkStatus.type === 'manual' && <span>✎</span>}
+                            <span>{autoLinkStatus.message}</span>
+                        </div>
+                    )}
                 </div>
             
                
