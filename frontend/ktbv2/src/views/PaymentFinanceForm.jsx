@@ -106,7 +106,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     //     fetchData('/trademgt/trades', { approved: true }, setTrnOptions);  // Example with params
     // }, []);
     useEffect(() => {
-        fetchData('/trademgt/sales-purchases/', { 
+        fetchData('/trademgt/sales-purchases/', {
             reviewed: true,
             exclude_paymentfinance: true,
             current_paymentfinance_id: mode === 'update' ? id : undefined
@@ -306,7 +306,13 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         // });
         if (data?.prepayment.lc_number.toLowerCase() === "na") {
             console.log("====", shouldRequireTTCopy)
-            if (shouldRequireTTCopy) {
+
+            // Check if balance payments are greater than 0
+            const hasBalanceActivity =
+                parseFloat(formData.balance_payment_received || 0) > 0 ||
+                parseFloat(formData.balance_payment_made || 0) > 0;
+
+            if (shouldRequireTTCopy && hasBalanceActivity) {
                 if (formData.ttCopies.length === 0) {
                     alert('TT Copy cannot be empty!');
                     return;

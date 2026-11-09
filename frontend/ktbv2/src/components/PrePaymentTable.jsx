@@ -26,6 +26,8 @@ const PrePaymentTable = ({ data, onDelete, onView, basePerm }) => {
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-30 bg-gray-100 min-w-[180px] max-w-[180px] w-[180px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">LC Number</th>
+            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
+
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">LC Opening Bank</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Advance Received</th>
             <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date Of Receipt</th>
@@ -46,6 +48,7 @@ const PrePaymentTable = ({ data, onDelete, onView, basePerm }) => {
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trn}>{item.trn?.trn}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trade_type}>{item.trn?.trade_type}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-10 bg-white min-w-[180px] max-w-[180px] w-[180px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis" title={item.lc_number}>{item.lc_number}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.kyc.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.lc_opening_bank}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{format2Dec(item.advance_received)}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{dateFormatter(item.date_of_receipt)}</td>
