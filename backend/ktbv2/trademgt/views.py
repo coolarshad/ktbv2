@@ -2315,11 +2315,14 @@ class PaymentFinanceView(APIView):
 
         i = 0
         while f'ttCopies[{i}].name' in data:
-            tt_copy_data = {
-                'name': data.get(f'ttCopies[{i}].name'),
-                'tt_copy': data.get(f'ttCopies[{i}].tt_copy'),  # Handle binary data as needed
-            }
-            tt_copies_data.append(tt_copy_data)
+            name = (data.get(f'ttCopies[{i}].name') or '').strip()
+            tt_file = request.FILES.get(f'ttCopies[{i}].tt_copy') or data.get(f'ttCopies[{i}].tt_copy')
+            if name and tt_file:
+                tt_copy_data = {
+                    'name': name,
+                    'tt_copy': tt_file,
+                }
+                tt_copies_data.append(tt_copy_data)
             i += 1
 
         with transaction.atomic():
@@ -2425,16 +2428,18 @@ class PaymentFinanceView(APIView):
 
         i = 0
         while f'ttCopies[{i}].name' in data:
-            doc_file = request.FILES.get(f'ttCopies[{i}].tt_copy',None)
+            name = (data.get(f'ttCopies[{i}].name') or '').strip()
+            doc_file = request.FILES.get(f'ttCopies[{i}].tt_copy', None)
             if not doc_file:
-                existing_doc = TTCopy.objects.filter(payment_finance=pf, name=data.get(f'ttCopies[{i}].name')).first()
+                existing_doc = TTCopy.objects.filter(payment_finance=pf, name=name).first()
                 if existing_doc:
                     doc_file = existing_doc.tt_copy  # retain existing file
-            tt_copy_data = {
-                'name': data.get(f'ttCopies[{i}].name'),
-                'tt_copy': doc_file,  # Handle binary data as needed
-            }
-            tt_copies_data.append(tt_copy_data)
+            if name and doc_file:
+                tt_copy_data = {
+                    'name': name,
+                    'tt_copy': doc_file,  # Handle binary data as needed
+                }
+                tt_copies_data.append(tt_copy_data)
             i += 1
        
         with transaction.atomic():

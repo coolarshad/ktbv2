@@ -38,7 +38,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         release_docs: '',
         release_docs_date: '',
         remarks: '',
-        ttCopies: [{ name: '', tt_copy: null }],
+        ttCopies: [],
         pfCharges: [{ name: '', charge: '' }],
         notifiedUsers: [],
         notification_message: '',
@@ -53,7 +53,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     // Update formData with data from the first API call
                     setFormData(prevState => ({
                         ...prevState,
-                        sp: data.sp.id,
+                        sp: data.sp?.id || data.sp,
                         date: data.date,
                         // balance_payment: data.balance_payment,
                         balance_payment_received: data.balance_payment_received,
@@ -71,8 +71,16 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         release_docs: data.release_docs,
                         release_docs_date: data.release_docs_date,
                         remarks: data.remarks,
-                        ttCopies: data.ttCopies || [{ name: '', tt_copy: null }],
-                        pfCharges: data.pfCharges || [{ name: '', charge: null }]
+                        ttCopies: (data.pf_ttcopy && data.pf_ttcopy.length > 0)
+                            ? data.pf_ttcopy
+                            : (data.ttCopies && data.ttCopies.length > 0)
+                                ? data.ttCopies
+                                : [],
+                        pfCharges: (data.pf_charges && data.pf_charges.length > 0)
+                            ? data.pf_charges
+                            : (data.pfCharges && data.pfCharges.length > 0)
+                                ? data.pfCharges
+                                : [{ name: '', charge: '' }]
                     }));
                     // Return a promise for the second API call
                     return axios.get(`/trademgt/sales-purchases/${data.sp.id}`);  // Replace with your actual endpoint
@@ -197,7 +205,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 const remainingValue = parseFloat(data?.invoice_amount) - advanceAdjusted - balancePaymentMade - balancePaymentReceived;
 
                 updatedFormData.net_due_in_this_trade = remainingValue.toFixed(2);
-                if (balancePaymentMade === 0 || balancePaymentReceived === 0) {
+                if (balancePaymentMade === 0 && balancePaymentReceived === 0) {
                     updatedFormData.balance_payment_date = 'NA';
                 }
             }
@@ -233,7 +241,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
     const handleAddRow = (section) => {
         const newRow = section === 'pfCharges' ? { name: '', charge: '' } : { name: '', tt_copy: null };
-        setFormData({ ...formData, [section]: [...formData[section], newRow] });
+        setFormData({ ...formData, [section]: [...(formData[section] || []), newRow] });
     };
 
     const handleRemoveRow = (section, index) => {
@@ -272,13 +280,63 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         [mode, id, navigate]
     );
 
+    const calculateRemainingContractValue = (data) => {
+        if (!data) return 0;
+        const contractValue = parseFloat(data?.invoice_amount || 0);
+        let advance = 0;
+        if (data.trn?.trade_type === 'Sales') {
+            advance = parseFloat(data.prepayment?.advance_received || 0);
+        }
+        if (data.trn?.trade_type === 'Purchase') {
+            advance = parseFloat(data.prepayment?.advance_paid || 0);
+        }
+
+        if (isNaN(contractValue) || isNaN(advance)) {
+            return 0;
+        }
+
+        return contractValue - advance;
+    };
+
+    const shouldRequireTTCopy = (() => {
+        if (!data || !data.trn || !data.trn.paymentTerm) return false;
+        if (data.trn.paymentTerm.payment_within === 'NA') return false;
+
+        const dueDate = paymentDueDate(data);
+        const today = new Date();
+
+        try {
+            return today >= new Date(dueDate);
+        } catch (err) {
+            console.error("Invalid due date:", dueDate);
+            return false;
+        }
+    })();
+
+    const balancePaymentAmount = data?.trn?.trade_type === 'Purchase'
+        ? parseFloat(formData.balance_payment_made || 0)
+        : parseFloat(formData.balance_payment_received || 0);
+
+    const hasBalanceActivity = balancePaymentAmount > 0;
+    const isLC_NA = data?.prepayment?.lc_number?.toLowerCase() === "na";
+    const isTTCopyMandatory = isLC_NA && shouldRequireTTCopy && hasBalanceActivity;
+
+    useEffect(() => {
+        if (isTTCopyMandatory && (!formData.ttCopies || formData.ttCopies.length === 0)) {
+            setFormData(prev => ({
+                ...prev,
+                ttCopies: [{ name: '', tt_copy: null }]
+            }));
+        }
+    }, [isTTCopyMandatory]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
         let errors = {};
 
         // Define fields to skip validation for
-        const skipValidation = [];
+        const skipValidation = ['ttCopies'];
 
         // Check each regular field for empty value (except files and those in skipValidation)
         for (const [key, value] of Object.entries(formData)) {
@@ -296,37 +354,28 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             }
         });
 
-        //  // Validate tradeProducts array fields but skip 'loi'
-        //  formData.ttCopies.forEach((product, index) => {
-        //     for (const [key, value] of Object.entries(product)) { 
-        //         if (!skipValidation.includes(key) && (value === '' || value==null)) {
-        //             errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
-        //         }
-        //     }
-        // });
-        if (data?.prepayment.lc_number.toLowerCase() === "na") {
-            console.log("====", shouldRequireTTCopy)
-
-            // Check if balance payments are greater than 0
-            const hasBalanceActivity =
-                parseFloat(formData.balance_payment_received || 0) > 0 ||
-                parseFloat(formData.balance_payment_made || 0) > 0;
-
-            if (shouldRequireTTCopy && hasBalanceActivity) {
-                if (formData.ttCopies.length === 0) {
-                    alert('TT Copy cannot be empty!');
-                    return;
-                } else {
-                    formData.ttCopies.forEach((item, index) => {
-                        for (const [key, value] of Object.entries(item)) {
-                            if (!skipValidation.includes(key) && (value === '' || value == null)) {
-                                errors[`ttCopies[${index}].${key}`] = `${capitalizeKey(key)} cannot be empty!`;
-                            }
-                        }
-                    });
-                }
+        if (isTTCopyMandatory) {
+            const hasValidCopy = formData.ttCopies && formData.ttCopies.length > 0 && formData.ttCopies.some(
+                item => (item.name && item.name.trim() !== '') && (item.tt_copy !== null && item.tt_copy !== '')
+            );
+            if (!hasValidCopy) {
+                alert('TT Copy cannot be empty because due date has reached and balance payment is greater than 0!');
+                errors.ttCopies = 'TT Copy is required!';
             }
         }
+
+        formData.ttCopies.forEach((item, index) => {
+            const hasName = item.name && item.name.trim() !== '';
+            const hasFile = item.tt_copy !== null && item.tt_copy !== '';
+            if (isTTCopyMandatory || hasName || hasFile) {
+                if (!hasName) {
+                    errors[`ttCopies[${index}].name`] = 'Name cannot be empty!';
+                }
+                if (!hasFile) {
+                    errors[`ttCopies[${index}].tt_copy`] = 'TT Copy file cannot be empty!';
+                }
+            }
+        });
 
         // Validate notifiedUsers
         if (!formData.notifiedUsers || formData.notifiedUsers.length === 0) {
@@ -335,7 +384,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         setValidationErrors(errors);
 
         if (Object.keys(errors).length > 0) {
-            console.log(errors)
+            console.log(errors);
             return; // Don't proceed if there are validation errors
         } else {
             setValidationErrors({});
@@ -348,6 +397,19 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 if (key === 'notifiedUsers') {
                     value.forEach(item => {
                         formDataToSend.append(`${key}[]`, item);
+                    });
+                } else if (key === 'ttCopies') {
+                    let activeIndex = 0;
+                    value.forEach((item) => {
+                        const hasName = item.name && item.name.trim() !== '';
+                        const hasFile = item.tt_copy !== null && item.tt_copy !== '';
+                        if (hasName && hasFile) {
+                            formDataToSend.append(`ttCopies[${activeIndex}].name`, item.name.trim());
+                            if (item.tt_copy instanceof File) {
+                                formDataToSend.append(`ttCopies[${activeIndex}].tt_copy`, item.tt_copy);
+                            }
+                            activeIndex++;
+                        }
                     });
                 } else {
                     value.forEach((item, index) => {
@@ -375,40 +437,6 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             debouncedSubmit.cancel();
         };
     }, [debouncedSubmit]);
-
-    const calculateRemainingContractValue = (data) => {
-        // const contractValue = parseFloat(data.trn.contract_value);
-        const contractValue = parseFloat(data?.invoice_amount)
-        let advance = 0;
-        if (data.trn.trade_type == 'Sales') {
-            advance = parseFloat(data.prepayment.advance_received);
-        }
-        if (data.trn.trade_type == 'Purchase') {
-            advance = parseFloat(data.prepayment.advance_paid);
-        }
-
-        if (isNaN(contractValue) || isNaN(advance)) {
-            throw new Error('Invalid input: contract_value and invoice_amount must be valid numbers');
-        }
-
-        return contractValue - advance;
-
-    };
-
-    const shouldRequireTTCopy = (() => {
-        if (!data || !data.trn || !data.trn.paymentTerm) return false;
-        if (data.trn.paymentTerm.payment_within === 'NA') return false;
-
-        const dueDate = paymentDueDate(data);  // Assuming this returns a Date object or a parseable string
-        const today = new Date();
-
-        try {
-            return today >= new Date(dueDate);
-        } catch (err) {
-            console.error("Invalid due date:", dueDate);
-            return false;
-        }
-    })();
 
     const tradeData = data
         ? [
@@ -700,7 +728,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                 {formData.pfCharges.map((charge, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label htmlFor={`ttcopy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
+                            <label htmlFor={`pfcharge_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
                             <input
                                 id={`pfcharge_name_${index}`}
                                 name="name"
@@ -716,9 +744,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                             )}
                         </div>
                         <div>
-                            <label htmlFor={`ttcopy_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">Charge</label>
+                            <label htmlFor={`pfcharge_charge_${index}`} className="block text-sm font-medium text-gray-700">Charge</label>
                             <input
-                                id={`pfcharge_name_${index}`}
+                                id={`pfcharge_charge_${index}`}
                                 name="charge"
                                 type="number"
                                 step="0.01"
@@ -755,60 +783,77 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
 
             </div>
             <hr className="my-6" />
-            {data?.prepayment.lc_number.toLowerCase() === "na" && shouldRequireTTCopy && (
-                parseFloat(formData.balance_payment_received) > 0 ||
-                parseFloat(formData.balance_payment_made) > 0
-            ) && (
-                    <div className=''>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">TTCopy</h3>
-                        {formData.ttCopies.map((ttCopy, index) => (
-                            <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <label htmlFor={`ttcopy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
-                                    <input
-                                        id={`ttcopy_name_${index}`}
-                                        name="name"
-                                        type="text"
-                                        value={ttCopy.name}
-                                        onChange={(e) => handleChange(e, 'ttCopies', index)}
-                                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                        disabled={data?.prepayment.lc_number.toLowerCase() !== "na"}
-                                    />
-                                    {validationErrors[`ttCopies[${index}].name`] && (
-                                        <p className="text-red-500">
-                                            {validationErrors[`ttCopies[${index}].name`]}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <label htmlFor={`ttcopy_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">TT Copy</label>
-                                    <input
-                                        id={`ttcopy_tt_copy_${index}`}
-                                        name="tt_copy"
-                                        type="file"
-                                        onChange={(e) => handleChange(e, 'ttCopies', index)}
-                                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                                        disabled={data?.prepayment.lc_number.toLowerCase() !== "na"}
-                                    />
-                                    {validationErrors[`ttCopies[${index}].tt_copy`] && (
-                                        <p className="text-red-500">
-                                            {validationErrors[`ttCopies[${index}].tt_copy`]}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="flex items-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveRow('ttCopies', index)}
-                                        className="text-red-600 hover:text-red-800"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+            <div>
+                <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-medium text-gray-900">
+                        TT Copy {isTTCopyMandatory && <span className="text-red-500 font-semibold">* (Mandatory)</span>}
+                    </h3>
+                    <button
+                        type="button"
+                        onClick={() => handleAddRow('ttCopies')}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                        Add TT Copy
+                    </button>
+                </div>
+                {validationErrors.ttCopies && (
+                    <p className="text-red-500 text-sm mb-2">{validationErrors.ttCopies}</p>
                 )}
+                {formData.ttCopies?.map((ttCopy, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label htmlFor={`ttcopy_name_${index}`} className="block text-sm font-medium text-gray-700">Name</label>
+                            <input
+                                id={`ttcopy_name_${index}`}
+                                name="name"
+                                type="text"
+                                value={ttCopy.name || ''}
+                                onChange={(e) => handleChange(e, 'ttCopies', index)}
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                            {validationErrors[`ttCopies[${index}].name`] && (
+                                <p className="text-red-500 text-sm">
+                                    {validationErrors[`ttCopies[${index}].name`]}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <label htmlFor={`ttcopy_tt_copy_${index}`} className="block text-sm font-medium text-gray-700">TT Copy</label>
+                            <input
+                                id={`ttcopy_tt_copy_${index}`}
+                                name="tt_copy"
+                                type="file"
+                                onChange={(e) => handleChange(e, 'ttCopies', index)}
+                                className="border border-gray-300 p-2 rounded w-full col-span-1"
+                            />
+                            {typeof ttCopy.tt_copy === 'string' && ttCopy.tt_copy && (
+                                <a
+                                    href={ttCopy.tt_copy}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-600 underline block mt-1"
+                                >
+                                    View existing file
+                                </a>
+                            )}
+                            {validationErrors[`ttCopies[${index}].tt_copy`] && (
+                                <p className="text-red-500 text-sm">
+                                    {validationErrors[`ttCopies[${index}].tt_copy`]}
+                                </p>
+                            )}
+                        </div>
+                        <div className="flex items-end">
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveRow('ttCopies', index)}
+                                className="text-red-600 hover:text-red-800"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
             {/* Notify Users Section */}
             <hr className="my-6" />
