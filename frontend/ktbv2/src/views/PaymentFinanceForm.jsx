@@ -35,14 +35,23 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         // bl_fee: '',
         // bl_collection_cost: '',
         // shipment_status: '',
-        release_docs: '',
-        release_docs_date: '',
+        release_docs: 'NA',
+        release_docs_date: 'NA',
         remarks: '',
         ttCopies: [],
         pfCharges: [{ name: '', charge: '' }],
         notifiedUsers: [],
         notification_message: '',
     });
+
+    const normalizeReleaseDocs = (val) => {
+        if (!val) return 'NA';
+        const lower = val.toLowerCase().trim();
+        if (lower === 'release document' || lower === 'release the bl') return 'Release the BL';
+        if (lower === 'do not release document' || lower === 'do not release the bl') return 'Do not Release the BL';
+        if (lower === 'na') return 'NA';
+        return val;
+    };
 
     useEffect(() => {
         if (mode === 'update' && id) {
@@ -68,8 +77,8 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         // bl_fee: data.bl_fee,
                         // bl_collection_cost: data.bl_collection_cost,
                         // shipment_status: data.shipment_status,
-                        release_docs: data.release_docs,
-                        release_docs_date: data.release_docs_date,
+                        release_docs: normalizeReleaseDocs(data.release_docs),
+                        release_docs_date: data.release_docs_date || 'NA',
                         remarks: data.remarks,
                         ttCopies: (data.pf_ttcopy && data.pf_ttcopy.length > 0)
                             ? data.pf_ttcopy
@@ -134,11 +143,17 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         release_docs_date: 'NA'
                     }
                     : {
-                        balance_payment_made: '0'
+                        balance_payment_made: '0',
+                        ...(mode === 'add'
+                            ? {
+                                release_docs: 'NA',
+                                release_docs_date: 'NA'
+                            }
+                            : {})
                     })
             }));
         }
-    }, [data]);
+    }, [data, mode]);
 
     // Create debounced function for advance amount check
     const debouncedAdvanceCheck = useCallback(
@@ -178,11 +193,19 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             // Update the main form fields
             const updatedFormData = { ...formData, [name]: files ? files[0] : value };
 
-            if (
-                name === 'release_docs' &&
-                ['na', 'do not release document'].includes(value.toLowerCase())
-            ) {
-                updatedFormData.release_docs_date = 'NA';
+            if (name === 'release_docs') {
+                const valLower = (value || '').toLowerCase().trim();
+                if (valLower === 'na') {
+                    updatedFormData.release_docs_date = 'NA';
+                } else if (valLower === 'release the bl' || valLower === 'release document') {
+                    if (updatedFormData.release_docs_date === 'NA') {
+                        updatedFormData.release_docs_date = '';
+                    }
+                } else if (valLower === 'do not release the bl' || valLower === 'do not release document') {
+                    if (!updatedFormData.release_docs_date) {
+                        updatedFormData.release_docs_date = 'NA';
+                    }
+                }
             }
 
 
@@ -342,6 +365,22 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
         for (const [key, value] of Object.entries(formData)) {
             if (!skipValidation.includes(key) && value === '' && key !== 'notifiedUsers') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+            }
+        }
+
+        // Validate release_docs and release_docs_date
+        if (data?.trn?.trade_type !== 'Purchase') {
+            const relLower = (formData.release_docs || '').toLowerCase().trim();
+            if (!formData.release_docs || relLower === '') {
+                errors.release_docs = 'Release Docs cannot be empty!';
+            } else if (['release the bl', 'release document'].includes(relLower)) {
+                if (!formData.release_docs_date || formData.release_docs_date.trim().toUpperCase() === 'NA') {
+                    errors.release_docs_date = 'Release Docs Date is required when releasing the BL!';
+                }
+            } else if (['do not release the bl', 'do not release document'].includes(relLower)) {
+                if (!formData.release_docs_date || formData.release_docs_date.trim() === '') {
+                    errors.release_docs_date = 'Release Docs Date must be a date or NA!';
+                }
             }
         }
 
@@ -672,43 +711,46 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                     /> */}
                     <Select
                         options={[
-                            { value: 'Release Document', label: 'Release Document' },
-                            { value: 'Do Not Release Document', label: 'Do Not Release Document' },
+                            { value: 'Release the BL', label: 'Release the BL' },
+                            { value: 'Do not Release the BL', label: 'Do not Release the BL' },
                             { value: 'NA', label: 'NA' }
                         ]}
-                        value={formData.release_docs ? { value: formData.release_docs, label: formData.release_docs } : null}
-                        onChange={(selectedOption) => handleChange({ target: { name: 'release_docs', value: selectedOption ? selectedOption.value : '' } })}
+                        value={formData.release_docs ? { value: formData.release_docs, label: formData.release_docs } : { value: 'NA', label: 'NA' }}
+                        onChange={(selectedOption) => handleChange({ target: { name: 'release_docs', value: selectedOption ? selectedOption.value : 'NA' } })}
                         placeholder="Select ---"
                         isSearchable
-                        isClearable
+                        isClearable={false}
                         isDisabled={data?.trn.trade_type === "Purchase"}
                         className="w-full col-span-1"
                     />
                     {validationErrors.release_docs && <p className="text-red-500">{validationErrors.release_docs}</p>}
                 </div>
 
-                {/* <div>
-                    <label htmlFor="release_docs_date" className="block text-sm font-medium text-gray-700">Release Docs Date</label>
-                    <input
-                        id="release_docs_date"
-                        name="release_docs_date"
-                        type="date"
-                        value={data?.trn.trade_type === "Purchase" ? "NA" : formData.release_docs_date}
-                        onChange={(e) => handleChange(e)}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly={data?.trn.trade_type === "Purchase"}
+                <div>
+                    <DateInputWithIcon
+                        formData={formData}
+                        handleChange={handleChange}
+                        validationErrors={validationErrors}
+                        fieldName="release_docs_date"
+                        label="Release Docs Date"
+                        block={
+                            data?.trn?.trade_type === "Purchase" ||
+                            formData?.release_docs === 'NA' ||
+                            !formData?.release_docs
+                        }
                     />
-                      {validationErrors.release_docs_date && <p className="text-red-500">{validationErrors.release_docs_date}</p>}
-                </div> */}
-                <DateInputWithIcon
-                    formData={formData}
-                    handleChange={handleChange}
-                    validationErrors={validationErrors}
-                    fieldName="release_docs_date"
-                    label="Release Docs Date"
-                    // block={data?.trn.trade_type === "Purchase"} 
-                    block={formData?.release_docs != 'Release Document' || data?.trn.trade_type === "Purchase"}
-                />
+                    {['do not release the bl', 'do not release document'].includes((formData?.release_docs || '').toLowerCase()) && (
+                        <div className="flex justify-end mt-1">
+                            <button
+                                type="button"
+                                onClick={() => handleChange({ target: { name: 'release_docs_date', value: 'NA' } })}
+                                className="text-xs text-blue-600 hover:underline cursor-pointer"
+                            >
+                                Set Date to NA
+                            </button>
+                        </div>
+                    )}
+                </div>
                 <div>
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
                     <input

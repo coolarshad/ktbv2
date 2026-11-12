@@ -312,18 +312,40 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         };
     }
 
-    const handleLogisticCostChange = debounce((value, prev) => {
-        const logisticCost = parseFloat(value) || 0;
-        if (logisticCost > data.estimated_logistic_cost || logisticCost < 0) {
-            alert(`Logistic cost cannot exceed the estimated logistic cost: ${data.estimated_logistic_cost}`);
-            setFormData({
-                ...prev,
-                logistic_cost: data.estimated_logistic_cost.toString(), // Reset the value
-            });
-        } else {
-            setFormData({ ...prev, logistic_cost: value });
+    const handleLogisticCostChange = debounce((value) => {
+        if (!data || data.estimated_logistic_cost === undefined || data.estimated_logistic_cost === null || value === '') {
+            return;
         }
-    }, 250);
+
+        const logisticCost = parseFloat(value);
+        if (isNaN(logisticCost)) return;
+
+        const estimatedLogistic = parseFloat(data.estimated_logistic_cost || 0);
+        const tolerance = parseFloat(data.logistic_cost_tolerence ?? data.logistic_cost_tolerance ?? 0) || 0;
+        const toleranceAmount = (tolerance / 100) * estimatedLogistic;
+        const maxAllowed = estimatedLogistic + toleranceAmount;
+        const minAllowed = Math.max(0, estimatedLogistic - toleranceAmount);
+
+        if (logisticCost > maxAllowed) {
+            alert(`Logistic cost (${logisticCost}) exceeds upper tolerance limit of ${format2Dec(maxAllowed)} (${tolerance}% over estimated ${format2Dec(estimatedLogistic)})`);
+            setValidationErrors(prev => ({
+                ...prev,
+                logistic_cost: `Logistic cost cannot exceed ${format2Dec(maxAllowed)} (${tolerance}% tolerance)`,
+            }));
+        } else if (logisticCost < minAllowed) {
+            alert(`Logistic cost (${logisticCost}) is below lower tolerance limit of ${format2Dec(minAllowed)} (${tolerance}% under estimated ${format2Dec(estimatedLogistic)})`);
+            setValidationErrors(prev => ({
+                ...prev,
+                logistic_cost: `Logistic cost cannot be below ${format2Dec(minAllowed)} (${tolerance}% tolerance)`,
+            }));
+        } else {
+            setValidationErrors(prev => {
+                const copy = { ...prev };
+                delete copy.logistic_cost;
+                return copy;
+            });
+        }
+    }, 500);
 
 
     const handleChange = async (e, arrayName = null, index = null) => {
@@ -431,8 +453,37 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
 
                     };
                 } else if (name === 'logistic_cost') {
-                    handleLogisticCostChange(value, prev); // Use the debounced function
-                    return prev; // Prevent immediate update
+                    updatedFormData = { ...prev, [name]: value };
+                    handleLogisticCostChange(value);
+                } else if (name === 'bl_fees') {
+                    updatedFormData = { ...prev, [name]: value };
+                    if (data && data.bl_fee !== undefined && data.bl_fee !== null && data.bl_fee !== '' && value !== '') {
+                        const maxBLFee = parseFloat(data.bl_fee);
+                        const enteredBLFee = parseFloat(value);
+                        if (!isNaN(enteredBLFee) && !isNaN(maxBLFee) && enteredBLFee > maxBLFee) {
+                            setValidationErrors(prevErr => ({
+                                ...prevErr,
+                                bl_fees: `BL Fee cannot exceed Trade BL Fee (${format2Dec(maxBLFee)}). Lower is acceptable.`,
+                            }));
+                        } else if (!isNaN(enteredBLFee) && enteredBLFee < 0) {
+                            setValidationErrors(prevErr => ({
+                                ...prevErr,
+                                bl_fees: `BL Fee cannot be negative.`,
+                            }));
+                        } else {
+                            setValidationErrors(prevErr => {
+                                const copy = { ...prevErr };
+                                delete copy.bl_fees;
+                                return copy;
+                            });
+                        }
+                    } else {
+                        setValidationErrors(prevErr => {
+                            const copy = { ...prevErr };
+                            delete copy.bl_fees;
+                            return copy;
+                        });
+                    }
                 } else {
                     updatedFormData = { ...prev, [name]: value };
                 }
@@ -542,6 +593,36 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
         for (const [key, value] of Object.entries(formData)) {
             if (!skipValidation.includes(key) && value === '' && key !== 'notifiedUsers') {
                 errors[key] = `${capitalizeKey(key)} cannot be empty!`;
+            }
+        }
+
+        // Validate bl_fees (editable, lower is acceptable, cannot exceed trade bl_fee)
+        if (data && data.bl_fee !== undefined && data.bl_fee !== null && data.bl_fee !== '') {
+            const maxBLFee = parseFloat(data.bl_fee);
+            const enteredBLFee = parseFloat(formData.bl_fees);
+            if (!isNaN(enteredBLFee) && !isNaN(maxBLFee) && enteredBLFee > maxBLFee) {
+                alert(`BL Fee cannot exceed Trade BL Fee: ${format2Dec(maxBLFee)}. Lower is acceptable.`);
+                errors.bl_fees = `BL Fee cannot exceed Trade BL Fee (${format2Dec(maxBLFee)})! Lower is acceptable.`;
+            }
+        }
+
+        // Validate logistic_cost (within higher/lower tolerance of estimated_logistic_cost)
+        if (data && data.estimated_logistic_cost !== undefined && data.estimated_logistic_cost !== null && data.estimated_logistic_cost !== '') {
+            const estimatedLogistic = parseFloat(data.estimated_logistic_cost || 0);
+            const tolerance = parseFloat(data.logistic_cost_tolerence ?? data.logistic_cost_tolerance ?? 0) || 0;
+            const toleranceAmount = (tolerance / 100) * estimatedLogistic;
+            const maxAllowed = estimatedLogistic + toleranceAmount;
+            const minAllowed = Math.max(0, estimatedLogistic - toleranceAmount);
+            const enteredLogistic = parseFloat(formData.logistic_cost);
+
+            if (!isNaN(enteredLogistic)) {
+                if (enteredLogistic > maxAllowed) {
+                    alert(`Logistic cost cannot exceed upper tolerance limit of ${format2Dec(maxAllowed)} (${tolerance}% over estimated ${format2Dec(estimatedLogistic)})`);
+                    errors.logistic_cost = `Logistic cost cannot exceed ${format2Dec(maxAllowed)} (${tolerance}% tolerance)!`;
+                } else if (enteredLogistic < minAllowed) {
+                    alert(`Logistic cost cannot be below lower tolerance limit of ${format2Dec(minAllowed)} (${tolerance}% under estimated ${format2Dec(estimatedLogistic)})`);
+                    errors.logistic_cost = `Logistic cost cannot be below ${format2Dec(minAllowed)} (${tolerance}% tolerance)!`;
+                }
             }
         }
 
@@ -665,6 +746,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
             { label: 'LC Details', text: data.prepayment.lc_number || '' },
             { label: 'Commission Agent', text: data.commission_agent || '' },
             { label: 'Commission Value', text: calculateCommissionValue(formData.salesPurchaseProducts, data.trade_products) || 0 },
+            { label: 'BL Fee (Trade)', text: data.bl_fee !== undefined ? format2Dec(data.bl_fee) : '' },
+            { label: 'Estimated Logistic Cost', text: data.estimated_logistic_cost !== undefined ? format2Dec(data.estimated_logistic_cost) : '' },
+            { label: 'Logistic Cost Tolerance (%)', text: `${data.logistic_cost_tolerence ?? data.logistic_cost_tolerance ?? 0}%` },
             // { label: 'Tolerance', text: data.commission_value || '' },
             { label: 'Logistic Provider', text: data.logistic_provider || '' },
             { label: 'Trader Name', text: data.trader_name || '' },
@@ -835,16 +919,17 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 {validationErrors.bl_qty && <p className="text-red-500">{validationErrors.bl_qty}</p>}
             </div> */}
                 <div>
-                    <label htmlFor="bl_fees" className="block text-sm font-medium text-gray-700">BL Fees</label>
+                    <label htmlFor="bl_fees" className="block text-sm font-medium text-gray-700">
+                        BL Fees {data && data.bl_fee !== undefined ? `(Trade: ${format2Dec(data.bl_fee)} - lower acceptable)` : ''}
+                    </label>
                     <input
                         id="bl_fees"
                         name="bl_fees"
                         type="number"
                         step="0.01"
                         value={formData.bl_fees}
-                        onChange={(e) => setFormData({ ...formData, bl_fees: e.target.value })}
+                        onChange={(e) => handleChange(e)}
                         className="border border-gray-300 p-2 rounded w-full col-span-1"
-                        readOnly={true}
                     />
                     {validationErrors.bl_fees && <p className="text-red-500">{validationErrors.bl_fees}</p>}
                 </div>
@@ -909,7 +994,9 @@ const SalesPurchaseForm = ({ mode = 'add' }) => {
                 </div> */}
 
                 <div>
-                    <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">Logistic Cost</label>
+                    <label htmlFor="logistic_cost" className="block text-sm font-medium text-gray-700">
+                        Logistic Cost {data && data.estimated_logistic_cost !== undefined ? `(Est: ${format2Dec(data.estimated_logistic_cost)}, Tol: ${data.logistic_cost_tolerence ?? data.logistic_cost_tolerance ?? 0}%)` : ''}
+                    </label>
                     <input
                         id="logistic_cost"
                         name="logistic_cost"
