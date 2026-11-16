@@ -13,7 +13,8 @@ from .models import (
     Invoice,
     COA,
     TTCopy,
-    Company
+    Company,
+    KycDocument
 )
 from .tasks import backup_file_to_gdrive_task
 
@@ -111,3 +112,10 @@ def backup_company_assets(sender, instance, **kwargs):
         _dispatch_backup(instance.seal_image, subfolder)
     if instance.signature_image:
         _dispatch_backup(instance.signature_image, subfolder)
+
+@receiver(post_save, sender=KycDocument)
+def backup_kyc_document(sender, instance, **kwargs):
+    kyc_name = getattr(instance.kyc, 'name', f"KYC_{instance.kyc_id}")
+    clean_name = str(kyc_name).replace('/', '_').replace('\\', '_').strip()
+    subfolder = f"KYC_Documents/{clean_name or 'General_KYC'}"
+    _dispatch_backup(instance.file, subfolder)

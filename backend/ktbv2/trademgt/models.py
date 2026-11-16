@@ -762,6 +762,21 @@ class KycBankDetail(models.Model):
         return f"{self.banker} - {self.accountNumber}"
 
 
+class KycDocument(models.Model):
+    kyc = models.ForeignKey(Kyc, related_name='documents', on_delete=models.CASCADE)
+    name = models.CharField(_("name"), max_length=150, blank=True)
+    file = models.FileField(_("file"), upload_to='uploads/kyc_documents/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("KycDocument")
+        verbose_name_plural = _("KycDocuments")
+        ordering = ['-id']
+
+    def __str__(self):
+        return f"{self.name or self.file.name} - {self.kyc.name}"
+
+
 class TradeProductTrace(models.Model):
     TRADE_TYPES = [('Sales', 'Sales'), ('Purchase', 'Purchase')]
 

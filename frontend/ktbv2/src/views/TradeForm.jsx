@@ -4,6 +4,7 @@ import axios from '../axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import debounce from 'lodash.debounce';
+import { toast } from 'react-toastify';
 import { capitalizeKey, BASE_URL } from '../utils';
 import { format2Dec, format4Dec } from '../dateUtils';
 import DateInputWithIcon from '../components/DateInputWithIcon';
@@ -255,25 +256,32 @@ const TradeForm = ({ mode = 'add' }) => {
 
                     const isTradeApproved = Boolean(data.approved);
 
-                    const formattedProducts = (updatedProducts || []).map(product => ({
-                        ...product,
-                        isContractReadOnly: isTradeApproved,
-                        total_contract_qty: to4Dec(product.total_contract_qty),
-                        contract_balance_qty: to4Dec(product.contract_balance_qty),
-                        trade_qty: to4Dec(product.trade_qty),
-                        qty_of_packing: to4Dec(product.qty_of_packing),
-                        selected_currency_rate: to4Dec(product.selected_currency_rate),
-                        rate_in_usd: to4Dec(product.rate_in_usd),
-                        rate_of_each_packing: to4Dec(product.rate_of_each_packing),
-                        commission_rate: to4Dec(product.commission_rate),
-                        tolerance: to2Dec(product.tolerance),
-                        product_value: to2Dec(product.product_value),
-                        total_packing_cost: to2Dec(product.total_packing_cost),
-                        total_commission: to2Dec(product.total_commission),
-                        logistic: to2Dec(product.logistic),
-                    }));
+                    const formattedProducts = (updatedProducts || []).map(product => {
+                        const canEditContractQty = product.can_edit_total_contract_qty !== undefined
+                            ? Boolean(product.can_edit_total_contract_qty)
+                            : !isTradeApproved;
 
-                    setIsContractBalanceQtyReadOnly(isTradeApproved);
+                        return {
+                            ...product,
+                            isContractReadOnly: !canEditContractQty,
+                            contract_qty_lock_reason: product.contract_qty_lock_reason || '',
+                            total_contract_qty: to4Dec(product.total_contract_qty),
+                            contract_balance_qty: to4Dec(product.contract_balance_qty),
+                            trade_qty: to4Dec(product.trade_qty),
+                            qty_of_packing: to4Dec(product.qty_of_packing),
+                            selected_currency_rate: to4Dec(product.selected_currency_rate),
+                            rate_in_usd: to4Dec(product.rate_in_usd),
+                            rate_of_each_packing: to4Dec(product.rate_of_each_packing),
+                            commission_rate: to4Dec(product.commission_rate),
+                            tolerance: to2Dec(product.tolerance),
+                            product_value: to2Dec(product.product_value),
+                            total_packing_cost: to2Dec(product.total_packing_cost),
+                            total_commission: to2Dec(product.total_commission),
+                            logistic: to2Dec(product.logistic),
+                        };
+                    });
+
+                    setIsContractBalanceQtyReadOnly(!formattedProducts.some(p => !p.isContractReadOnly));
 
                     setFormData(prevData => ({
                         ...prevData,
@@ -345,6 +353,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                 updatedProducts[index].total_contract_qty = data[0]?.total_contract_qty; // Example field
                                 updatedProducts[index].contract_balance_qty = data[0]?.contract_balance_qty; // Example field
                                 updatedProducts[index].isContractReadOnly = true;
+                                updatedProducts[index].contract_qty_lock_reason = "Cannot update Total Contract Qty: Another trade already exists for this product code.";
                             }
                             setIsContractBalanceQtyReadOnly(true);
                             return { ...prevState, tradeProducts: updatedProducts };
@@ -354,6 +363,7 @@ const TradeForm = ({ mode = 'add' }) => {
                             const updatedProducts = [...prevState.tradeProducts];
                             if (updatedProducts[index]) {
                                 updatedProducts[index].isContractReadOnly = false;
+                                updatedProducts[index].contract_qty_lock_reason = "";
                             }
                             return { ...prevState, tradeProducts: updatedProducts };
                         });
@@ -365,6 +375,7 @@ const TradeForm = ({ mode = 'add' }) => {
                         const updatedProducts = [...prevState.tradeProducts];
                         if (updatedProducts[index]) {
                             updatedProducts[index].isContractReadOnly = false;
+                            updatedProducts[index].contract_qty_lock_reason = "";
                         }
                         return { ...prevState, tradeProducts: updatedProducts };
                     });
@@ -667,6 +678,8 @@ const TradeForm = ({ mode = 'add' }) => {
             tradeProducts: [
                 ...prevState.tradeProducts,
                 {
+                    isContractReadOnly: false,
+                    contract_qty_lock_reason: '',
                     product_code: '',
                     product_name: '',
                     product_name_for_client: '',
@@ -696,7 +709,6 @@ const TradeForm = ({ mode = 'add' }) => {
                     container_shipment_size: '',
                     logistic: '',
                     logistic_remark: '',
-                    isContractReadOnly: false,
                 }
             ]
         }));
@@ -760,19 +772,32 @@ const TradeForm = ({ mode = 'add' }) => {
                 if (mode === 'add') {
                     await axios.post('/trademgt/trades/', formDataToSend, config);
                     localStorage.removeItem('tradeDraft');
+                    toast.success('Trade added successfully!');
                     navigate(-1);
                 } else if (mode === 'update') {
                     await axios.put(`/trademgt/trades/${id}/`, formDataToSend, config);
+                    toast.success('Trade updated successfully!');
                     navigate(-1);
                 }
             } catch (error) {
                 console.error('Error saving trade:', error);
+                let errorMsg = 'Error saving trade';
                 if (error.response && error.response.data) {
                     console.error('Validation errors:', error.response.data);
-                    alert('Validation errors: ' + JSON.stringify(error.response.data));
-                } else {
-                    alert('Error saving trade: ' + error.message);
+                    if (typeof error.response.data === 'string') {
+                        errorMsg = error.response.data;
+                    } else if (error.response.data.error) {
+                        errorMsg = error.response.data.error;
+                    } else if (error.response.data.detail) {
+                        errorMsg = error.response.data.detail;
+                    } else {
+                        errorMsg = JSON.stringify(error.response.data);
+                    }
+                } else if (error.message) {
+                    errorMsg = error.message;
                 }
+                toast.error(errorMsg, { autoClose: 6000 });
+                alert(errorMsg);
             } finally {
                 submittingRef.current = false; // unlock
             }
@@ -1539,9 +1564,17 @@ const TradeForm = ({ mode = 'add' }) => {
                                     value={product.total_contract_qty}
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     placeholder="Total Contract Qty"
-                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].total_contract_qty`)}`}
-                                    readOnly={Boolean(formData.approved) || (product.isContractReadOnly !== undefined ? Boolean(product.isContractReadOnly) : Boolean(isContractBalanceQtyReadOnly))}
+                                    className={`border border-gray-300 p-2 rounded w-full col-span-1 ${getFieldErrorClass(`tradeProducts[${index}].total_contract_qty`)} ${product.isContractReadOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                    readOnly={Boolean(product.isContractReadOnly)}
+                                    onClick={() => {
+                                        if (product.isContractReadOnly && product.contract_qty_lock_reason) {
+                                            toast.info(product.contract_qty_lock_reason);
+                                        }
+                                    }}
                                 />
+                                {product.isContractReadOnly && product.contract_qty_lock_reason && (
+                                    <p className="text-xs text-gray-500 mt-1">{product.contract_qty_lock_reason}</p>
+                                )}
                                 {validationErrors[`tradeProducts[${index}].total_contract_qty`] && (
                                     <p className="text-red-500">
                                         {validationErrors[`tradeProducts[${index}].total_contract_qty`]}

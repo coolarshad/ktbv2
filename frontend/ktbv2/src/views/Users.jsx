@@ -53,8 +53,13 @@ const Users = () => {
   }, []);
 
   const groupedPermissions = allPermissions.reduce((acc, perm) => {
-    const parts = perm.code.split('_');
-    const module = parts.slice(1).join('_');
+    let module;
+    if (perm.code.includes('kyc')) {
+      module = 'kyc';
+    } else {
+      const parts = perm.code.split('_');
+      module = parts.slice(1).join('_');
+    }
     if (!acc[module]) acc[module] = [];
     acc[module].push(perm);
     return acc;

@@ -11,6 +11,7 @@ from .serializers import *
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import action
 import pandas as pd
 from datetime import date
 from django.conf import settings
@@ -52,7 +53,7 @@ def get_serializer_context_cache(request):
     if not cached_data:
         cached_data = {
             'companies': {str(c.id): CompanySerializer(c).data for c in Company.objects.all()},
-            'kycs': {str(k.id): KycSerializer(k).data for k in Kyc.objects.prefetch_related('bank_details', 'notified_users').all()},
+            'kycs': {str(k.id): KycSerializer(k).data for k in Kyc.objects.prefetch_related('bank_details', 'documents', 'notified_users').all()},
             'banks': {str(b.id): BankSerializer(b).data for b in Bank.objects.all()},
             'currencies': {str(cu.id): CurrencySerializer(cu).data for cu in Currency.objects.all()},
             'payment_terms': {str(pt.id): PaymentTermSerializer(pt).data for pt in PaymentTerm.objects.all()},
@@ -89,7 +90,34 @@ class TradeView(APIView):
             trade_extra_costs_serializer = TradeExtraCostSerializer(trade_extra_costs, many=True)
 
             response_data = trade_serializer.data
-            response_data['tradeProducts'] = trade_products_serializer.data
+
+            # Check downstream constraints for total_contract_qty editing
+            has_pre_sp = PreSalePurchase.objects.filter(trn=trade).exists()
+            has_sp = SalesPurchase.objects.filter(trn=trade).exists()
+
+            products_data = list(trade_products_serializer.data)
+            for prod in products_data:
+                clean_code = (prod.get('product_code') or '').replace('\xa0', ' ').strip()
+                other_trades = TradeProduct.objects.filter(
+                    product_code=clean_code,
+                    trade__trade_type=trade.trade_type
+                ).exclude(trade=trade).select_related('trade')
+
+                if has_pre_sp:
+                    prod['can_edit_total_contract_qty'] = False
+                    prod['contract_qty_lock_reason'] = "Cannot update Total Contract Qty: A Pre-Sale/Purchase record already exists for this trade."
+                elif has_sp:
+                    prod['can_edit_total_contract_qty'] = False
+                    prod['contract_qty_lock_reason'] = "Cannot update Total Contract Qty: A Sales/Purchase record already exists for this trade."
+                elif other_trades.exists():
+                    other_trns = ", ".join(list(other_trades.values_list('trade__trn', flat=True).distinct()[:3]))
+                    prod['can_edit_total_contract_qty'] = False
+                    prod['contract_qty_lock_reason'] = f"Cannot update Total Contract Qty: Another trade ({other_trns}) already exists for this product code."
+                else:
+                    prod['can_edit_total_contract_qty'] = True
+                    prod['contract_qty_lock_reason'] = ""
+
+            response_data['tradeProducts'] = products_data
             response_data['tradeExtraCosts'] = trade_extra_costs_serializer.data
 
             return Response(response_data)
@@ -584,7 +612,7 @@ class TradeView(APIView):
 
             if trade_products_data:
                 existing_values = {
-                    tp.product_code: {
+                    (tp.product_code or '').replace('\xa0', ' ').strip(): {
                         "trade_qty": float(tp.trade_qty),
                         "tolerance": float(tp.tolerance),
                         "total_contract_qty": float(tp.total_contract_qty)
@@ -592,16 +620,51 @@ class TradeView(APIView):
                     for tp in TradeProduct.objects.filter(trade=trade)
                 }
 
+                # Check downstream constraints
+                has_pre_sp = PreSalePurchase.objects.filter(trn=trade).exists()
+                has_sp = SalesPurchase.objects.filter(trn=trade).exists()
+
+                # Validate whether total_contract_qty can be updated for any changed product
+                for item in trade_products_data:
+                    p_code = (item.get('product_code') or '').replace('\xa0', ' ').strip()
+                    previous = existing_values.get(p_code, {})
+
+                    if 'total_contract_qty' in previous and item.get('total_contract_qty') is not None:
+                        try:
+                            new_qty = round(float(item['total_contract_qty']), 4)
+                            prev_qty = round(float(previous['total_contract_qty']), 4)
+                        except (ValueError, TypeError):
+                            new_qty = prev_qty
+
+                        if new_qty != prev_qty:
+                            if has_pre_sp:
+                                return Response({
+                                    'error': f"Cannot update Total Contract Qty for product '{p_code}': A Pre-Sale/Purchase record already exists for this trade."
+                                }, status=status.HTTP_400_BAD_REQUEST)
+
+                            if has_sp:
+                                return Response({
+                                    'error': f"Cannot update Total Contract Qty for product '{p_code}': A Sales/Purchase record already exists for this trade."
+                                }, status=status.HTTP_400_BAD_REQUEST)
+
+                            other_trades = TradeProduct.objects.filter(
+                                product_code=p_code,
+                                trade__trade_type=trade.trade_type
+                            ).exclude(trade=trade).select_related('trade')
+                            if other_trades.exists():
+                                other_trns = ", ".join(list(other_trades.values_list('trade__trn', flat=True).distinct()[:3]))
+                                return Response({
+                                    'error': f"Cannot update Total Contract Qty for product '{p_code}': Another trade ({other_trns}) already exists for this product code."
+                                }, status=status.HTTP_400_BAD_REQUEST)
+
                 # Delete existing trade products
                 TradeProduct.objects.filter(trade=trade).delete()
                 
                 # Create new trade products with previous quantities
                 created_products = []
                 for item in trade_products_data:
-                    previous = existing_values.get(item.get('product_code'), {})
-                    # If trade is already approved, total_contract_qty cannot be changed
-                    if trade.approved and 'total_contract_qty' in previous:
-                        item['total_contract_qty'] = previous['total_contract_qty']
+                    p_code = (item.get('product_code') or '').replace('\xa0', ' ').strip()
+                    previous = existing_values.get(p_code, {})
 
                     trade_product = TradeProduct(**item, trade=trade)
                     # Set previous quantity and calculate old adjusted balance value if it existed
@@ -2590,8 +2653,12 @@ class PFReview(APIView):
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
 
+class KycDocumentViewSet(viewsets.ModelViewSet):
+    queryset = KycDocument.objects.all()
+    serializer_class = KycDocumentSerializer
+
 class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
-    queryset = Kyc.objects.all()
+    queryset = Kyc.objects.prefetch_related('bank_details', 'documents', 'notified_users').all()
     serializer_class = KycSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = KycFilter
@@ -2604,9 +2671,29 @@ class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
             notified_users = request.data.get('notified_users', [])
         return [int(x) for x in notified_users if str(x).strip().isdigit()]
 
+    def _save_uploaded_documents(self, kyc, request):
+        # 1. Indexed documents (documents[0].file, documents[0].name)
+        i = 0
+        while f'documents[{i}].file' in request.FILES or f'documents[{i}].name' in request.data:
+            doc_file = request.FILES.get(f'documents[{i}].file')
+            doc_name = (request.data.get(f'documents[{i}].name') or '').strip()
+            if doc_file:
+                if not doc_name:
+                    doc_name = doc_file.name
+                KycDocument.objects.create(kyc=kyc, name=doc_name, file=doc_file)
+            i += 1
+
+        # 2. List-style files ('files' or 'documents')
+        file_list = request.FILES.getlist('files') or request.FILES.getlist('documents')
+        name_list = request.data.getlist('document_names') if hasattr(request.data, 'getlist') else request.data.get('document_names', [])
+        for idx, doc_file in enumerate(file_list):
+            doc_name = name_list[idx].strip() if idx < len(name_list) and name_list[idx] else doc_file.name
+            KycDocument.objects.create(kyc=kyc, name=doc_name, file=doc_file)
+
     def perform_create(self, serializer):
         super().perform_create(serializer)
         kyc = serializer.instance
+        self._save_uploaded_documents(kyc, self.request)
         notified_user_ids = self._extract_notified_user_ids(self.request)
         if notified_user_ids:
             kyc.notified_users.set(notified_user_ids)
@@ -2630,6 +2717,7 @@ class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     def perform_update(self, serializer):
         super().perform_update(serializer)
         kyc = serializer.instance
+        self._save_uploaded_documents(kyc, self.request)
         notified_user_ids = self._extract_notified_user_ids(self.request)
         if notified_user_ids:
             kyc.notified_users.set(notified_user_ids)
@@ -2644,6 +2732,23 @@ class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
                 target_url="/kyc"
             )
 
+    @action(detail=True, methods=['post'], url_path='upload-documents')
+    def upload_documents(self, request, pk=None):
+        kyc = self.get_object()
+        self._save_uploaded_documents(kyc, request)
+        serializer = self.get_serializer(kyc)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['delete'], url_path='documents/(?P<doc_id>[^/.]+)')
+    def delete_document(self, request, pk=None, doc_id=None):
+        try:
+            kyc = self.get_object()
+            doc = kyc.documents.get(id=doc_id)
+            doc.delete()
+            return Response({'detail': 'Document deleted successfully.'}, status=status.HTTP_200_OK)
+        except KycDocument.DoesNotExist:
+            return Response({'detail': 'Document not found.'}, status=status.HTTP_404_NOT_FOUND)
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if Trade.objects.filter(customer_company_name=str(instance.id)).exists() or TradeProduct.objects.filter(packaging_supplier=str(instance.id)).exists():
@@ -2656,6 +2761,12 @@ class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
 
 class KycApproveOneView(APIView):
     def get(self, request, *args, **kwargs):
+        if not request.user or not request.user.is_authenticated:
+            return Response({'detail': 'Authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not (request.user.is_superuser or request.user.permissions.filter(code__in=['approve1_kyc', 'approve_kyc_1']).exists()):
+            return Response({'detail': 'You do not have permission to approve KYC Level 1.'}, status=status.HTTP_403_FORBIDDEN)
+
         kyc_id = kwargs.get('pk')
     
         if not kyc_id:
@@ -2701,6 +2812,12 @@ class KycApproveOneView(APIView):
 
 class KycApproveTwoView(APIView):
     def get(self, request, *args, **kwargs):
+        if not request.user or not request.user.is_authenticated:
+            return Response({'detail': 'Authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not (request.user.is_superuser or request.user.permissions.filter(code__in=['approve2_kyc', 'approve_kyc_2']).exists()):
+            return Response({'detail': 'You do not have permission to approve KYC Level 2.'}, status=status.HTTP_403_FORBIDDEN)
+
         kyc_id = kwargs.get('pk')
     
         if not kyc_id:
@@ -2866,7 +2983,34 @@ class PrintView(APIView):
             trade_extra_costs_serializer = TradeExtraCostSerializer(trade_extra_costs, many=True)
 
             response_data = trade_serializer.data
-            response_data['tradeProducts'] = trade_products_serializer.data
+
+            # Check downstream constraints for total_contract_qty editing
+            has_pre_sp = PreSalePurchase.objects.filter(trn=trade).exists()
+            has_sp = SalesPurchase.objects.filter(trn=trade).exists()
+
+            products_data = list(trade_products_serializer.data)
+            for prod in products_data:
+                clean_code = (prod.get('product_code') or '').replace('\xa0', ' ').strip()
+                other_trades = TradeProduct.objects.filter(
+                    product_code=clean_code,
+                    trade__trade_type=trade.trade_type
+                ).exclude(trade=trade).select_related('trade')
+
+                if has_pre_sp:
+                    prod['can_edit_total_contract_qty'] = False
+                    prod['contract_qty_lock_reason'] = "Cannot update Total Contract Qty: A Pre-Sale/Purchase record already exists for this trade."
+                elif has_sp:
+                    prod['can_edit_total_contract_qty'] = False
+                    prod['contract_qty_lock_reason'] = "Cannot update Total Contract Qty: A Sales/Purchase record already exists for this trade."
+                elif other_trades.exists():
+                    other_trns = ", ".join(list(other_trades.values_list('trade__trn', flat=True).distinct()[:3]))
+                    prod['can_edit_total_contract_qty'] = False
+                    prod['contract_qty_lock_reason'] = f"Cannot update Total Contract Qty: Another trade ({other_trns}) already exists for this product code."
+                else:
+                    prod['can_edit_total_contract_qty'] = True
+                    prod['contract_qty_lock_reason'] = ""
+
+            response_data['tradeProducts'] = products_data
             response_data['tradeExtraCosts'] = trade_extra_costs_serializer.data
 
             return Response(response_data)

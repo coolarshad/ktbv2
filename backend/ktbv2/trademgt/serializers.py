@@ -30,8 +30,14 @@ class KycBankDetailSerializer(serializers.ModelSerializer):
         model = KycBankDetail
         fields = ['id', 'banker', 'address', 'swiftCode', 'accountNumber']
 
+class KycDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KycDocument
+        fields = ['id', 'kyc', 'name', 'file', 'uploaded_at']
+
 class KycSerializer(serializers.ModelSerializer):
     bank_details = KycBankDetailSerializer(many=True)
+    documents = KycDocumentSerializer(many=True, read_only=True)
     notified_users_emails = serializers.SerializerMethodField()
 
     class Meta:
@@ -42,6 +48,21 @@ class KycSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'notified_users'):
             return list(obj.notified_users.values_list('email', flat=True))
         return []
+
+    def to_internal_value(self, data):
+        if hasattr(data, 'copy'):
+            data = data.copy()
+        else:
+            data = dict(data)
+
+        raw_bank_details = data.get('bank_details')
+        if isinstance(raw_bank_details, str):
+            import json
+            try:
+                data['bank_details'] = json.loads(raw_bank_details)
+            except Exception:
+                pass
+        return super().to_internal_value(data)
 
     def create(self, validated_data):
         bank_details_data = validated_data.pop('bank_details', [])

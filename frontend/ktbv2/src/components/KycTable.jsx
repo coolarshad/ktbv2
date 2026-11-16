@@ -88,7 +88,8 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
                     >
                       View
                     </button>
-                    {hasPermission(user, ['approve_kyc', 'aprove_kyc']) && (!item.approve1 || !item.approve2) && (
+                    {((!item.approve1 && hasPermission(user, ['approve1_kyc', 'approve_kyc_1'])) ||
+                      (!item.approve2 && hasPermission(user, ['approve2_kyc', 'approve_kyc_2']))) && (
                       <button
                         className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                         onClick={(e) => { e.stopPropagation(); onView(item.id); }}

@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useParams,useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import MultiUserSelector from '../components/MultiUserSelector';
+import { BASE_URL } from '../utils';
 
 const KycForm = ({ mode = 'add' }) => {
-  const { user } = useAuth();
+    const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
+    const fileInputRef = useRef(null);
+    const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
 
@@ -27,16 +30,14 @@ const KycForm = ({ mode = 'add' }) => {
         designation2: '',
         mobile2: '',
         email2: '',
-        // banker: '',
-        // address: '',
-        // swiftCode: '',
-        // accountNumber: '',
         bank_details: [
             { banker: '', address: '', swiftCode: '', accountNumber: '' }
         ],
         notifiedUsers: [],
         notification_message: ''
     });
+    const [existingDocuments, setExistingDocuments] = useState([]);
+    const [newDocuments, setNewDocuments] = useState([]);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
@@ -66,6 +67,7 @@ const KycForm = ({ mode = 'add' }) => {
                         notifiedUsers: Array.isArray(data.notified_users) ? data.notified_users : [],
                         notification_message: ''
                     });
+                    setExistingDocuments(Array.isArray(data.documents) ? data.documents : []);
                 })
                 .catch(error => {
                     console.error('Error fetching KYC data', error);
@@ -135,34 +137,101 @@ const KycForm = ({ mode = 'add' }) => {
         setFormData({ ...formData, bank_details: updated });
     };
 
+    const handleAddNewDocumentRow = () => {
+        setNewDocuments(prev => [...prev, { name: '', file: null }]);
+    };
+
+    const handleRemoveNewDocumentRow = (index) => {
+        setNewDocuments(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleNewDocumentChange = (index, field, value) => {
+        setNewDocuments(prev => {
+            const copy = [...prev];
+            copy[index] = { ...copy[index], [field]: value };
+            return copy;
+        });
+    };
+
+    const handleBulkFileSelect = (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            const rows = files.map(file => ({
+                name: file.name.replace(/\.[^/.]+$/, ''),
+                file: file
+            }));
+            setNewDocuments(prev => [...prev, ...rows]);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleDeleteExistingDocument = async (docId) => {
+        if (window.confirm('Are you sure you want to delete this document?')) {
+            try {
+                await axios.delete(`/trademgt/kyc-documents/${docId}/`);
+                setExistingDocuments(prev => prev.filter(doc => doc.id !== docId));
+            } catch (err) {
+                console.error('Failed to delete document', err);
+                alert('Failed to delete document. Please try again.');
+            }
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
         if (!validateForm()) {
             return;
-          }
-       
-      
-        const payload = {
-            ...formData,
-            notified_users: formData.notifiedUsers,
-            notifiedUsers: formData.notifiedUsers,
+        }
+
+        const formDataToSend = new FormData();
+
+        for (const [key, value] of Object.entries(formData)) {
+            if (key === 'bank_details') {
+                formDataToSend.append('bank_details', JSON.stringify(value));
+            } else if (key === 'notifiedUsers') {
+                value.forEach(uid => formDataToSend.append('notifiedUsers[]', uid));
+            } else {
+                formDataToSend.append(key, value ?? '');
+            }
+        }
+
+        // Append new documents
+        let docIndex = 0;
+        newDocuments.forEach((doc) => {
+            if (doc.file) {
+                formDataToSend.append(`documents[${docIndex}].file`, doc.file);
+                formDataToSend.append(`documents[${docIndex}].name`, (doc.name || doc.file.name).trim());
+                docIndex++;
+            }
+        });
+
+        const config = {
+            headers: { 'Content-Type': 'multipart/form-data' },
         };
 
         if (mode === 'add') {
-            axios.post('/trademgt/kyc/', payload)
+            axios.post('/trademgt/kyc/', formDataToSend, config)
                 .then(res => {
                     console.log('KYC added!', res.data);
                     navigate('/kyc');
                 })
-                .catch(err => console.error(err));
+                .catch(err => {
+                    console.error('Error adding KYC:', err);
+                    alert('Error creating KYC. Please check your inputs.');
+                });
         } else {
-            axios.put(`/trademgt/kyc/${id}/`, payload)
+            axios.put(`/trademgt/kyc/${id}/`, formDataToSend, config)
                 .then(res => {
                     console.log('KYC updated!', res.data);
                     navigate('/kyc');
                 })
-                .catch(err => console.error(err));
+                .catch(err => {
+                    console.error('Error updating KYC:', err);
+                    alert('Error updating KYC. Please check your inputs.');
+                });
         }
     };
 
@@ -438,6 +507,133 @@ const KycForm = ({ mode = 'add' }) => {
                 >
                     Add Bank
                 </button>
+            </div>
+
+            {/* KYC Documents Section */}
+            <div className="col-span-3 border border-gray-200 rounded-lg p-4 bg-white shadow-sm mb-4">
+                <div className="flex justify-between items-center mb-3">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-800">KYC Documents</h3>
+                        <p className="text-xs text-gray-500">
+                            Upload trade licenses, incorporation certificates, or other verification files. Backed up automatically to Google Drive.
+                        </p>
+                    </div>
+                    <label className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-2 rounded cursor-pointer shadow">
+                        <span>+ Select Multiple Files</span>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            onChange={handleBulkFileSelect}
+                            className="hidden"
+                        />
+                    </label>
+                </div>
+
+                {/* Existing Documents (Update mode) */}
+                {existingDocuments && existingDocuments.length > 0 && (
+                    <div className="mb-4 bg-gray-50 p-3 rounded border">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                            Saved Documents ({existingDocuments.length})
+                        </h4>
+                        <div className="divide-y divide-gray-200">
+                            {existingDocuments.map((doc, idx) => (
+                                <div key={doc.id || idx} className="py-2 flex justify-between items-center text-sm">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium text-gray-700">{doc.name || `Document #${idx + 1}`}</span>
+                                        {doc.uploaded_at && (
+                                            <span className="text-xs text-gray-400">
+                                                ({new Date(doc.uploaded_at).toLocaleDateString()})
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center space-x-3">
+                                        <a
+                                            href={doc.file?.startsWith('http') ? doc.file : `${BACKEND_URL}${doc.file?.startsWith('/') ? '' : '/'}${doc.file}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline text-xs font-semibold"
+                                        >
+                                            View File
+                                        </a>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeleteExistingDocument(doc.id)}
+                                            className="text-red-500 hover:text-red-700 text-xs font-medium"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* New Documents Queue */}
+                <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        {existingDocuments.length > 0 ? "Add More Documents" : "Upload Documents"}
+                    </h4>
+                    {newDocuments.length === 0 ? (
+                        <p className="text-xs text-gray-400 italic mb-2">
+                            No new documents selected. Click "+ Select Multiple Files" above or "+ Add Document Row" below.
+                        </p>
+                    ) : (
+                        <div className="space-y-3 mb-3">
+                            {newDocuments.map((doc, index) => (
+                                <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-3 bg-gray-50 border rounded items-center">
+                                    <div className="md:col-span-2">
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">Document Title / Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Trade License, Tax ID, Passport"
+                                            value={doc.name}
+                                            onChange={(e) => handleNewDocumentChange(index, 'name', e.target.value)}
+                                            className="border p-2 rounded w-full text-sm"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">Choose File</label>
+                                        <input
+                                            type="file"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0] || null;
+                                                handleNewDocumentChange(index, 'file', file);
+                                                if (file && !doc.name) {
+                                                    handleNewDocumentChange(index, 'name', file.name.replace(/\.[^/.]+$/, ''));
+                                                }
+                                            }}
+                                            className="text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        />
+                                        {doc.file && (
+                                            <span className="text-xs text-gray-500 block mt-1 truncate">
+                                                Selected: {doc.file.name}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="md:col-span-1 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveNewDocumentRow(index)}
+                                            className="text-red-500 hover:text-red-700 text-xs font-medium"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={handleAddNewDocumentRow}
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-medium px-3 py-2 rounded"
+                    >
+                        + Add Document Row
+                    </button>
+                </div>
             </div>
 
             <div className="col-span-3 p-4 bg-gray-50 border border-gray-200 rounded-lg mb-4">

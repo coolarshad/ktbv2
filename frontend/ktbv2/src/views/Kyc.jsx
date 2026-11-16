@@ -6,12 +6,13 @@ import FilterComponent from '../components/FilterComponent';
 import KycTable from '../components/KycTable';
 import Modal from '../components/Modal';
 import MultiUserSelector from '../components/MultiUserSelector';
-import { hasPermission } from '../utils';
+import { hasPermission, BASE_URL } from '../utils';
 import Loading from '../components/Loading';
+import { toast } from 'react-toastify';
 
 const Kyc = () => {
   const { user } = useAuth();
-
+  const BACKEND_URL = BASE_URL || "http://localhost:8000";
 
   const navigate = useNavigate();
   const [kycData, setKycData] = useState([]);
@@ -21,6 +22,7 @@ const Kyc = () => {
   const [selectedKyc, setSelectedKyc] = useState(null);
   const [notifiedUsers, setNotifiedUsers] = useState([]);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,6 +74,32 @@ const Kyc = () => {
     setNotificationMessage("");
   };
 
+  const handleModalFileUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !selectedKyc) return;
+
+    const formDataToSend = new FormData();
+    files.forEach((file, idx) => {
+      formDataToSend.append(`documents[${idx}].file`, file);
+      formDataToSend.append(`documents[${idx}].name`, file.name.replace(/\.[^/.]+$/, ''));
+    });
+
+    try {
+      setIsUploading(true);
+      const res = await axios.post(`/trademgt/kyc/${selectedKyc.id}/upload-documents/`, formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setSelectedKyc(res.data);
+      alert('Documents uploaded and backed up to Google Drive successfully!');
+    } catch (err) {
+      console.error('Failed to upload documents', err);
+      alert('Failed to upload documents.');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
 
   const handleFilter = (filters) => {
     setKycData(filters)
@@ -96,8 +124,10 @@ const Kyc = () => {
       // Reload the page
       window.location.reload();
     } catch (error) {
-      console.error('Error approving Kyc:', error);
-      // Optionally, handle the error (e.g., show a user-friendly error message)
+      console.error('Error approving Kyc Level 1:', error);
+      const msg = error.response?.data?.detail || 'Error approving KYC Level 1';
+      toast.error(msg);
+      alert(msg);
     }
   };
 
@@ -120,8 +150,10 @@ const Kyc = () => {
       // Reload the page
       window.location.reload();
     } catch (error) {
-      console.error('Error approving Kyc:', error);
-      // Optionally, handle the error (e.g., show a user-friendly error message)
+      console.error('Error approving Kyc Level 2:', error);
+      const msg = error.response?.data?.detail || 'Error approving KYC Level 2';
+      toast.error(msg);
+      alert(msg);
     }
   };
 
@@ -287,6 +319,52 @@ const Kyc = () => {
                       </tr>
                     )}
 
+                    <tr className="bg-gray-200 font-semibold">
+                      <td className="py-2 px-4" colSpan={2}>
+                        <div className="flex justify-between items-center">
+                          <span>KYC Documents</span>
+                          <label className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-normal px-2.5 py-1 rounded cursor-pointer shadow inline-flex items-center gap-1">
+                            <span>{isUploading ? 'Uploading...' : '+ Upload Document'}</span>
+                            <input
+                              type="file"
+                              multiple
+                              disabled={isUploading}
+                              onChange={handleModalFileUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                    {selectedKyc.documents && selectedKyc.documents.length > 0 ? (
+                      selectedKyc.documents.map((doc, index) => (
+                        <tr key={doc.id || index} className="border-b border-gray-200 bg-gray-50">
+                          <td className="py-2 px-4 font-medium capitalize">
+                            {doc.name || `Document #${index + 1}`}
+                          </td>
+                          <td className="py-2 px-4">
+                            <a
+                              href={doc.file?.startsWith('http') ? doc.file : `${BACKEND_URL}${doc.file?.startsWith('/') ? '' : '/'}${doc.file}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline font-medium"
+                            >
+                              View / Download
+                            </a>
+                            {doc.uploaded_at && (
+                              <span className="text-xs text-gray-400 ml-2">
+                                ({new Date(doc.uploaded_at).toLocaleDateString()})
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td className="py-2 px-4 text-gray-600" colSpan={2}>No documents uploaded yet</td>
+                      </tr>
+                    )}
+
                   </tbody>
                 </table>
 
@@ -304,7 +382,8 @@ const Kyc = () => {
                   )}
                 </div>
 
-                {(!selectedKyc.approve1 || !selectedKyc.approve2) && hasPermission(user, ['approve_kyc', 'aprove_kyc']) && (
+                {((!selectedKyc.approve1 && hasPermission(user, ['approve1_kyc', 'approve_kyc_1'])) ||
+                  (!selectedKyc.approve2 && hasPermission(user, ['approve2_kyc', 'approve_kyc_2']))) && (
                   <div className="mt-6 border-t pt-4">
                     <MultiUserSelector
                       selectedUsers={notifiedUsers}
@@ -315,14 +394,14 @@ const Kyc = () => {
                   </div>
                 )}
 
-                {hasPermission(user, ['approve_kyc', 'aprove_kyc']) && !selectedKyc.approve1 && (
+                {hasPermission(user, ['approve1_kyc', 'approve_kyc_1']) && !selectedKyc.approve1 && (
                   <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                     <button onClick={approveKycOne} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded col-span-3 font-semibold transition">
                       Approve 1
                     </button>
                   </div>
                 )}
-                {hasPermission(user, ['approve_kyc', 'aprove_kyc']) && !selectedKyc.approve2 && (
+                {hasPermission(user, ['approve2_kyc', 'approve_kyc_2']) && !selectedKyc.approve2 && (
                   <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
                     <button onClick={approveKycTwo} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded col-span-3 font-semibold transition">
                       Approve 2
