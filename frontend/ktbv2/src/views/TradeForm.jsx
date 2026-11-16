@@ -813,7 +813,16 @@ const TradeForm = ({ mode = 'add' }) => {
 
         console.log("Submitting formData:", formData);  // Debug here
         // Define fields to skip validation for
-        const skipValidation = ['loi', 'specs', 'relatedTrades', 'approved_by', 'ref_balance'];
+        const skipValidation = [
+            'loi',
+            'specs',
+            'relatedTrades',
+            'approved_by',
+            'ref_balance',
+            'contract_qty_lock_reason',
+            'isContractReadOnly',
+            'can_edit_total_contract_qty',
+        ];
 
         // Trade category validation rules
         const validCategories = {
