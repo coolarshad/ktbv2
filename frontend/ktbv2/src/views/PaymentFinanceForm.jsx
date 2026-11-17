@@ -501,7 +501,7 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             { label: 'Logistic Provider', text: data.trn.logistic_provider || '' },
             { label: 'Logistic Cost Due Date', text: data.logistic_cost_due_date || '' },
             { label: 'Commission Agent', text: data.trn.commission_agent },
-            { label: 'BL Fees', text: format2Dec(data.bl_fee) },
+            { label: 'BL Fees', text: format2Dec(data.bl_fees) },
             { label: 'BL Collection Cost', text: format2Dec(data.bl_collection_cost) },
             { label: 'Shipment Status', text: data.shipment_status || '' },
             { label: 'Commission Value', text: format2Dec(calculatePFCommissionValue(data)) },

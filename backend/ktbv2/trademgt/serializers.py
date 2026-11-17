@@ -36,7 +36,7 @@ class KycDocumentSerializer(serializers.ModelSerializer):
         fields = ['id', 'kyc', 'name', 'file', 'uploaded_at']
 
 class KycSerializer(serializers.ModelSerializer):
-    bank_details = KycBankDetailSerializer(many=True)
+    bank_details = KycBankDetailSerializer(many=True, required=False)
     documents = KycDocumentSerializer(many=True, read_only=True)
     notified_users_emails = serializers.SerializerMethodField()
 
@@ -50,7 +50,18 @@ class KycSerializer(serializers.ModelSerializer):
         return []
 
     def to_internal_value(self, data):
-        if hasattr(data, 'copy'):
+        if hasattr(data, 'getlist'):
+            # Convert QueryDict / MultiValueDict to a standard dict so DRF ListSerializer
+            # does not treat it as HTML multi-field list (which breaks JSON-stringified nested fields)
+            dict_data = {}
+            for key in data:
+                val = data.getlist(key)
+                if len(val) == 1:
+                    dict_data[key] = val[0]
+                else:
+                    dict_data[key] = val
+            data = dict_data
+        elif hasattr(data, 'copy'):
             data = data.copy()
         else:
             data = dict(data)
@@ -58,10 +69,31 @@ class KycSerializer(serializers.ModelSerializer):
         raw_bank_details = data.get('bank_details')
         if isinstance(raw_bank_details, str):
             import json
-            try:
-                data['bank_details'] = json.loads(raw_bank_details)
-            except Exception:
-                pass
+            stripped = raw_bank_details.strip()
+            if not stripped or stripped.lower() in ('null', 'none', 'undefined', '""', "''", '[]'):
+                data['bank_details'] = []
+            else:
+                try:
+                    parsed = json.loads(stripped)
+                    if isinstance(parsed, list):
+                        data['bank_details'] = [
+                            item for item in parsed
+                            if isinstance(item, dict) and any(str(item.get(k) or '').strip() for k in ('banker', 'address', 'swiftCode', 'accountNumber'))
+                        ]
+                    elif isinstance(parsed, dict):
+                        data['bank_details'] = [parsed]
+                    else:
+                        data['bank_details'] = []
+                except Exception:
+                    data['bank_details'] = []
+        elif raw_bank_details is None:
+            data['bank_details'] = []
+        elif isinstance(raw_bank_details, list):
+            data['bank_details'] = [
+                item for item in raw_bank_details
+                if isinstance(item, dict) and any(str(item.get(k) or '').strip() for k in ('banker', 'address', 'swiftCode', 'accountNumber'))
+            ]
+
         return super().to_internal_value(data)
 
     def create(self, validated_data):
@@ -75,6 +107,7 @@ class KycSerializer(serializers.ModelSerializer):
         return kyc
 
     def update(self, instance, validated_data):
+        has_bank_details = 'bank_details' in validated_data
         bank_details_data = validated_data.pop('bank_details', [])
         notified_users = validated_data.pop('notified_users', None)
         # update KYC fields
@@ -85,11 +118,11 @@ class KycSerializer(serializers.ModelSerializer):
         if notified_users is not None:
             instance.notified_users.set(notified_users)
 
-        # Optionally clear old bank details
-        instance.bank_details.all().delete()
-
-        for bank_detail in bank_details_data:
-            KycBankDetail.objects.create(kyc=instance, **bank_detail)
+        # Clear and recreate bank details if bank_details was supplied
+        if has_bank_details:
+            instance.bank_details.all().delete()
+            for bank_detail in bank_details_data:
+                KycBankDetail.objects.create(kyc=instance, **bank_detail)
 
         return instance
         

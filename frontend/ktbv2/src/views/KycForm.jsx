@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import MultiUserSelector from '../components/MultiUserSelector';
 import { BASE_URL } from '../utils';
+import { toast } from 'react-toastify';
 
 const KycForm = ({ mode = 'add' }) => {
     const { user } = useAuth();
@@ -172,9 +173,10 @@ const KycForm = ({ mode = 'add' }) => {
             try {
                 await axios.delete(`/trademgt/kyc-documents/${docId}/`);
                 setExistingDocuments(prev => prev.filter(doc => doc.id !== docId));
+                toast.success('Document deleted successfully.');
             } catch (err) {
                 console.error('Failed to delete document', err);
-                alert('Failed to delete document. Please try again.');
+                toast.error('Failed to delete document. Please try again.');
             }
         }
     };
@@ -216,21 +218,39 @@ const KycForm = ({ mode = 'add' }) => {
             axios.post('/trademgt/kyc/', formDataToSend, config)
                 .then(res => {
                     console.log('KYC added!', res.data);
+                    toast.success('KYC created successfully!');
                     navigate('/kyc');
                 })
                 .catch(err => {
                     console.error('Error adding KYC:', err);
-                    alert('Error creating KYC. Please check your inputs.');
+                    const errorData = err.response?.data;
+                    let errorMsg = 'Error creating KYC. Please check your inputs.';
+                    if (errorData && typeof errorData === 'object') {
+                        const msgs = Object.entries(errorData)
+                            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : (typeof errs === 'object' ? JSON.stringify(errs) : errs)}`)
+                            .join(' | ');
+                        if (msgs) errorMsg = msgs;
+                    }
+                    toast.error(errorMsg, { autoClose: 6000 });
                 });
         } else {
             axios.put(`/trademgt/kyc/${id}/`, formDataToSend, config)
                 .then(res => {
                     console.log('KYC updated!', res.data);
+                    toast.success('KYC updated successfully!');
                     navigate('/kyc');
                 })
                 .catch(err => {
                     console.error('Error updating KYC:', err);
-                    alert('Error updating KYC. Please check your inputs.');
+                    const errorData = err.response?.data;
+                    let errorMsg = 'Error updating KYC. Please check your inputs.';
+                    if (errorData && typeof errorData === 'object') {
+                        const msgs = Object.entries(errorData)
+                            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : (typeof errs === 'object' ? JSON.stringify(errs) : errs)}`)
+                            .join(' | ');
+                        if (msgs) errorMsg = msgs;
+                    }
+                    toast.error(errorMsg, { autoClose: 6000 });
                 });
         }
     };

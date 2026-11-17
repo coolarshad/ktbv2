@@ -10,7 +10,7 @@ from .models import *
 from .serializers import *
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import action
 import pandas as pd
 from datetime import date
@@ -2660,6 +2660,7 @@ class KycDocumentViewSet(viewsets.ModelViewSet):
 class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
     queryset = Kyc.objects.prefetch_related('bank_details', 'documents', 'notified_users').all()
     serializer_class = KycSerializer
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     filter_backends = [DjangoFilterBackend]
     filterset_class = KycFilter
 
@@ -2691,7 +2692,11 @@ class KycViewSet(HierarchicalSecurityMixin, viewsets.ModelViewSet):
             KycDocument.objects.create(kyc=kyc, name=doc_name, file=doc_file)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        user = self.request.user if hasattr(self.request, 'user') and self.request.user.is_authenticated else None
+        if user and not serializer.validated_data.get('created_by'):
+            serializer.save(created_by=user)
+        else:
+            serializer.save()
         kyc = serializer.instance
         self._save_uploaded_documents(kyc, self.request)
         notified_user_ids = self._extract_notified_user_ids(self.request)

@@ -245,13 +245,13 @@ function PL() {
   const calculateSTotal = (pf) => {
     if (!pf || !pf.sp) return 0; // Handle undefined or null SP
     return parseFloat(
-      (sumPackingCost(pf.sp) || 0) +
-      (calculateTotalCommission(pf.sp.sp_product, pf.sp, findTrade) || 0) +
+      // (sumPackingCost(pf.sp) || 0) +
+      (calculateTotalCommission(pf.sp.sp_product, pf.sp, findTrade) || 0)
       // (parseFloat(pf.sp.bl_fees) || 0) +
       // (parseFloat(pf.sp.bl_collection_cost) || 0) +
-      (sumOtherCharges(pf.sp) || 0) +
-      (parseFloat(pf.sp.logistic_cost) || 0) +
-      (sumPFCharges(pf) || 0)
+      // (sumOtherCharges(pf.sp) || 0) +
+      // (parseFloat(pf.sp.logistic_cost) || 0) +
+      // (sumPFCharges(pf) || 0)
     );
   };
    const calculatePTotal = (pf) => {
@@ -404,11 +404,17 @@ function PL() {
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Provider</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp?.trn?.logistic_provider}</td>
                       </tr>
-                      <tr>
+                      {/* <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.salesPF?.sp).toFixed(2)}</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">{sumLogistic(selectedPL.purchasePF?.sp).toFixed(2)}</td>
+                      </tr> */}
+                      <tr>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.salesPF?.sp.logistic_cost.toFixed(2)}</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">Logistic Cost</td>
+                        <td className="py-2 px-4 border-t text-sm border-gray-200">{selectedPL.purchasePF?.sp.logistic_cost.toFixed(2)}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-t text-sm border-gray-200">Total Packing cost(Sum)</td>
