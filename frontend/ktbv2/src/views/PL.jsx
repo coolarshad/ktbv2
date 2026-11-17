@@ -245,13 +245,13 @@ function PL() {
   const calculateSTotal = (pf) => {
     if (!pf || !pf.sp) return 0; // Handle undefined or null SP
     return parseFloat(
-      // (sumPackingCost(pf.sp) || 0) +
-      (calculateTotalCommission(pf.sp.sp_product, pf.sp, findTrade) || 0)
+      (sumPackingCost(pf.sp) || 0) +
+      (calculateTotalCommission(pf.sp.sp_product, pf.sp, findTrade) || 0)+
       // (parseFloat(pf.sp.bl_fees) || 0) +
       // (parseFloat(pf.sp.bl_collection_cost) || 0) +
-      // (sumOtherCharges(pf.sp) || 0) +
+      (sumOtherCharges(pf.sp) || 0) +
       // (parseFloat(pf.sp.logistic_cost) || 0) +
-      // (sumPFCharges(pf) || 0)
+      (sumPFCharges(pf) || 0)
     );
   };
    const calculatePTotal = (pf) => {
