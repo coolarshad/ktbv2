@@ -88,16 +88,6 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
                     >
                       View
                     </button>
-                    {((!item.approve1 && hasPermission(user, ['approve1_kyc', 'approve_kyc_1'])) ||
-                      (!item.approve2 && hasPermission(user, ['approve2_kyc', 'approve_kyc_2']))) && (
-                      <button
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
-                        onClick={(e) => { e.stopPropagation(); onView(item.id); }}
-                        title="Open to approve"
-                      >
-                        Approve
-                      </button>
-                    )}
                     {hasPermission(user, 'update_kyc') && (
                       <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded" onClick={() => handleEdit(item.id)}>Edit</button>
                     )}

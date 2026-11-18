@@ -282,11 +282,31 @@ const Kyc = () => {
                   </tr> */}
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 1</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedKyc.approve1 ? "Yes" : "No"}</td>
+                      <td className="py-2 px-4 text-gray-800">
+                        {selectedKyc.approve1 ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">
+                            ✓ Approved
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                            Pending Approval
+                          </span>
+                        )}
+                      </td>
                     </tr>
                     <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Approve 2</td>
-                      <td className="py-2 px-4 text-gray-800">{selectedKyc.approve2 ? "Yes" : "No"}</td>
+                      <td className="py-2 px-4 text-gray-800">
+                        {selectedKyc.approve2 ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">
+                            ✓ Approved
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                            Pending Approval
+                          </span>
+                        )}
+                      </td>
                     </tr>
 
                     <tr className="bg-gray-200 font-semibold">
@@ -394,24 +414,28 @@ const Kyc = () => {
                   </div>
                 )}
 
-                {hasPermission(user, ['approve1_kyc', 'approve_kyc_1']) && !selectedKyc.approve1 && (
-                  <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                    <button onClick={approveKycOne} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded col-span-3 font-semibold transition">
-                      Approve 1
+                <div className="flex flex-wrap gap-4 mt-4 mb-4">
+                  {hasPermission(user, ['approve1_kyc', 'approve_kyc_1']) && !selectedKyc.approve1 && (
+                    <button
+                      onClick={approveKycOne}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded font-semibold transition shadow flex items-center gap-2"
+                    >
+                      ✓ Approve KYC 1
                     </button>
-                  </div>
-                )}
-                {hasPermission(user, ['approve2_kyc', 'approve_kyc_2']) && !selectedKyc.approve2 && (
-                  <div className='grid grid-cols-3 gap-4 mt-4 mb-4'>
-                    <button onClick={approveKycTwo} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded col-span-3 font-semibold transition">
-                      Approve 2
+                  )}
+                  {hasPermission(user, ['approve2_kyc', 'approve_kyc_2']) && !selectedKyc.approve2 && (
+                    <button
+                      onClick={approveKycTwo}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded font-semibold transition shadow flex items-center gap-2"
+                    >
+                      ✓ Approve KYC 2
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {selectedKyc.approve1 && selectedKyc.approve2 && (
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded text-center font-medium">
-                    Fully Approved (Approve 1 & Approve 2)
+                    ✓ Fully Approved (KYC 1 & KYC 2 Approved)
                   </div>
                 )}
 
