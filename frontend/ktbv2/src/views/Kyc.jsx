@@ -169,20 +169,27 @@ const Kyc = () => {
 
   return (
     <>
-      <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">KYC</p>
-        {hasPermission(user, 'create_kyc') && (
-          <button
-            onClick={handleAddKycClick}
-            className="bg-blue-500 text-white px-3 py-1 rounded"
-          >
-            +
-          </button>
-        )}
-        <div>
-          <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/kyc'} fieldOptions={fieldOptions} downloadUrl="/excel/export/kyc/" fileName="KYC_export" />
+      <div className="w-full h-full rounded bg-slate-200 p-3 flex flex-col">
+        <div className="sticky top-0 z-20 bg-slate-200 pt-1 pb-1">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-gray-800">KYC</h1>
+              {hasPermission(user, 'create_kyc') && (
+                <button
+                  onClick={handleAddKycClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-7 h-7 rounded-md font-bold flex items-center justify-center transition shadow-sm text-base leading-none"
+                  title="Create New KYC"
+                >
+                  +
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <FilterComponent checkBtn={false} flag={2} onFilter={handleFilter} apiEndpoint={'/trademgt/kyc'} fieldOptions={fieldOptions} downloadUrl="/excel/export/kyc/" fileName="KYC_export" />
+          </div>
         </div>
-        <div className=" rounded p-2">
+        <div className="rounded py-1 flex-1">
           <KycTable data={kycData} onDelete={handleDelete} onView={handleViewClick} />
         </div>
       </div>

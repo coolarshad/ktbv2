@@ -157,24 +157,33 @@ function PaymentFinance() {
 
   return (
     <>
-      <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">Payment and Finance Details</p>
-        {hasPermission(user, 'create_payment_finance') && (
-<button
-          onClick={handleAddPreSPClick}
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-        >
-          +
-        </button>
-)}
-        <div>
-        <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/payment-finances/'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/pf/" fileName="Payment_Finance_export" statusField="reviewed" currentPage={currentPage}
-        />
+      <div className="w-full h-full rounded bg-slate-200 p-3 flex flex-col">
+        <div className="sticky top-0 z-20 bg-slate-200 pt-1 pb-1">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-gray-800">Payment and Finance Details</h1>
+              {hasPermission(user, 'create_payment_finance') && (
+                <button
+                  onClick={handleAddPreSPClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-7 h-7 rounded-md font-bold flex items-center justify-center transition shadow-sm text-base leading-none"
+                  title="Create New Payment/Finance"
+                >
+                  +
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/payment-finances/'} 
+              fieldOptions={fieldOptions} downloadUrl="/excel/export/pf/" fileName="Payment_Finance_export" statusField="reviewed" currentPage={currentPage}
+            />
+          </div>
         </div>
-        <div className=" rounded p-2">
-        <PFTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="payment_finance" />
-        <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+        <div className="rounded py-1 flex-1">
+          <PFTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="payment_finance" />
+          <div className="mt-2">
+            <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+          </div>
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

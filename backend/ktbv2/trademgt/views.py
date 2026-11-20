@@ -2358,8 +2358,8 @@ class PaymentFinanceView(APIView):
             # 'bl_fee': data.get('bl_fee'),
             # 'bl_collection_cost': data.get('bl_collection_cost'),
             # 'shipment_status': data.get('shipment_status'),
-            'release_docs': data.get('release_docs'),
-            'release_docs_date': data.get('release_docs_date'),
+            'release_docs': 'NA',
+            'release_docs_date': 'NA',
             'remarks': data.get('remarks'),
             'date': data.get('date'),
         }

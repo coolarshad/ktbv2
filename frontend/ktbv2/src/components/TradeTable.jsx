@@ -59,34 +59,34 @@ const TradeTable = ({ data, onDelete, onView, onRowClick, basePerm }) => {
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
-          <thead>
+      <div className="overflow-auto max-h-[calc(100vh-270px)] min-h-[350px] bg-white rounded-lg border border-gray-200 shadow-sm relative">
+        <table className="min-w-full bg-white border-collapse">
+          <thead className="sticky top-0 z-30 bg-gray-100 shadow-sm">
             <tr>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
-              <th className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[95px] max-w-[95px] w-[95px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
-              <th className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[155px] z-30 bg-gray-100 min-w-[115px] max-w-[115px] w-[115px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
-              {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[270px] z-30 bg-gray-100 min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">Company</th> */}
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium min-w-[220px] whitespace-nowrap">Buyer/Seller Name</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Name</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Product Code</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Rate</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Ref Date</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Approved Date</th>
-              {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Contract Value</th> */}
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Trade Qty</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approved</th>
-              <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 left-0 z-40 bg-gray-200 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
+              <th className="py-2.5 px-2 border-b border-gray-300 text-sm font-semibold sticky top-0 left-[60px] z-40 bg-gray-200 min-w-[95px] max-w-[95px] w-[95px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
+              <th className="py-2.5 px-2 border-b border-gray-300 text-sm font-semibold sticky top-0 left-[155px] z-40 bg-gray-200 min-w-[115px] max-w-[115px] w-[115px] whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-300">TRN</th>
+              {/* <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 left-[270px] z-40 bg-gray-200 min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">Company</th> */}
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 min-w-[220px] whitespace-nowrap">Buyer/Seller Name</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Product Name</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Product Code</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Rate</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Trade Ref Date</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Trade Approved Date</th>
+              {/* <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Contract Value</th> */}
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Trade Qty</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Reviewed</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Approved</th>
+              <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Status</th>
             </tr>
           </thead>
           <tbody>
             {flattenedData && flattenedData.length > 0 ? (
               flattenedData.map((row, index) => (
-                <tr key={index} onClick={() => onRowClick(row.trade.id)}>
+                <tr key={index} onClick={() => onRowClick(row.trade.id)} className="hover:bg-gray-50 transition-colors cursor-pointer">
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">{row.trade.id}</td>
                   <td className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[95px] max-w-[95px] w-[95px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trade_type}>{row.trade.trade_type}</td>
-                  <td className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[155px] z-10 bg-white min-w-[115px] max-w-[115px] w-[115px] whitespace-nowrap overflow-hidden text-ellipsis" title={row.trade.trn}>{row.trade.trn}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm font-medium sticky left-[155px] z-10 bg-white min-w-[115px] max-w-[115px] w-[115px] whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-300" title={row.trade.trn}>{row.trade.trn}</td>
                   {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[270px] z-10 bg-white min-w-[220px] max-w-[220px] w-[220px] whitespace-normal break-words">{row.trade.companyName?.name || '-'}</td> */}
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium min-w-[220px] whitespace-normal break-words">{row.trade.customer?.name || '-'}</td>
                   <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{row.productName?.name || row.product_name || '-'}</td>

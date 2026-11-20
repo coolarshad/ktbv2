@@ -113,17 +113,23 @@ function TradeApproved() {
 
   return (
     <>
-      <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">Trade Approved</p>
-        <div>
-          <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades'} fieldOptions={[
-            { value: 'trn', label: 'TRN' },
-            { value: 'company', label: 'Company' },
-          ]} extraParams={{ pending: false }} downloadUrl="/excel/export/trade/" fileName="Trade_Approved_export" showPendingFilter={true} currentPage={currentPage} />
+      <div className="w-full h-full rounded bg-slate-200 p-3 flex flex-col">
+        <div className="sticky top-0 z-20 bg-slate-200 pt-1 pb-1">
+          <div className="flex items-center justify-between mb-1">
+            <h1 className="text-xl font-bold text-gray-800">Trade Approved</h1>
+          </div>
+          <div>
+            <FilterComponent flag={1} onFilter={handleFilter} apiEndpoint={'/trademgt/trades'} fieldOptions={[
+              { value: 'trn', label: 'TRN' },
+              { value: 'company', label: 'Company' },
+            ]} extraParams={{ pending: false }} downloadUrl="/excel/export/trade/" fileName="Trade_Approved_export" showPendingFilter={true} currentPage={currentPage} />
+          </div>
         </div>
-        <div className=" rounded p-2">
+        <div className="rounded py-1 flex-1">
           <TradeTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} onRowClick={handleRowClick} basePerm="trade_approved" />
-          <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+          <div className="mt-2">
+            <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+          </div>
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={closeModal}>

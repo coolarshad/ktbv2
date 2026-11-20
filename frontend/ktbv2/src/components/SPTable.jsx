@@ -18,28 +18,27 @@ const SPTable = ({ data, onDelete, onView, basePerm }) => {
        }, [data]);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white">
-        <thead>
+    <div className="overflow-auto max-h-[calc(100vh-270px)] min-h-[350px] bg-white rounded-lg border border-gray-200 shadow-sm relative">
+      <table className="min-w-full bg-white border-collapse">
+        <thead className="sticky top-0 z-30 bg-gray-100 shadow-sm">
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-30 bg-gray-100 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-30 bg-gray-100 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[380px] z-30 bg-gray-100 min-w-[140px] max-w-[140px] w-[140px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">Invoice Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Buyer/Seller Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Number</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Invoice Amount</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Number</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">BL Date</th>
-          
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reviewed</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 left-0 z-40 bg-gray-200 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">ID</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 left-[60px] z-40 bg-gray-200 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">TRN</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 left-[220px] z-40 bg-gray-200 min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis">Trade Type</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 left-[380px] z-40 bg-gray-200 min-w-[140px] max-w-[140px] w-[140px] border-r border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">Invoice Date</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Buyer/Seller Name</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Invoice Number</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Invoice Amount</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">BL Number</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">BL Date</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Reviewed</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Status</th>
           </tr>
         </thead>
         <tbody>
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
-              <tr key={index}>
+              <tr key={index} className="hover:bg-gray-50 transition-colors">
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[60px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trn}>{item.trn?.trn}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-[220px] z-10 bg-white min-w-[160px] max-w-[160px] w-[160px] whitespace-nowrap overflow-hidden text-ellipsis" title={item.trn?.trade_type}>{item.trn?.trade_type}</td>

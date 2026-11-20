@@ -16,23 +16,23 @@ const PLTable = ({ data, onDelete, onView, basePerm }) => {
            }, [data]);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-auto max-h-[calc(100vh-270px)] min-h-[350px] bg-white rounded-lg border border-gray-200 shadow-sm relative">
       <table className="min-w-full bg-white">
-        <thead>
+        <thead className="sticky top-0 z-30 bg-gray-100 shadow-sm">
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">ID</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Sales TRN & ID</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Purchase TRN & ID</th>
+            <th className="sticky top-0 z-30 bg-gray-100 py-2 px-4 border-b border-gray-300 text-sm font-medium whitespace-nowrap">ID</th>
+            <th className="sticky top-0 z-30 bg-gray-100 py-2 px-4 border-b border-gray-300 text-sm font-medium whitespace-nowrap">Sales TRN & ID</th>
+            <th className="sticky top-0 z-30 bg-gray-100 py-2 px-4 border-b border-gray-300 text-sm font-medium whitespace-nowrap">Purchase TRN & ID</th>
       
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Remarks</th>
+            <th className="sticky top-0 z-30 bg-gray-100 py-2 px-4 border-b border-gray-300 text-sm font-medium whitespace-nowrap">Remarks</th>
             
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
+            <th className="sticky top-0 z-30 bg-gray-100 py-2 px-4 border-b border-gray-300 text-sm font-medium whitespace-nowrap">Status</th>
           </tr>
         </thead>
         <tbody>
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
-              <tr key={index}>
+              <tr key={index} className="hover:bg-gray-50">
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.id}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.salesPF?.sp?.trn?.trn} ({item?.salesPF?.sp?.id})</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item?.purchasePF?.sp?.trn?.trn} ({item?.purchasePF?.sp?.id})</td>

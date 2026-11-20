@@ -299,19 +299,21 @@ function PL() {
     <>
 
       <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">P&L Account Details</p>
-        {hasPermission(user, 'create_pl') && (
-          <button
-            onClick={handleAddPLClick}
-            className="bg-blue-500 text-white px-3 py-1 rounded"
-          >
-            +
-          </button>
-        )}
-        <div>
-          <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/profitloss'}
-            fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/" fileName="Profit_Loss_export" currentPage={currentPage}
-          />
+        <div className="sticky top-0 z-20 bg-slate-200 pt-1 pb-1">
+          <p className="text-xl">P&L Account Details</p>
+          {hasPermission(user, 'create_pl') && (
+            <button
+              onClick={handleAddPLClick}
+              className="bg-blue-500 text-white px-3 py-1 rounded"
+            >
+              +
+            </button>
+          )}
+          <div>
+            <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/profitloss'}
+              fieldOptions={fieldOptions} downloadUrl="/excel/export/pl/" fileName="Profit_Loss_export" currentPage={currentPage}
+            />
+          </div>
         </div>
         <div className=" rounded p-2">
 

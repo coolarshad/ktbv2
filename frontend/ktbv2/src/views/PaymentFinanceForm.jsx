@@ -182,6 +182,10 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
     const handleChange = async (e, section, index) => {
         const { name, value, files } = e.target;
 
+        if (mode === 'add' && (name === 'release_docs' || name === 'release_docs_date')) {
+            return;
+        }
+
         if (section) {
             // Update the specific section
             const updatedSection = formData[section].map((item, i) =>
@@ -462,6 +466,11 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
             }
         }
 
+        if (mode === 'add') {
+            formDataToSend.set('release_docs', 'NA');
+            formDataToSend.set('release_docs_date', 'NA');
+        }
+
         const config = {
             headers: { 'Content-Type': 'multipart/form-data' },
         };
@@ -718,9 +727,9 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         value={formData.release_docs ? { value: formData.release_docs, label: formData.release_docs } : { value: 'NA', label: 'NA' }}
                         onChange={(selectedOption) => handleChange({ target: { name: 'release_docs', value: selectedOption ? selectedOption.value : 'NA' } })}
                         placeholder="Select ---"
-                        isSearchable
+                        isSearchable={mode !== 'add'}
                         isClearable={false}
-                        isDisabled={data?.trn.trade_type === "Purchase"}
+                        isDisabled={mode === 'add' || data?.trn?.trade_type === "Purchase"}
                         className="w-full col-span-1"
                     />
                     {validationErrors.release_docs && <p className="text-red-500">{validationErrors.release_docs}</p>}
@@ -734,12 +743,13 @@ const PaymentFinanceForm = ({ mode = 'add' }) => {
                         fieldName="release_docs_date"
                         label="Release Docs Date"
                         block={
+                            mode === 'add' ||
                             data?.trn?.trade_type === "Purchase" ||
                             formData?.release_docs === 'NA' ||
                             !formData?.release_docs
                         }
                     />
-                    {['do not release the bl', 'do not release document'].includes((formData?.release_docs || '').toLowerCase()) && (
+                    {mode === 'update' && ['do not release the bl', 'do not release document'].includes((formData?.release_docs || '').toLowerCase()) && (
                         <div className="flex justify-end mt-1">
                             <button
                                 type="button"

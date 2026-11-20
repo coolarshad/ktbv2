@@ -18,40 +18,36 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
 
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white">
-        <thead>
+    <div className="overflow-auto max-h-[calc(100vh-270px)] min-h-[350px] bg-white rounded-lg border border-gray-200 shadow-sm relative">
+      <table className="min-w-full bg-white border-collapse">
+        <thead className="sticky top-0 z-30 bg-gray-100 shadow-sm">
           <tr>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">S.N</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Date</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Name</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Company Reg No</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Reg. Address</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Mailing Address</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Telephone</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Fax</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Person 1</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Designation 1</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Mobile 1</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Email 1</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Person 2</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Designation 2</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Mobile 2</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Email 2</th>
-            {/* <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Banker</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Address</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Swift Code</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Account Number</th> */}
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve 1</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Approve 2</th>
-            <th className="py-2 px-4 border-b border-gray-200 text-sm font-medium">Status</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 left-0 z-40 bg-gray-200 min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap border-r border-gray-300">S.N</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Date</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Name</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Company Reg No</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Reg. Address</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Mailing Address</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Telephone</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Fax</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Person 1</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Designation 1</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Mobile 1</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Email 1</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Person 2</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Designation 2</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Mobile 2</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Email 2</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Approve 1</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Approve 2</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Status</th>
           </tr>
         </thead>
         <tbody>
           {sortedData && sortedData.length > 0 ? (
             sortedData.map((item, index) => (
-              <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{index + 1}</td>
+              <tr key={index} className="hover:bg-gray-50 transition-colors">
+                <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium sticky left-0 z-10 bg-white min-w-[60px] max-w-[60px] w-[60px] whitespace-nowrap border-r border-gray-300">{index + 1}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.date}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.name}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.companyRegNo}</td>

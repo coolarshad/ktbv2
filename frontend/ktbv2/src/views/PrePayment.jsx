@@ -154,19 +154,21 @@ function PrePayment() {
   return (
     <>
       <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">Pre-Payments/ LC's Details</p>
-        {hasPermission(user, 'create_pre_payment') && (
-<button
-          onClick={handleAddPreSPClick}
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-        >
-          +
-        </button>
-)}
-        <div>
-        <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-payments'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" fileName="Pre_Payment_export" showPendingFilter={true} statusField="reviewed" currentPage={currentPage}
-        />
+        <div className="sticky top-0 z-20 bg-slate-200 pt-1 pb-1">
+          <p className="text-xl">Pre-Payments/ LC's Details</p>
+          {hasPermission(user, 'create_pre_payment') && (
+            <button
+              onClick={handleAddPreSPClick}
+              className="bg-blue-500 text-white px-3 py-1 rounded"
+            >
+              +
+            </button>
+          )}
+          <div>
+            <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-payments'} 
+              fieldOptions={fieldOptions} downloadUrl="/excel/export/prepay/" fileName="Pre_Payment_export" showPendingFilter={true} statusField="reviewed" currentPage={currentPage}
+            />
+          </div>
         </div>
         <div className=" rounded p-2">
         <PrePaymentTable data={currentItems} onDelete={handleDelete} onView={handleViewClick} basePerm="pre_payment" />

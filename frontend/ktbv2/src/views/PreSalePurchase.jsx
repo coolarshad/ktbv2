@@ -99,31 +99,36 @@ function PreSalePurchase() {
   
   return (
     <>
-    
-      <div className="w-full h-full rounded bg-slate-200  p-3	">
-        <p className="text-xl">Pre Sales/Purchase</p>
-        {hasPermission(user, 'create_pre_sale_purchase') && (
-<button
-          onClick={handleAddPreSPClick}
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-        >
-          +
-        </button>
-)}
-        <div>
-        <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-sales-purchases'} 
-        fieldOptions={fieldOptions} downloadUrl="/excel/export/presp/" fileName="Pre_Sale_Purchase_export" showPendingFilter={true} statusField="approved" currentPage={currentPage}
-        />
+      <div className="w-full h-full rounded bg-slate-200 p-3 flex flex-col">
+        <div className="sticky top-0 z-20 bg-slate-200 pt-1 pb-1">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-gray-800">Pre Sales/Purchase</h1>
+              {hasPermission(user, 'create_pre_sale_purchase') && (
+                <button
+                  onClick={handleAddPreSPClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-7 h-7 rounded-md font-bold flex items-center justify-center transition shadow-sm text-base leading-none"
+                  title="Create New Pre Sale/Purchase"
+                >
+                  +
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <FilterComponent onFilter={handleFilter} apiEndpoint={'/trademgt/pre-sales-purchases'} 
+              fieldOptions={fieldOptions} downloadUrl="/excel/export/presp/" fileName="Pre_Sale_Purchase_export" showPendingFilter={true} statusField="approved" currentPage={currentPage}
+            />
+          </div>
         </div>
-        <div className=" rounded p-2">
-
-        <PreSPTable data={currentItems} onDelete={handleDelete} basePerm="pre_sale_purchase" />
-        <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+        <div className="rounded py-1 flex-1">
+          <PreSPTable data={currentItems} onDelete={handleDelete} basePerm="pre_sale_purchase" />
+          <div className="mt-2">
+            <Pagination itemsPerPage={15} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+          </div>
         </div>
       </div>
-
     </>
-
   )
 }
 
