@@ -48,6 +48,7 @@ def get_or_create_folder(service, folder_name, parent_id):
         spaces='drive',
         corpora='allDrives',
         fields='files(id, name)',
+        orderBy='createdTime',  # always reuse the oldest folder if duplicates exist
         pageSize=1,
         supportsAllDrives=True,
         includeItemsFromAllDrives=True
@@ -138,3 +139,52 @@ def upload_file_to_drive(local_file_path, destination_filename=None, subfolder_n
     except Exception as e:
         logger.error(f"[GDrive] Failed to upload '{local_file_path}' to Google Drive: {e}", exc_info=True)
         raise e
+
+
+FOLDER_MIME = 'application/vnd.google-apps.folder'
+
+
+def list_children(service, parent_ids, extra_q=''):
+    """List non-trashed children of one or more Drive folders (handles paging)."""
+    parent_ids = list(parent_ids)
+    out = []
+    for i in range(0, len(parent_ids), 40):  # keep query length sane
+        chunk = parent_ids[i:i + 40]
+        q = '(' + ' or '.join(f"'{p}' in parents" for p in chunk) + ') and trashed = false' + extra_q
+        token = None
+        while True:
+            resp = service.files().list(
+                q=q, corpora='allDrives', includeItemsFromAllDrives=True, supportsAllDrives=True,
+                fields='nextPageToken, files(id, name, mimeType, size, md5Checksum, modifiedTime, createdTime, parents)',
+                pageSize=1000, pageToken=token,
+            ).execute()
+            out.extend(resp.get('files', []))
+            token = resp.get('nextPageToken')
+            if not token:
+                break
+    return out
+
+
+def folders_named(service, parent_id, name):
+    """All folders called `name` directly under parent_id. Concurrent uploads have created
+    duplicate folders with the same name, so callers should treat them as one."""
+    return [f for f in list_children(service, [parent_id], f" and mimeType = '{FOLDER_MIME}'")
+            if f['name'] == name]
+
+
+def index_tree(service, folder_ids, prefix, files_out):
+    """Breadth-first walk of Drive folders, merging same-named duplicates.
+    Fills files_out[relative/path] -> list of Drive file dicts."""
+    level = {fid: prefix for fid in folder_ids}
+    while level:
+        children = list_children(service, level.keys())
+        next_level = {}
+        for item in children:
+            parent_prefix = next((level[p] for p in item.get('parents', []) if p in level), prefix)
+            rel = f"{parent_prefix}/{item['name']}" if parent_prefix else item['name']
+            if item['mimeType'] == FOLDER_MIME:
+                next_level[item['id']] = rel
+            elif not item['mimeType'].startswith('application/vnd.google-apps'):
+                files_out[rel].append(item)
+        level = next_level
+    return files_out

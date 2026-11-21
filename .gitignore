@@ -27,3 +27,4 @@ backend/ktbv2/**/migrations/
 backend/ktbv2/media/
 backend/ktbv2/staticfiles/
 backend/ktbv2/static/
+backend/ktbv2/backups/
