@@ -66,6 +66,10 @@ class KycSerializer(serializers.ModelSerializer):
         else:
             data = dict(data)
 
+        # Empty expiry date from multipart/form-data -> NULL
+        if 'expiry_date' in data and (data['expiry_date'] is None or str(data['expiry_date']).strip() in ('', 'null', 'undefined')):
+            data['expiry_date'] = None
+
         raw_bank_details = data.get('bank_details')
         if isinstance(raw_bank_details, str):
             import json

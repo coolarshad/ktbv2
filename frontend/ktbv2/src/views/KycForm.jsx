@@ -31,6 +31,7 @@ const KycForm = ({ mode = 'add' }) => {
         designation2: '',
         mobile2: '',
         email2: '',
+        expiry_date: '',
         bank_details: [
             { banker: '', address: '', swiftCode: '', accountNumber: '' }
         ],
@@ -62,6 +63,7 @@ const KycForm = ({ mode = 'add' }) => {
                         designation2: data.designation2 || '',
                         mobile2: data.mobile2 || '',
                         email2: data.email2 || '',
+                        expiry_date: data.expiry_date || '',
                         bank_details: Array.isArray(data.bank_details) && data.bank_details.length > 0
                             ? data.bank_details
                             : [{ banker: '', address: '', swiftCode: '', accountNumber: '' }],
@@ -90,6 +92,10 @@ const KycForm = ({ mode = 'add' }) => {
     // };
     const handleChange = (e, section, index) => {
     const { name, value } = e.target;
+    const errorKey = section && index !== undefined ? `${section}.${index}.${name}` : name;
+    if (errors[errorKey]) {
+        setErrors(prev => { const next = { ...prev }; delete next[errorKey]; return next; });
+    }
 
     if (section && index !== undefined) {
         const updatedSection = [...formData[section]];
@@ -100,24 +106,37 @@ const KycForm = ({ mode = 'add' }) => {
     }
 };
 
+    const fieldLabels = {
+        date: 'Date', name: 'Name', companyRegNo: 'Company Reg No', regAddress: 'Reg. Address',
+        mailingAddress: 'Mailing Address', telephone: 'Telephone', fax: 'Fax',
+        person1: 'Person 1', designation1: 'Designation 1', mobile1: 'Mobile 1', email1: 'Email 1',
+        person2: 'Person 2', designation2: 'Designation 2', mobile2: 'Mobile 2', email2: 'Email 2',
+    };
+
     const validateForm = () => {
     const newErrors = {};
 
     for (const [key, value] of Object.entries(formData)) {
         if (key === 'notification_message') continue;
+        if (key === 'expiry_date') {
+            const v = (value ?? '').toString().trim().toLowerCase();
+            if (!v || ['na', 'n/a', 'null', 'undefined'].includes(v) || isNaN(new Date(v).getTime())) {
+                newErrors.expiry_date = 'KYC Expiry Date cannot be empty!';
+            }
+            continue;
+        }
         if (typeof value === 'string') {
             if (!value.trim()) {
-                newErrors[key] = 'This field is required';
+                newErrors[key] = `${fieldLabels[key] || key} cannot be empty!`;
             }
         } else if (Array.isArray(value) && key === 'bank_details') {
             value.forEach((bank, index) => {
-                if (!bank.banker?.trim()) {
-                    newErrors[`bank_details.${index}.banker`] = 'Banker is required';
-                }
-                if (!bank.accountNumber?.trim()) {
-                    newErrors[`bank_details.${index}.accountNumber`] = 'Account Number is required';
-                }
-                // Add more nested validations if needed
+                const bankLabels = { banker: 'Banker', address: 'Address', swiftCode: 'Swift Code', accountNumber: 'Account Number' };
+                Object.entries(bankLabels).forEach(([field, label]) => {
+                    if (!String(bank[field] ?? '').trim()) {
+                        newErrors[`bank_details.${index}.${field}`] = `${label} cannot be empty!`;
+                    }
+                });
             });
         }
     }
@@ -185,6 +204,7 @@ const KycForm = ({ mode = 'add' }) => {
         e.preventDefault();
 
         if (!validateForm()) {
+            toast.error('Please fill all required fields (including KYC Expiry Date).');
             return;
         }
 
@@ -266,9 +286,10 @@ const KycForm = ({ mode = 'add' }) => {
                         type="date"
                         value={formData.date}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.date ? 'border-red-500' : 'border-gray-300'}`}
                         readOnly
                     />
+                {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
                 </div>
                 <div>
                     <label htmlFor="lc_number" className="block text-sm font-medium text-gray-700">Name</label>
@@ -278,8 +299,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.name}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                 </div>
                 <div>
                     <label htmlFor="lc_opening_bank" className="block text-sm font-medium text-gray-700">Company Reg No</label>
@@ -289,8 +311,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.companyRegNo}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.companyRegNo ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.companyRegNo && <p className="text-red-500 text-sm mt-1">{errors.companyRegNo}</p>}
                 </div>
                 <div>
                     <label htmlFor="advance_received" className="block text-sm font-medium text-gray-700">Reg. Address</label>
@@ -300,8 +323,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.regAddress}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.regAddress ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.regAddress && <p className="text-red-500 text-sm mt-1">{errors.regAddress}</p>}
                 </div>
                 <div>
                     <label htmlFor="date_of_receipt" className="block text-sm font-medium text-gray-700">Mailing Address</label>
@@ -311,8 +335,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.mailingAddress}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.mailingAddress ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.mailingAddress && <p className="text-red-500 text-sm mt-1">{errors.mailingAddress}</p>}
                 </div>
                 <div>
                     <label htmlFor="advance_paid" className="block text-sm font-medium text-gray-700">Telephone</label>
@@ -322,8 +347,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.telephone}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.telephone ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.telephone && <p className="text-red-500 text-sm mt-1">{errors.telephone}</p>}
                 </div>
                 <div>
                     <label htmlFor="date_of_payment" className="block text-sm font-medium text-gray-700">Fax</label>
@@ -333,8 +359,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.fax}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.fax ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.fax && <p className="text-red-500 text-sm mt-1">{errors.fax}</p>}
                 </div>
                 <div>
                     <label htmlFor="lc_expiry_date" className="block text-sm font-medium text-gray-700">Person 1</label>
@@ -344,8 +371,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.person1}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.person1 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.person1 && <p className="text-red-500 text-sm mt-1">{errors.person1}</p>}
                 </div>
                 <div>
                     <label htmlFor="latest_shipment_date_in_lc" className="block text-sm font-medium text-gray-700">Designation 1</label>
@@ -355,8 +383,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.designation1}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.designation1 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.designation1 && <p className="text-red-500 text-sm mt-1">{errors.designation1}</p>}
                 </div>
                
                 <div >
@@ -367,8 +396,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.mobile1}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.mobile1 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.mobile1 && <p className="text-red-500 text-sm mt-1">{errors.mobile1}</p>}
                 </div>
                 <div >
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Email 1</label>
@@ -378,8 +408,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.email1}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.email1 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.email1 && <p className="text-red-500 text-sm mt-1">{errors.email1}</p>}
                 </div>
                 <div >
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Person 2</label>
@@ -389,8 +420,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.person2}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.person2 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.person2 && <p className="text-red-500 text-sm mt-1">{errors.person2}</p>}
                 </div>
                 <div >
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Designation 2</label>
@@ -400,8 +432,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.designation2}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.designation2 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.designation2 && <p className="text-red-500 text-sm mt-1">{errors.designation2}</p>}
                 </div>
                 <div >
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Mobile 2</label>
@@ -411,8 +444,9 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.mobile2}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.mobile2 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.mobile2 && <p className="text-red-500 text-sm mt-1">{errors.mobile2}</p>}
                 </div>
                 
                 <div >
@@ -423,8 +457,21 @@ const KycForm = ({ mode = 'add' }) => {
                         type="text"
                         value={formData.email2}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded w-full col-span-1"
+                        className={`border p-2 rounded w-full col-span-1 ${errors.email2 ? 'border-red-500' : 'border-gray-300'}`}
                     />
+                {errors.email2 && <p className="text-red-500 text-sm mt-1">{errors.email2}</p>}
+                </div>
+                <div>
+                    <label htmlFor="expiry_date" className="block text-sm font-medium text-gray-700">KYC Expiry Date</label>
+                    <input
+                        id="expiry_date"
+                        name="expiry_date"
+                        type="date"
+                        value={formData.expiry_date}
+                        onChange={handleChange}
+                        className={`border p-2 rounded w-full col-span-1 ${errors.expiry_date ? 'border-red-500' : 'border-gray-300'}`}
+                    />
+                {errors.expiry_date && <p className="text-red-500 text-sm mt-1">{errors.expiry_date}</p>}
                 </div>
                 {/* <div >
                     <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Banker</label>
@@ -476,38 +523,27 @@ const KycForm = ({ mode = 'add' }) => {
                 <h3 className="text-lg font-semibold mb-2">Bank Details</h3>
                 {formData.bank_details.map((bank, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 border p-4 rounded">
-                        <input
-                            type="text"
-                            name="banker"
-                            placeholder="Banker"
-                            value={bank.banker}
-                            onChange={(e) => handleChange(e, 'bank_details', index)}
-                            className="border p-2 rounded"
-                        />
-                        <input
-                            type="text"
-                            name="address"
-                            placeholder="Address"
-                            value={bank.address}
-                            onChange={(e) => handleChange(e, 'bank_details', index)}
-                            className="border p-2 rounded"
-                        />
-                        <input
-                            type="text"
-                            name="swiftCode"
-                            placeholder="Swift Code"
-                            value={bank.swiftCode}
-                            onChange={(e) => handleChange(e, 'bank_details', index)}
-                            className="border p-2 rounded"
-                        />
-                        <input
-                            type="text"
-                            name="accountNumber"
-                            placeholder="Account Number"
-                            value={bank.accountNumber}
-                            onChange={(e) => handleChange(e, 'bank_details', index)}
-                            className="border p-2 rounded"
-                        />
+                        {[
+                            { name: 'banker', placeholder: 'Banker' },
+                            { name: 'address', placeholder: 'Address' },
+                            { name: 'swiftCode', placeholder: 'Swift Code' },
+                            { name: 'accountNumber', placeholder: 'Account Number' },
+                        ].map(({ name, placeholder }) => {
+                            const errorKey = `bank_details.${index}.${name}`;
+                            return (
+                                <div key={name}>
+                                    <input
+                                        type="text"
+                                        name={name}
+                                        placeholder={placeholder}
+                                        value={bank[name] || ''}
+                                        onChange={(e) => handleChange(e, 'bank_details', index)}
+                                        className={`border p-2 rounded w-full ${errors[errorKey] ? 'border-red-500' : ''}`}
+                                    />
+                                    {errors[errorKey] && <p className="text-red-500 text-sm mt-1">{errors[errorKey]}</p>}
+                                </div>
+                            );
+                        })}
                         <button
                             type="button"
                             onClick={() => handleRemoveBankDetail(index)}
@@ -515,9 +551,6 @@ const KycForm = ({ mode = 'add' }) => {
                         >
                             Remove
                         </button>
-                        {errors[`bank_details.${index}.banker`] && (
-                            <p className="text-red-500 text-sm">{errors[`bank_details.${index}.banker`]}</p>
-                        )}
                     </div>
                 ))}
                 <button

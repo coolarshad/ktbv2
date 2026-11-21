@@ -737,6 +737,7 @@ class Kyc(models.Model):
     accountNumber=models.CharField(max_length=255, null=True,blank=True)
     approve1=models.BooleanField(default=False)
     approve2=models.BooleanField(default=False)
+    expiry_date = models.DateField(null=True, blank=True)
     notified_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='notified_%(class)ss')
 
     class Meta:

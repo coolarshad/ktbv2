@@ -11,6 +11,10 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
     navigate(`/kyc-form/${id}`);  // Navigate to TradeForm with tradeId
   };
 
+  // Today's date as YYYY-MM-DD (Singapore time, matching the KYC form)
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
+  const isExpired = (expiry) => Boolean(expiry) && expiry < today;
+
   const sortedData = useMemo(() => {
     return [...(data || [])].sort((a, b) => b.id - a.id);
   }, [data]);
@@ -38,6 +42,7 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
             <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Designation 2</th>
             <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Mobile 2</th>
             <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Email 2</th>
+            <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Expiry Date</th>
             <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Approve 1</th>
             <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Approve 2</th>
             <th className="py-2.5 px-4 border-b border-gray-300 text-sm font-semibold sticky top-0 z-30 bg-gray-100 whitespace-nowrap">Status</th>
@@ -63,6 +68,12 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.designation2}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.mobile2}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.email2}</td>
+                <td
+                  className={`py-2 px-4 border-b border-gray-200 text-sm font-medium whitespace-nowrap ${isExpired(item.expiry_date) ? 'bg-red-500 text-white' : ''}`}
+                  title={isExpired(item.expiry_date) ? 'KYC expired' : undefined}
+                >
+                  {item.expiry_date || '-'}
+                </td>
                 {/* <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.banker}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.address}</td>
                 <td className="py-2 px-4 border-b border-gray-200 text-sm font-medium">{item.swiftCode}</td>
@@ -96,7 +107,7 @@ const KycTable = ({ data , onDelete, onView }) => { // Default value for data
             ))
           ) : (
             <tr>
-              <td colSpan="19" className="py-4 text-center text-gray-500 font-medium">
+              <td colSpan="20" className="py-4 text-center text-gray-500 font-medium">
                 Match Not Found.
               </td>
             </tr>

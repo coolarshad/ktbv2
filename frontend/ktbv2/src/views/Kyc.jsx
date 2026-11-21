@@ -216,6 +216,12 @@ const Kyc = () => {
                       <td className="py-2 px-4 text-gray-800">{selectedKyc.date}</td>
                     </tr>
                     <tr className="border-b border-gray-200">
+                      <td className="py-2 px-4 text-gray-600 font-medium capitalize">Expiry Date</td>
+                      <td className={`py-2 px-4 ${selectedKyc.expiry_date && selectedKyc.expiry_date < new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' }) ? 'bg-red-500 text-white font-semibold' : 'text-gray-800'}`}>
+                        {selectedKyc.expiry_date || '-'}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
                       <td className="py-2 px-4 text-gray-600 font-medium capitalize">Name</td>
                       <td className="py-2 px-4 text-gray-800">{selectedKyc.name}</td>
                     </tr>

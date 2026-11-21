@@ -603,6 +603,7 @@ class ExportKycExcelView(APIView):
             'Email 2': obj['email2'],
             'Approve 1': obj['approve1'],
             'Approve 2': obj['approve2'],
+            'Expiry Date': obj.get('expiry_date') or '',
             }
 
             # Fill in bank details
