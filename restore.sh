@@ -12,6 +12,15 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Support both Compose v2 ("docker compose") and the older standalone "docker-compose".
+if docker compose version >/dev/null 2>&1; then
+  DC=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then
+  DC=(docker-compose)
+else
+  echo "Neither 'docker compose' nor 'docker-compose' is installed." >&2; exit 1
+fi
+
 APP_SERVICES=(backend celery_worker celery_beat)
 CMD="${1:-}"; shift || true
 BACKUP="latest"
@@ -19,14 +28,14 @@ if [[ $# -gt 0 && "$1" != --* ]]; then BACKUP="$1"; shift; fi
 
 manage() {
   # One-off container with the same image, env, code and media volume as the backend.
-  docker compose run --rm --no-deps -T backend python manage.py restore_from_gdrive "$@"
+  "${DC[@]}" run --rm --no-deps -T backend python manage.py restore_from_gdrive "$@"
 }
 manage_tty() {
-  docker compose run --rm --no-deps backend python manage.py restore_from_gdrive "$@"
+  "${DC[@]}" run --rm --no-deps backend python manage.py restore_from_gdrive "$@"
 }
 
-stop_app()  { echo ">> Stopping ${APP_SERVICES[*]}"; docker compose stop "${APP_SERVICES[@]}"; }
-start_app() { echo ">> Starting ${APP_SERVICES[*]}"; docker compose start "${APP_SERVICES[@]}"; }
+stop_app()  { echo ">> Stopping ${APP_SERVICES[*]}"; "${DC[@]}" stop "${APP_SERVICES[@]}"; }
+start_app() { echo ">> Starting ${APP_SERVICES[*]}"; "${DC[@]}" start "${APP_SERVICES[@]}"; }
 
 case "$CMD" in
   list)   manage --list ;;
@@ -41,7 +50,7 @@ case "$CMD" in
     [[ "$CMD" == all ]] && args+=(--media)
     manage_tty "${args[@]}" "$@"
     echo ">> Applying any newer migrations"
-    docker compose run --rm --no-deps -T backend python manage.py migrate --noinput ;;
+    "${DC[@]}" run --rm --no-deps -T backend python manage.py migrate --noinput ;;
   *)
     sed -n '2,12p' "$0"; exit 1 ;;
 esac

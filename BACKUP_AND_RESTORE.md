@@ -64,7 +64,7 @@ The `celery_beat` container triggers the jobs and the `celery_worker` container 
 ## 2. Before you start
 
 - Run everything from the project root (the folder with `docker-compose.yml` and `restore.sh`).
-- `restore.sh` needs Docker Compose v2 (`docker compose ...`).
+- `restore.sh` works with both `docker compose` (v2) and the older `docker-compose` (v1) and uses whichever is installed. The manual commands in this guide are written as `docker compose ...`. If your server only has v1 (`docker compose version` fails with `unknown flag`), type `docker-compose ...` instead.
 - If `restore.sh` is not executable yet: `chmod +x restore.sh`.
 - Restoring over the live database **replaces all current data** with the backup. Anything entered after the backup was taken is lost. A safety copy of the current DB is taken automatically first (see [Scenario E](#scenario-e--undo-a-restore)).
 - Every Drive download is checked against Drive's MD5 checksum.
