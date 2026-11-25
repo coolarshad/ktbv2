@@ -1,6 +1,6 @@
 from django.test import TestCase
 from datetime import date
-from trademgt.models import Trade, TradeProduct, TradePending, Company
+from trademgt.models import Trade, TradeProduct, TradePending, Company, Kyc
 from accounts.models import CustomUser, Permission
 from accounts.permissions import can_user_update_approved, can_user_delete_approved
 
@@ -235,3 +235,118 @@ class CompanyDynamicNextCounterTests(TestCase):
         self.assertEqual(self.company.counter, 12)
 
 
+
+
+class TradeProductFileRulesTests(TestCase):
+    """Specs always mandatory, LOI mandatory unless product name for client is NA, any file type."""
+
+    def setUp(self):
+        import shutil
+        import tempfile
+        from unittest.mock import patch
+        from rest_framework.test import APIClient
+
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        overrides = self.settings(MEDIA_ROOT=media, GOOGLE_DRIVE_AUTO_BACKUP=False)
+        overrides.enable()
+        self.addCleanup(overrides.disable)
+        notifier = patch('trademgt.views.NotificationService')
+        notifier.start()
+        self.addCleanup(notifier.stop)
+
+        self.user = CustomUser.objects.create_superuser(
+            email='files@example.com', name='Files', password='x'
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
+        self.company = Company.objects.create(name='File Co', initial='FC', counter='0')
+        self.kyc = Kyc.objects.create(
+            date=date(2026, 1, 1), name='Cust', approve1=True, approve2=True
+        )
+
+    def upload(self, name):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        return SimpleUploadedFile(name, b'data')
+
+    def payload(self, client_name='NA', code='P-1', **files):
+        data = {
+            'company': self.company.id, 'trd': '2026-01-01', 'trn': 'FC-1',
+            'trade_type': 'Sales', 'trade_category': 'Sales', 'country_of_origin': 'X',
+            'customer_company_name': self.kyc.id, 'address': 'a', 'currency_selection': '1',
+            'exchange_rate': 1, 'commission_agent': 'NA', 'contract_value': 1, 'payment_term': '1',
+            'advance_value_to_receive': 0, 'commission_value': 0, 'logistic_provider': 'NA',
+            'estimated_logistic_cost': 0, 'logistic_cost_tolerence': 0, 'bank_name_address': '1',
+            'account_number': '1', 'swift_code': '1', 'incoterm': 'FOB', 'pod': 'a', 'pol': 'b',
+            'eta': '2026-02-01', 'etd': '2026-01-15', 'remarks': 'r', 'trader_name': 't',
+            'insurance_policy_number': 'NA', 'shipper_in_bl': 's', 'consignee_in_bl': 'c',
+            'notify_party_in_bl': 'n', 'bl_fee': 0, 'bl_fee_remarks': 'r',
+        }
+        product = {
+            'product_code': code, 'product_name': '1', 'product_name_for_client': client_name,
+            'hs_code': '1', 'total_contract_qty': 10, 'total_contract_qty_unit': 'MT',
+            'tolerance': 0, 'contract_balance_qty': 10, 'contract_balance_qty_unit': 'MT',
+            'trade_qty': 5, 'trade_qty_unit': 'MT', 'selected_currency_rate': 1, 'rate_in_usd': 1,
+            'product_value': 5, 'markings_in_packaging': 'm', 'packaging_supplier': self.kyc.id,
+            'mode_of_packing': '1', 'rate_of_each_packing': 0, 'qty_of_packing': 0,
+            'total_packing_cost': 0, 'commission_rate': 0, 'total_commission': 0,
+            'ref_product_code': 'NA', 'ref_trn': 'NA', 'container_shipment_size': '1',
+            'logistic': 0, 'logistic_remark': 'r', **files,
+        }
+        data.update({f'tradeProducts[0].{k}': v for k, v in product.items()})
+        return data
+
+    def post(self, **kwargs):
+        return self.client.post('/trademgt/trades/', self.payload(**kwargs), format='multipart')
+
+    def test_specs_is_mandatory(self):
+        response = self.post()
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Specs is required', response.data['error'])
+        self.assertFalse(Trade.objects.exists())
+
+    def test_draft_placeholder_is_not_a_file(self):
+        response = self.post(specs='[object Object]')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Specs is required', response.data['error'])
+
+    def test_loi_is_mandatory_unless_client_name_is_na(self):
+        response = self.post(client_name='Client Rice', specs=self.upload('s.pdf'))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('LOI is required', response.data['error'])
+        for i, name in enumerate(['NA', 'na', ' na ']):
+            response = self.post(client_name=name, code=f'NA-{i}', specs=self.upload('s.pdf'))
+            self.assertEqual(response.status_code, 201, response.data)
+
+    def test_any_file_type_is_accepted(self):
+        for i, ext in enumerate(['jpg', 'png', 'pdf', 'doc', 'docx', 'xlsx']):
+            response = self.post(
+                client_name='Client Rice', code=f'T-{i}',
+                loi=self.upload(f'l.{ext}'), specs=self.upload(f's.{ext}'),
+            )
+            self.assertEqual(response.status_code, 201, response.data)
+
+    def test_files_survive_product_code_change(self):
+        self.post(client_name='Client Rice', loi=self.upload('l.pdf'), specs=self.upload('s.jpg'))
+        product = TradeProduct.objects.get()
+        loi, specs = product.loi.name, product.specs.name
+        response = self.client.put(
+            f'/trademgt/trades/{product.trade_id}/',
+            self.payload(client_name='Client Rice', code='P-RENAMED', id=product.id),
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, 200, response.data)
+        updated = TradeProduct.objects.get()
+        self.assertEqual(updated.product_code, 'P-RENAMED')
+        self.assertEqual((updated.loi.name, updated.specs.name), (loi, specs))
+
+    def test_update_cannot_drop_loi_requirement(self):
+        self.post(client_name='NA', specs=self.upload('s.pdf'))
+        product = TradeProduct.objects.get()
+        response = self.client.put(
+            f'/trademgt/trades/{product.trade_id}/',
+            self.payload(client_name='Client Rice', id=product.id), format='multipart',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('LOI is required', response.data['error'])
+        self.assertTrue(TradeProduct.objects.filter(id=product.id).exists())

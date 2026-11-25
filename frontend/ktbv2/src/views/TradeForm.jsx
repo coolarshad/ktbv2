@@ -859,16 +859,21 @@ const TradeForm = ({ mode = 'add' }) => {
             }
         }
 
+        // A file counts only if it was picked in this session, or (update mode) is already
+        // saved on the server. Anything else, e.g. the `{}` left by a JSON draft, is not a file.
+        const hasFile = (file) =>
+            file instanceof File || (mode === 'update' && typeof file === 'string' && file !== '');
+
         // Validate tradeProducts array fields but skip 'loi'
         formData.tradeProducts.forEach((product, index) => {
-            if (!product.specs) {
+            if (!hasFile(product.specs)) {
                 errors[`tradeProducts[${index}].specs`] = 'Specs is required';
             }
 
             for (const [key, value] of Object.entries(product)) {
                 // Validate 'loi' only if 'product_name_for_client' is not 'NA' or 'na'
-                if (key === 'product_name_for_client' && value.toLowerCase() !== 'na') {
-                    if (!product.loi) {
+                if (key === 'product_name_for_client' && (value || '').trim().toLowerCase() !== 'na') {
+                    if (!hasFile(product.loi)) {
                         errors[`tradeProducts[${index}].loi`] = 'LOI is required';
                     }
                 }
@@ -1014,19 +1019,24 @@ const TradeForm = ({ mode = 'add' }) => {
         localStorage.removeItem('tradeDraft');  // Remove draft from localStorage when cleared
         setHasDraft(false);
     };
+    // Files cannot be stored in a JSON draft, so they are always cleared and must be re-attached.
+    const withoutFiles = (data) => ({
+        ...data,
+        tradeProducts: (data.tradeProducts || []).map(product => ({ ...product, loi: null, specs: null })),
+    });
     const handleSaveDraft = () => {
-        localStorage.setItem('tradeDraft', JSON.stringify(formData));
+        localStorage.setItem('tradeDraft', JSON.stringify(withoutFiles(formData)));
         setHasDraft(true);
-        alert('Draft saved successfully!');
+        alert('Draft saved successfully! LOI and Specs files are not stored in drafts.');
     };
     const handleLoadDraft = async () => {
         const savedDraft = localStorage.getItem('tradeDraft');
         if (savedDraft) {
             try {
-                const draftData = JSON.parse(savedDraft);
+                const draftData = withoutFiles(JSON.parse(savedDraft));
                 setFormData(draftData);
                 setHasDraft(false);
-                alert('Draft loaded successfully!');
+                alert('Draft loaded successfully! Please attach the LOI and Specs files again.');
 
                 if (draftData.company) {
                     try {
@@ -1442,7 +1452,7 @@ const TradeForm = ({ mode = 'add' }) => {
                                     name="loi"
                                     onChange={(e) => handleChange(e, index, 'products')}
                                     className="border border-gray-300 p-2 rounded w-full"
-                                    disabled={product.product_name_for_client.toLowerCase() == 'na'}
+                                    disabled={(product.product_name_for_client || '').trim().toLowerCase() === 'na'}
                                 />
                                 {validationErrors[`tradeProducts[${index}].loi`] && (
                                     <p className="text-red-500">

@@ -68,6 +68,23 @@ def get_serializer_context_cache(request):
         **cached_data
     }
     
+def is_na(value):
+    return str(value or '').replace('\xa0', ' ').strip().lower() == 'na'
+
+
+def validate_trade_product_files(products):
+    """Specs is mandatory for every product; LOI is mandatory unless product_name_for_client is NA."""
+    errors = []
+    for index, product in enumerate(products, start=1):
+        if not product.get('specs'):
+            errors.append(f"Product {index}: Specs is required.")
+        if not is_na(product.get('product_name_for_client')) and not product.get('loi'):
+            errors.append(f"Product {index}: LOI is required.")
+    if errors:
+        return Response({'error': ' '.join(errors)}, status=status.HTTP_400_BAD_REQUEST)
+    return None
+
+
 actor = None
 class TradeView(APIView):
     filter_backends = [DjangoFilterBackend]
@@ -228,7 +245,7 @@ class TradeView(APIView):
             loi_file = request.FILES.get(f'tradeProducts[{i}].loi')
             specs_file = request.FILES.get(f'tradeProducts[{i}].specs') or ""
             product_name_for_client = data.get(f'tradeProducts[{i}].product_name_for_client')
-            if product_name_for_client and product_name_for_client.lower() == 'na':
+            if is_na(product_name_for_client):
                 loi_file = ""
             elif not loi_file:
                 loi_file = ""
@@ -320,6 +337,10 @@ class TradeView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             return None
+
+        files_res = validate_trade_product_files(trade_products_data)
+        if files_res:
+            return files_res
 
         kyc_res = validate_kyc_approved(trade_data.get('customer_company_name'), 'customer_company_name')
         if kyc_res:
@@ -488,7 +509,14 @@ class TradeView(APIView):
             
             existing_trade_product = None
             if not loi_file or not specs_file:
-                existing_trade_product = TradeProduct.objects.filter(trade=trade, product_code=data.get(f'tradeProducts[{i}].product_code')).first()
+                # Match by id first so files survive a product_code change; fall back to
+                # product_code because ids change on every update (rows are recreated).
+                existing_products = TradeProduct.objects.filter(trade=trade)
+                product_id = str(data.get(f'tradeProducts[{i}].id') or '')
+                if product_id.isdigit():
+                    existing_trade_product = existing_products.filter(id=int(product_id)).first()
+                if not existing_trade_product:
+                    existing_trade_product = existing_products.filter(product_code=data.get(f'tradeProducts[{i}].product_code')).first()
 
             # If no new LOI file is provided, use the existing file
             if not loi_file:
@@ -504,7 +532,7 @@ class TradeView(APIView):
                 else:
                     specs_file = ""
 
-            if product_name_for_client and product_name_for_client.lower() == 'na':
+            if is_na(product_name_for_client):
                 loi_file = ""
 
             product_data = {
@@ -591,6 +619,10 @@ class TradeView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             return None
+
+        files_res = validate_trade_product_files(trade_products_data)
+        if files_res:
+            return files_res
 
         kyc_res = validate_kyc_approved(trade_data.get('customer_company_name'), 'customer_company_name')
         if kyc_res:
